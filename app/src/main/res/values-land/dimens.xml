@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="btn_list_min_height">230dp</dimen>
+
+    <!-- number of buttons in a COLUMN
+        android:orientation="horizontal"
+        app:spanCount="@integer/btn_list_column_count"
+    -->
+    <integer name="btn_list_column_count">3</integer>
+    <!-- number of buttons in a ROW
+        android:orientation="vertical"
+        app:spanCount="@integer/btn_list_row_count"
+    -->
+    <integer name="btn_list_row_count">3</integer>
+
+    <!-- buttons have a fixed width -->
+    <dimen name="btn_width">200dp</dimen>
+
+</resources>

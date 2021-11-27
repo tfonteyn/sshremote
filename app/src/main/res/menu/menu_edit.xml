@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.hardbackcollector.sshremote.MainActivity">
+    <item
+        android:id="@id/MENU_SAVE"
+        android:icon="@drawable/ic_twotone_save_24"
+        android:orderInCategory="10"
+        android:title="@string/action_save"
+        app:showAsAction="always" />
+    <item
+        android:id="@id/MENU_DELETE"
+        android:icon="@drawable/ic_twotone_delete_24"
+        android:orderInCategory="20"
+        android:title="@string/action_delete"
+        app:showAsAction="always" />
+</menu>

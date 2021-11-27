@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="global.buttons.flow"
+        android:title="Buttons flow" />
+
+    <SeekBarPreference
+        android:defaultValue="8"
+        android:icon="@drawable/ic_twotone_smart_button_24"
+        android:key="global.buttons.amount"
+        android:max="24"
+        android:title="@string/lbl_total_nr_of_buttons"
+        app:min="1"
+        app:showSeekBarValue="true" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:icon="@drawable/ic_outline_vpn_key_24"
+        android:key="global.strictHostKeyChecking"
+        android:title="@string/lbl_strict_host_key_checking" />
+</PreferenceScreen>

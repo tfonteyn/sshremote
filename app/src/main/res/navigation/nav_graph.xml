@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.hardbackcollector.sshremote.MainFragment"
+        android:label="@string/lbl_fragment_main"
+        tools:layout="@layout/fragment_main">
+
+        <action
+            android:id="@+id/action_MainFragment_to_EditConfigFragment"
+            app:destination="@id/editButtonFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_keyManagementFragment"
+            app:destination="@id/keyManagementFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editButtonFragment"
+        android:name="com.hardbackcollector.sshremote.EditConfigFragment"
+        android:label="@string/lbl_fragment_edit_button"
+        tools:layout="@layout/fragment_edit_button">
+        <action
+            android:id="@+id/action_EditConfigFragment_to_editHostFragment"
+            app:destination="@id/editHostFragment" />
+        <action
+            android:id="@+id/action_editConfigFragment_to_editCommandFragment"
+            app:destination="@id/editCommandFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editHostFragment"
+        android:name="com.hardbackcollector.sshremote.EditHostFragment"
+        android:label="@string/lbl_fragment_edit_host"></fragment>
+
+    <fragment
+        android:id="@+id/editCommandFragment"
+        android:name="com.hardbackcollector.sshremote.EditCommandFragment"
+        android:label="@string/lbl_fragment_edit_command"></fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.hardbackcollector.sshremote.SettingsFragment"
+        android:label="@string/menu_settings" />
+    <fragment
+        android:id="@+id/keyManagementFragment"
+        android:name="com.hardbackcollector.sshremote.KeyManagementFragment"
+        android:label="@string/menu_key_management" />
+</navigation>

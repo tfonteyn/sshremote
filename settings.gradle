@@ -1,0 +1,3 @@
+rootProject.name = "SSHRemote"
+include ':app'
+include ':ssh-client'

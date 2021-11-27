@@ -1,0 +1,54 @@
+<resources>
+    <!-- Spacing around the FAB. -->
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- layout_margin for top level layouts. -->
+    <dimen name="screen_border">4dp</dimen>
+
+    <!-- elevation for the progress overlay. -->
+    <dimen name="progress_z_backdrop">4dp</dimen>
+    <!-- elevation for the progress overlay. -->
+    <dimen name="progress_z">8dp</dimen>
+
+    <!-- Margin applied around all TextInputLayout fields. Larger on larger size displays. -->
+    <dimen name="til_field_margin">8dp</dimen>
+
+
+    <dimen name="gap_padding_horizontal">10dp</dimen>
+    <dimen name="gap_padding_vertical">10dp</dimen>
+
+    <dimen name="button_padding">10dp</dimen>
+    <dimen name="button_width">170dp</dimen>
+    <!-- int: max number of character for the name -->
+    <integer name="button_max_ems">20</integer>
+
+    <dimen name="output_padding">8dp</dimen>
+
+    <dimen name="til_vert_spacer">15dp</dimen>
+    <dimen name="save_spacer">30dp</dimen>
+    <dimen name="save_min_width">200dp</dimen>
+
+
+    <!-- the minimum height of the RecyclerView which displays the button list. -->
+    <dimen name="btn_list_min_height">340dp</dimen>
+
+    <!-- number of buttons in a COLUMN
+            android:orientation="horizontal"
+            app:spanCount="@integer/btn_list_column_count"
+     -->
+    <integer name="btn_list_column_count">6</integer>
+
+    <!-- number of buttons in a ROW
+            android:orientation="vertical"
+            app:spanCount="@integer/btn_list_row_count"
+    -->
+    <integer name="btn_list_row_count">2</integer>
+
+    <!-- buttons have a fixed width -->
+    <dimen name="btn_width">180dp</dimen>
+
+    <!-- margin around a button - the 'fat finger' space -->
+    <dimen name="btn_margin">4dp</dimen>
+
+
+</resources>

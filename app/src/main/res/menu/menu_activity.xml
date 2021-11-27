@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.hardbackcollector.sshremote.MainActivity">
+
+    <item
+        android:id="@id/MENU_ABOUT"
+        android:orderInCategory="999"
+        android:title="@string/menu_about"
+        app:showAsAction="never" />
+</menu>

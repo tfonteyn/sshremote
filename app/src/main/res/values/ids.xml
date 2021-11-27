@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="MENU_DELETE" type="id" />
+    <item name="MENU_SAVE" type="id" />
+    <item name="MENU_GLOBAL_SETTINGS" type="id" />
+    <item name="MENU_KEY_MANAGEMENT" type="id" />
+    <item name="MENU_ABOUT" type="id" />
+    <item name="MENU_IMPORT" type="id" />
+    <item name="MENU_IMPORT_APPEND" type="id" />
+    <item name="MENU_EXPORT" type="id" />
+    <item name="MENU_EDIT_BUTTON_ORDER" type="id" />
+</resources>
