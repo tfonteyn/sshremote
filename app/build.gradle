@@ -65,6 +65,7 @@ android {
             }
         }
     }
+    namespace 'com.hardbackcollector.sshremote'
 }
 
 dependencies {
