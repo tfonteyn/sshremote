@@ -49,9 +49,9 @@ import java.security.GeneralSecurityException;
  * The algorithms to be used are negotiated during key exchange.
  * <h4>Configuration</h4>
  * <dl>
- *  <dt>{@link KexProposal#PROPOSAL_MAC_ALGS_CTOS mac.c2s}</dt>
+ *  <dt>{@link KexProposal#PROPOSAL_MAC_CTOS mac.c2s}</dt>
  *  <dd>message authentication code algorithms for client-to-server transport.</dd>
- *  <dt>{@link KexProposal#PROPOSAL_MAC_ALGS_CTOS mac.s2c}</dt>
+ *  <dt>{@link KexProposal#PROPOSAL_MAC_CTOS mac.s2c}</dt>
  *  <dd>message authentication code algorithms for server-to-client transport.</dd>
  * </dl>
  * <p>

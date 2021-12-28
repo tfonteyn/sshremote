@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.transport.Packet;
 import com.hardbackcollector.sshclient.transport.PacketIO;
 import com.hardbackcollector.sshclient.utils.SshConstants;
@@ -92,7 +93,8 @@ public class UserAuthPassword
 
         Packet packet = new Packet();
 
-        final int maxAuthAttempts = config.getNumberOfPasswordPrompts();
+        final int maxAuthAttempts = config.getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
+                HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
         int attemptsLeft = maxAuthAttempts;
 
         try {

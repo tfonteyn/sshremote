@@ -1,0 +1,38 @@
+# examples mostly taken from https://linuxize.com/post/using-the-ssh-config-file/
+
+# global
+BindAddress 10.0.0.1
+Ciphers ^blowfish-cbc
+
+Host dev
+    HostName dev.example.com
+    User john
+    Port 2322
+    IdentityFile ~/.ssh/keys/dev_key
+
+Host targaryen
+    HostName 192.168.1.10
+    User daenerys
+    Port 7654
+    IdentityFile ~/.ssh/targaryen.key
+
+Host tyrell
+    HostName 192.168.10.20
+    BindAddress 10.0.0.111
+    Ciphers +3des-cbc, aes192-cbc
+    Ciphers -aes256-ctr
+    Ciphers ^chacha20-poly1305@openssh.com,  aes128-ctr
+
+
+Host martell
+    HostName 192.168.10.50
+
+Host *ell
+    user oberyn
+
+Host * !martell
+    LogLevel INFO
+
+Host *
+    User root
+    Compression yes

@@ -1,7 +1,7 @@
 package com.hardbackcollector.sshclient.connections;
 
 import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.kex.KexProposal;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.utils.SshException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ class SignatureTest
         super.setup(ZIPPER[ZIP]);
         //TODO: use a junit parameter test and run all in one go.
 
-        sshClient.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, sigAlg[4]);
+        sshClient.setConfig(HostConfig.HOST_KEY_ALGS, sigAlg[4]);
     }
 
     @Test
@@ -42,7 +42,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "ecdh-sha2-nistp256");
+        session.setConfig(HostConfig.KEX_ALGS, "ecdh-sha2-nistp256");
 
         session.connect();
         session.disconnect();
@@ -54,7 +54,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "ecdh-sha2-nistp384");
+        session.setConfig(HostConfig.KEX_ALGS, "ecdh-sha2-nistp384");
 
         session.connect();
         session.disconnect();
@@ -66,7 +66,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "ecdh-sha2-nistp521");
+        session.setConfig(HostConfig.KEX_ALGS, "ecdh-sha2-nistp521");
 
         session.connect();
         session.disconnect();
@@ -78,7 +78,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "curve25519-sha256");
+        session.setConfig(HostConfig.KEX_ALGS, "curve25519-sha256");
 
         session.connect();
         session.disconnect();
@@ -90,7 +90,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "curve25519-sha256@libssh.org");
+        session.setConfig(HostConfig.KEX_ALGS, "curve25519-sha256@libssh.org");
 
         session.connect();
         session.disconnect();
@@ -102,7 +102,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "diffie-hellman-group-exchange-sha256");
+        session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group-exchange-sha256");
 
         session.connect();
         session.disconnect();
@@ -114,7 +114,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "diffie-hellman-group16-sha512");
+        session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group16-sha512");
 
         session.connect();
         session.disconnect();
@@ -126,7 +126,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "diffie-hellman-group18-sha512");
+        session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group18-sha512");
 
         session.connect();
         session.disconnect();
@@ -138,7 +138,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "diffie-hellman-group14-sha256");
+        session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group14-sha256");
 
         session.connect();
         session.disconnect();
@@ -150,7 +150,7 @@ class SignatureTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_KEX_ALGS, "diffie-hellman-group14-sha1");
+        session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group14-sha1");
 
         session.connect();
         session.disconnect();

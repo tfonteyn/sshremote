@@ -5,7 +5,9 @@ import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.SshClient;
+import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.SshCipherConstants;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKey;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.hostkey.HostKeyRepository;
@@ -37,34 +39,43 @@ public class KexProposal {
      */
     public static final String CHECK_KEX_ALGS = "class.check.kex";
     public static final String CHECK_SIG_ALGS = "class.check.signatures";
-    public static final String CHECK_ENC_ALGS = "class.check.ciphers";
+    public static final String CHECK_CIP_ALGS = "class.check.ciphers";
     public static final String CHECK_MAC_ALGS = "class.check.macs";
 
     /**
-     * The lists of algorithms we'll send to the server indicating we support them.
+     * {@link HostConfig#CIPHERS} specific for client-to-server.
      */
-    public static final String PROPOSAL_KEX_ALGS = "KexAlgorithms";
-    public static final String PROPOSAL_HOST_KEY_ALGS = "HostKeyAlgorithms";
+    public static final String PROPOSAL_CIPHER_CTOS = "cipher.c2s";
+    /**
+     * {@link HostConfig#CIPHERS} specific for server-to-client.
+     */
+    public static final String PROPOSAL_CIPHER_STOC = "cipher.s2c";
 
-    public static final String PROPOSAL_ENC_ALGS_CTOS = "cipher.s2c";
-    public static final String PROPOSAL_ENC_ALGS_STOC = "cipher.c2s";
-    public static final String PROPOSAL_MAC_ALGS_CTOS = "mac.c2s";
-    public static final String PROPOSAL_MAC_ALGS_STOC = "mac.s2c";
     /**
-     * List of compression types to use for client-to-server.
+     * {@link HostConfig#MACS} specific for client-to-server.
      */
-    public static final String PROPOSAL_COMP_ALGS_CTOS = "compression.c2s";
+    public static final String PROPOSAL_MAC_CTOS = "mac.c2s";
     /**
-     * List of compression types to use for server-to-client.
+     * {@link HostConfig#MACS} specific for server-to-client.
      */
-    public static final String PROPOSAL_COMP_ALGS_STOC = "compression.s2c";
+    public static final String PROPOSAL_MAC_STOC = "mac.s2c";
+
+    /**
+     * {@link HostConfig#COMPRESSION} specific for client-to-server.
+     */
+    public static final String PROPOSAL_COMP_CTOS = "compression.c2s";
+    /**
+     * {@link HostConfig#COMPRESSION} specific for server-to-client.
+     */
+    public static final String PROPOSAL_COMP_STOC = "compression.s2c";
+
     /**
      * Language to be used for error messages; required by SSH but not actively used.
      */
     @SuppressWarnings("WeakerAccess")
-    public static final String PROPOSAL_LANG_CTOS = "lang.s2c";
+    public static final String PROPOSAL_LANG_CTOS = "lang.c2s";
     @SuppressWarnings("WeakerAccess")
-    public static final String PROPOSAL_LANG_STOC = "lang.c2s";
+    public static final String PROPOSAL_LANG_STOC = "lang.s2c";
 
     /**
      * KeyExchange implementations to use for DH and ECDH
@@ -111,22 +122,22 @@ public class KexProposal {
 
         this.config = config;
 
-        kexAlgorithms = this.config.getStringList(PROPOSAL_KEX_ALGS);
-        hostKeyAlgorithms = this.config.getStringList(PROPOSAL_HOST_KEY_ALGS);
+        kexAlgorithms = this.config.getStringList(HostConfig.KEX_ALGS);
+        hostKeyAlgorithms = this.config.getStringList(HostConfig.HOST_KEY_ALGS);
 
-        ciphers_c2s = this.config.getStringList(PROPOSAL_ENC_ALGS_CTOS);
-        ciphers_s2c = this.config.getStringList(PROPOSAL_ENC_ALGS_STOC);
+        ciphers_c2s = this.config.getStringList(PROPOSAL_CIPHER_CTOS);
+        ciphers_s2c = this.config.getStringList(PROPOSAL_CIPHER_STOC);
 
-        mac_c2s = this.config.getStringList(PROPOSAL_MAC_ALGS_CTOS);
-        mac_s2c = this.config.getStringList(PROPOSAL_MAC_ALGS_STOC);
+        mac_c2s = this.config.getStringList(PROPOSAL_MAC_CTOS);
+        mac_s2c = this.config.getStringList(PROPOSAL_MAC_STOC);
 
-        compression_c2s = this.config.getStringList(PROPOSAL_COMP_ALGS_CTOS, COMPRESSION_NONE);
-        compression_s2c = this.config.getStringList(PROPOSAL_COMP_ALGS_STOC, COMPRESSION_NONE);
+        compression_c2s = getStringList(config, PROPOSAL_COMP_CTOS, COMPRESSION_NONE);
+        compression_s2c = getStringList(config, PROPOSAL_COMP_STOC, COMPRESSION_NONE);
 
-        language_c2s = this.config.getStringList(PROPOSAL_LANG_STOC, "");
-        language_s2c = this.config.getStringList(PROPOSAL_LANG_CTOS, "");
+        language_c2s = getStringList(config, PROPOSAL_LANG_CTOS, "");
+        language_s2c = getStringList(config, PROPOSAL_LANG_STOC, "");
 
-        if (this.config.isValidateAlgorithmClasses()) {
+        if (this.config.getBooleanValue(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, true)) {
             validate();
         }
 
@@ -158,6 +169,17 @@ public class KexProposal {
                 .putString(String.join(",", language_s2c))
                 .putBoolean(false)
                 .putInt(0);
+    }
+
+    @NonNull
+    private static List<String> getStringList(@NonNull final SshClientConfig config,
+                                              @NonNull final String key,
+                                              @NonNull final String defValue) {
+        final List<String> list = config.getStringList(key);
+        if (list.isEmpty()) {
+            list.add(defValue);
+        }
+        return list;
     }
 
     @NonNull
@@ -274,7 +296,7 @@ public class KexProposal {
         validateKexAlgorithms();
         validateServerHostKeyAlgorithms();
 
-        validateAlgorithmPair(ciphers_c2s, ciphers_s2c, CHECK_ENC_ALGS,
+        validateAlgorithmPair(ciphers_c2s, ciphers_s2c, CHECK_CIP_ALGS,
                 "cipher", name -> {
                     try {
                         ImplementationFactory.getCipher(config, name);
@@ -391,6 +413,12 @@ public class KexProposal {
             this.value = value;
         }
 
+        @NonNull
+        public static StrictHostKeyChecking get(@NonNull final SshClientConfig config) {
+            return get(config.getString(HostConfig.STRICT_HOST_KEY_CHECKING));
+        }
+
+        @NonNull
         public static StrictHostKeyChecking get(@Nullable final String value) {
             if (value == null) {
                 return AcceptNew;

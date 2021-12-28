@@ -34,7 +34,7 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
-import com.hardbackcollector.sshclient.hostconfig.HostConfigRepository;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.macs.SshMac;
 import com.hardbackcollector.sshclient.userauth.UserInfo;
 import com.hardbackcollector.sshclient.utils.ImplementationFactory;
@@ -261,7 +261,7 @@ public class KnownHosts
                                  @NonNull final byte[] key)
             throws GeneralSecurityException {
 
-        if (config.getBooleanValue(HostConfigRepository.HostConfig.HASH_KNOWN_HOSTS, false)) {
+        if (config.getBooleanValue(HostConfig.HASH_KNOWN_HOSTS, false)) {
             final HashedHostKey hhk = new HashedHostKey(getMac(), host, key);
             hhk.hash(config.getRandom());
             return hhk;

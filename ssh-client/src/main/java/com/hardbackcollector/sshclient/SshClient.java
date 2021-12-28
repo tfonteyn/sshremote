@@ -31,6 +31,7 @@ package com.hardbackcollector.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostconfig.HostConfigRepository;
 import com.hardbackcollector.sshclient.hostkey.HostKeyRepository;
 import com.hardbackcollector.sshclient.hostkey.KnownHosts;
@@ -226,7 +227,7 @@ public class SshClient {
     }
 
     /**
-     * Retrieves a default configuration option.
+     * Retrieves a configuration option.
      *
      * @param key key for the configuration.
      * @return config value
@@ -238,7 +239,6 @@ public class SshClient {
             return config.getString(key);
         }
     }
-
 
     @SuppressWarnings("WeakerAccess")
     @Nullable
@@ -419,7 +419,7 @@ public class SshClient {
      * @param host            hostname
      * @param port            port number
      * @param hostNameOrAlias (optional) alias for looking a
-     *                        {@link HostConfigRepository.HostConfig} for the given host.
+     *                        {@link HostConfig} for the given host.
      *                        If not set, the {@code host} will be used.
      * @return a new instance of {@code Session}.
      * @throws SshAuthException if {@code username} or {@code host} are invalid.
@@ -432,24 +432,27 @@ public class SshClient {
                               @Nullable final String hostNameOrAlias)
             throws IOException, GeneralSecurityException, SshAuthException {
 
-        final HostConfigRepository.HostConfig hostConfig;
-
+        // extra/specific config for the specified host
+        final HostConfig hostConfig;
         if (hostConfigRepository != null) {
             initGlobalIdentities();
             hostConfig = hostConfigRepository
                     .getHostConfig(hostNameOrAlias != null ? hostNameOrAlias : host);
         } else {
-            hostConfig = null;// new SimpleHostConfig(host, port, username);
+            hostConfig = null;
         }
 
-        final Session session = new SessionImpl(this, config,
+        final Session session = new SessionImpl(this,
+                // create a child config
+                new SshClientConfigImpl(config, hostConfig),
+
                 username, host, port,
                 // public key auth
                 identityRepository,
                 // host key verification
-                getHostKeyRepository(),
-                // extra/specific config for the specified host
-                hostConfig);
+                getHostKeyRepository()
+
+        );
 
         synchronized (sessionPool) {
             sessionPool.add(session);
@@ -598,7 +601,7 @@ public class SshClient {
             if (!globalIdentitiesLoaded) {
                 final List<String> fileNames = hostConfigRepository
                         .getHostConfig("")
-                        .getIdentityFiles();
+                        .getStringList(HostConfig.IDENTITY_FILE, null);
 
                 for (final String prvKeyFilename : fileNames) {
                     addIdentity(prvKeyFilename, null, null);

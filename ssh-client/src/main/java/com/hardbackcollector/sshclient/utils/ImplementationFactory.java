@@ -18,6 +18,7 @@ import com.hardbackcollector.sshclient.compression.SshDeflater;
 import com.hardbackcollector.sshclient.compression.SshDeflaterImpl;
 import com.hardbackcollector.sshclient.compression.SshInflater;
 import com.hardbackcollector.sshclient.compression.SshInflaterImpl;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.kex.KexProposal;
 import com.hardbackcollector.sshclient.kex.keyagreements.DH;
@@ -52,7 +53,11 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
 public final class ImplementationFactory {
@@ -66,8 +71,6 @@ public final class ImplementationFactory {
      * <p>
      * Valid for kex proposals + all others places where algorithms or key sizes might
      * not be available; e.g. public key accepted algorithms.
-     *
-     * @see SshClientConfigImpl#isValidateAlgorithmClasses()
      */
     public static final String PK_VALIDATE_ALGORITHM_CLASSES =
             "validate_algorithm_classes";
@@ -560,5 +563,52 @@ public final class ImplementationFactory {
 
         }
         return null;
+    }
+
+    /**
+     * Construct the list of algorithms we can accept for public key authentication.
+     *
+     * @return the list; will contain at least one algorithm
+     * @throws NoSuchAlgorithmException if no algorithm configured/available
+     */
+    @NonNull
+    public static List<String> getPublicKeyAcceptedAlgorithms(
+            @NonNull final SshClientConfig config)
+            throws NoSuchAlgorithmException {
+        final List<String> all = new ArrayList<>();
+
+        final List<String> a1 = config.getStringList(HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS);
+        if (!a1.isEmpty()) {
+            all.addAll(a1);
+        }
+        final List<String> a2 = config.getStringList(HostConfig.PUBLIC_KEY_ACCEPTED_KEY_TYPES);
+        if (!a2.isEmpty()) {
+            all.addAll(a2);
+        }
+
+        if (all.isEmpty()) {
+            return all;
+        }
+
+        if (!config.getBooleanValue(PK_VALIDATE_ALGORITHM_CLASSES, true)) {
+            return all.stream().distinct().collect(Collectors.toList());
+        }
+
+        final List<String> result = new ArrayList<>();
+        for (final String name : all.stream().distinct().collect(Collectors.toList())) {
+            try {
+                final SshSignature sig = getSignature(config, name);
+                sig.init(name);
+                result.add(name);
+            } catch (final GeneralSecurityException ignore) {
+                // ignore
+            }
+        }
+
+        if (result.isEmpty()) {
+            throw new NoSuchAlgorithmException("No PublicKey auth algorithms available");
+        }
+
+        return result;
     }
 }

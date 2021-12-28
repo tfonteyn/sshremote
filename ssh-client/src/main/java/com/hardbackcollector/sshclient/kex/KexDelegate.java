@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.SshClient;
-import com.hardbackcollector.sshclient.hostconfig.HostConfigRepository;
 import com.hardbackcollector.sshclient.hostkey.HostKey;
 import com.hardbackcollector.sshclient.hostkey.HostKeyRepository;
 import com.hardbackcollector.sshclient.kex.keyexchange.KeyExchange;
@@ -378,9 +377,7 @@ public class KexDelegate {
 
         try {
             final KexProposal.StrictHostKeyChecking strictHostKeyChecking =
-                    KexProposal.StrictHostKeyChecking
-                            .get(config.getString(
-                                    HostConfigRepository.HostConfig.STRICT_HOST_KEY_CHECKING));
+                    KexProposal.StrictHostKeyChecking.get(config);
 
             final HostKey hostkey = hkr.createHostKey(hostKeyName, kex.getK_S());
 

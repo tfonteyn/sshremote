@@ -33,6 +33,7 @@ import androidx.annotation.NonNull;
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.identity.Identity;
 import com.hardbackcollector.sshclient.identity.IdentityImpl;
@@ -350,7 +351,9 @@ public class ChannelAgentForwarding
         final String prompt = rb.getString("PROMPT_PASSPHRASE");
 
         // loop to allow the user multiple attempts at entering the passphrase
-        int attemptsLeft = getSession().getConfig().getNumberOfPasswordPrompts();
+        int attemptsLeft = getSession().getConfig()
+                .getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
+                        HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
 
         byte[] passphrase = null;
         try {

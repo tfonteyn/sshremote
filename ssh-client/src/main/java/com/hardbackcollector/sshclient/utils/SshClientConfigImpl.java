@@ -4,14 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Random;
+import com.hardbackcollector.sshclient.Session;
+import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.SshCipherConstants;
-import com.hardbackcollector.sshclient.hostconfig.HostConfigRepository;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.kex.KexProposal;
 import com.hardbackcollector.sshclient.kex.keyexchange.KeyExchangeConstants;
 import com.hardbackcollector.sshclient.macs.SshMacConstants;
-import com.hardbackcollector.sshclient.signature.SshSignature;
 import com.hardbackcollector.sshclient.userauth.UserAuthGSSAPIWithMIC;
 import com.hardbackcollector.sshclient.userauth.UserAuthKeyboardInteractive;
 import com.hardbackcollector.sshclient.userauth.UserAuthNone;
@@ -19,12 +20,9 @@ import com.hardbackcollector.sshclient.userauth.UserAuthPassword;
 import com.hardbackcollector.sshclient.userauth.UserAuthPublicKey;
 import com.hardbackcollector.sshclient.userauth.jgss.UserAuthGSSContextKrb5;
 
-import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,23 +30,62 @@ import java.util.Set;
 public class SshClientConfigImpl
         implements SshClientConfig {
 
-    // jc stands for jcraft or for java-client; your choice...
     public static final String SYS_PROP_PREFIX = "sshjc.";
-    public static final int DEFAULT_NUMBER_OF_PASSWORD_PROMPTS = 3;
 
+    private static final Set<String> KEY_IS_LIST_VALUE = Set.of(
+            HostConfig.KEX_ALGS.toLowerCase(Locale.ENGLISH)
+            , HostConfig.HOST_KEY_ALGS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_CIPHER_CTOS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_CIPHER_STOC.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_MAC_CTOS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_MAC_STOC.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_COMP_CTOS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_COMP_STOC.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_LANG_CTOS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.PROPOSAL_LANG_STOC.toLowerCase(Locale.ENGLISH)
+            , HostConfig.PREFERRED_AUTHENTICATIONS.toLowerCase(Locale.ENGLISH)
+            , HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS.toLowerCase(Locale.ENGLISH)
+            , HostConfig.PUBLIC_KEY_ACCEPTED_KEY_TYPES.toLowerCase(Locale.ENGLISH)
+
+            , HostConfig.LOCAL_FORWARD.toLowerCase(Locale.ENGLISH)
+            , HostConfig.REMOTE_FORWARD.toLowerCase(Locale.ENGLISH)
+    );
+
+    // FIRST try here, i.e. the session options.
     private final Map<String, String> config = new HashMap<>();
+    // SECONDLY try the (optional) host configuration file which is set on the session
+    @Nullable
+    private final HostConfig hostConfig;
+    // LASTLY try the parent configuration, i.e. the global SshClient options
     @Nullable
     private final SshClientConfigImpl parentConfig;
     @Nullable
     private Random random;
 
+    /**
+     * Construct the GLOBAL configuration. This is done ONCE for each {@link SshClient} object.
+     */
     public SshClientConfigImpl() {
-        this.parentConfig = null;
+        this.hostConfig = null;
         loadDefaultConfig();
+        this.parentConfig = null;
     }
 
-    public SshClientConfigImpl(@Nullable final SshClientConfigImpl parentConfig) {
+    /**
+     * Construct a configuration for a specific {@link Session} object.
+     * It's based on the passed in (global) configuration overloaded with the (optional)
+     * host-based configuration.
+     */
+    public SshClientConfigImpl(@Nullable final SshClientConfigImpl parentConfig,
+                               @Nullable final HostConfig hostConfig) {
+        this.hostConfig = hostConfig;
+        loadDefaultConfig();
         this.parentConfig = parentConfig;
+    }
+
+    @Nullable
+    public HostConfig getHostConfig() {
+        return hostConfig;
     }
 
     @Override
@@ -88,15 +125,80 @@ public class SshClientConfigImpl
     }
 
     @Override
+    public boolean isValueList(@NonNull final String key) {
+        return KEY_IS_LIST_VALUE.contains(key.toLowerCase(Locale.ENGLISH));
+    }
+
+    @Override
     @Nullable
-    public String getString(@NonNull final String key) {
-        final String value;
+    public String getString(@NonNull final String key,
+                            @Nullable final String defValue) {
+        if (isValueList(key)) {
+            return getListOption(key, defValue);
+        } else {
+            return getSingleOption(key, defValue);
+        }
+    }
+
+    @Nullable
+    private String getSingleOption(@NonNull final String key,
+                                   @Nullable final String defValue) {
+        // For a single option, we check all levels using 'null' as the default.
+        // Only when no levels have our option, we will return the 'defValue'.
+        String value;
+
+        // if this session configuration has the value, just return it.
         value = config.get(key);
         if (value != null) {
             return value;
         }
 
-        return parentConfig != null ? parentConfig.getString(key) : null;
+        // otherwise check the session specific host configuration
+        value = hostConfig != null ? hostConfig.getString(key, null) : null;
+        if (value != null) {
+            return value;
+        }
+
+        // use the parent; this will again first check the parent/global options,
+        // followed by the parent/global host configuration
+        value = parentConfig != null ? parentConfig.getString(key, null) : null;
+        if (value != null) {
+            return value;
+        }
+
+        return defValue;
+    }
+
+    @Nullable
+    private String getListOption(@NonNull final String key,
+                                 @Nullable final String defValue) {
+
+        final String value = config.get(key);
+
+        // ALWAYS accumulate with the host configuration regardless of the session value
+        if (hostConfig != null) {
+            final String h = hostConfig.getString(key, value);
+            if (h != null && !h.isBlank()) {
+                return h;
+            }
+        }
+
+        // If we have no session value, go check the parent/global configuration
+        // using the original default value
+        if (value == null || value.isBlank()) {
+            if (parentConfig != null) {
+                final String p = parentConfig.getString(key, defValue);
+                if (p != null && !p.isBlank()) {
+                    return p;
+                }
+            }
+        }
+
+        if (value == null || value.isBlank()) {
+            return defValue;
+        } else {
+            return value;
+        }
     }
 
     @NonNull
@@ -115,62 +217,11 @@ public class SshClientConfigImpl
         return random;
     }
 
-    public boolean isValidateAlgorithmClasses() {
-        return getBooleanValue(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, true);
-    }
-
-    public boolean isClearAllForwards() {
-        return getBooleanValue(HostConfigRepository.HostConfig.CLEAR_ALL_FORWARDS, false);
-    }
-
-    @Override
-    public int getNumberOfPasswordPrompts() {
-        return getIntValue(HostConfigRepository.HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
-                DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
-    }
-
-    @Override
-    @NonNull
-    public List<String> getPublicKeyAcceptedAlgorithms() {
-        final Set<String> all = new HashSet<>();
-        final List<String> a1 = getStringList(HostConfigRepository.HostConfig
-                .PUBKEY_ACCEPTED_ALGORITHMS);
-        if (!a1.isEmpty()) {
-            all.addAll(a1);
-        }
-        final List<String> a2 = getStringList(HostConfigRepository.HostConfig
-                .PUBKEY_ACCEPTED_KEY_TYPES);
-        if (!a2.isEmpty()) {
-            all.addAll(a2);
-        }
-
-        if (all.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        if (!isValidateAlgorithmClasses()) {
-            return new ArrayList<>(all);
-        }
-
-        final List<String> result = new ArrayList<>();
-        for (final String name : all) {
-            try {
-                final SshSignature sig = ImplementationFactory.getSignature(this, name);
-                sig.init(name);
-                result.add(name);
-            } catch (final GeneralSecurityException ignore) {
-                // ignore
-            }
-        }
-
-        return result;
-    }
-
     /**
      * Load the default configuration.
      * <p>
      * Not explicitly added here are options which have their defaults already in the code,
-     * and cannot "not defined".
+     * and cannot be "not defined".
      * Overriding them would use the below with custom class names.
      * <pre>
      *     {@code
@@ -210,7 +261,7 @@ public class SshClientConfigImpl
         {
             // The list send to the server
             // https://datatracker.ietf.org/doc/html/draft-ietf-curdle-ssh-kex-sha2-03#section-4
-            putFromSystemProperty(KexProposal.PROPOSAL_KEX_ALGS,
+            putFromSystemProperty(HostConfig.KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
                             + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
                             + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
@@ -244,7 +295,7 @@ public class SshClientConfigImpl
         // server_host_key_algorithms (Signature):
         {
             // The list send to the server
-            putFromSystemProperty(KexProposal.PROPOSAL_HOST_KEY_ALGS,
+            putFromSystemProperty(HostConfig.HOST_KEY_ALGS,
                     HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
                             + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
                             + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
@@ -271,27 +322,19 @@ public class SshClientConfigImpl
         // encryption_algorithms (Ciphers)
         {
             // The list send to the server
-            putFromSystemProperty(KexProposal.PROPOSAL_ENC_ALGS_CTOS,
-                    SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
-                            + ',' + SshCipherConstants.AES_128_CTR
-                            + ',' + SshCipherConstants.AES_192_CTR
-                            + ',' + SshCipherConstants.AES_256_CTR
-                            + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
-                            + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
-            );
-            putFromSystemProperty(KexProposal.PROPOSAL_ENC_ALGS_STOC,
-                    SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
-                            + ',' + SshCipherConstants.AES_128_CTR
-                            + ',' + SshCipherConstants.AES_192_CTR
-                            + ',' + SshCipherConstants.AES_256_CTR
-                            + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
-                            + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
-            );
+            final String ciphers = SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
+                    + ',' + SshCipherConstants.AES_128_CTR
+                    + ',' + SshCipherConstants.AES_192_CTR
+                    + ',' + SshCipherConstants.AES_256_CTR
+                    + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
+                    + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM;
+            putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_CTOS, ciphers);
+            putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_STOC, ciphers);
 
             // These will be tested to see if their implementations CAN be instantiated.
             // If not, they will be removed from the above list BEFORE it is send to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
-            putFromSystemProperty(KexProposal.CHECK_ENC_ALGS,
+            putFromSystemProperty(KexProposal.CHECK_CIP_ALGS,
                     SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
                             + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
                             + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
@@ -308,22 +351,14 @@ public class SshClientConfigImpl
         // mac_algorithms (HMAC)
         {
             // The list send to the server
-            putFromSystemProperty(KexProposal.PROPOSAL_MAC_ALGS_STOC,
-                    SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
-                            + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
-                            + ',' + SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM
-                            + ',' + SshMacConstants.HMAC_SHA_2_256
-                            + ',' + SshMacConstants.HMAC_SHA_2_512
-                            + ',' + SshMacConstants.HMAC_SHA_1
-            );
-            putFromSystemProperty(KexProposal.PROPOSAL_MAC_ALGS_CTOS,
-                    SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
-                            + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
-                            + ',' + SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM
-                            + ',' + SshMacConstants.HMAC_SHA_2_256
-                            + ',' + SshMacConstants.HMAC_SHA_2_512
-                            + ',' + SshMacConstants.HMAC_SHA_1
-            );
+            final String macs = SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
+                    + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
+                    + ',' + SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM
+                    + ',' + SshMacConstants.HMAC_SHA_2_256
+                    + ',' + SshMacConstants.HMAC_SHA_2_512
+                    + ',' + SshMacConstants.HMAC_SHA_1;
+            putFromSystemProperty(KexProposal.PROPOSAL_MAC_STOC, macs);
+            putFromSystemProperty(KexProposal.PROPOSAL_MAC_CTOS, macs);
 
             // These will be tested to see if their implementations CAN be instantiated.
             // If not, they will be removed from the above list BEFORE it is send to the
@@ -360,14 +395,14 @@ public class SshClientConfigImpl
                             + UserAuthGSSContextKrb5.METHOD,
                     UserAuthGSSContextKrb5.class);
 
-            putFromSystemProperty(HostConfigRepository.HostConfig.PREFERRED_AUTHENTICATIONS,
+            putFromSystemProperty(HostConfig.PREFERRED_AUTHENTICATIONS,
                     UserAuthGSSAPIWithMIC.METHOD
                             + ',' + UserAuthPublicKey.METHOD
                             + ',' + UserAuthKeyboardInteractive.METHOD
                             + ',' + UserAuthPassword.METHOD
             );
 
-            putFromSystemProperty(HostConfigRepository.HostConfig.PUBKEY_ACCEPTED_ALGORITHMS,
+            putFromSystemProperty(HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS,
                     HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
                             + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
                             + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521

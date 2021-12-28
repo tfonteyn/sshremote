@@ -57,7 +57,7 @@ import com.hardbackcollector.sshclient.channels.session.ChannelSubsystemImpl;
 import com.hardbackcollector.sshclient.channels.sftp.ChannelSftpImpl;
 import com.hardbackcollector.sshclient.forwarding.LocalForwardingHandlerImpl;
 import com.hardbackcollector.sshclient.forwarding.PortForwardException;
-import com.hardbackcollector.sshclient.hostconfig.HostConfigRepository;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKey;
 import com.hardbackcollector.sshclient.hostkey.HostKeyRepository;
 import com.hardbackcollector.sshclient.hostkey.KnownHosts;
@@ -68,7 +68,6 @@ import com.hardbackcollector.sshclient.kex.KexAgreement;
 import com.hardbackcollector.sshclient.kex.KexDelegate;
 import com.hardbackcollector.sshclient.kex.KexException;
 import com.hardbackcollector.sshclient.kex.KexKeys;
-import com.hardbackcollector.sshclient.kex.KexProposal;
 import com.hardbackcollector.sshclient.kex.KexTimeoutException;
 import com.hardbackcollector.sshclient.proxy.Proxy;
 import com.hardbackcollector.sshclient.userauth.SshAuthCancelException;
@@ -127,9 +126,6 @@ public class SessionImpl
     private static final String ERROR_SESSION_IS_DOWN =
             "Session is not connected";
 
-    @Nullable
-    private final HostConfigRepository.HostConfig hostConfig;
-
     @NonNull
     private final SshClientConfigImpl config;
     /**
@@ -137,6 +133,11 @@ public class SessionImpl
      */
     @NonNull
     private final SshClient client;
+    @Nullable
+    private final String username;
+    @NonNull
+    private final String host;
+    private final int port;
     /**
      * Separates all logic for handling forwarding of ports and sockets.
      */
@@ -144,47 +145,34 @@ public class SessionImpl
     private RemoteForwardingHandlerImpl remoteForwardingHandler;
     @Nullable
     private LocalForwardingHandlerImpl localForwardingHandler;
-
     private int x11Forwarding;
     private boolean agentForwarding;
-
     private boolean runAsDaemonThread;
-
     /**
      * server version.
      */
     @Nullable
     private String serverVersion;
-
     /**
      * client version.
      */
     @NonNull
     private String clientVersion = SshClient.VERSION;
-
     /**
      * Unique session id, based on the hash from the KeyExchange.
      */
     @Nullable
     private byte[] sessionId;
-
     @Nullable
     private TransportS2C s2c;
     @Nullable
     private TransportC2S c2s;
-
-    @Nullable
-    private String username;
     @Nullable
     private byte[] password;
     @Nullable
     private UserInfo userinfo;
     @Nullable
     private String hostKeyAlias;
-    @NonNull
-    private String host;
-    private int port;
-
     @Nullable
     private SocketFactory socketFactory;
     @Nullable
@@ -218,55 +206,97 @@ public class SessionImpl
      * @param hostKeyRepository  the global {@link HostKeyRepository}
      *                           Can be overridden by calling
      *                           {@link #setHostKeyRepository(HostKeyRepository)}
-     * @param hostConfig         (optional) configuration with host specific settings
      */
     public SessionImpl(@NonNull final SshClient sshClient,
                        @NonNull final SshClientConfigImpl config,
                        @Nullable final String username,
-                       @NonNull final String host,
+                       @NonNull final String hostnameOrAlias,
                        final int port,
                        @NonNull final IdentityRepository identityRepository,
-                       @NonNull final HostKeyRepository hostKeyRepository,
-                       @Nullable final HostConfigRepository.HostConfig hostConfig)
+                       @NonNull final HostKeyRepository hostKeyRepository)
             throws IOException, GeneralSecurityException, SshAuthException {
 
         this.client = sshClient;
+        this.config = config;
 
-        this.username = username;
-        this.host = host;
-        this.hostKeyAlias = host;
-        this.port = port;
+        final HostConfig hostConfig = config.getHostConfig();
+
+        this.username = resolveUsername(username, hostConfig);
+        this.host = resolveHostname(hostnameOrAlias, hostConfig);
+        this.hostKeyAlias = hostnameOrAlias;
+        this.port = resolvePort(port, hostConfig);
 
         this.identityRepository = identityRepository;
         this.hostKeyRepository = hostKeyRepository;
 
-        this.hostConfig = hostConfig;
-        // create a child config
-        this.config = new SshClientConfigImpl(config);
-        if (this.hostConfig != null) {
-            applyHostConfig();
-        }
-
-        if (this.port <= 0) {
-            this.port = 22;
-        }
-
-        if (this.username == null) {
-            try {
-                this.username = System.getProperty("user.name");
-            } catch (final SecurityException ignore) {
-            }
-            if (this.username == null) {
-                throw new SshAuthException("Username not available");
-            }
+        if (hostConfig != null) {
+            applyHostConfig(hostConfig);
         }
 
         if (SshClient.getLogger().isEnabled(Logger.INFO)) {
             SshClient.getLogger().log(Logger.INFO, "Session created for "
-                    + username + "@" + host + ":" + port);
+                    + username + "@" + hostnameOrAlias + ":" + port);
         }
     }
 
+    @NonNull
+    private String resolveUsername(@Nullable final String username,
+                                   @Nullable final HostConfig hostConfig)
+            throws SshAuthException {
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+
+        String resolved = null;
+        if (hostConfig != null) {
+            resolved = hostConfig.getUser();
+        }
+        if (resolved != null && !resolved.isBlank()) {
+            return resolved;
+        }
+
+        try {
+            resolved = System.getProperty("user.name");
+            if (resolved != null && !resolved.isBlank()) {
+                return resolved;
+            }
+        } catch (final SecurityException ignore) {
+        }
+
+        throw new SshAuthException("Username not available");
+    }
+
+    private String resolveHostname(@NonNull final String hostnameOrAlias,
+                                   @Nullable final HostConfig hostConfig) {
+        // The passed in host name can be an alias as used previously to lookup the HostConfig.
+        // If the HostConfig has the real host name (or is identical) use that one.
+        String resolved = null;
+        if (hostConfig != null) {
+            resolved = hostConfig.getHostname();
+        }
+        if (resolved != null && !resolved.isBlank()) {
+            return resolved;
+        }
+
+        // must be an actual hostname
+        return hostnameOrAlias;
+    }
+
+    private int resolvePort(final int port,
+                            @Nullable final HostConfig hostConfig) {
+        if (port > 0) {
+            return port;
+        }
+        int resolved = 0;
+        if (hostConfig != null) {
+            resolved = hostConfig.getPort();
+        }
+        if (resolved > 0) {
+            return resolved;
+        }
+
+        return 22;
+    }
 
     @Nullable
     public byte[] getPassword() {
@@ -440,7 +470,7 @@ public class SessionImpl
                     sessionThread.start();
 
                     // add (start) the hostConfig forwards if allowed.
-                    if (hostConfig != null && !config.isClearAllForwards()) {
+                    if (!config.getBooleanValue(HostConfig.CLEAR_ALL_FORWARDS, false)) {
                         initForwards();
                     }
                 }
@@ -480,11 +510,10 @@ public class SessionImpl
     private void initForwards()
             throws IOException, GeneralSecurityException,
             PortForwardException, SshChannelException {
-        Objects.requireNonNull(hostConfig);
 
         List<String> values;
 
-        values = hostConfig.getLocalForwards();
+        values = config.getStringList(HostConfig.LOCAL_FORWARD);
         if (!values.isEmpty()) {
             // get or create the #localForwardingHandler
             final LocalForwardingHandler handler = getLocalForwardingHandler();
@@ -493,7 +522,7 @@ public class SessionImpl
             }
         }
 
-        values = hostConfig.getRemoteForwards();
+        values = config.getStringList(HostConfig.REMOTE_FORWARD);
         if (!values.isEmpty()) {
             // get or create the #remoteForwardingHandler
             final RemoteForwardingHandler handler = getRemoteForwardingHandler();
@@ -503,7 +532,7 @@ public class SessionImpl
         }
     }
 
-    private void cleanup(final Exception e) {
+    private void cleanup(@NonNull final Exception e) {
         // paranoia
         if (kexDelegate != null) {
             kexDelegate.setKeyExchangeDone();
@@ -548,7 +577,7 @@ public class SessionImpl
         boolean auth = ua.authenticate(this, this, null);
 
         final List<String> clientMethods = config
-                .getStringList(HostConfigRepository.HostConfig.PREFERRED_AUTHENTICATIONS);
+                .getStringList(HostConfig.PREFERRED_AUTHENTICATIONS);
         if (clientMethods.isEmpty()) {
             throw new SshAuthException("No client auth methods configured");
         }
@@ -762,8 +791,8 @@ public class SessionImpl
                 throw new SshChannelException("Unknown channel type: " + type);
         }
 
-        if (hostConfig != null) {
-            applyHostConfig(channel);
+        if (config.getHostConfig() != null) {
+            applyHostConfig(config.getHostConfig(), channel);
         }
 
         //noinspection unchecked
@@ -1284,77 +1313,47 @@ public class SessionImpl
         return remoteForwardingHandler;
     }
 
-
-    private void applyHostConfig()
+    private void applyHostConfig(@NonNull final HostConfig hostConfig)
             throws IOException, GeneralSecurityException {
-        Objects.requireNonNull(hostConfig);
 
         String tmpValue;
-        Integer tmpIntValue;
+        int tmpIntValue;
 
-        // The user name is ONLY taken from the host-config if it was not set before
-        if (username == null) {
-            tmpValue = hostConfig.getUser();
-            if (tmpValue != null) {
-                username = tmpValue;
-            }
-        }
-
-        // The passed in host name can be an alias as used above to lookup the HostConfig.
-        // If the HostConfig has the real host name (or is identical) use that one.
-        tmpValue = hostConfig.getHostname();
-        if (tmpValue != null) {
-            host = tmpValue;
-        }
-
-        tmpIntValue = hostConfig.getPort();
-        if (tmpIntValue <= 0) {
-            port = tmpIntValue;
-        }
-
-        tmpValue = hostConfig.getHostKeyAlias();
+        tmpValue = hostConfig.getString(HostConfig.HOST_KEY_ALIAS);
         if (tmpValue != null) {
             hostKeyAlias = tmpValue;
         }
 
         // The server alive interval value is also set as the timeout!
-        tmpIntValue = hostConfig
-                .getIntegerValue(HostConfigRepository.HostConfig.SERVER_ALIVE_INTERVAL);
-        if (tmpIntValue != null) {
+        tmpIntValue = hostConfig.getIntValue(HostConfig.SERVER_ALIVE_INTERVAL, -1);
+        if (tmpIntValue > -1) {
             setServerAliveInterval(tmpIntValue);
         }
 
         // see above, any specific timeout MUST be applied AFTER
         // the server alive interval is applied
-        tmpIntValue = hostConfig.getIntegerValue(HostConfigRepository.HostConfig.CONNECT_TIMEOUT);
-        if (tmpIntValue != null) {
+        tmpIntValue = hostConfig.getIntValue(HostConfig.CONNECT_TIMEOUT, -1);
+        if (tmpIntValue > -1) {
             setTimeout(tmpIntValue);
         }
 
         // Overrule the global known-hosts.
-        tmpValue = hostConfig.getString(HostConfigRepository.HostConfig.USER_KNOWN_HOSTS_FILE);
+        tmpValue = hostConfig.getString(HostConfig.USER_KNOWN_HOSTS_FILE);
         if (tmpValue != null) {
             final KnownHosts kh = new KnownHosts(config);
             kh.setKnownHosts(tmpValue);
             hostKeyRepository = kh;
         }
 
-        // Overrule the global setting.
-        tmpValue = hostConfig.getPubkeyAcceptedAlgorithms();
-        if (tmpValue.isBlank()) {
-            config.putString(HostConfigRepository.HostConfig.PUBKEY_ACCEPTED_ALGORITHMS, tmpValue);
-        }
-
         // Load all host specific identities (key files) into the session IdentityRepository.
-        final List<String> fileNames = hostConfig.getIdentityFiles();
+        final List<String> fileNames = hostConfig.getStringList(HostConfig.IDENTITY_FILE, null);
         if (!fileNames.isEmpty()) {
             // Wrap the repo if required.
             synchronized (this) {
                 if (!identityRepository.supportsEncryption()
                         && !(identityRepository instanceof IdentityRepositoryWrapper)) {
 
-                    identityRepository = new IdentityRepositoryWrapper(identityRepository,
-                            true);
+                    identityRepository = new IdentityRepositoryWrapper(identityRepository, true);
                 }
             }
 
@@ -1363,44 +1362,6 @@ public class SessionImpl
                 identityRepository.add(IdentityImpl.fromFiles(config, prvKeyFilename, null));
             }
         }
-
-        // copy/overwrite if the key is present in the hostConfig
-        copyStringIfSet(KexProposal.PROPOSAL_KEX_ALGS);
-        copyStringIfSet(KexProposal.PROPOSAL_HOST_KEY_ALGS);
-
-        copyStringIfSet(KexProposal.PROPOSAL_ENC_ALGS_STOC);
-        copyStringIfSet(KexProposal.PROPOSAL_ENC_ALGS_CTOS);
-        copyStringIfSet(KexProposal.PROPOSAL_MAC_ALGS_CTOS);
-        copyStringIfSet(KexProposal.PROPOSAL_MAC_ALGS_STOC);
-        copyStringIfSet(KexProposal.PROPOSAL_COMP_ALGS_CTOS);
-        copyStringIfSet(KexProposal.PROPOSAL_COMP_ALGS_STOC);
-
-        copyStringIfSet(HostConfigRepository.HostConfig.STRICT_HOST_KEY_CHECKING);
-        copyStringIfSet(HostConfigRepository.HostConfig.PREFERRED_AUTHENTICATIONS);
-        copyStringIfSet(HostConfigRepository.HostConfig.NUMBER_OF_PASSWORD_PROMPTS);
-        copyStringIfSet(HostConfigRepository.HostConfig.FINGERPRINT_HASH);
-        copyBoolIfSet(HostConfigRepository.HostConfig.HASH_KNOWN_HOSTS);
-        copyBoolIfSet(HostConfigRepository.HostConfig.CLEAR_ALL_FORWARDS);
-
-        // Not expected to be there, but we might as well support it.
-        copyBoolIfSet(KexDelegate.PREFER_KNOWN_HOST_KEY_TYPES);
-        copyStringIfSet(KexProposal.COMPRESSION_LEVEL);
-    }
-
-    private void copyBoolIfSet(@NonNull final String key) {
-        //noinspection ConstantConditions
-        final Boolean value = this.hostConfig.getBooleanValue(key);
-        if (value != null) {
-            config.putString(key, String.valueOf(value));
-        }
-    }
-
-    private void copyStringIfSet(@NonNull final String key) {
-        //noinspection ConstantConditions
-        final String value = this.hostConfig.getString(key);
-        if (value != null) {
-            config.putString(key, value);
-        }
     }
 
     /**
@@ -1408,36 +1369,37 @@ public class SessionImpl
      *
      * @param channel to apply to
      */
-    private void applyHostConfig(@NonNull final ChannelSession channel) {
-        Objects.requireNonNull(hostConfig);
+    private void applyHostConfig(@NonNull final HostConfig hostConfig,
+                                 @NonNull final ChannelSession channel) {
 
         Boolean enable;
 
-        enable = hostConfig.getBooleanValue(HostConfigRepository.HostConfig.FORWARD_AGENT);
-        if (enable != null) {
-            channel.setAgentForwarding(enable);
-            if (enable) {
-                agentForwarding = true;
-            }
+        enable = hostConfig.getBooleanValue(HostConfig.FORWARD_AGENT, false);
+        channel.setAgentForwarding(enable);
+        if (enable) {
+            agentForwarding = true;
         }
 
         if (channel instanceof ChannelShell) {
-            enable = hostConfig.getBooleanValue(HostConfigRepository.HostConfig.REQUEST_TTY);
-            if (enable != null) {
-                ((ChannelShell) channel).setPty(enable);
-            }
+            final String value = hostConfig.getString(HostConfig.REQUEST_TTY);
+            final boolean requestTTY =
+                    ("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)
+                            || "force".equalsIgnoreCase(value) || "auto".equalsIgnoreCase(value));
+            ((ChannelShell) channel).setPty(requestTTY);
         }
 
         // X11: try boolean first; if 'true' set screen number to 0
-        enable = hostConfig.getBooleanValue(HostConfigRepository.HostConfig.FORWARD_X11);
+        final String value = hostConfig.getString(HostConfig.FORWARD_X11);
+        enable = value != null
+                ? "yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)
+                : null;
         if (enable != null) {
             x11Forwarding = enable ? 0 : -1;
             channel.setXForwarding(x11Forwarding);
         } else {
-            // no boolean found, look for the int screen number
-            final Integer nr = hostConfig.getIntegerValue(
-                    HostConfigRepository.HostConfig.FORWARD_X11);
-            if (nr != null) {
+            // NON-STANDARD: no boolean found, look for the int screen number
+            final int nr = hostConfig.getIntValue(HostConfig.FORWARD_X11, -1);
+            if (nr > -1) {
                 x11Forwarding = nr;
                 channel.setXForwarding(x11Forwarding);
             }

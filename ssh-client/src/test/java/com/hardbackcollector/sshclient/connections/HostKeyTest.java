@@ -1,7 +1,7 @@
 package com.hardbackcollector.sshclient.connections;
 
 import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.kex.KexProposal;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.utils.SshException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +38,7 @@ class HostKeyTest
         super.setup(ZIPPER[ZIP]);
 
         //TODO: use a junit parameter test and run all in one go.
-        sshClient.setConfig(KexProposal.PROPOSAL_KEX_ALGS, kexAlg[0]);
+        sshClient.setConfig(HostConfig.KEX_ALGS, kexAlg[0]);
     }
 
     @Test
@@ -48,7 +48,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, "ssh-rsa");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, "ssh-rsa");
 
         session.connect();
         Thread.sleep(100);
@@ -63,7 +63,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, "ssh-rsa");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, "ssh-rsa");
 
         session.connect();
         session.disconnect();
@@ -75,7 +75,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, "rsa-sha2-256");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, "rsa-sha2-256");
 
         session.connect();
         session.disconnect();
@@ -87,7 +87,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, "rsa-sha2-512");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, "rsa-sha2-512");
 
         session.connect();
         session.disconnect();
@@ -99,7 +99,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, "ecdsa-sha2-nistp256");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, "ecdsa-sha2-nistp256");
 
         session.connect();
         session.disconnect();
@@ -111,7 +111,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(KexProposal.PROPOSAL_HOST_KEY_ALGS, "ssh-ed25519");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, "ssh-ed25519");
 
         session.connect();
         session.disconnect();

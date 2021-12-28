@@ -1,7 +1,6 @@
 package com.hardbackcollector.sshclient;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.ciphers.SshCipher;
 import com.hardbackcollector.sshclient.compression.SshDeflater;
@@ -9,11 +8,9 @@ import com.hardbackcollector.sshclient.compression.SshInflater;
 import com.hardbackcollector.sshclient.kex.keyexchange.KeyExchange;
 import com.hardbackcollector.sshclient.macs.SshMac;
 import com.hardbackcollector.sshclient.userauth.UserAuth;
+import com.hardbackcollector.sshclient.utils.BaseConfig;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,14 +59,15 @@ import java.util.Map;
  * </p>
  */
 @SuppressWarnings("unused")
-public interface SshClientConfig {
+public interface SshClientConfig
+        extends BaseConfig {
 
     @NonNull
     Map<String, String> getAll();
 
     /**
      * Add/set multiple configuration options at once.
-     * The given hashtable should only contain Strings.
+     * The given map should only contain Strings.
      *
      * @see #putString(String, String)
      */
@@ -94,87 +92,6 @@ public interface SshClientConfig {
                           @NonNull final Class<?> clazz) {
         putString(configKey, clazz.getCanonicalName());
     }
-
-    /**
-     * Retrieves a configuration option.
-     * <p>
-     * If an option is not set, this method
-     * returns the value set at the parent configuration level.
-     * i.e. if a value is retrieved from the {@link Session}
-     * but it's not there, the global value will be returned.
-     *
-     * @param key the key for the configuration option
-     * @return the value corresponding to the key.
-     */
-    @Nullable
-    String getString(@NonNull final String key);
-
-
-    default boolean contains(@NonNull final String key) {
-        final String s = getString(key);
-        return s != null && !s.isBlank();
-    }
-
-    default int getIntValue(@NonNull final String key,
-                            final int defValue) {
-        final String s = getString(key);
-        if (s != null) {
-            try {
-                return Integer.parseInt(s);
-            } catch (final NumberFormatException e) {
-                if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                    SshClient.getLogger()
-                            .log(Logger.ERROR, "Invalid value for key=" + key + ": " + s);
-                }
-            }
-        }
-        return defValue;
-    }
-
-    default boolean getBooleanValue(@NonNull final String key,
-                                    final boolean defValue) {
-        final String s = getString(key);
-        if (s != null) {
-            return "true".equalsIgnoreCase(s) || "yes".equalsIgnoreCase(s);
-        }
-        return defValue;
-    }
-
-    @NonNull
-    default String getString(@NonNull final String key,
-                             @NonNull final String defValue) {
-        final String s = getString(key);
-        return s != null && !s.isBlank() ? s : defValue;
-    }
-
-    @NonNull
-    default List<String> getStringList(@NonNull final String key) {
-        final String s = getString(key);
-        return s != null ? Arrays.asList(s.split(",")) : new ArrayList<>();
-    }
-
-    @NonNull
-    default List<String> getStringList(@NonNull final String key,
-                                       @NonNull final String defValue) {
-        final String s = getString(key);
-        if (s != null) {
-            return Arrays.asList(s.split(","));
-        }
-        final List<String> list = new ArrayList<>();
-        list.add(defValue);
-        return list;
-    }
-
-
-    int getNumberOfPasswordPrompts();
-
-    /**
-     * The list of algorithms we can accept for public key authentication.
-     *
-     * @return the list; can be empty.
-     */
-    @NonNull
-    List<String> getPublicKeyAcceptedAlgorithms();
 
     @NonNull
     Random getRandom()

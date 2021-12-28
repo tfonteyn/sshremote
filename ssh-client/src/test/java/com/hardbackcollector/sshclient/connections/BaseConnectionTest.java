@@ -63,8 +63,8 @@ public class BaseConnectionTest {
 
         sshClient.setConfig(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, "false");
 
-        sshClient.setConfig(KexProposal.PROPOSAL_COMP_ALGS_CTOS, zipper);
-        sshClient.setConfig(KexProposal.PROPOSAL_COMP_ALGS_STOC, zipper);
+        sshClient.setConfig(KexProposal.PROPOSAL_COMP_CTOS, zipper);
+        sshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC, zipper);
 
         //noinspection ResultOfMethodCallIgnored
         new File(KNOWN_HOSTS).createNewFile();

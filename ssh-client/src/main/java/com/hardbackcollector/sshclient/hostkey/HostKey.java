@@ -32,7 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.SshClientConfig;
-import com.hardbackcollector.sshclient.hostconfig.HostConfigRepository;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -174,8 +174,10 @@ public class HostKey {
                                         @NonNull final byte[] data)
             throws NoSuchAlgorithmException {
 
-        final String algorithm = config.getString(HostConfigRepository.HostConfig.FINGERPRINT_HASH,
-                DEFAULT_FINGERPRINT_HASH);
+        String algorithm = config.getString(HostConfig.FINGERPRINT_HASH);
+        if (algorithm == null || algorithm.isBlank()) {
+            algorithm = DEFAULT_FINGERPRINT_HASH;
+        }
         return getFingerPrint(algorithm, data);
     }
 

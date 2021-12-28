@@ -35,12 +35,14 @@ import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
+import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.identity.Identity;
 import com.hardbackcollector.sshclient.identity.IdentityRepository;
 import com.hardbackcollector.sshclient.transport.Packet;
 import com.hardbackcollector.sshclient.transport.PacketIO;
 import com.hardbackcollector.sshclient.utils.Buffer;
+import com.hardbackcollector.sshclient.utils.ImplementationFactory;
 import com.hardbackcollector.sshclient.utils.SshConstants;
 
 import java.io.IOException;
@@ -56,8 +58,8 @@ import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4252#section-7">
- * RFC 4252 SSH Authentication Protocol,
- * section 7. Public Key Authentication Method: "publickey"</a>
+ *         RFC 4252 SSH Authentication Protocol,
+ *         section 7. Public Key Authentication Method: "publickey"</a>
  */
 public class UserAuthPublicKey
         implements UserAuth {
@@ -88,12 +90,7 @@ public class UserAuthPublicKey
         this.username = username;
         this.userinfo = userinfo;
 
-        final List<String> all = config.getPublicKeyAcceptedAlgorithms();
-        if (all.isEmpty()) {
-            throw new NoSuchAlgorithmException("PublicKey auth algorithms not configured");
-        }
-
-        for (final String name : all) {
+        for (final String name : ImplementationFactory.getPublicKeyAcceptedAlgorithms(config)) {
             if (HostKeyAlgorithm.isRSA(name)) {
                 rsaMethods.add(name);
             } else {
@@ -101,14 +98,9 @@ public class UserAuthPublicKey
             }
         }
 
-        if (rsaMethods.isEmpty() && nonRsaMethods.isEmpty()) {
-            throw new NoSuchAlgorithmException("PublicKey auth algorithms: none available");
-        }
-
         final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
         prompt = rb.getString("PROMPT_PASSPHRASE");
     }
-
 
     @Override
     public boolean authenticate(@NonNull final Session session,
@@ -167,7 +159,8 @@ public class UserAuthPublicKey
         Objects.requireNonNull(userinfo);
 
         // loop to allow the user multiple attempts at entering the passphrase
-        int attemptsLeft = config.getNumberOfPasswordPrompts();
+        int attemptsLeft = config.getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
+                HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
 
         byte[] passphrase = null;
         try {
@@ -234,7 +227,7 @@ public class UserAuthPublicKey
      * ...
      *
      * @return the algorithm name for which we successfully pre-authenticated,
-     * or {@code null} if pre-auth failed.
+     *         or {@code null} if pre-auth failed.
      */
     @Nullable
     private String preAuth(@NonNull final PacketIO io,
