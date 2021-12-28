@@ -41,9 +41,9 @@ public class SshHelper {
         SshClient.setLogger(new JLogger());
 
         mSshClient = new SshClient();
-        mSshClient.setConfig(KexProposal.PROPOSAL_COMP_ALGS_CTOS,
+        mSshClient.setConfig(KexProposal.PROPOSAL_COMP_CTOS,
                 KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
-        mSshClient.setConfig(KexProposal.PROPOSAL_COMP_ALGS_STOC,
+        mSshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC,
                 KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
     }
 
