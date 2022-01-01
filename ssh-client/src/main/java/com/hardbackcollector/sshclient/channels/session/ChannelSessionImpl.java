@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.channels.session;
 
 import androidx.annotation.NonNull;
@@ -61,9 +33,7 @@ public class ChannelSessionImpl
         implements ChannelSession {
 
     private boolean agent_forwarding;
-    /**
-     * Screen number for X11; -1 for no forwarding.
-     */
+    /** Screen number for X11; -1 for no forwarding. */
     private int x11_forwarding = -1;
 
     @Nullable
@@ -71,9 +41,7 @@ public class ChannelSessionImpl
 
     private boolean pty;
 
-    /**
-     * TERM environment variable value (e.g., vt100).
-     */
+    /** TERM environment variable value (e.g., vt100). */
     @NonNull
     private String ptyTerm = "vt100";
     @NonNull
@@ -84,9 +52,7 @@ public class ChannelSessionImpl
     private int ptyWidthInPixels = 640;
     private int ptyHeightInPixels = 480;
 
-    /**
-     * Xon/Xoff support.
-     */
+    /** Xon/Xoff support. */
     private boolean clientCanDoFlowControl;
 
     @Nullable
@@ -110,7 +76,7 @@ public class ChannelSessionImpl
     public void setEnv(@NonNull final String name,
                        @NonNull final String value) {
         setEnv(name.getBytes(StandardCharsets.UTF_8),
-                value.getBytes(StandardCharsets.UTF_8));
+               value.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -163,6 +129,7 @@ public class ChannelSessionImpl
      * @param rows           terminal height
      * @param widthInPixels  terminal width
      * @param heightInPixels terminal height
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.7">
      * RFC SSH 4254 Connection Protocol, section 6.7. Window Dimension Change Message</a>
      */
@@ -193,11 +160,11 @@ public class ChannelSessionImpl
         // boolean   FALSE
         // string    signal name (without the "SIG" prefix)
         sendRequest((recipient, x) -> new Packet(SshConstants.SSH_MSG_CHANNEL_REQUEST)
-                        .putInt(recipient)
-                        .putString("signal")
-                        .putBoolean(false)
-                        .putString(signal),
-                false);
+                            .putInt(recipient)
+                            .putString("signal")
+                            .putBoolean(false)
+                            .putString(signal),
+                    false);
     }
 
     @Override
@@ -249,10 +216,10 @@ public class ChannelSessionImpl
         // string   "auth-agent-req@openssh.com"
         // boolean  want reply
         sendRequest((recipient, x) -> new Packet(SshConstants.SSH_MSG_CHANNEL_REQUEST)
-                        .putInt(recipient)
-                        .putString("auth-agent-req@openssh.com")
-                        .putBoolean(false),
-                false);
+                            .putInt(recipient)
+                            .putString("auth-agent-req@openssh.com")
+                            .putBoolean(false),
+                    false);
     }
 
     private void sendX11ForwardingRequest()
@@ -266,14 +233,14 @@ public class ChannelSessionImpl
         // string    x11 authentication cookie (hex-encoded 32 byte)
         // uint32    x11 screen number
         sendRequest((recipient, x) -> new Packet(SshConstants.SSH_MSG_CHANNEL_REQUEST)
-                        .putInt(recipient)
-                        .putString("x11-req")
-                        .putBoolean(false)
-                        .putBoolean(false)
-                        .putString("MIT-MAGIC-COOKIE-1")
-                        .putString(ChannelX11.getHexEncodedAuthCookie(getSession()))
-                        .putInt(x11_forwarding),
-                false);
+                            .putInt(recipient)
+                            .putString("x11-req")
+                            .putBoolean(false)
+                            .putBoolean(false)
+                            .putString("MIT-MAGIC-COOKIE-1")
+                            .putString(ChannelX11.getHexEncodedAuthCookie(getSession()))
+                            .putInt(x11_forwarding),
+                    false);
     }
 
     /**
@@ -315,16 +282,16 @@ public class ChannelSessionImpl
         // uint32    terminal height, pixels (e.g., 480)
         // string    encoded terminal modes
         sendRequest((recipient, x) -> new Packet(SshConstants.SSH_MSG_CHANNEL_REQUEST)
-                        .putInt(recipient)
-                        .putString("pty-req")
-                        .putBoolean(false)
-                        .putString(ptyTerm)
-                        .putInt(ptyColumns)
-                        .putInt(ptyRows)
-                        .putInt(ptyWidthInPixels)
-                        .putInt(ptyHeightInPixels)
-                        .putString(ptyModes),
-                false);
+                            .putInt(recipient)
+                            .putString("pty-req")
+                            .putBoolean(false)
+                            .putString(ptyTerm)
+                            .putInt(ptyColumns)
+                            .putInt(ptyRows)
+                            .putInt(ptyWidthInPixels)
+                            .putInt(ptyHeightInPixels)
+                            .putString(ptyModes),
+                    false);
     }
 
     /**
@@ -343,14 +310,14 @@ public class ChannelSessionImpl
         //uint32    terminal width, pixels
         //uint32    terminal height, pixels
         sendRequest((recipient, x) -> new Packet(SshConstants.SSH_MSG_CHANNEL_REQUEST)
-                        .putInt(recipient)
-                        .putString("window-change")
-                        .putBoolean(false)
-                        .putInt(ptyColumns)
-                        .putInt(ptyRows)
-                        .putInt(ptyWidthInPixels)
-                        .putInt(ptyHeightInPixels),
-                false);
+                            .putInt(recipient)
+                            .putString("window-change")
+                            .putBoolean(false)
+                            .putInt(ptyColumns)
+                            .putInt(ptyRows)
+                            .putInt(ptyWidthInPixels)
+                            .putInt(ptyHeightInPixels),
+                    false);
     }
 
 
@@ -366,6 +333,7 @@ public class ChannelSessionImpl
      * Handle an incoming command/packet meant for this channel.
      *
      * @param packet to handle
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.10">
      * RFC 4254 SSH Connection Protocol, section 6.10. Returning Exit Status</a>
      */
@@ -386,8 +354,8 @@ public class ChannelSessionImpl
                 case "exit-signal": {
                     packet.getBoolean(); // want-reply: FALSE
                     exitStatus = new ChannelExitStatusImpl(packet.getJString(),
-                            packet.getBoolean(),
-                            packet.getJString());
+                                                           packet.getBoolean(),
+                                                           packet.getJString());
                     packet.skipString(/* language_tag */);
                     return;
                 }

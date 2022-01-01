@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient;
 
 import androidx.annotation.NonNull;
@@ -42,6 +14,7 @@ import com.hardbackcollector.sshclient.identity.IdentityRepositoryWrapper;
 import com.hardbackcollector.sshclient.identity.InMemoryIdentityRepository;
 import com.hardbackcollector.sshclient.transport.SessionImpl;
 import com.hardbackcollector.sshclient.userauth.SshAuthException;
+import com.hardbackcollector.sshclient.utils.ImplementationFactory;
 import com.hardbackcollector.sshclient.utils.SshClientConfigImpl;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -50,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,10 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * This class is the central entry/configuration point.
- * It serves as a factory for {@link Session} objects which in turn can provide a Channel.
+ * It serves as a factory for {@link Session} objects which in turn can provide a {@code Channel}.
  * <ul>
  *      <li>Set any global options using {@link #setConfig}</li>
  *      <li>Instantiate a class object</li>
@@ -68,18 +43,18 @@ import java.util.Set;
  *          methods for adding your key(s).</li>
  *      <li>Use {@link #setKnownHosts setKnownHosts} to enable
  *          checking of host keys using a "known_hosts" file</li>
- *      <li>Use {@link #getSession} to start a new Session.</li>
+ *      <li>Use {@link #getSession} to start a new {@code Session}.</li>
  * </ul>
+ * <p>
+ * <strong>Note that thread-safety is aimed for, but not guaranteed.</strong>
  */
 public class SshClient {
 
-    /**
-     * The standard Java resource bundle with (translated) messages.
-     */
+    /** The standard Java resource bundle with (translated) messages. */
     public static final String USER_MESSAGES = "msg.usermessages";
 
     /**
-     * client version: SSH-protoversion-softwareversion SP comments CR LF
+     * client version: {code SSH-protoversion-softwareversion SP comments CR LF}
      * The CR+LF is added when the version is send to the server.
      *
      * @see Session#setClientVersion(String)
@@ -92,6 +67,10 @@ public class SshClient {
      * If {@link false}, the JDK has priority and BC handles only what the JDK cannot.
      */
     private static final String PREFER_BOUNCY_CASTLE = "prefer_bouncycastle";
+
+    /**
+     * The default logger implementation logs nothing.
+     */
     private static final Logger DEVNULL = new Logger() {
         @Override
         public boolean isEnabled(final int level) {
@@ -100,9 +79,12 @@ public class SshClient {
 
         @Override
         public void log(final int level,
-                        @NonNull final String message) {
+                        @NonNull final Supplier<String> message) {
+
         }
     };
+
+    /** The active logger. */
     private static Logger logger = DEVNULL;
 
     /**
@@ -115,38 +97,52 @@ public class SshClient {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Set<Session> sessionPool = new HashSet<>();
 
-    private final SshClientConfigImpl config;
+    /** The global configuration for this client. */
+    @NonNull
+    private final SshClientConfig config;
 
-
-    /**
-     * Public key authentication.
-     */
+    /** Public key authentication. */
     @NonNull
     private final IdentityRepository defaultIdentityRepository;
-    /**
-     * Public key authentication.
-     */
+
+    /** Random generator used by this client. */
+    @Nullable
+    private Random random;
+
+    /** Public key authentication. */
     @NonNull
     private IdentityRepository identityRepository;
 
-    /**
-     * A repository with custom sets of configuration details for specific hosts.
-     */
+    /** A repository with custom sets of configuration details for specific hosts. */
     @Nullable
     private HostConfigRepository hostConfigRepository;
 
-    /**
-     * HostKey verification.
-     */
+    /** HostKey verification. */
     @Nullable
     private HostKeyRepository hostKeyRepository;
 
     private boolean globalIdentitiesLoaded;
 
+    /**
+     * Constructor.
+     * <p>
+     * The entry point for user-code.
+     */
     public SshClient() {
-        // create the default configuration
-        config = new SshClientConfigImpl();
+        this(DEVNULL);
+    }
 
+    /**
+     * Constructor.
+     * <p>
+     * The entry point for user-code.
+     *
+     * @param logger to use; can be {@code null} for no logging at all.
+     */
+    public SshClient(@Nullable final Logger logger) {
+        SshClient.logger = Objects.requireNonNullElse(logger, DEVNULL);
+
+        config = new SshClientConfigImpl();
         defaultIdentityRepository = new InMemoryIdentityRepository(config);
         identityRepository = defaultIdentityRepository;
 
@@ -163,18 +159,16 @@ public class SshClient {
                 pos = Security.addProvider(new BouncyCastleProvider());
             }
 
-            if (pos == -1 && getLogger().isEnabled(Logger.DEBUG)) {
-                getLogger().log(Logger.DEBUG, "BouncyCastleProvider already installed");
+            if (pos == -1) {
+                getLogger().log(Logger.DEBUG, () -> "BouncyCastleProvider already installed");
             }
         } catch (final SecurityException e) {
-            if (getLogger().isEnabled(Logger.FATAL)) {
-                getLogger().log(Logger.FATAL, "BouncyCastleProvider failed to install", e);
-            }
+            getLogger().log(Logger.FATAL, e, () -> "BouncyCastleProvider failed to install");
         }
     }
 
     /**
-     * returns the current Logger.
+     * returns the current global/static {@link Logger}.
      */
     @NonNull
     public static Logger getLogger() {
@@ -182,25 +176,23 @@ public class SshClient {
     }
 
     /**
-     * sets the Logger to be used by this library.
+     * Sets the {@link Logger} to be used by this library.
      *
      * @param logger the new logger. If {@code null}, we use a builtin
      *               Logger which logs nothing.
-     * @see com.hardbackcollector.sshclient.Logger
      */
-    public static void setLogger(@Nullable Logger logger) {
-        if (logger == null) {
-            logger = DEVNULL;
-        }
-        SshClient.logger = logger;
+    public static void setLogger(@Nullable final Logger logger) {
+        SshClient.logger = Objects.requireNonNullElse(logger, DEVNULL);
     }
 
-
     /**
-     * @param key   the option name.
-     * @param value the option value.
-     * @see Session#setConfig
-     * @see SshClientConfig#getIntValue
+     * Put a configuration {@link String} option.
+     *
+     * @param key   the key for the configuration option
+     * @param value to set
+     *
+     * @see Session#setConfig(String, String)
+     * @see SshClientConfig#putString(String, String)
      */
     public void setConfig(@NonNull final String key,
                           @NonNull final String value) {
@@ -214,7 +206,7 @@ public class SshClient {
 
     /**
      * Sets multiple default configuration options at once.
-     * The given hashtable should only contain Strings.
+     * The given hashtable should only contain Strings. Values are copied.
      *
      * @see #setConfig(String, String)
      */
@@ -230,7 +222,9 @@ public class SshClient {
      * Retrieves a configuration option.
      *
      * @param key key for the configuration.
+     *
      * @return config value
+     *
      * @see #setConfig(String, String)
      */
     @Nullable
@@ -259,6 +253,7 @@ public class SshClient {
      * this creates a new (empty) repository of type {@link KnownHosts}.
      *
      * @return current host key repository
+     *
      * @see HostKeyRepository
      * @see KnownHosts
      */
@@ -292,6 +287,7 @@ public class SshClient {
      * called with an object which is not of class {@link KnownHosts}.
      *
      * @param filename the name of the file to be loaded.
+     *
      * @see KnownHosts
      * @see HostKeyRepository
      * @see #setHostKeyRepository(HostKeyRepository)
@@ -317,6 +313,7 @@ public class SshClient {
      * called with an object which is not of class {@link KnownHosts}.
      *
      * @param stream an InputStream with the list of known hosts.
+     *
      * @see KnownHosts
      * @see HostKeyRepository
      * @see #setHostKeyRepository(HostKeyRepository)
@@ -341,7 +338,9 @@ public class SshClient {
      * See {@link #getSession(String, String, int, String)} for full docs.
      *
      * @param host hostname
+     *
      * @return a new instance of {@code Session}.
+     *
      * @throws SshAuthException if {@code username} or {@code host} are invalid.
      * @see #getSession(String username, String host, int port, String hostNameOrAlias)
      */
@@ -358,7 +357,9 @@ public class SshClient {
      *
      * @param username user name
      * @param host     hostname
+     *
      * @return a new instance of {@code Session}.
+     *
      * @throws SshAuthException if {@code username} or {@code host} are invalid.
      * @see #getSession(String username, String host, int port, String hostNameOrAlias)
      */
@@ -378,7 +379,9 @@ public class SshClient {
      * @param username user name
      * @param host     hostname
      * @param port     port number
+     *
      * @return a new instance of {@code Session}.
+     *
      * @throws SshAuthException if {@code username} or {@code host} are invalid.
      * @see #getSession(String username, String host, int port, String hostNameOrAlias)
      */
@@ -421,7 +424,9 @@ public class SshClient {
      * @param hostNameOrAlias (optional) alias for looking a
      *                        {@link HostConfig} for the given host.
      *                        If not set, the {@code host} will be used.
+     *
      * @return a new instance of {@code Session}.
+     *
      * @throws SshAuthException if {@code username} or {@code host} are invalid.
      * @see HostConfigRepository
      */
@@ -434,6 +439,7 @@ public class SshClient {
 
         // extra/specific config for the specified host
         final HostConfig hostConfig;
+        //TODO: should we just use getHostKeyRepository()? (and never have a null hostConfig)
         if (hostConfigRepository != null) {
             initGlobalIdentities();
             hostConfig = hostConfigRepository
@@ -442,17 +448,14 @@ public class SshClient {
             hostConfig = null;
         }
 
-        final Session session = new SessionImpl(this,
-                // create a child config
-                new SshClientConfigImpl(config, hostConfig),
+        final Session session = new SessionImpl(this, config, hostConfig,
+                                                username, host, port);
 
-                username, host, port,
-                // public key auth
-                identityRepository,
-                // host key verification
-                getHostKeyRepository()
-
-        );
+        // Not strictly needed to set the Identity and Host repos here, but it's cleaner.
+        // set the global {@link IdentityRepository} for public key authentication
+        session.setIdentityRepository(identityRepository);
+        // set the global {@link HostKeyRepository} for host key verification
+        session.setHostKeyRepository(getHostKeyRepository());
 
         synchronized (sessionPool) {
             sessionPool.add(session);
@@ -460,6 +463,27 @@ public class SshClient {
         return session;
     }
 
+    /**
+     * Load all global identities (key files) into our IdentityRepository
+     * if not already done so.
+     */
+    private void initGlobalIdentities()
+            throws IOException, GeneralSecurityException {
+        Objects.requireNonNull(hostConfigRepository);
+        synchronized (this) {
+            if (!globalIdentitiesLoaded) {
+                final List<String> fileNames = hostConfigRepository
+                        .getHostConfig("")
+                        .getStringList(HostConfig.IDENTITY_FILE, null);
+
+                for (final String prvKeyFilename : fileNames) {
+                    addIdentity(prvKeyFilename, null, null);
+                }
+
+                globalIdentitiesLoaded = true;
+            }
+        }
+    }
 
     @NonNull
     public synchronized IdentityRepository getIdentityRepository() {
@@ -472,6 +496,7 @@ public class SshClient {
      *
      * @param identityRepository if {@code null} is given, the default repository,
      *                           which usually refers to ~/.ssh/, will be used.
+     *
      * @see #getIdentityRepository()
      */
     public synchronized void setIdentityRepository(
@@ -487,6 +512,7 @@ public class SshClient {
      *                       This is also used as the identifying name of the key.
      *                       The corresponding public key is assumed to be in a file
      *                       with the same name with suffix {@code .pub}.
+     *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
      */
     public boolean addIdentity(@NonNull final String prvKeyFilename)
@@ -505,7 +531,9 @@ public class SshClient {
      *                       This is also used as the identifying name of the key.
      * @param pubKeyFilename the file name of the public key file.
      * @param passphrase     the passphrase necessary to access the private key.
+     *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
+     *
      * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
      */
     @SuppressWarnings("WeakerAccess")
@@ -528,10 +556,12 @@ public class SshClient {
      *                   out after creating the Identity object.
      * @param pubKey     the public key data.
      * @param passphrase the passphrase necessary to access the private key.
+     *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
+     *
      * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public boolean addIdentity(@NonNull final String name,
                                @NonNull final byte[] prvKey,
                                @Nullable final byte[] pubKey,
@@ -550,7 +580,9 @@ public class SshClient {
      * @param identity   the Identity object encapsulating the key pair
      *                   and algorithm (or a hardware device containing them).
      * @param passphrase the passphrase necessary to access the private key.
+     *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
+     *
      * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
      */
     public boolean addIdentity(@NonNull final Identity identity,
@@ -580,36 +612,25 @@ public class SshClient {
                     && !(identityRepository instanceof IdentityRepositoryWrapper)) {
 
                 identityRepository = new IdentityRepositoryWrapper(identityRepository,
-                        false);
+                                                                   false);
             }
         }
 
         return identityRepository.add(identity);
     }
 
-
     /**
      * INTERNAL USE ONLY.
-     * <p>
-     * Load all global identities (key files) into our IdentityRepository
-     * if not already done so.
      */
-    private void initGlobalIdentities()
-            throws IOException, GeneralSecurityException {
-        Objects.requireNonNull(hostConfigRepository);
+    @NonNull
+    public Random getRandom()
+            throws NoSuchAlgorithmException {
         synchronized (this) {
-            if (!globalIdentitiesLoaded) {
-                final List<String> fileNames = hostConfigRepository
-                        .getHostConfig("")
-                        .getStringList(HostConfig.IDENTITY_FILE, null);
-
-                for (final String prvKeyFilename : fileNames) {
-                    addIdentity(prvKeyFilename, null, null);
-                }
-
-                globalIdentitiesLoaded = true;
+            if (random == null) {
+                random = ImplementationFactory.getRandom(config);
             }
         }
+        return random;
     }
 
     /**
@@ -618,7 +639,7 @@ public class SshClient {
      * Removes a session from our session pool.
      * This is invoked by the sessions on {@link Session#disconnect}.
      */
-    public void onSessionDisconnected(@NonNull final Session session) {
+    public void unregisterSession(@NonNull final Session session) {
         synchronized (sessionPool) {
             sessionPool.remove(session);
         }

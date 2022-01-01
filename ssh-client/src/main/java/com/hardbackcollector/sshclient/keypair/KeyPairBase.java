@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.keypair;
 
 import androidx.annotation.NonNull;
@@ -66,11 +38,17 @@ public abstract class KeyPairBase
     @NonNull
     String publicKeyComment = "";
 
+    /**
+     * Constructor.
+     */
     KeyPairBase(@NonNull final SshClientConfig config) {
         this.config = config;
         privateKeyBlob = new PrivateKeyBlob(config);
     }
 
+    /**
+     * Constructor.
+     */
     KeyPairBase(@NonNull final SshClientConfig config,
                 @NonNull final PrivateKeyBlob privateKeyBlob) {
         this.config = config;
@@ -87,6 +65,7 @@ public abstract class KeyPairBase
      *
      * @param keyAlgorithm identifier
      * @param args         key/certificate data
+     *
      * @return the blob
      */
     @NonNull
@@ -120,8 +99,8 @@ public abstract class KeyPairBase
                                 @NonNull final byte[] signature_blob) {
         // use a fixed-size buffer
         final Buffer buffer = new Buffer((2 * 4)
-                + signature_name.length()
-                + signature_blob.length)
+                                                 + signature_name.length()
+                                                 + signature_blob.length)
                 .putString(signature_name)
                 .putString(signature_blob);
 
@@ -210,6 +189,7 @@ public abstract class KeyPairBase
      *
      * @param encodedKey the unencrypted (plain) key data.
      * @param keyFormat  the encoding format
+     *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
     abstract void parse(@NonNull byte[] encodedKey,
@@ -282,9 +262,9 @@ public abstract class KeyPairBase
     public abstract static class BaseKeyPairBuilder {
 
         @NonNull
-        protected final SshClientConfig config;
+        final SshClientConfig config;
         @NonNull
-        protected final PrivateKeyBlob privateKeyBlob;
+        final PrivateKeyBlob privateKeyBlob;
 
         BaseKeyPairBuilder(@NonNull final SshClientConfig config) {
             this.config = config;

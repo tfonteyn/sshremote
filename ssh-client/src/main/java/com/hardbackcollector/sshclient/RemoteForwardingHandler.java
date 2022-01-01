@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Handles all remote port forwarding.
  * <p>
- * Has a 1:1 relation to an open Session.
+ * Has a 1:1 relation to an open {@link Session}.
  * <p>
  * Call {@link Session#getRemoteForwardingHandler()} to gain access.
  */
@@ -30,13 +30,14 @@ public interface RemoteForwardingHandler {
 
     /**
      * Same as {@link #add(String)} but all arguments separately
-     * * and a possibility to set a {@link SocketFactory}.
+     * and a possibility to set a {@link SocketFactory}.
      *
      * @param bindAddress   (optional) bind address
      * @param remotePort    remote port
      * @param host          host address
      * @param localPort     local port
      * @param socketFactory (optional) socket factory
+     *
      * @return the allocated remote port number
      */
     int add(@Nullable String bindAddress,
@@ -52,7 +53,7 @@ public interface RemoteForwardingHandler {
      * <p>
      * The connection will use the {@link Session} socket factory.
      * <p>
-     * ssh -R [bind_address:]port:host:hostport
+     * Equivalent to {@code ssh -R [bind_address:]port:host:hostport}
      *
      * @param connectionString in the format like "[bind_address:]port:host:hostport".
      *                         If the bind address is not given, the default is to only
@@ -63,11 +64,12 @@ public interface RemoteForwardingHandler {
      *                         {@code "localhost"} is always used for bind address.
      *                         If the specified remote is {@code "0"},
      *                         the TCP port will be allocated on the remote.
+     *
      * @return the allocated remote port number
      */
     int add(@NonNull String connectionString)
             throws IOException, GeneralSecurityException,
-            PortForwardException, SshChannelException;
+                   PortForwardException, SshChannelException;
 
     /**
      * Registers the remote port forwarding for the loopback interface
@@ -86,10 +88,12 @@ public interface RemoteForwardingHandler {
 
     /**
      * Registers the remote port forwarding.
+     * <p>
      * If {@code bindAddress} is an empty string or {@code "*"},
      * the port should be available from all interfaces.
      * If {@code bindAddress} is {@code "localhost"} or is not given,
      * the listening port will be bound for local use only.
+     * <p>
      * Note that if {@code GatewayPorts} is {@code "no"} on the
      * remote, {@code "localhost"} is always used as a bind address.
      *
@@ -125,15 +129,19 @@ public interface RemoteForwardingHandler {
 
     /**
      * Registers the remote port forwarding.
+     * <p>
      * If {@code bindAddress} is an empty string
      * or {@code "*"}, the port should be available from all interfaces.
      * If {@code bindAddress} is {@code "localhost"} or is not given,
      * the listening port will be bound for local use only.
+     * <p>
      * Note that if {@code GatewayPorts} is {@code "no"} on the
      * remote, {@code "localhost"} is always used as a bind address.
+     * <p>
      * The TCP connection to {@code remotePort} on the remote will be
      * forwarded to an instance of the class {@code daemon} with the
      * argument {@code arg}.
+     * <p>
      * The class specified by {@code daemon} must implement {@code ForwardedTCPIPDaemon}.
      *
      * @param bindAddress bind address
@@ -150,13 +158,16 @@ public interface RemoteForwardingHandler {
     /**
      * Registers the remote port forwarding for the loopback interface
      * of the remote.
+     * <p>
      * The TCP connection to {@code remotePort} on the remote will be
      * forwarded to an instance of the class {@code daemon}.
+     * <p>
      * The class specified by {@code daemon} must implement
      * {@code ForwardedTCPIPDaemon}.
      *
      * @param remotePort remote port
      * @param daemon     class name, which implements "ForwardedTCPIPDaemon"
+     *
      * @see #addDaemon(String, int, String, Object[])
      */
     default int addDaemon(final int remotePort,
@@ -168,14 +179,17 @@ public interface RemoteForwardingHandler {
     /**
      * Registers the remote port forwarding for the loopback interface
      * of the remote.
+     * <p>
      * The TCP connection to {@code remotePort} on the remote will be
      * forwarded to an instance of the class {@code daemon} with
      * the argument {@code arg}.
+     * <p>
      * The class specified by {@code daemon} must implement {@code ForwardedTCPIPDaemon}.
      *
      * @param remotePort remote port
      * @param daemon     class name, which implements "ForwardedTCPIPDaemon"
      * @param arg        arguments for "daemon"
+     *
      * @see #addDaemon(String, int, String, Object[])
      */
     default int addDaemon(final int remotePort,

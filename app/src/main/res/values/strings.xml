@@ -63,5 +63,15 @@
     <string name="vertical">vertical</string>
     <string name="horizontal">horizontal</string>
 
+    <string name="lbl_log_level">Log level</string>
+    <string-array name="log_levels">
+        <item>None</item>
+        <item>Fatal errors</item>
+        <item>Errors</item>
+        <item>Warnings</item>
+        <item>Info</item>
+        <item>Debug</item>
+    </string-array>
+
 
 </resources>

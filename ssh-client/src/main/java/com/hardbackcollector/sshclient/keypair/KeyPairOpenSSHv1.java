@@ -36,9 +36,7 @@ class KeyPairOpenSSHv1
 
     private static final String MUST_PARSE_FIRST = "Must call decrypt/parse first";
 
-    /**
-     * key derivation function
-     */
+    /** key derivation function. */
     @NonNull
     private final String kdfName;
     @NonNull
@@ -46,6 +44,9 @@ class KeyPairOpenSSHv1
     @Nullable
     private KeyPairBase delegate;
 
+    /**
+     * Constructor.
+     */
     private KeyPairOpenSSHv1(@NonNull final SshClientConfig config,
                              @NonNull final Builder builder) {
         super(config, builder.privateKeyBlob);
@@ -179,8 +180,8 @@ class KeyPairOpenSSHv1
                 final byte[] pbeIV = Arrays.copyOfRange(pbeKey, 32, 48);
                 privateKeyBlob.getCipher().init(Cipher.DECRYPT_MODE, key, pbeIV);
                 privateKeyBlob.getCipher().doFinal(privateKeyBlob.getBlob(),
-                        0, privateKeyBlob.getBlob().length,
-                        plainKey, 0);
+                                                   0, privateKeyBlob.getBlob().length,
+                                                   plainKey, 0);
             } finally {
                 if (pbeKey != null) {
                     Arrays.fill(pbeKey, (byte) 0);
@@ -289,13 +290,13 @@ class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
                     keyPair = new KeyPairECDSA(config, privateKeyBlob,
-                            ECKeyType.getByHostKeyAlgorithm(hostKeyType));
+                                               ECKeyType.getByHostKeyAlgorithm(hostKeyType));
                     break;
 
                 case HostKeyAlgorithm.SSH_ED25519:
                 case HostKeyAlgorithm.SSH_ED448:
                     keyPair = new KeyPairEdDSA(config, privateKeyBlob,
-                            EdKeyType.getByHostKeyAlgorithm(hostKeyType));
+                                               EdKeyType.getByHostKeyAlgorithm(hostKeyType));
                     break;
 
                 default:

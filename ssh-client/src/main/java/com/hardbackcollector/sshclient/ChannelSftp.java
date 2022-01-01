@@ -41,6 +41,7 @@ public interface ChannelSftp
      * Changes the <a href="#current-directory">current local directory</a>.
      *
      * @param path a directory path, absolute or relative to the current local path.
+     *
      * @throws SftpException if the mentioned path is not a directory.
      * @see #lpwd
      */
@@ -51,6 +52,7 @@ public interface ChannelSftp
      * local command "lpwd"
      *
      * @return the <a href="#current-directory">current local directory</a> in absolute form.
+     *
      * @see #lcd
      */
     @Nullable
@@ -65,6 +67,7 @@ public interface ChannelSftp
      * and changes the <a href="#current-directory">current remote directory</a> setting.
      *
      * @param path a directory path, absolute or relative to the current remote path.
+     *
      * @throws SftpException if the named path does not indicate a directory,
      *                       if it is not accessible by the user, or some other problem occurs.
      * @see #pwd
@@ -76,6 +79,7 @@ public interface ChannelSftp
      * sftp command "pwd"
      *
      * @return the <a href="#current-directory">current remote directory</a> in absolute form.
+     *
      * @see #cd
      */
     @NonNull
@@ -131,6 +135,7 @@ public interface ChannelSftp
      *                <a href="#current-directory">current remote directory</a>.
      * @param newPath the new name of the file, relative to the
      *                <a href="#current-directory">current remote directory</a>.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.5">
      * Internet draft, 6.5 Removing and Renaming Files</a>
      */
@@ -147,6 +152,7 @@ public interface ChannelSftp
      *                <a href="#current-directory">current remote directory</a>.
      *                The pattern can contain glob pattern wildcards ({@code *} or {@code ?})
      *                in the last component (i.e. after the last {@code /}).
+     *
      * @return a list of {@link LsEntry} objects.
      */
     @NonNull
@@ -172,6 +178,7 @@ public interface ChannelSftp
      *                <a href="#current-directory">current remote directory</a>
      * @param newPath the path of the link to be created, relative to the
      *                <a href="#current-directory">current remote directory</a>
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.10">
      * Internet draft, 6.10.  Dealing with Symbolic links</a>
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
@@ -188,8 +195,10 @@ public interface ChannelSftp
      * @param path a path relative to the
      *             <a href="#current-directory">current remote directory</a>,
      *             which should correspond to a symbolic link.
+     *
      * @return the link target, relative to the location
      * of the link itself (this could be depending on the server).
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.10">
      * Internet draft, 6.10.  Dealing with Symbolic links</a>
      */
@@ -202,6 +211,7 @@ public interface ChannelSftp
      *
      * @param path a path name, relative to the
      *             <a href="#current-directory">current remote directory</a>.
+     *
      * @return an absolute version of the path (but not resolving symbolic links).
      */
     @NonNull
@@ -256,7 +266,9 @@ public interface ChannelSftp
      *
      * @param path the path of the file or directory, relative
      *             to the <a href="#current-directory">current remote directory</a>.
+     *
      * @return an SftpAttrs object containing the file's attributes.
+     *
      * @see #lstat(String)
      */
     @NonNull
@@ -271,7 +283,9 @@ public interface ChannelSftp
      *
      * @param path the path of the file or directory, relative
      *             to the <a href="#current-directory">current remote directory</a>.
+     *
      * @return an SftpAttrs object containing the file's attributes.
+     *
      * @see #stat(String)
      */
     @NonNull
@@ -283,6 +297,7 @@ public interface ChannelSftp
      *
      * @param path the path of the file or directory, relative
      *             to the <a href="#current-directory">current remote directory</a>.
+     *
      * @return an SftpStatVFS object containing the file's attributes.
      * <p>
      * http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
@@ -307,7 +322,9 @@ public interface ChannelSftp
      *
      * @param srcFilename the source file name, relative to the
      *                    <a href="#current-directory">current remote directory</a>.
+     *
      * @return an InputStream from which the contents of the file can be read.
+     *
      * @see #get(String, SftpProgressMonitor, long)
      */
     @NonNull
@@ -322,7 +339,9 @@ public interface ChannelSftp
      * @param srcFilename the source file name, relative to the
      *                    <a href="#current-directory">current remote directory</a>.
      * @param monitor     (optional) progress listener
+     *
      * @return an InputStream from which the contents of the file can be read.
+     *
      * @see #get(String, SftpProgressMonitor, long)
      */
     @NonNull
@@ -340,6 +359,7 @@ public interface ChannelSftp
      * @param monitor       (optional) progress listener
      * @param initialOffset the position in the remote file where
      *                      we should start the download
+     *
      * @return an InputStream from which the contents of the file can be read.
      */
     @NonNull
@@ -405,6 +425,7 @@ public interface ChannelSftp
      *                <a href="#current-directory">current local directory</a>.
      * @param monitor (optional) progress listener
      * @param mode    the transfer {@link Mode}
+     *
      * @throws SftpException if some problem occurred.
      */
     void get(@NonNull String srcPath,
@@ -423,6 +444,7 @@ public interface ChannelSftp
      * @param mode      the transfer {@link Mode}
      * @param skip      only used If the {@link Mode} == {@link Mode#Resume} :
      *                  the position in the remote file where we should start the download
+     *
      * @throws SftpException if some problem occurred.
      */
     void get(@NonNull String srcPath,
@@ -438,6 +460,7 @@ public interface ChannelSftp
      * @param src the source file, in the form of an InputStream
      * @param dst the remote destination file name, relative to the
      *            <a href="#current-directory">current remote directory</a>.
+     *
      * @see #put(InputStream, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final InputStream src,
@@ -453,6 +476,7 @@ public interface ChannelSftp
      * @param dst  the remote destination file name, relative to the
      *             <a href="#current-directory">current remote directory</a>.
      * @param mode the transfer {@link Mode}
+     *
      * @see #put(InputStream, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final InputStream src,
@@ -469,6 +493,7 @@ public interface ChannelSftp
      * @param dst     the remote destination file name, relative to the
      *                <a href="#current-directory">current remote directory</a>.
      * @param monitor (optional) progress listener
+     *
      * @see #put(InputStream, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final InputStream src,
@@ -483,7 +508,9 @@ public interface ChannelSftp
      *
      * @param dst the remote destination file name, relative to the
      *            <a href="#current-directory">current remote directory</a>.
+     *
      * @return an OutputStream to which the application should write the file contents.
+     *
      * @see #put(String, SftpProgressMonitor, Mode, long)
      */
     @NonNull
@@ -498,7 +525,9 @@ public interface ChannelSftp
      * @param dst  the remote destination file name, relative to the
      *             <a href="#current-directory">current remote directory</a>.
      * @param mode the transfer {@link Mode}
+     *
      * @return an OutputStream to which the application should write the file contents.
+     *
      * @see #put(String, SftpProgressMonitor, Mode, long)
      */
     @NonNull
@@ -515,7 +544,9 @@ public interface ChannelSftp
      *                <a href="#current-directory">current remote directory</a>.
      * @param monitor (optional) progress listener
      * @param mode    the transfer {@link Mode}
+     *
      * @return an OutputStream to which the application should write the file contents.
+     *
      * @see #put(String, SftpProgressMonitor, Mode, long)
      */
     @NonNull
@@ -533,6 +564,7 @@ public interface ChannelSftp
      *            <a href="#current-directory">current local directory</a>.
      * @param dst the remote destination file name, absolute or relative to the
      *            <a href="#current-directory">current remote directory</a>.
+     *
      * @see #put(String, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final String src,
@@ -549,6 +581,7 @@ public interface ChannelSftp
      * @param dst  the remote destination file name, absolute or relative to the
      *             <a href="#current-directory">current remote directory</a>.
      * @param mode the transfer {@link Mode}
+     *
      * @see #put(String, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final String src,
@@ -566,6 +599,7 @@ public interface ChannelSftp
      * @param dst     the remote destination file name, absolute or relative to the
      *                <a href="#current-directory">current remote directory</a>.
      * @param monitor (optional) progress listener
+     *
      * @see #put(String, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final String src,
@@ -591,6 +625,7 @@ public interface ChannelSftp
      *                modes, this is added to the current size of the file
      *                (i.e. an offset > 0 creates a sparse section of that
      *                size in the file).
+     *
      * @return an OutputStream to which the application should write the file contents.
      */
     @NonNull
@@ -702,6 +737,7 @@ public interface ChannelSftp
          *
          * @param count the number of bytes transferred since the last call to #count
          *              (i.e. the count is NOT incremental)
+         *
          * @return {@code true} if the transfer should go on,
          * {@code false} if the transfer should be cancelled.
          */

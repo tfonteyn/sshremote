@@ -19,17 +19,20 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 
-public class SshAgentReader {
+class SshAgentReader {
 
     @NonNull
     private final SshClientConfig config;
 
-    public SshAgentReader(@NonNull final SshClientConfig config) {
+    /**
+     * Constructor.
+     */
+    SshAgentReader(@NonNull final SshClientConfig config) {
         this.config = config;
     }
 
-    public static boolean isSSHAgent(@Nullable final byte[] prvKey,
-                                     @Nullable final byte[] pubKey) {
+    static boolean isSSHAgent(@Nullable final byte[] prvKey,
+                              @Nullable final byte[] pubKey) {
         return pubKey == null &&
                 prvKey != null &&
                 prvKey.length > 20 &&

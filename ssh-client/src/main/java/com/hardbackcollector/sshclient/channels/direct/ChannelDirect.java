@@ -48,9 +48,8 @@ public abstract class ChannelDirect
             sendChannelOpen();
 
         } catch (final Exception e) {
-            if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                SshClient.getLogger().log(Logger.ERROR, "ChannelDirect:" + getType(), e);
-            }
+            SshClient.getLogger().log(Logger.ERROR, e, () -> "ChannelDirect:" + getType());
+
             // Whenever an exception is thrown by sendChannelOpen(),
             // 'connected' is false.
             if (!connected) {

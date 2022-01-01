@@ -17,28 +17,37 @@ import java.util.Map;
 /**
  * 2021-06-02: initial introduction of a Session INTERFACE with the intention of
  * shielding internal methods. No doubt a number of methods *must* still be added here,
- * but it would be nice to split them up into several interfaces/objects perhaps.
+ * but it would be nice to split them up into several interfaces/objects.
  */
 @SuppressWarnings("unused")
 public interface Session {
 
     /**
-     * sets the password to use for authentication.
+     * Get the client this session belongs to.
+     *
+     * @return client
+     */
+    @NonNull
+    SshClient getSshClient();
+
+    /**
+     * Sets the password to use for authentication.
      *
      * @param password the new password. (We will use the UTF-8 encoding
      *                 of this string as the actual password sent to the server.)
+     *
      * @see #setPassword(byte[])
      */
     void setPassword(@Nullable String password);
 
     /**
-     * sets the password to use for authentication.
+     * Sets the password to use for authentication.
      * <p>
-     * This will be used for the authentication methods <ul>
-     * <li>{@code password}, if it is not null</li>
-     * <li>{@code keyboard-interactive} if it is not null,
-     * the prompt starts with {@code "password:"} and no
-     * UserInfo {@linkplain #setUserInfo is given}.</li>
+     * This will be used for the authentication methods
+     * <ul>
+     * <li>{@code password}, if it is not {@code null}</li>
+     * <li>{@code keyboard-interactive} if it is not {@code null}, the prompt starts with
+     *     {@code "password:"} and no UserInfo {@linkplain #setUserInfo is given}.</li>
      * </ul>
      *
      * @param password the new password.
@@ -59,7 +68,7 @@ public interface Session {
     UserInfo getUserInfo();
 
     /**
-     * Sets the userInfo property. If this is not null, the
+     * Sets the userInfo property. If this is not {@code null}, the
      * UserInfo object is used for feedback to the user and to
      * query information from the user. Most important here is
      * the password query.
@@ -67,7 +76,7 @@ public interface Session {
     void setUserInfo(@Nullable UserInfo userinfo);
 
     /**
-     * sets a single configuration option for this session.
+     * Sets a single configuration option for this session.
      *
      * @param key   the configuration key
      * @param value the configuration value.
@@ -84,11 +93,11 @@ public interface Session {
     SshClientConfig getConfig();
 
     /**
-     * sets several configuration options at once.
+     * Sets several configuration options at once.
      *
-     * @param newConf a Map, which should contain only
-     *                String keys and values. All the current keys/value pairs are
-     *                copied to our current configuration.
+     * @param newConf a Map, which should contain only String keys and values.
+     *                All the current keys/value pairs are copied to the current configuration.
+     *
      * @see #setConfig(String, String)
      */
     void setConfig(@NonNull Map<String, String> newConf);
@@ -106,7 +115,7 @@ public interface Session {
 
 
     /**
-     * opens the connection, using the timeout set with {@link #setTimeout}.
+     * Opens the connection, using the timeout set with {@link #setTimeout}.
      *
      * @throws SshException if this session is already connected.
      * @see #connect(int)
@@ -115,20 +124,20 @@ public interface Session {
             throws SshException, IOException, GeneralSecurityException;
 
     /**
-     * opens the connection, using the specified timeout.
+     * Opens the connection, using the specified timeout.
      *
      * @throws SshException     if this session is already connected, or some
      *                          other error occurs during connecting. (If there was some other
-     *                          exception, it is appended as the cause)
+     *                          exception, it is chained as the cause)
      * @throws RuntimeException are thrown as-is
      */
     void connect(int connectTimeout)
             throws SshException, IOException, GeneralSecurityException;
 
     /**
-     * retrieves the current connection status.
+     * Retrieves the current connection status.
      *
-     * @return {@code true} if this session is connected, else false.
+     * @return {@code true} if this session is connected, else {@code false}.
      */
     boolean isConnected();
 
@@ -156,7 +165,8 @@ public interface Session {
      *  </ul>
      *
      * @param type a string identifying the channel type.
-     * @return a channel of the requested type, initialized, but not yet connected.
+     *
+     * @return a Channel of the requested type, initialized, but not yet connected.
      */
     @NonNull
     <T extends ChannelSession> T openChannel(@NonNull String type)
@@ -173,16 +183,45 @@ public interface Session {
             throws IOException, GeneralSecurityException;
 
     /**
+     * Send a {@code "keepalive"} message.
+     * <p>
+     * Used internally, but can be called by users when needed.
+     */
+    void sendKeepAlive()
+            throws IOException, GeneralSecurityException;
+
+    /**
+     * Send a {@code SSH_MSG_IGNORE} message.
+     *
+     * @see <a href="https://www.rfc-editor.org/rfc/rfc4251.html#section-9.3.1">
+     * RFC 4251 Protocol Architecture, section 9.3.1. (to avoid the Rogaway attack)</a>
+     */
+    void sendIgnore()
+            throws IOException, GeneralSecurityException;
+
+    /**
+     * Send a global "no-more-sessions@openssh.com" message.
+     *
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     * SSH protocol version 2 vendor extensions, section 2.2</a>
+     */
+    void sendNoMoreSessions()
+            throws IOException, GeneralSecurityException;
+
+    /**
      * Closes the connection to the server.
      * If this session is not connected, this method is a no-op.
      */
     void disconnect();
+
+    int getTimeout();
 
     /**
      * Sets the timeout in milliseconds used on the socket connection to the
      * remote host.  A value of zero indicates no timeout.
      *
      * @param timeoutInMs in milliseconds
+     *
      * @throws IOException if the existing socket timeout can't be changed.
      * @see java.net.Socket#setSoTimeout(int)
      */
@@ -202,12 +241,12 @@ public interface Session {
 
     /**
      * Optionally sets a {@code Proxy} instance to tunnel the session through.
-     * By default the proxy is null, indicating no proxying will be used.
+     * By default the proxy is {@code null}, indicating no proxying will be used.
      * <p>
      * Note: The proxy must be set prior to calling connect() if required.
      * <p>
      * Note: When the session is disconnected, the proxy connection is closed and
-     * the proxy is set to null; it needs to be explicitly set again before
+     * the proxy is set to {@code null}; it needs to be explicitly set again before
      * attempting to reconnect if it's required.
      *
      * @param proxy to use
@@ -223,9 +262,9 @@ public interface Session {
      * The default value is {@code false}.
      *
      * @param enable the new value of the property.
-     *               If true, all threads will be daemon threads,
+     *               If {@code true}, all threads will be daemon threads,
      *               i.e. their running does not avoid a shutdown of the VM.
-     *               If false, normal non-daemon threads will be used (and the
+     *               If {@code true}, normal non-daemon threads will be used (and the
      *               VM can only shutdown after {@link #disconnect} (or with
      *               {@link System#exit}).
      */
@@ -234,7 +273,7 @@ public interface Session {
 
     /**
      * Gets the identityRepository.
-     * If not set, {@link SshClient#getIdentityRepository()} will be used.
+     * If not set, {@link SshClient#getIdentityRepository()} will be returned.
      *
      * @see SshClient#getIdentityRepository()
      */
@@ -253,7 +292,7 @@ public interface Session {
 
     /**
      * Gets the HostKeyRepository.
-     * If not set, {@link SshClient#getHostConfigRepository()} will be used.
+     * If not set, {@link SshClient#getHostConfigRepository()} will be returned.
      */
     @NonNull
     HostKeyRepository getHostKeyRepository();
@@ -297,7 +336,7 @@ public interface Session {
     /**
      * Set the host for the local X11 server.
      * <p>
-     * The default value is "127.0.0.1", this is localhost
+     * The default value is {code "127.0.0.1"}, i.e. the localhost
      *
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
@@ -331,6 +370,7 @@ public interface Session {
      * We're assuming/supporting only one local X11 server.
      *
      * @param cookie the cookie in hexadecimal encoding, should be 32 characters.
+     *
      * @throws ArrayIndexOutOfBoundsException if the cookie is not 32 characters long
      * @see #setX11Forwarding(int)
      * @see #setX11Host

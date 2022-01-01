@@ -26,7 +26,7 @@ public class AESGCMCipher
         implements AEADCipher {
 
     /**
-     * authentication strength parameter (e.g., authentication tag length)
+     * Authentication strength parameter (e.g., authentication tag length)
      *
      * <pre>
      *    Both AEAD_AES_128_GCM and AEAD_AES_256_GCM produce a 16-octet
@@ -70,7 +70,7 @@ public class AESGCMCipher
         this.initialCounter = this.ivBuffer.getLong(4);
 
         super.init(opmode, key,
-                new GCMParameterSpec(TAG_SIZE_IN_BITS, ivBuffer.array(), 0, ivSize));
+                   new GCMParameterSpec(TAG_SIZE_IN_BITS, ivBuffer.array(), 0, ivSize));
     }
 
     @Override
@@ -97,7 +97,7 @@ public class AESGCMCipher
 
         // and re-init with the new counter
         cipher.init(opmode, secretKeySpec,
-                new GCMParameterSpec(TAG_SIZE_IN_BITS, ivBuffer.array(), 0, ivSize));
+                    new GCMParameterSpec(TAG_SIZE_IN_BITS, ivBuffer.array(), 0, ivSize));
 
         return nrOfBytes;
     }

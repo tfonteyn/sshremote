@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.channels.sftp;
 
 import androidx.annotation.NonNull;
@@ -81,6 +53,7 @@ import java.util.Date;
  * @see ChannelSftp#lstat lstat()
  * @see ChannelSftp#setStat setStat()
  */
+@SuppressWarnings({"OctalInteger", "WeakerAccess", "unused"})
 public final class SftpATTRS {
 
     /**
@@ -90,26 +63,23 @@ public final class SftpATTRS {
     /**
      * Flag indicating the presence of the {@link #getSize size} attribute.
      */
-    @SuppressWarnings("WeakerAccess")
-    static final int SSH_FILEXFER_ATTR_SIZE = 0x00000001;
+    public static final int SSH_FILEXFER_ATTR_SIZE = 0x00000001;
     /**
      * Flag indicating the presence of the {@link #getUid uid}
      * and {@link #getGid gid} attributes.
      */
-    @SuppressWarnings("WeakerAccess")
-    static final int SSH_FILEXFER_ATTR_UIDGID = 0x00000002;
+    public static final int SSH_FILEXFER_ATTR_UIDGID = 0x00000002;
     /**
      * Flag indicating the presence of the {@link #getATime atime}
      * and {@link #getMTime mtime} attributes.
      */
-    @SuppressWarnings("WeakerAccess")
-    static final int SSH_FILEXFER_ATTR_ACMODTIME = 0x00000008;
+    public static final int SSH_FILEXFER_ATTR_ACMODTIME = 0x00000008;
     /**
      * Flag indicating the presence of {@linkplain #getExtended extended attributes}.
      */
-    @SuppressWarnings("WeakerAccess")
-    static final int SSH_FILEXFER_ATTR_EXTENDED = 0x80000000;
+    public static final int SSH_FILEXFER_ATTR_EXTENDED = 0x80000000;
 
+    // These are octal numbers!
     private static final int S_ISUID = 04000; // set user ID on execution
     private static final int S_ISGID = 02000; // set group ID on execution
     private static final int S_ISVTX = 01000; // sticky bit   ****** NOT DOCUMENTED *****
@@ -125,6 +95,8 @@ public final class SftpATTRS {
     private static final int S_IROTH = 00004; // read by others
     private static final int S_IWOTH = 00002; // write by others
     private static final int S_IXOTH = 00001; // execute/search by others
+
+    // but these are hex.
     private static final int S_IFMT = 0xf000;
     private static final int S_IFIFO = 0x1000;
     private static final int S_IFCHR = 0x2000;
@@ -191,7 +163,6 @@ public final class SftpATTRS {
      * Returns a string representation of the permissions
      * in the format used by {@code ls -l}.
      */
-    @SuppressWarnings("WeakerAccess")
     public String getPermissionsString() {
         final StringBuilder sb = new StringBuilder(10);
 
@@ -275,7 +246,7 @@ public final class SftpATTRS {
     /**
      * returns a string representation of the modification time.
      */
-    @SuppressWarnings({"WeakerAccess", "UseOfObsoleteDateTimeApi", "CallToDateToString"})
+    @SuppressWarnings({"UseOfObsoleteDateTimeApi", "CallToDateToString"})
     public String getModificationTimeString() {
         final Date date = new Date((long) mtime * 1000L);
         return date.toString();
@@ -291,7 +262,7 @@ public final class SftpATTRS {
         }
         if ((flags & SSH_FILEXFER_ATTR_UIDGID) != 0) {
             packet.putInt(uid)
-                    .putInt(gid);
+                  .putInt(gid);
         }
         if ((flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0) {
             packet.putInt(permissions);
@@ -307,7 +278,7 @@ public final class SftpATTRS {
             if (count > 0) {
                 for (int i = 0; i < count; i++) {
                     packet.putString(extended[i * 2])
-                            .putString(extended[i * 2 + 1]);
+                          .putString(extended[i * 2 + 1]);
                 }
             }
         }
@@ -331,7 +302,6 @@ public final class SftpATTRS {
     /**
      * Sets user and group Identifier.
      */
-    @SuppressWarnings("WeakerAccess")
     public void setUIDGID(final int uid,
                           final int gid) {
         flags |= SSH_FILEXFER_ATTR_UIDGID;
@@ -342,7 +312,6 @@ public final class SftpATTRS {
     /**
      * Sets access and modification time.
      */
-    @SuppressWarnings("WeakerAccess")
     public void setACMODTIME(final int atime,
                              final int mtime) {
         flags |= SSH_FILEXFER_ATTR_ACMODTIME;
@@ -356,7 +325,6 @@ public final class SftpATTRS {
      * @param permissions a bit mask containing some combination
      *                    of the bits 0-11.
      */
-    @SuppressWarnings("WeakerAccess")
     public void setPERMISSIONS(int permissions) {
         flags |= SSH_FILEXFER_ATTR_PERMISSIONS;
         permissions = this.permissions & ~pmask | permissions & pmask;
@@ -378,7 +346,6 @@ public final class SftpATTRS {
      * @return {@code true} if the permissions are included in the
      * structure and the directory bit is set.
      */
-    @SuppressWarnings("WeakerAccess")
     public boolean isDirectory() {
         return isType(S_IFDIR);
     }

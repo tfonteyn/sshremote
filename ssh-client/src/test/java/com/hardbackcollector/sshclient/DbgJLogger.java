@@ -2,6 +2,8 @@ package com.hardbackcollector.sshclient;
 
 import androidx.annotation.NonNull;
 
+import java.util.function.Supplier;
+
 public class DbgJLogger
         implements com.hardbackcollector.sshclient.Logger {
 
@@ -12,14 +14,14 @@ public class DbgJLogger
 
     @Override
     public void log(final int level,
-                    @NonNull final String message) {
-        System.out.println("SshClientDbg" + level + ": " + message);
+                    @NonNull final Supplier<String> message) {
+        System.out.println("SshClientDbg" + level + ": " + message.get());
     }
 
     @Override
     public void log(final int level,
-                    @NonNull final String message,
-                    @NonNull final Throwable e) {
+                    @NonNull final Throwable e,
+                    @NonNull final Supplier<String> message) {
         System.out.println("SshClientDbg" + level + ": " + message + "\n");
         //noinspection CallToPrintStackTrace
         e.printStackTrace();

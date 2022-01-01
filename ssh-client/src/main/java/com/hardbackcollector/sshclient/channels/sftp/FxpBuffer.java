@@ -73,6 +73,7 @@ class FxpBuffer
      * and return them as an int.
      *
      * @param inputStream to read from
+     *
      * @return the int
      */
     int readInt(@NonNull final InputStream inputStream)
@@ -88,6 +89,7 @@ class FxpBuffer
      * After this call, the buffer is just a data blob with the payload.
      *
      * @param inputStream to read from
+     *
      * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
      */
     void readPayload(@NonNull final InputStream inputStream)
@@ -102,7 +104,9 @@ class FxpBuffer
      *
      * @param inputStream to read from
      * @param len         number of bytes to read.
+     *
      * @return total amount of bytes <strong>actually</strong> read.
+     *
      * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
      */
     int readAppending(@NonNull final InputStream inputStream,
@@ -121,7 +125,9 @@ class FxpBuffer
      * @param inputStream to read from
      * @param offset      in the inputStream from where to start reading
      * @param length      how many bytes to read
+     *
      * @return total amount of bytes <strong>actually</strong> read.
+     *
      * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
      */
     private int read(@NonNull final InputStream inputStream,

@@ -54,8 +54,8 @@ public class LocalForwardingHandlerImpl
         synchronized (pool) {
             final List<LocalForwardWorker> list =
                     pool.stream()
-                            .filter(pw -> ((Session) session).equals(pw.getSession()))
-                            .collect(Collectors.toList());
+                        .filter(pw -> ((Session) session).equals(pw.getSession()))
+                        .collect(Collectors.toList());
 
             list.forEach(pw -> {
                 pw.close();
@@ -109,7 +109,7 @@ public class LocalForwardingHandlerImpl
 
         if (find(localPort, address) != null) {
             throw new PortForwardException("local port " + address
-                    + ":" + localPort + " is already registered.");
+                                                   + ":" + localPort + " is already registered.");
         }
 
         final LocalPortForwardWorker pw =
@@ -137,7 +137,7 @@ public class LocalForwardingHandlerImpl
 
         if (find(localPort, address) != null) {
             throw new PortForwardException("local port " + address
-                    + ":" + localPort + " is already registered.");
+                                                   + ":" + localPort + " is already registered.");
         }
 
         final LocalSocketPathForwardWorker pw =
@@ -159,7 +159,7 @@ public class LocalForwardingHandlerImpl
         final LocalForwardWorker pw = find(localPort, address);
         if (pw == null) {
             throw new PortForwardException("local port " + address
-                    + ":" + localPort + " is not registered.");
+                                                   + ":" + localPort + " is not registered.");
         }
         pw.close();
         pool.remove(pw);
@@ -178,12 +178,12 @@ public class LocalForwardingHandlerImpl
 
         synchronized (pool) {
             return pool.stream()
-                    .filter(pw -> session.equals(pw.getSession()))
-                    .filter(pw -> localPort == pw.getLocalPort())
-                    .filter(pw -> (anyLocalAddress.equals(pw.getBindAddress())
-                            || pw.getBindAddress().equals(inetAddress)))
-                    .findFirst()
-                    .orElse(null);
+                       .filter(pw -> session.equals(pw.getSession()))
+                       .filter(pw -> localPort == pw.getLocalPort())
+                       .filter(pw -> (anyLocalAddress.equals(pw.getBindAddress())
+                               || pw.getBindAddress().equals(inetAddress)))
+                       .findFirst()
+                       .orElse(null);
         }
     }
 }

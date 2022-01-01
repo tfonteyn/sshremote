@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2006-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.channels.forward;
 
 import androidx.annotation.NonNull;
@@ -73,8 +45,10 @@ public class ChannelAgentForwarding
     private static final byte SSH_AGENT_SUCCESS = 6;
 
     private static final byte SSH_AGENT_FAILURE = 5;
-    /* extended failure messages;
-     * defined by "https://github.com/openssh/openssh-portable/blob/master/authfd.h" */
+    /**
+     * Extended failure messages.
+     * Defined by "https://github.com/openssh/openssh-portable/blob/master/authfd.h"
+     */
     private static final byte SSH2_AGENT_FAILURE = 30;
 
     private static final byte SSH2_AGENTC_REQUEST_IDENTITIES = 11;
@@ -184,9 +158,8 @@ public class ChannelAgentForwarding
 
         responseBuffer.reset();
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "Agent channel msg: " + messageType);
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
+
         switch (messageType) {
             case SSH2_AGENTC_SIGN_REQUEST: {
                 // byte      SSH_AGENTC_SIGN_REQUEST
@@ -239,7 +212,7 @@ public class ChannelAgentForwarding
                     responseBuffer.putByte(SSH2_AGENT_FAILURE);
                 } else {
                     responseBuffer.putByte(SSH_AGENT_SIGN_RESPONSE)
-                            .putString(signature);
+                                  .putString(signature);
                 }
                 break;
             }
@@ -260,8 +233,8 @@ public class ChannelAgentForwarding
                     for (final Identity identity : toSend) {
                         //noinspection ConstantConditions
                         responseBuffer.putString(identity.getPublicKeyBlob())
-                                // comment
-                                .putString("");
+                                      // comment
+                                      .putString("");
                     }
                 }
                 break;
@@ -278,7 +251,7 @@ public class ChannelAgentForwarding
                 try {
                     result = identityRepository.add(
                             IdentityImpl.fromKeyData(session.getConfig(),
-                                    "from SSHAgent:", keyBlob, null));
+                                                     "from SSHAgent:", keyBlob, null));
                 } catch (final Exception ignore) {
                     // ignore ALL, just don't add the identity
                 }
@@ -290,7 +263,8 @@ public class ChannelAgentForwarding
                 // string   key blob
                 final byte[] keyBlob = rbuf.getString();
                 try {
-                    session.getIdentityRepository().remove(keyBlob);
+                    session.getIdentityRepository()
+                           .remove(keyBlob);
                 } catch (final SshException ignore) {
                 }
                 responseBuffer.putByte(SSH_AGENT_SUCCESS);
@@ -298,7 +272,8 @@ public class ChannelAgentForwarding
             }
             case SSH2_AGENTC_REMOVE_ALL_IDENTITIES: {
                 try {
-                    session.getIdentityRepository().removeAll();
+                    session.getIdentityRepository()
+                           .removeAll();
                 } catch (final SshException ignore) {
                 }
                 responseBuffer.putByte(SSH_AGENT_SUCCESS);
@@ -323,9 +298,9 @@ public class ChannelAgentForwarding
         final int dataLength = 4 + response.length;
         //TODO: add optimization reusing the response buffer as the packet buffer ?
         packet.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
-                .putInt(getRecipient())
-                .putInt(dataLength)
-                .putString(response);
+              .putInt(getRecipient())
+              .putInt(dataLength)
+              .putString(response);
 
         try {
             sendChannelDataPacket(packet, dataLength);
@@ -340,7 +315,8 @@ public class ChannelAgentForwarding
     }
 
     /**
-     * TODO: {@link com.hardbackcollector.sshclient.userauth.UserAuthPublicKey} where duplicate code lives
+     * TODO: {@link com.hardbackcollector.sshclient.userauth.UserAuthPublicKey}
+     * where duplicate code lives
      */
     private void attemptDecryption(@NonNull final IdentityRepository identityRepository,
                                    @NonNull final Identity identity,
@@ -352,8 +328,8 @@ public class ChannelAgentForwarding
 
         // loop to allow the user multiple attempts at entering the passphrase
         int attemptsLeft = getSession().getConfig()
-                .getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
-                        HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
+                                       .getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
+                                                    HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
 
         byte[] passphrase = null;
         try {

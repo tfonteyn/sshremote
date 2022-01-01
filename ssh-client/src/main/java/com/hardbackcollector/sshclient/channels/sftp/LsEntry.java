@@ -104,6 +104,7 @@ public class LsEntry
          * {@code ls} will be canceled.
          *
          * @param entry current item from {@code ls}
+         *
          * @return {@link #BREAK} or {@link #CONTINUE},
          */
         int select(@NonNull LsEntry entry);

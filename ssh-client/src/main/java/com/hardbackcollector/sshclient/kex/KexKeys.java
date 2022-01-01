@@ -18,9 +18,9 @@ public class KexKeys {
     @NonNull
     private final MessageDigest md;
 
-    public KexKeys(@NonNull final byte[] k,
-                   @NonNull final byte[] h,
-                   @NonNull final MessageDigest md) {
+    KexKeys(@NonNull final byte[] k,
+            @NonNull final byte[] h,
+            @NonNull final MessageDigest md) {
         K = k;
         H = h;
         this.md = md;

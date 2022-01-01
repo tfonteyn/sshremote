@@ -28,6 +28,9 @@ final class EdECPoint {
     @NonNull
     private final BigInteger y;
 
+    /**
+     * Constructor.
+     */
     EdECPoint(@NonNull final byte[] encodedPoint) {
         final byte msb = encodedPoint[encodedPoint.length - 1];
         encodedPoint[encodedPoint.length - 1] =

@@ -328,10 +328,9 @@ public class KeyPairEdDSA
                     final ASN1InputStream stream = new ASN1InputStream(encodedKey);
                     final ASN1Primitive root = stream.readObject();
 
-                    if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                        SshClient.getLogger().log(Logger.DEBUG, "~~~ KeyPairEdDSA#parse ~~~\n" +
-                                ASN1Dump.dumpAsString(root, true));
-                    }
+                        SshClient.getLogger()
+                                 .log(Logger.DEBUG, () -> "~~~ KeyPairEdDSA#parse ~~~\n" +
+                                         ASN1Dump.dumpAsString(root, true));
 
                     final KeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
                     final KeyFactory kf = KeyFactory.getInstance("EdDSA", "BC");
@@ -355,10 +354,9 @@ public class KeyPairEdDSA
             throw e;
 
         } catch (final Exception e) {
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger()
-                        .log(Logger.DEBUG, "Parsing failed, key is probably encrypted");
-            }
+            SshClient.getLogger()
+                     .log(Logger.DEBUG, () -> "Parsing failed, key is probably encrypted");
+
             privateKeyBlob.setEncrypted(true);
             return;
         }

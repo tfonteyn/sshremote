@@ -21,7 +21,6 @@ public interface KeyExchange {
     /**
      * Initialises the class needed for the agreement.
      *
-     * @param config configuration object
      * @throws GeneralSecurityException if initialising the class instance fails somehow
      */
     void initKeyAgreement(@NonNull SshClientConfig config)
@@ -30,12 +29,12 @@ public interface KeyExchange {
     /**
      * Initializes the key exchange object.
      *
-     * @param config configuration object
-     * @param io     used to send packets
-     * @param V_S    the server's identification string sent before negotiation
-     * @param V_C    the client's identification string sent before negotiation
-     * @param I_S    the server's SSH_MSG_KEXINIT payload.
-     * @param I_C    the client's SSH_MSG_KEXINIT payload.
+     * @param io  used to send packets
+     * @param V_S the server's identification string sent before negotiation
+     * @param V_C the client's identification string sent before negotiation
+     * @param I_S the server's SSH_MSG_KEXINIT payload.
+     * @param I_C the client's SSH_MSG_KEXINIT payload.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7">
      * RFC 4253 SSH Transport Layer Protocol, 7. Key Exchange</a>
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-8">
@@ -71,6 +70,7 @@ public interface KeyExchange {
      * Check if the given command matches what we expect.
      *
      * @param command to check
+     *
      * @return {@code true} if they match
      */
     boolean isExpecting(byte command);

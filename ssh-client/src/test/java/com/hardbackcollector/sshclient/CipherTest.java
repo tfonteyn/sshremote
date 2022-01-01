@@ -14,6 +14,8 @@ import javax.crypto.Cipher;
 
 class CipherTest {
 
+    private static final Logger LOGGER = new DbgJLogger();
+    private static final SshClient SSH_CLIENT = new SshClient(LOGGER);
 
     private static final String longText =
             "Status of This Memo\n"
@@ -52,8 +54,7 @@ class CipherTest {
     void legacy()
             throws GeneralSecurityException {
 
-        final SshClient client = new SshClient();
-        final SshClientConfig config = client.getConfig();
+        final SshClientConfig config = SSH_CLIENT.getConfig();
 
         runSimpleCipher(config, "twofish-cbc");
         runSimpleCipher(config, "twofish256-cbc");
@@ -79,8 +80,7 @@ class CipherTest {
     void simpleCiphers()
             throws GeneralSecurityException {
 
-        final SshClient client = new SshClient();
-        final SshClientConfig config = client.getConfig();
+        final SshClientConfig config = SSH_CLIENT.getConfig();
 
         runSimpleCipher(config, "aes256-ctr");
         runSimpleCipher(config, "aes192-ctr");

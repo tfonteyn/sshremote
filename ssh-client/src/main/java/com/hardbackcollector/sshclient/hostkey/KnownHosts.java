@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.hostkey;
 
 import androidx.annotation.NonNull;
@@ -76,9 +48,7 @@ public class KnownHosts
 
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("[ \t]");
 
-    /**
-     * The hash to use for hashing keys.
-     */
+    /** The hash to use for hashing keys. */
     private static final String HASH = "hmac-sha1";
 
     private static final String REVOKED = "@revoked";
@@ -87,15 +57,16 @@ public class KnownHosts
     private final SshClientConfig config;
     private final List<HostKey> pool = new ArrayList<>();
 
-    /**
-     * Optional: if not set, we just keep all entries in memory.
-     */
+    /** Optional: if not set, we just keep all entries in memory. */
     @Nullable
     private String knownHostsFilename;
 
     @Nullable
     private SshMac mac;
 
+    /**
+     * Constructor.
+     */
     public KnownHosts(@NonNull final SshClientConfig config) {
         this.config = config;
     }
@@ -162,7 +133,7 @@ public class KnownHosts
                         Base64.getDecoder().decode(key.getBytes(StandardCharsets.UTF_8));
 
                 pool.add(new HashedHostKey(getMac(), marker, host, type, keyBlob,
-                        comment.toString()));
+                                           comment.toString()));
             }
         }
     }
@@ -181,31 +152,31 @@ public class KnownHosts
             // Only consider valid keys (e.g. the ones which have a type set)
             final List<HostKey> list =
                     pool.stream()
-                            .filter(hostKey -> {
-                                        // if the host is null, add this one
-                                        if (host == null) {
-                                            return true;
-                                        }
-                                        // if the host does not match, skip this one.
-                                        if (!hostKey.isMatching(host)) {
-                                            return false;
-                                        }
-                                        // the host matches, the type must either be null
-                                        if (type == null) {
-                                            return true;
-                                        }
-                                        // or the types must also match
-                                        try {
-                                            return hostKey.getType()
-                                                    .equals(HostKeyAlgorithm.parseType(type));
-                                        } catch (final InvalidKeyException e) {
-                                            // Shouldn't really happen, but if it does
-                                            // pretend the type was null, and add this one.
-                                            return true;
-                                        }
+                        .filter(hostKey -> {
+                                    // if the host is null, add this one
+                                    if (host == null) {
+                                        return true;
                                     }
-                            )
-                            .collect(Collectors.toList());
+                                    // if the host does not match, skip this one.
+                                    if (!hostKey.isMatching(host)) {
+                                        return false;
+                                    }
+                                    // the host matches, the type must either be null
+                                    if (type == null) {
+                                        return true;
+                                    }
+                                    // or the types must also match
+                                    try {
+                                        return hostKey.getType()
+                                                      .equals(HostKeyAlgorithm.parseType(type));
+                                    } catch (final InvalidKeyException e) {
+                                        // Shouldn't really happen, but if it does
+                                        // pretend the type was null, and add this one.
+                                        return true;
+                                    }
+                                }
+                        )
+                        .collect(Collectors.toList());
 
             if (host != null && host.startsWith("[") && host.indexOf("]:") > 1) {
                 list.addAll(getHostKeys(host.substring(1, host.indexOf("]:")), type));
@@ -257,13 +228,14 @@ public class KnownHosts
 
     @Override
     @NonNull
-    public HostKey createHostKey(@NonNull final String host,
+    public HostKey createHostKey(@NonNull final SshClient sshClient,
+                                 @NonNull final String host,
                                  @NonNull final byte[] key)
             throws GeneralSecurityException {
 
         if (config.getBooleanValue(HostConfig.HASH_KNOWN_HOSTS, false)) {
             final HashedHostKey hhk = new HashedHostKey(getMac(), host, key);
-            hhk.hash(config.getRandom());
+            hhk.hash(sshClient.getRandom());
             return hhk;
 
         } else {
@@ -315,9 +287,7 @@ public class KnownHosts
                 try {
                     writeToFile();
                 } catch (final Exception e) {
-                    if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                        SshClient.getLogger().log(Logger.ERROR, "sync " + knownHostsFilename, e);
-                    }
+                    SshClient.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
                 }
             }
         }
@@ -344,9 +314,9 @@ public class KnownHosts
                         } else {
                             // do NOT expand wildcards!
                             hostKey.setHosts(hostKey.getHosts()
-                                    .stream()
-                                    .filter(s -> !host.equals(s))
-                                    .collect(Collectors.toList()));
+                                                    .stream()
+                                                    .filter(s -> !host.equals(s))
+                                                    .collect(Collectors.toList()));
                         }
                         sync = true;
                     }
@@ -358,9 +328,7 @@ public class KnownHosts
             try {
                 writeToFile();
             } catch (final Exception e) {
-                if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                    SshClient.getLogger().log(Logger.ERROR, "sync " + knownHostsFilename, e);
-                }
+                SshClient.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
             }
         }
     }
@@ -370,7 +338,7 @@ public class KnownHosts
         if (knownHostsFilename != null) {
             synchronized (pool) {
                 try (final Writer os = new FileWriter(Util.checkTilde(knownHostsFilename),
-                        StandardCharsets.UTF_8)) {
+                                                      StandardCharsets.UTF_8)) {
                     for (final HostKey hostKey : pool) {
                         if (hostKey.getKey() != null) {
                             final String marker = hostKey.getMarker();
@@ -378,8 +346,8 @@ public class KnownHosts
                                 os.write(marker + ' ');
                             }
                             os.write(hostKey.getHostnames()
-                                    + ' ' + hostKey.getType()
-                                    + ' ' + hostKey.getEncodedKey());
+                                             + ' ' + hostKey.getType()
+                                             + ' ' + hostKey.getEncodedKey());
 
                             final String comment = hostKey.getComment();
                             if (!comment.isBlank()) {

@@ -66,8 +66,8 @@ public final class ImplementationFactory {
     public static final String INFLATER_CONFIG_PREFIX = "inflate.";
     public static final String DEFLATER_CONFIG_PREFIX = "deflate.";
     /**
-     * Set to "false" to DISABLE all algorithm checking for a faster startup
-     * in controlled environments. The default is {@code true} - enabled.
+     * Set to {@code "false"} to DISABLE all algorithm checking for a faster startup
+     * in controlled environments. The default is {@code "true"} - enabled.
      * <p>
      * Valid for kex proposals + all others places where algorithms or key sizes might
      * not be available; e.g. public key accepted algorithms.
@@ -87,6 +87,7 @@ public final class ImplementationFactory {
      * are potentially not known at compile time.
      *
      * @return a new instance of the desired class
+     *
      * @throws NoSuchAlgorithmException when the key was invalid or the class failed to load
      */
     @NonNull
@@ -107,7 +108,7 @@ public final class ImplementationFactory {
             return c.getDeclaredConstructor().newInstance();
         } catch (final Exception e) {
             throw new NoSuchAlgorithmException("Failed to instantiate "
-                    + className + " for " + configKey, e);
+                                                       + className + " for " + configKey, e);
         }
     }
 
@@ -119,7 +120,9 @@ public final class ImplementationFactory {
      *
      * @param configKey the configuration key to lookup the class name
      * @param defClass  the class to use if the lookup fails
+     *
      * @return a new instance of the desired class
+     *
      * @throws NoSuchAlgorithmException when the key was invalid or when its value
      *                                  was identical to the default and the class failed to load
      * @throws IllegalStateException    this is a FATAL issue... even the default class did not load
@@ -139,7 +142,7 @@ public final class ImplementationFactory {
             final String className = config.getString(configKey);
             if (defClass.getCanonicalName().equals(className)) {
                 throw new NoSuchAlgorithmException("Failed to instantiate "
-                        + className + " for " + configKey, e);
+                                                           + className + " for " + configKey, e);
             }
         }
 
@@ -151,9 +154,9 @@ public final class ImplementationFactory {
             // We have a SERIOUS problem...
             final String errMsg = "Failed to instantiate " + defClass.getCanonicalName()
                     + " for " + configKey;
-            if (SshClient.getLogger().isEnabled(Logger.FATAL)) {
-                SshClient.getLogger().log(Logger.FATAL, errMsg, e);
-            }
+
+            SshClient.getLogger().log(Logger.FATAL, e, () -> errMsg);
+
             throw new IllegalStateException(errMsg, e);
         }
     }
@@ -209,11 +212,11 @@ public final class ImplementationFactory {
                 case KeyExchangeConstants.CURVE_25519_SHA_256:
                 case KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG:
                     return new KeyExchangeEdDSA("SHA-256", XDHParameterSpec.X25519,
-                            EdECObjectIdentifiers.id_X25519, 32);
+                                                EdECObjectIdentifiers.id_X25519, 32);
 
                 case KeyExchangeConstants.CURVE_448_SHA_512:
                     return new KeyExchangeEdDSA("SHA-512", XDHParameterSpec.X448,
-                            EdECObjectIdentifiers.id_X448, 57);
+                                                EdECObjectIdentifiers.id_X448, 57);
 
                 case KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_1:
                     return new KeyExchangeDHGroupExchange("SHA-1");
@@ -424,8 +427,8 @@ public final class ImplementationFactory {
             final SshCipher cipher = (SshCipher) c.getDeclaredConstructor().newInstance();
             // Check if the Cipher CAN be initialized using it's own defaults.
             cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
-                    new byte[cipher.getKeySize()],
-                    new byte[cipher.getIVSize()]);
+                        new byte[cipher.getKeySize()],
+                        new byte[cipher.getIVSize()]);
 
             // but always return a NEW instance (or is this overkill?)
             return (SshCipher) c.getDeclaredConstructor().newInstance();
@@ -515,6 +518,7 @@ public final class ImplementationFactory {
      *
      * @param authenticated flag for delayed compression {@code "zlib@openssh.com"}
      * @param method        the compression method name as negotiated,
+     *
      * @return instance, or {@code null} for no-compression
      */
     @Nullable
@@ -529,7 +533,7 @@ public final class ImplementationFactory {
                     config, DEFLATER_CONFIG_PREFIX + method, SshDeflaterImpl.class);
 
             final int level = config.getIntValue(KexProposal.COMPRESSION_LEVEL,
-                    SshDeflater.DEFAULT_LEVEL);
+                                                 SshDeflater.DEFAULT_LEVEL);
             instance.init(level);
             return instance;
         }
@@ -545,6 +549,7 @@ public final class ImplementationFactory {
      *
      * @param authenticated flag for delayed compression {@code "zlib@openssh.com"}
      * @param method        the compression method name as negotiated
+     *
      * @return instance, or {@code null} for no-compression
      */
     @Nullable
@@ -569,6 +574,7 @@ public final class ImplementationFactory {
      * Construct the list of algorithms we can accept for public key authentication.
      *
      * @return the list; will contain at least one algorithm
+     *
      * @throws NoSuchAlgorithmException if no algorithm configured/available
      */
     @NonNull

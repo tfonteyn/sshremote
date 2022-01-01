@@ -52,6 +52,7 @@ public class KeyPairTool {
      * Decode a upper or lowercase hex char to a nibble.
      *
      * @param c character to decode
+     *
      * @return 0..15
      */
     private static byte a2b(final byte c) {
@@ -71,6 +72,7 @@ public class KeyPairTool {
      * @param keyType dsa | ecdsa | ed25519 | ed448 | rsa
      * @param keySize the size of the keys, in bits. Must be suitable to the type.
      *                Ignored for ed25519 | ed448
+     *
      * @return the new key pair.
      */
     @NonNull
@@ -104,6 +106,7 @@ public class KeyPairTool {
      * Creates a new key pair.
      *
      * @param keyType ed25519 | ed448
+     *
      * @return the new key pair.
      */
     @NonNull
@@ -129,6 +132,7 @@ public class KeyPairTool {
      * @param privateKeyFilename the file name of the private key file.
      *                           The public key is expected in a file with the same name
      *                           and suffix {@code .pub}.
+     *
      * @return the new KeyPair.
      */
     @NonNull
@@ -146,6 +150,7 @@ public class KeyPairTool {
      *
      * @param privateKeyFilename the file name of the private key file.
      * @param publicKeyFilename  the file name of the public key file.
+     *
      * @return the new KeyPair.
      */
     @NonNull
@@ -180,12 +185,12 @@ public class KeyPairTool {
 
         final BufferedReader prvKeyReader = new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(prvKey),
-                        StandardCharsets.UTF_8));
+                                      StandardCharsets.UTF_8));
         final BufferedReader pubKeyReader;
         if (pubKey != null) {
             pubKeyReader = new BufferedReader(
                     new InputStreamReader(new ByteArrayInputStream(pubKey),
-                            StandardCharsets.UTF_8));
+                                          StandardCharsets.UTF_8));
         } else {
             pubKeyReader = null;
         }

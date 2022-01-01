@@ -13,8 +13,6 @@ import java.security.GeneralSecurityException;
 
 public interface Channel {
 
-    int NO_RECIPIENT = -1;
-
     /**
      * Opens the channel without any timeout.
      * This is equivalent to {@link #connect(int) connect(0)}.
@@ -32,6 +30,7 @@ public interface Channel {
      * @param connectTimeout the maximum time to wait for the channel to be
      *                       established, in milliseconds. If 0, we wait as long
      *                       as needed (but at most 1000 times 50 milliseconds each).
+     *
      * @throws SshChannelException if any errors occur
      */
     void connect(final int connectTimeout)
@@ -65,7 +64,7 @@ public interface Channel {
      * in SSH_MSG_CHANNEL_DATA to the remote side.
      * This method should be called before {@link #connect}.
      *
-     * @param do_not_close if true, we do not close the stream
+     * @param do_not_close if {@code true}, we do not close the stream
      *                     when {@link #disconnect()} is called
      */
     void setInputStream(@NonNull InputStream in,
@@ -125,8 +124,9 @@ public interface Channel {
      * written to this OutputStream.
      * This method should be called before {@link #connect}.
      *
-     * @param do_not_close if true, we do not close the stream
+     * @param do_not_close if {@code true}, we do not close the stream
      *                     on {@link #disconnect}.
+     *
      * @see #getInputStream
      */
     void setOutputStream(@NonNull OutputStream out,
@@ -177,8 +177,9 @@ public interface Channel {
      * </p>
      * This method should be called before {@link #connect}.
      *
-     * @param do_not_close if true, we do not close the stream
+     * @param do_not_close if {@code true}, we do not close the stream
      *                     on {@link #disconnect}.
+     *
      * @see #getExtInputStream
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5.2">
      * RFC 4254 SSH Connection Protocol, section 5.2: Data Transfer</a>

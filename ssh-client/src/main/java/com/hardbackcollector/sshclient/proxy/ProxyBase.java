@@ -18,17 +18,18 @@ abstract class ProxyBase
     @NonNull
     private final String proxy_host;
     private final int proxy_port;
+
     @Nullable
-    protected InputStream in;
+    InputStream in;
     @Nullable
-    protected OutputStream out;
+    OutputStream out;
     @Nullable
-    protected Socket socket;
+    String user;
     @Nullable
-    protected String user;
-    @SuppressWarnings("WeakerAccess")
+    byte[] passwd;
     @Nullable
-    protected byte[] passwd;
+    private Socket socket;
+
     @Nullable
     private SocketFactory socketFactory;
 

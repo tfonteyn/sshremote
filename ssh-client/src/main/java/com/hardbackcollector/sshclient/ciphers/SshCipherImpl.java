@@ -23,7 +23,7 @@ public class SshCipherImpl
         implements SshCipher {
 
     @NonNull
-    protected final Cipher cipher;
+    final Cipher cipher;
     final int ivSize;
     @NonNull
     private final String algorithm;
@@ -108,9 +108,9 @@ public class SshCipherImpl
         init(opmode, key, params);
     }
 
-    protected void init(final int opmode,
-                        @NonNull final byte[] key,
-                        @NonNull final AlgorithmParameterSpec params)
+    void init(final int opmode,
+              @NonNull final byte[] key,
+              @NonNull final AlgorithmParameterSpec params)
             throws InvalidKeyException, InvalidAlgorithmParameterException {
 
         this.opmode = opmode;

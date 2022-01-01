@@ -30,9 +30,7 @@ import java.util.stream.Collectors;
 public class RemoteForwardingHandlerImpl
         implements RemoteForwardingHandler {
 
-    /**
-     * All active forwards.
-     */
+    /** All active forwards. */
     private static final List<RemoteForwardConfig> pool = new ArrayList<>();
 
     @NonNull
@@ -63,15 +61,15 @@ public class RemoteForwardingHandlerImpl
                                            final int remotePort) {
         synchronized (pool) {
             return pool.stream()
-                    .filter(config -> session.equals(config.getSession()))
-                    .filter(config -> (remotePort == config.getRemotePort()
-                            ||
-                            (0 == config.getRemotePort()
-                                    && remotePort == config.getAllocatedRemotePort())))
-                    .filter(config -> bindAddress == null
-                            || bindAddress.equals(config.getBindAddress()))
-                    .findFirst()
-                    .orElse(null);
+                       .filter(config -> session.equals(config.getSession()))
+                       .filter(config -> (remotePort == config.getRemotePort()
+                               ||
+                               (0 == config.getRemotePort()
+                                       && remotePort == config.getAllocatedRemotePort())))
+                       .filter(config -> bindAddress == null
+                               || bindAddress.equals(config.getBindAddress()))
+                       .findFirst()
+                       .orElse(null);
         }
     }
 
@@ -81,9 +79,9 @@ public class RemoteForwardingHandlerImpl
     public List<String> getList() {
         synchronized (pool) {
             return pool.stream()
-                    .filter(c -> c.getSession().equals(session))
-                    .map(RemoteForwardConfig::getAsString)
-                    .collect(Collectors.toList());
+                       .filter(c -> c.getSession().equals(session))
+                       .map(RemoteForwardConfig::getAsString)
+                       .collect(Collectors.toList());
         }
     }
 
@@ -103,7 +101,7 @@ public class RemoteForwardingHandlerImpl
     @Override
     public int add(@NonNull final String connectionString)
             throws IOException, GeneralSecurityException,
-            PortForwardException, SshChannelException {
+                   PortForwardException, SshChannelException {
         final LocalForwardConfig lfc = LocalForwardConfig.parse(connectionString);
 
         if (lfc.socketPath == null) {
@@ -129,11 +127,11 @@ public class RemoteForwardingHandlerImpl
         synchronized (pool) {
             if (find(session, nBindAddress, remotePort) != null) {
                 throw new SshChannelException("remote port " + remotePort
-                        + " is already registered.");
+                                                      + " is already registered.");
             }
             pool.add(new RemoteForwardSocketConfig(session, remotePort, allocated_port,
-                    nBindAddress,
-                    host, localPort, socketFactory));
+                                                   nBindAddress,
+                                                   host, localPort, socketFactory));
         }
     }
 
@@ -151,12 +149,12 @@ public class RemoteForwardingHandlerImpl
         synchronized (pool) {
             if (find(session, nBindAddress, remotePort) != null) {
                 throw new SshChannelException("remote port " + remotePort
-                        + " is already registered.");
+                                                      + " is already registered.");
             }
             pool.add(new RemoteForwardDaemonConfig(session, remotePort,
-                    // original code uses remotePort here!!
-                    remotePort,
-                    nBindAddress, className, arg));
+                                                   // original code uses remotePort here!!
+                                                   remotePort,
+                                                   nBindAddress, className, arg));
         }
 
         return allocated;
@@ -204,7 +202,9 @@ public class RemoteForwardingHandlerImpl
      *
      * @param address 'address to bind' on the remote host
      * @param port    'port number to bind' on the remote host
+     *
      * @return the port that was bound on the server
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-7">
      * RFC 4254 SSH Connection Protocol, section 7. TCP/IP Port Forwarding</a>
      */
@@ -296,9 +296,9 @@ public class RemoteForwardingHandlerImpl
         final List<Integer> portList;
         synchronized (pool) {
             portList = pool.stream()
-                    .filter(config -> config.getSession().equals(session))
-                    .map(RemoteForwardConfig::getRemotePort)
-                    .collect(Collectors.toList());
+                           .filter(config -> config.getSession().equals(session))
+                           .map(RemoteForwardConfig::getRemotePort)
+                           .collect(Collectors.toList());
         }
         // remove will also remove from pool
         portList.forEach(port -> remove(null, port));

@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.userauth;
 
 import androidx.annotation.NonNull;
@@ -58,19 +30,21 @@ import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4252#section-7">
- *         RFC 4252 SSH Authentication Protocol,
- *         section 7. Public Key Authentication Method: "publickey"</a>
+ * RFC 4252 SSH Authentication Protocol,
+ * section 7. Public Key Authentication Method: "publickey"</a>
  */
 public class UserAuthPublicKey
         implements UserAuth {
 
     public static final String METHOD = "publickey";
+
     /**
      * byte      SSH_MSG_USERAUTH_PK_OK
      * string    public key algorithm name from the request
      * string    public key blob from the request
      */
     private static final byte SSH_MSG_USERAUTH_PK_OK = 60;
+
     private final List<String> rsaMethods = new ArrayList<>();
     private final List<String> nonRsaMethods = new ArrayList<>();
     private String username;
@@ -107,7 +81,7 @@ public class UserAuthPublicKey
                                 @NonNull final PacketIO io,
                                 @Nullable final byte[] password)
             throws IOException, GeneralSecurityException, SshAuthCancelException,
-            SshPartialAuthException {
+                   SshPartialAuthException {
 
         final IdentityRepository identityRepository = session.getIdentityRepository();
         synchronized (identityRepository) {
@@ -160,7 +134,7 @@ public class UserAuthPublicKey
 
         // loop to allow the user multiple attempts at entering the passphrase
         int attemptsLeft = config.getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
-                HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
+                                              HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
 
         byte[] passphrase = null;
         try {
@@ -205,16 +179,15 @@ public class UserAuthPublicKey
 
         } else if (!nonRsaMethods.isEmpty()) {
             return nonRsaMethods.stream()
-                    .filter(identityKeyAlgorithm::equals)
-                    .collect(Collectors.toList());
+                                .filter(identityKeyAlgorithm::equals)
+                                .collect(Collectors.toList());
         }
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger()
-                    .log(Logger.DEBUG, identityKeyAlgorithm
-                            + " cannot be used as public key type for "
-                            + identity.getName());
-        }
+        SshClient.getLogger()
+                 .log(Logger.DEBUG, () -> identityKeyAlgorithm
+                         + " cannot be used as public key type for "
+                         + identity.getName());
+
         return null;
     }
 
@@ -227,7 +200,7 @@ public class UserAuthPublicKey
      * ...
      *
      * @return the algorithm name for which we successfully pre-authenticated,
-     *         or {@code null} if pre-auth failed.
+     * or {@code null} if pre-auth failed.
      */
     @Nullable
     private String preAuth(@NonNull final PacketIO io,
@@ -265,20 +238,14 @@ public class UserAuthPublicKey
                 //       byte      SSH_MSG_USERAUTH_PK_OK
                 //       string    public key algorithm name from the request
                 //       string    public key blob from the request
-
-                if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                    SshClient.getLogger().log(Logger.DEBUG, algorithm + " preAuth success");
-                }
+                SshClient.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth success");
                 return algorithm;
 
             } else if (command != SshConstants.SSH_MSG_USERAUTH_FAILURE) {
                 // This should never happen
                 throw new ProtocolException("preAuth failure; received command=" + command);
             }
-
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger().log(Logger.DEBUG, algorithm + " preAuth failure");
-            }
+            SshClient.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth failure");
             // try next algorithm
         }
         // Pre-auth failed
@@ -308,17 +275,13 @@ public class UserAuthPublicKey
             }
 
             Packet packet;
-            byte command;
             while (true) {
                 packet = io.read();
-                command = packet.getCommand();
+                final byte command = packet.getCommand();
 
                 switch (command) {
                     case SshConstants.SSH_MSG_USERAUTH_SUCCESS: {
-                        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                            SshClient.getLogger().log(Logger.DEBUG, algorithm
-                                    + " auth success");
-                        }
+                        SshClient.getLogger().log(Logger.DEBUG, () -> algorithm + " auth success");
                         return true;
                     }
                     case SshConstants.SSH_MSG_USERAUTH_BANNER: {
@@ -345,12 +308,10 @@ public class UserAuthPublicKey
                         return false;
                     }
                     default: {
-                        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                            SshClient.getLogger().log(Logger.DEBUG,
-                                    algorithm
-                                            + " auth failure; received command="
-                                            + command);
-                        }
+                        SshClient.getLogger().log(Logger.DEBUG,
+                                                  () -> algorithm
+                                                          + " auth failure; received command="
+                                                          + command);
                         return false;
                     }
                 }
@@ -402,7 +363,7 @@ public class UserAuthPublicKey
         final byte[] dataToSign = new Buffer()
                 .putString(Objects.requireNonNull(session.getSessionId()))
                 .putBytes(packet.data, Packet.HEADER_LEN,
-                        packet.writeOffset - Packet.HEADER_LEN)
+                          packet.writeOffset - Packet.HEADER_LEN)
                 .getPayload();
 
         final byte[] signature_blob;
@@ -415,9 +376,8 @@ public class UserAuthPublicKey
 
         } catch (final GeneralSecurityException e) {
             // signing failed; e.g. key length too long,...
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger().log(Logger.DEBUG, publicKeyAlgorithm + " signature failure");
-            }
+            SshClient.getLogger()
+                     .log(Logger.DEBUG, () -> publicKeyAlgorithm + " signature failure");
             return false;
         }
     }

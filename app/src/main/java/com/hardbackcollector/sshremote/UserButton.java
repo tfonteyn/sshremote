@@ -1,6 +1,7 @@
 package com.hardbackcollector.sshremote;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -101,14 +102,15 @@ class UserButton {
         Session session = null;
         ChannelExec channel = null;
 
-        final boolean strict = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-                SettingsFragment.PK_STRICT_HOST_KEY_CHECKING, true);
+        final SharedPreferences global = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean strict = global
+                .getBoolean(SshHelper.PK_STRICT_HOST_KEY_CHECKING, true);
 
         // For now we don't let the user configure 'strict' on a per-host basis.
         // so we simply override with the global value
         mHost.strictHostKeyChecking = strict;
 
-        final SshHelper ssh = new SshHelper(mHost);
+        final SshHelper ssh = new SshHelper(global, mHost);
         try {
             session = ssh.openSession(context, null);
             channel = ssh.openChannelExec(session, mCommand);

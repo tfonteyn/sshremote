@@ -51,11 +51,11 @@ class HashedHostKey
 
             final byte[] _salt = decoder.decode(
                     data.substring(0, data.indexOf(HASH_DELIM))
-                            .getBytes(StandardCharsets.UTF_8));
+                        .getBytes(StandardCharsets.UTF_8));
 
             final byte[] _hash = decoder.decode(
                     data.substring(data.indexOf(HASH_DELIM) + 1)
-                            .getBytes(StandardCharsets.UTF_8));
+                        .getBytes(StandardCharsets.UTF_8));
 
             if (_salt.length != mac.getDigestLength() ||
                     _hash.length != mac.getDigestLength()) {
@@ -74,6 +74,7 @@ class HashedHostKey
      * Check if the given hostname matches any of the keys hostnames.
      *
      * @param host to check
+     *
      * @return whether they match or {@code false} on any error.
      */
     public boolean isMatching(@NonNull final String host) {

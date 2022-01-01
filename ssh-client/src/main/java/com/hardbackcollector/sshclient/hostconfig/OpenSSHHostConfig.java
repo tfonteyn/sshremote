@@ -83,27 +83,27 @@ final class OpenSSHHostConfig
                 if (!hostKey.isBlank()) {
                     // Now for each matching "Host" pattern, add the options in-order.
                     Arrays.stream(WHITESPACE_PATTERN.split(hostKey))
-                            .map(String::strip)
-                            .forEach(hostnamePattern -> {
-                                // Patterns within pattern-lists may be negated by preceding
-                                // them with an exclamation mark (‘!’)
-                                if (hostnamePattern.startsWith("!")) {
-                                    if (!Globber.glob(hostnamePattern
-                                                    .substring(1).strip()
-                                                    .getBytes(StandardCharsets.UTF_8),
-                                            _hostOrAlias)) {
-                                        this.config.add(hostOptions);
-                                    } else {
-                                        this.config.remove(hostOptions);
-                                    }
-                                } else {
-                                    if (Globber.glob(hostnamePattern
-                                                    .getBytes(StandardCharsets.UTF_8),
-                                            _hostOrAlias)) {
-                                        this.config.add(hostOptions);
-                                    }
-                                }
-                            });
+                          .map(String::strip)
+                          .forEach(hostnamePattern -> {
+                              // Patterns within pattern-lists may be negated by preceding
+                              // them with an exclamation mark (‘!’)
+                              if (hostnamePattern.startsWith("!")) {
+                                  if (!Globber.glob(hostnamePattern
+                                                            .substring(1).strip()
+                                                            .getBytes(StandardCharsets.UTF_8),
+                                                    _hostOrAlias)) {
+                                      this.config.add(hostOptions);
+                                  } else {
+                                      this.config.remove(hostOptions);
+                                  }
+                              } else {
+                                  if (Globber.glob(hostnamePattern
+                                                           .getBytes(StandardCharsets.UTF_8),
+                                                   _hostOrAlias)) {
+                                      this.config.add(hostOptions);
+                                  }
+                              }
+                          });
                 }
             });
         }
@@ -165,6 +165,7 @@ final class OpenSSHHostConfig
      * Get a single-value key. We ALWAYS return the first occurrence found.
      *
      * @param key to get
+     *
      * @return value
      */
     @Nullable
@@ -172,13 +173,13 @@ final class OpenSSHHostConfig
                                    @Nullable final String defValue) {
 
         // find the first occurrence
-        String value = null;
+        String value;
         for (final List<String[]> v : config) {
             value = v.stream()
-                    .filter(kv -> kv[0].equalsIgnoreCase(key))
-                    .findFirst()
-                    .map(kv -> kv[1])
-                    .orElse(null);
+                     .filter(kv -> kv[0].equalsIgnoreCase(key))
+                     .findFirst()
+                     .map(kv -> kv[1])
+                     .orElse(null);
 
             if (value != null) {
                 return value;
@@ -204,6 +205,7 @@ final class OpenSSHHostConfig
      *
      * @param key      to get
      * @param defValue optional list of defaults.
+     *
      * @return list
      */
     @NonNull
@@ -220,26 +222,26 @@ final class OpenSSHHostConfig
 
         for (final List<String[]> v : config) {
             v.stream()
-                    .filter(kv -> kv[0].equalsIgnoreCase(key))
-                    .map(kv -> kv[1])
-                    .filter(Objects::nonNull)
-                    .map(String::strip)
-                    .filter(value -> !value.isBlank())
-                    .forEach(value -> {
-                        if (value.startsWith("^")) {
-                            list.add(0, value.substring(1));
-                        } else if (value.startsWith("-")) {
-                            for (final String s : value.substring(1).split(",")) {
-                                // remove all occurrences.
-                                //noinspection StatementWithEmptyBody
-                                while (list.remove(s)) ;
-                            }
-                        } else if (value.startsWith("+")) {
-                            list.add(value.substring(1));
-                        } else {
-                            list.add(value);
-                        }
-                    });
+             .filter(kv -> kv[0].equalsIgnoreCase(key))
+             .map(kv -> kv[1])
+             .filter(Objects::nonNull)
+             .map(String::strip)
+             .filter(value -> !value.isBlank())
+             .forEach(value -> {
+                 if (value.startsWith("^")) {
+                     list.add(0, value.substring(1));
+                 } else if (value.startsWith("-")) {
+                     for (final String s : value.substring(1).split(",")) {
+                         // remove all occurrences.
+                         //noinspection StatementWithEmptyBody
+                         while (list.remove(s)) ;
+                     }
+                 } else if (value.startsWith("+")) {
+                     list.add(value.substring(1));
+                 } else {
+                     list.add(value);
+                 }
+             });
         }
 
         // Each element in 'list' can be a csv string on its own.
@@ -247,10 +249,10 @@ final class OpenSSHHostConfig
         final String[] theList = String.join(",", list).split(",");
         // lastly we clean up any duplicates/blanks and return the final CSV string
         return Arrays.stream(theList)
-                .map(String::strip)
-                .filter(s -> !s.isBlank())
-                .distinct()
-                .collect(Collectors.joining(","));
+                     .map(String::strip)
+                     .filter(s -> !s.isBlank())
+                     .distinct()
+                     .collect(Collectors.joining(","));
     }
 
     @Override

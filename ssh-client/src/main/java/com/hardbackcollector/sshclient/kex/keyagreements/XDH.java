@@ -28,6 +28,7 @@ public interface XDH {
      * @param oid          {@link EdECObjectIdentifiers#id_X25519} or
      *                     {@link EdECObjectIdentifiers#id_X448}
      * @param keySize      32 or 57
+     *
      * @throws GeneralSecurityException if anything goes wrong.
      */
     void init(@NonNull String xdhCurveName,
@@ -39,6 +40,7 @@ public interface XDH {
      * Retrieves the public key (i.e. an elliptic curve point) to be sent to the remote side.
      *
      * @return Q_C, client's ephemeral public key octet string
+     *
      * @throws GeneralSecurityException if anything goes wrong.
      */
     @NonNull
@@ -49,7 +51,9 @@ public interface XDH {
      * Get the shared secret for this key exchange.
      *
      * @param q_s Q_S, server's ephemeral public key octet string
+     *
      * @return the shared secret K, in the form of a byte[].
+     *
      * @throws GeneralSecurityException if anything goes wrong.
      */
     @NonNull

@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2015-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.keypair;
 
 import androidx.annotation.NonNull;
@@ -67,6 +39,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.util.Objects;
 
 /**
  * The KeyPair implementation for an ECDSA key pair.
@@ -91,17 +64,20 @@ import java.security.spec.KeySpec;
 public class KeyPairECDSA
         extends KeyPairBase {
 
+    /**
+     * This error should only occur when the pair is used as a delegate
+     * (e.g. {@link KeyPairOpenSSHv1} in which case calling the related method
+     * is a bug.
+     */
+    private static final String ERROR_EC_TYPE_WAS_NULL = "ecType was null; using a delegate?";
+
     @Nullable
     private ECKeyType ecType;
 
-    /**
-     * private key value.
-     */
+    /** private key value. */
     @Nullable
     private BigInteger s;
-    /**
-     * The public point W.
-     */
+    /** The public point W. */
     @Nullable
     private ECPoint w;
 
@@ -167,7 +143,7 @@ public class KeyPairECDSA
     public static PrivateKey generatePrivate(@NonNull final String curveName,
                                              @NonNull final BigInteger s)
             throws InvalidKeySpecException, NoSuchAlgorithmException,
-            InvalidParameterSpecException {
+                   InvalidParameterSpecException {
 
         final AlgorithmParameters algParams = AlgorithmParameters.getInstance("EC");
         algParams.init(new ECGenParameterSpec(curveName));
@@ -187,7 +163,7 @@ public class KeyPairECDSA
     public static PublicKey generatePublic(@NonNull final String curveName,
                                            @NonNull final ECPoint w)
             throws InvalidKeySpecException, NoSuchAlgorithmException,
-            InvalidParameterSpecException {
+                   InvalidParameterSpecException {
 
         final AlgorithmParameters algParams = AlgorithmParameters.getInstance("EC");
         algParams.init(new ECGenParameterSpec(curveName));
@@ -201,11 +177,13 @@ public class KeyPairECDSA
     @NonNull
     @Override
     public String getHostKeyAlgorithm() {
+        Objects.requireNonNull(ecType, ERROR_EC_TYPE_WAS_NULL);
         return ecType.hostKeyAlgorithm;
     }
 
     @Override
     public int getKeySize() {
+        Objects.requireNonNull(ecType, ERROR_EC_TYPE_WAS_NULL);
         return ecType.keySize;
     }
 
@@ -221,9 +199,12 @@ public class KeyPairECDSA
         if (w == null) {
             return null;
         }
+
+        Objects.requireNonNull(ecType, ERROR_EC_TYPE_WAS_NULL);
+
         return wrapPublicKey(ecType.hostKeyAlgorithm,
-                ecType.nistName.getBytes(StandardCharsets.UTF_8),
-                ecType.encodePoint(w));
+                             ecType.nistName.getBytes(StandardCharsets.UTF_8),
+                             ecType.encodePoint(w));
     }
 
     @NonNull
@@ -323,10 +304,9 @@ public class KeyPairECDSA
             throw e;
 
         } catch (final Exception e) {
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger()
-                        .log(Logger.DEBUG, "Parsing failed, key is probably encrypted");
-            }
+            SshClient.getLogger()
+                     .log(Logger.DEBUG, () -> "Parsing failed, key is probably encrypted");
+
             privateKeyBlob.setEncrypted(true);
             return;
         }
@@ -344,7 +324,7 @@ public class KeyPairECDSA
 
         if (w != null) {
             return new ECPrivateKey(ecType.keySize, s,
-                    new DERBitString(ecType.encodePoint(w)), ecType.keyOid)
+                                    new DERBitString(ecType.encodePoint(w)), ecType.keyOid)
                     .getEncoded();
         } else {
             return new ECPrivateKey(ecType.keySize, s, null, null)

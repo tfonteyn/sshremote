@@ -5,21 +5,16 @@ import androidx.annotation.Nullable;
 
 public final class LocalForwardConfig {
 
-    /**
-     * a {@code null} value == use the loopback device.
-     */
+    /** a {@code null} value == use the loopback device. */
     @Nullable
     public final String bindAddress;
     public final int port;
 
-    /**
-     * {@code null} if this Forwarding represents a socketPath
-     */
+    /** {@code null} if this Forwarding represents a socketPath */
     @Nullable
     public final String host;
-    /**
-     * {@code -1} if this Forwarding represents a socketPath
-     */
+
+    /** {@code -1} if this Forwarding represents a socketPath */
     public final int hostPort;
 
     @Nullable
@@ -161,6 +156,7 @@ public final class LocalForwardConfig {
      * interpret as the 'local address'. Valid for ipV4 and ipV6.
      *
      * @param address to normalize
+     *
      * @return see above
      */
     @Nullable

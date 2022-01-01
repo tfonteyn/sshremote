@@ -25,6 +25,7 @@ public interface ChannelSession
      * Enable X11 forwarding.
      *
      * @param screenNumber to use; a negative value disables forwarding
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.3">
      * RFC 4254 SSH Connection Protocol, section 6.3. Requesting X11 Forwarding</a>
      */
@@ -38,6 +39,7 @@ public interface ChannelSession
      *
      * @param name  A name for the environment variable.
      * @param value A value for the environment variable.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
      * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
@@ -49,6 +51,7 @@ public interface ChannelSession
      *
      * @param name  A name for the environment variable.
      * @param value A value for the environment variable.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
      * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
@@ -59,6 +62,7 @@ public interface ChannelSession
      * Send the given signal to the process at the remote side.
      *
      * @param signal the signal name, without the "SIG" prefix.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.9">
      * RFC 4254 SSH Connection Protocol, Section 6.9. Signals</a>
      */

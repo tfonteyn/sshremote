@@ -66,7 +66,7 @@ public class XDHImpl
     @Override
     public byte[] getSharedSecret(@NonNull final byte[] q_s)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
-            InvalidKeyException, IllegalStateException, NoSuchProviderException {
+                   InvalidKeyException, IllegalStateException, NoSuchProviderException {
 
         // create an ASN1 object, so we can read the keySpec from it.
         final SubjectPublicKeyInfo publicKeyInfo = new SubjectPublicKeyInfo(algId, q_s);

@@ -3,6 +3,7 @@ package com.hardbackcollector.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.AEADCipher;
 import com.hardbackcollector.sshclient.ciphers.ChaChaCipher;
@@ -18,6 +19,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import javax.crypto.Cipher;
+
 /**
  * Encapsulate a {@link SshCipher} and {@link SshMac} used for either
  * client to server, or server to client packet transport.
@@ -27,7 +30,8 @@ public abstract class Transport {
     static final String ERROR_CIPHER_IS_NOT_SET = "cipher is not set";
 
     @NonNull
-    protected final SshClientConfig config;
+    final SshClientConfig config;
+
     private final int cipherMode;
     @Nullable
     public SshCipher cipher;
@@ -38,9 +42,14 @@ public abstract class Transport {
     private boolean isAEAD;
     private boolean isEtM;
 
-    public Transport(@NonNull final SshClientConfig config,
-                     final int cipherMode) {
-        this.config = config;
+    /**
+     * Constructor.
+     *
+     * @param cipherMode {@link Cipher#ENCRYPT_MODE} or {@link Cipher#DECRYPT_MODE}.
+     */
+    Transport(@NonNull final Session session,
+              final int cipherMode) {
+        this.config = session.getConfig();
         this.cipherMode = cipherMode;
     }
 
@@ -71,9 +80,9 @@ public abstract class Transport {
 
         while (result.length < requiredLength) {
             buffer.reset()
-                    .putMPInt(K)
-                    .putBytes(H)
-                    .putBytes(result);
+                  .putMPInt(K)
+                  .putBytes(H)
+                  .putBytes(result);
             md.update(buffer.data, 0, buffer.writeOffset);
 
             final byte[] hash = md.digest();
@@ -91,13 +100,13 @@ public abstract class Transport {
     /**
      * Initialise cipher and MAC.
      */
-    public void initEncryption(@NonNull final KexAgreement agreement,
-                               @NonNull final MessageDigest md,
-                               @NonNull final byte[] K,
-                               @NonNull final byte[] H,
-                               @NonNull final byte[] encKey,
-                               @NonNull final byte[] encIv,
-                               @NonNull final byte[] macKey)
+    void initEncryption(@NonNull final KexAgreement agreement,
+                        @NonNull final MessageDigest md,
+                        @NonNull final byte[] K,
+                        @NonNull final byte[] H,
+                        @NonNull final byte[] encKey,
+                        @NonNull final byte[] encIv,
+                        @NonNull final byte[] macKey)
             throws GeneralSecurityException {
 
         cipher = ImplementationFactory.getCipher(config, agreement.getCipher(cipherMode));

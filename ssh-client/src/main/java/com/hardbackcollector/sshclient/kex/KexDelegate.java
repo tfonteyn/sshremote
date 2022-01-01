@@ -13,7 +13,6 @@ import com.hardbackcollector.sshclient.transport.SessionImpl;
 import com.hardbackcollector.sshclient.userauth.SshAuthException;
 import com.hardbackcollector.sshclient.userauth.UserInfo;
 import com.hardbackcollector.sshclient.utils.ImplementationFactory;
-import com.hardbackcollector.sshclient.utils.SshClientConfigImpl;
 import com.hardbackcollector.sshclient.utils.SshConstants;
 
 import java.io.IOException;
@@ -59,9 +58,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class KexDelegate {
 
-    /**
-     * Boolean
-     */
+    /** Boolean */
+    @SuppressWarnings("WeakerAccess")
     public static final String PREFER_KNOWN_HOST_KEY_TYPES = "prefer_known_host_key_types";
 
     @NonNull
@@ -77,28 +75,23 @@ public class KexDelegate {
 
     private final AtomicBoolean inKeyExchange = new AtomicBoolean();
     private final AtomicBoolean inHostCheck = new AtomicBoolean();
-    private final SshClientConfigImpl config;
     private long inKeyExchangeStartTime;
 
     @Nullable
     private HostKey hostKey;
 
-    /**
-     * The proposal this client sends to the remote server.
-     */
+    /** The proposal this client sends to the remote server. */
     @Nullable
     private KexProposal kexProposal;
-    /**
-     * The agreement between client and server on what algorithms etc. to use.
-     */
+    /** The agreement between client and server on what algorithms etc. to use. */
     @Nullable
     private KexAgreement agreement;
-    /**
-     * The chosen implementation for the host key exchange.
-     */
+    /** The chosen implementation for the host key exchange. */
     private KeyExchange kex;
 
     /**
+     * Constructor.
+     * <p>
      * The {@code hostKeyName} must be in one of the formats:
      * <ul>
      *     <li>hostKeyAlias</li>
@@ -114,7 +107,6 @@ public class KexDelegate {
                        @NonNull final String hostKeyName)
             throws NoSuchAlgorithmException {
         this.session = session;
-        this.config = session.getConfig();
         this.serverVersion = serverVersion;
         this.clientVersion = clientVersion;
         this.hostKeyName = hostKeyName;
@@ -167,19 +159,17 @@ public class KexDelegate {
             throws IOException, GeneralSecurityException, SshAuthException {
 
         // Using the *current* configuration, load and check all algorithms.
-        kexProposal = new KexProposal(config);
-        if (config.getBooleanValue(PREFER_KNOWN_HOST_KEY_TYPES, true)) {
+        kexProposal = new KexProposal(session);
+        if (session.getConfig().getBooleanValue(PREFER_KNOWN_HOST_KEY_TYPES, true)) {
             kexProposal.preferKnownHostKeyTypes(hostKeyRepository, hostKeyName);
         }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent (initial request)");
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_KEXINIT sent (initial request)");
-        }
         sendKexInit();
 
         // Read the response into the buffer
         Packet packet = session.read();
-        byte command = packet.getCommand();
+        final byte command = packet.getCommand();
         if (command != SshConstants.SSH_MSG_KEXINIT) {
             inKeyExchange.set(false);
             throw new KexProtocolException(SshConstants.SSH_MSG_KEXINIT, command);
@@ -191,12 +181,11 @@ public class KexDelegate {
         do {
             // read the next KeyExchange packet received
             packet = session.read();
-            command = packet.getCommand();
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger().log(Logger.DEBUG, "received: " + command);
-            }
+            final byte nextCommand = packet.getCommand();
+            SshClient.getLogger().log(Logger.DEBUG, () -> "received: " + nextCommand);
+
             // and if it's what the KeyExchange expected, check its validity
-            if (kex.isExpecting(command)) {
+            if (kex.isExpecting(nextCommand)) {
                 startTimer();
                 try {
                     kex.next(packet);
@@ -206,7 +195,7 @@ public class KexDelegate {
                 }
             } else {
                 inKeyExchange.set(false);
-                throw new KexProtocolException(kex.getNextPacketExpected(), command);
+                throw new KexProtocolException(kex.getNextPacketExpected(), nextCommand);
             }
         } while (!kex.isExpecting(KeyExchange.STATE_END));
 
@@ -218,10 +207,10 @@ public class KexDelegate {
 
         // and check if the server is likewise ok with this
         packet = session.read();
-        command = packet.getCommand();
-        if (command != SshConstants.SSH_MSG_NEWKEYS) {
+        final byte confirmation = packet.getCommand();
+        if (confirmation != SshConstants.SSH_MSG_NEWKEYS) {
             inKeyExchange.set(false);
-            throw new KexProtocolException(SshConstants.SSH_MSG_NEWKEYS, command);
+            throw new KexProtocolException(SshConstants.SSH_MSG_NEWKEYS, confirmation);
         }
 
         return keys;
@@ -232,6 +221,7 @@ public class KexDelegate {
      */
     private void sendKexInit()
             throws IOException, GeneralSecurityException {
+        Objects.requireNonNull(kexProposal);
 
         inKeyExchange.set(true);
         startTimer();
@@ -245,10 +235,8 @@ public class KexDelegate {
     public void rekey()
             throws IOException, GeneralSecurityException {
         if (!inKeyExchange.get()) {
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_KEXINIT sent"
-                        + " (client rekey request)");
-            }
+            SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent"
+                    + " (client rekey request)");
             sendKexInit();
         }
     }
@@ -263,10 +251,9 @@ public class KexDelegate {
     public void receiveKexInit(@NonNull final Packet serverPacket,
                                final boolean authenticated)
             throws IOException, GeneralSecurityException, SshAuthException {
+        Objects.requireNonNull(kexProposal);
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_KEXINIT received");
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT received");
 
         // The server's SSH_MSG_KEXINIT payload.
         // During the initial exchange, it's always uncompressed of course.
@@ -278,39 +265,38 @@ public class KexDelegate {
             // packet was NOT compressed,
             I_S = new byte[packetLength - serverPacket.getPaddingLength() - 1];
             System.arraycopy(serverPacket.data,
-                    Packet.HEADER_LEN,
-                    I_S, 0, I_S.length);
+                             Packet.HEADER_LEN,
+                             I_S, 0, I_S.length);
 
         } else {
             // packet was compressed and 'packetLength' is the size of deflated packet.
             // Hence, we skip the padding byte, and use the raw content length.
             I_S = Arrays.copyOfRange(serverPacket.data,
-                    Packet.HEADER_LEN,
-                    serverPacket.writeOffset);
+                                     Packet.HEADER_LEN,
+                                     serverPacket.writeOffset);
         }
 
         // The client's SSH_MSG_KEXINIT payload;
         // Just use payload-start and writeOffset as we read the original/uncompressed Packet
         final Packet clientPacket = kexProposal.getClientPacket();
         final byte[] I_C = Arrays.copyOfRange(clientPacket.data,
-                Packet.HEADER_LEN,
-                clientPacket.writeOffset);
+                                              Packet.HEADER_LEN,
+                                              clientPacket.writeOffset);
 
         if (!inKeyExchange.get()) {
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_KEXINIT sent"
-                        + " (re-keying requested by the remote)");
-            }
+            SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent"
+                    + " (re-keying requested by the remote)");
             sendKexInit();
         }
 
         agreement = kexProposal.negotiate(serverPacket, authenticated);
 
-        kex = ImplementationFactory.getKeyExchange(config, agreement.getKeyAlgorithm());
-        kex.init(config, session,
-                serverVersion.getBytes(StandardCharsets.UTF_8),
-                clientVersion.getBytes(StandardCharsets.UTF_8),
-                I_S, I_C);
+        kex = ImplementationFactory.getKeyExchange(session.getConfig(),
+                                                   agreement.getKeyAlgorithm());
+        kex.init(session.getConfig(), session,
+                 serverVersion.getBytes(StandardCharsets.UTF_8),
+                 clientVersion.getBytes(StandardCharsets.UTF_8),
+                 I_S, I_C);
     }
 
     @NonNull
@@ -351,6 +337,7 @@ public class KexDelegate {
      * byte      SSH_MSG_NEWKEYS
      *
      * @return the new keys to use from now on.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7.3">
      * RFC 4253 SSH Transport Layer Protocol, section 7.3. Taking Keys Into Use</a>
      */
@@ -359,9 +346,7 @@ public class KexDelegate {
             throws IOException, GeneralSecurityException {
         session.write(new Packet(SshConstants.SSH_MSG_NEWKEYS));
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_NEWKEYS sent");
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS sent");
 
         return new KexKeys(kex.getK(), kex.getH(), kex.getMessageDigest());
     }
@@ -377,9 +362,10 @@ public class KexDelegate {
 
         try {
             final KexProposal.StrictHostKeyChecking strictHostKeyChecking =
-                    KexProposal.StrictHostKeyChecking.get(config);
+                    KexProposal.StrictHostKeyChecking.get(session.getConfig());
 
-            final HostKey hostkey = hkr.createHostKey(hostKeyName, kex.getK_S());
+            final HostKey hostkey = hkr.createHostKey(session.getSshClient(),
+                                                      hostKeyName, kex.getK_S());
 
             boolean addNewKey = false;
 
@@ -397,7 +383,7 @@ public class KexDelegate {
                                 userinfo.showMessage(getKeyIsUnknownMessage(kex, false));
                             }
                             throw new InvalidKeyException("Rejecting unknown key for: "
-                                    + hostKeyName);
+                                                                  + hostKeyName);
 
                         case AcceptNew:
                         case No:
@@ -412,12 +398,12 @@ public class KexDelegate {
                                         getKeyIsUnknownMessage(kex, true));
                                 if (!addNewKey) {
                                     throw new InvalidKeyException("User rejected key for: "
-                                            + hostKeyName);
+                                                                          + hostKeyName);
                                 }
                             } else {
                                 // can't ask
                                 throw new InvalidKeyException("Rejecting unknown key for: "
-                                        + hostKeyName);
+                                                                      + hostKeyName);
                             }
                             break;
                     }
@@ -446,12 +432,12 @@ public class KexDelegate {
                                         getKeyIsChangedMessage(kex, true));
                                 if (!addNewKey) {
                                     throw new InvalidKeyException("User rejected key for: "
-                                            + hostKeyName);
+                                                                          + hostKeyName);
                                 }
                             } else {
                                 // can't ask
                                 throw new InvalidKeyException("Rejecting changed key for: "
-                                        + hostKeyName);
+                                                                      + hostKeyName);
                             }
                             break;
                         }
@@ -466,8 +452,8 @@ public class KexDelegate {
                     if (userinfo != null) {
                         final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
                         userinfo.showMessage(String.format(rb.getString("WARNING_KEY_REVOKED"),
-                                kex.getHostKeyAlgorithm(),
-                                hostKeyName));
+                                                           kex.getHostKeyAlgorithm(),
+                                                           hostKeyName));
                     }
                     throw new InvalidKeyException("Key was revoked: " + hostKeyName);
                 }
@@ -477,12 +463,10 @@ public class KexDelegate {
             }
 
             if (addNewKey) {
-                if (SshClient.getLogger().isEnabled(Logger.WARN)) {
-                    SshClient.getLogger().log(Logger.WARN,
-                            "Permanently added '" + hostKeyName + "'"
-                                    + " (" + kex.getHostKeyAlgorithm() + ")"
-                                    + " to the list of known hosts.");
-                }
+                SshClient.getLogger().log(Logger.WARN,
+                                          () -> "Permanently added '" + hostKeyName + "'"
+                                                  + " (" + kex.getHostKeyAlgorithm() + ")"
+                                                  + " to the list of known hosts.");
 
                 synchronized (hkr) {
                     hkr.add(hostkey, userinfo);
@@ -525,7 +509,7 @@ public class KexDelegate {
                 kex.getHostKeyAlgorithm(),
                 kex.getHostKeyAlgorithm(),
                 hostKeyName,
-                HostKey.getFingerPrint(config, kex.getK_S()));
+                HostKey.getFingerPrint(session.getConfig(), kex.getK_S()));
         if (askToReplace) {
             message += '\n' + rb.getString("QUESTION_REPLACE_KEY");
         }
@@ -543,7 +527,7 @@ public class KexDelegate {
                 rb.getString("WARNING_KEY_UNKNOWN"),
                 hostKeyName,
                 kex.getHostKeyAlgorithm(),
-                HostKey.getFingerPrint(config, kex.getK_S()));
+                HostKey.getFingerPrint(session.getConfig(), kex.getK_S()));
         if (askToAdd) {
             message += '\n' + rb.getString("QUESTION_ADD_KEY");
         }

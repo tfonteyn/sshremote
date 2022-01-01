@@ -21,6 +21,7 @@ public interface SshInflater {
      *
      * @param packet the Packet buffer containing the compressed data.
      *               The internal data buffer <strong>may</strong> be replaced with a new one.
+     *
      * @throws IOException on any error
      */
     void decompress(@NonNull Packet packet)

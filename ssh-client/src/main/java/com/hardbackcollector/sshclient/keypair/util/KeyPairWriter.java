@@ -15,6 +15,7 @@ import java.util.Base64;
  * <p>
  * All methods to export private keys have been removed.
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 @Deprecated
 public class KeyPairWriter {
 
@@ -80,6 +81,7 @@ public class KeyPairWriter {
      *
      * @param out     output stream
      * @param comment comment
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4716">
      * RFC 4716, The Secure Shell (SSH) Public Key File Format</a>
      */

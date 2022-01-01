@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.keypair;
 
 import androidx.annotation.NonNull;
@@ -71,29 +43,19 @@ public class KeyPairDSA
 
     private static final String serverHostKeyAlgorithm = HostKeyAlgorithm.SSH_DSS;
 
-    /**
-     * the value of the private key
-     */
+    /** the value of the private key. */
     @Nullable
     private BigInteger x;
-    /**
-     * the value of the public key
-     */
+    /** the value of the public key. */
     @Nullable
     private BigInteger y;
-    /**
-     * the private key prime
-     */
+    /** the private key prime. */
     @Nullable
     private BigInteger p;
-    /**
-     * the private key subprime
-     */
+    /** the private key subprime. */
     @Nullable
     private BigInteger q;
-    /**
-     * the private key base
-     */
+    /** the private key base. */
     @Nullable
     private BigInteger g;
 
@@ -217,10 +179,10 @@ public class KeyPairDSA
             return null;
         }
         return wrapPublicKey(serverHostKeyAlgorithm,
-                p.toByteArray(),
-                q.toByteArray(),
-                g.toByteArray(),
-                y.toByteArray());
+                             p.toByteArray(),
+                             q.toByteArray(),
+                             g.toByteArray(),
+                             y.toByteArray());
     }
 
     @NonNull
@@ -325,11 +287,10 @@ public class KeyPairDSA
                     //     Integer(12058...     ==> x
                     final ASN1InputStream stream = new ASN1InputStream(encodedKey);
                     final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
-                    if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                        SshClient.getLogger().log(Logger.DEBUG,
-                                "~~~ KeyPairDSA#parse ~~~\n" +
-                                        ASN1Dump.dumpAsString(root, true));
-                    }
+
+                    SshClient.getLogger().log(Logger.DEBUG,
+                                              () -> "~~~ KeyPairDSA#parse ~~~\n" +
+                                                      ASN1Dump.dumpAsString(root, true));
 
                     p = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
                     q = ASN1Integer.getInstance(root.getObjectAt(2)).getPositiveValue();
@@ -344,10 +305,9 @@ public class KeyPairDSA
             throw e;
 
         } catch (final Exception e) {
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger()
-                        .log(Logger.DEBUG, "Parsing failed, key is probably encrypted");
-            }
+            SshClient.getLogger()
+                     .log(Logger.DEBUG, () -> "Parsing failed, key is probably encrypted");
+
             privateKeyBlob.setEncrypted(true);
             return;
         }
@@ -396,6 +356,9 @@ public class KeyPairDSA
         @Nullable
         private BigInteger g;
 
+        /**
+         * Constructor.
+         */
         public Builder(@NonNull final SshClientConfig config) {
             super(config);
         }

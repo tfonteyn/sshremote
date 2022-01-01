@@ -13,6 +13,8 @@ import java.security.InvalidKeyException;
 public interface SshKeyPair {
 
     /**
+     * Return the SSH name for the host-key algorithm used.
+     *
      * @return "ssh-dss", "ssh-rsa", "ecdsa*", "ssh-ed25519", "ssh-ed448"
      */
     @NonNull
@@ -47,7 +49,7 @@ public interface SshKeyPair {
     void setPublicKeyComment(@Nullable String comment);
 
     /**
-     * checks whether the private key currently is encrypted.
+     * Check whether the private key is currently encrypted.
      *
      * @return {@code true} if the private key is encrypted,
      * {@code false} if not.
@@ -64,8 +66,13 @@ public interface SshKeyPair {
             throws GeneralSecurityException, IOException;
 
     /**
+     * Sign the data with the given algorithm.
+     *
      * @param data to sign
+     *
      * @return the SSH wrapped signature.
+     *
+     * @see #getSignature(byte[], String)
      */
     @NonNull
     default byte[] getSignature(@NonNull final byte[] data)
@@ -85,6 +92,7 @@ public interface SshKeyPair {
      *
      * @param data      to sign
      * @param algorithm the ssh style signature algorithm name
+     *
      * @return the SSH wrapped signature.
      */
     @NonNull
@@ -107,6 +115,7 @@ public interface SshKeyPair {
      * Not used by the library.
      *
      * @param algorithm the ssh style signature algorithm name
+     *
      * @return the verifier to verify data returned by {@link #getSignature(byte[], String)}
      */
     @NonNull
@@ -146,6 +155,7 @@ public interface SshKeyPair {
      * Create an {@link Identity} from this key pair with the given name.
      *
      * @param name to use for the identity
+     *
      * @return new identity instance
      */
     @NonNull

@@ -13,6 +13,7 @@ public interface ChannelSubsystem {
      * @param subsystem the name of the subsystem. It should consist of only
      *                  printable ASCII characters and be a subsystem name recognized
      *                  by the remote server process.
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4250#section-4.6.1">
      * RFC 4250 SSH Protocol Assigned Numbers, section 4.6.1. Conventions for Names</a>
      */

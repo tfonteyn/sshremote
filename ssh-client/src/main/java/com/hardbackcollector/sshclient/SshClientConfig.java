@@ -10,7 +10,6 @@ import com.hardbackcollector.sshclient.macs.SshMac;
 import com.hardbackcollector.sshclient.userauth.UserAuth;
 import com.hardbackcollector.sshclient.utils.BaseConfig;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /**
@@ -68,13 +67,15 @@ public interface SshClientConfig
     /**
      * Add/set multiple configuration options at once.
      * The given map should only contain Strings.
+     * <p>
+     * The values are copied into the existing configuration.
      *
      * @see #putString(String, String)
      */
     void putAll(@NonNull final Map<String, String> newConf);
 
     /**
-     * Put a configuration string.
+     * Put a configuration {@link String} option.
      *
      * @param key   the key for the configuration option
      * @param value to set
@@ -85,16 +86,11 @@ public interface SshClientConfig
     /**
      * Convenience method / code clarify. Add a class definition to the configuration.
      *
-     * @param configKey config key
-     * @param clazz     the class
+     * @param key   the key for the configuration option
+     * @param clazz the class
      */
-    default void putClass(@NonNull final String configKey,
+    default void putClass(@NonNull final String key,
                           @NonNull final Class<?> clazz) {
-        putString(configKey, clazz.getCanonicalName());
+        putString(key, clazz.getCanonicalName());
     }
-
-    @NonNull
-    Random getRandom()
-            throws NoSuchAlgorithmException;
-
 }

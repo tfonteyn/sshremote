@@ -17,9 +17,10 @@ abstract class SshSignatureBase
 
     @NonNull
     private final String jcaSignatureAlgorithm;
-    protected Signature signature;
 
-    protected String hostKeyAlgorithm;
+    Signature signature;
+
+    private String hostKeyAlgorithm;
 
     /**
      * Constructor.
@@ -34,7 +35,7 @@ abstract class SshSignatureBase
     public void init(@NonNull final String hostKeyAlgorithm)
             throws NoSuchAlgorithmException {
         this.hostKeyAlgorithm = hostKeyAlgorithm;
-        signature = Signature.getInstance(jcaSignatureAlgorithm);
+        this.signature = Signature.getInstance(jcaSignatureAlgorithm);
     }
 
     @Override

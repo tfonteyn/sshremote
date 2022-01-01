@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Random;
-import com.hardbackcollector.sshclient.SshClientConfig;
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.ciphers.AEADCipher;
 import com.hardbackcollector.sshclient.ciphers.ChaChaCipher;
 import com.hardbackcollector.sshclient.compression.SshDeflater;
@@ -30,17 +30,15 @@ public class TransportC2S
     @Nullable
     private SshDeflater deflater;
 
-    /**
-     * Sequence number of outgoing packets.
-     */
+    /** Sequence number of outgoing packets. */
     private int seq;
 
-    TransportC2S(@NonNull final SshClientConfig config,
+    TransportC2S(@NonNull final Session session,
                  @NonNull final OutputStream socketOutputStream)
             throws NoSuchAlgorithmException {
-        super(config, Cipher.ENCRYPT_MODE);
+        super(session, Cipher.ENCRYPT_MODE);
         this.socketOutputStream = socketOutputStream;
-        this.random = config.getRandom();
+        this.random = session.getSshClient().getRandom();
     }
 
     /**
@@ -48,6 +46,7 @@ public class TransportC2S
      *
      * @param clientVersion to send. Should NOT have any trailing cr/lf.
      *                      Those will be added here.
+     *
      * @see TransportS2C#readVersion()
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-4.2">
      * This identification string MUST be SSH-protoversion-softwareversion
@@ -106,6 +105,7 @@ public class TransportC2S
      * Encode the packet with the active cipher.
      *
      * @param packet to encode
+     *
      * @see #write(Packet)
      */
     private void encode(@NonNull final Packet packet)

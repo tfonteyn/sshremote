@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.DbgJLogger;
+import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.keypair.SshKeyPair;
 import com.hardbackcollector.sshclient.keypair.util.KeyPairTool;
@@ -22,7 +23,9 @@ abstract class BaseLoadTest {
 
     static final String TEST_RESOURCES = "src/test/resources/";
 
-    static final SshClient SSH_CLIENT = new SshClient();
+    private static final Logger LOGGER = new DbgJLogger();
+    private static final SshClient SSH_CLIENT = new SshClient(LOGGER);
+
     private static final String longText =
             "Status of This Memo\n"
                     + "\n"

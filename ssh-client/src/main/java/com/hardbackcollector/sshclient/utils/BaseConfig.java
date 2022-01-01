@@ -20,9 +20,10 @@ public interface BaseConfig {
      *
      * @param key      the key for the configuration option
      * @param defValue value to return if the key is not present
+     *
      * @return single value: the String value, or {@code defValue} if the key is not present.
-     * list value: the CSV String, or {@code defValue} when {@code defValue} is non-null,
-     * or {@code ""} when  {@code defValue} is null.
+     * list value: the CSV String, or {@code defValue} when {@code defValue} is non-{@code null},
+     * or {@code ""} when  {@code defValue} is {@code null}.
      */
     @Nullable
     String getString(@NonNull String key,
@@ -38,6 +39,7 @@ public interface BaseConfig {
      * Convenience method for a single-value {@code String}.
      *
      * @param key the key for the configuration option
+     *
      * @return the int value, or {@code null} if the key is not present.
      */
     @Nullable
@@ -49,6 +51,7 @@ public interface BaseConfig {
      * Convenience method for a single-value {@code int}.
      *
      * @param key the key for the configuration option
+     *
      * @return the int value, or {@code defValue} if the key is not present.
      */
     default int getIntValue(@NonNull final String key,
@@ -58,10 +61,8 @@ public interface BaseConfig {
             try {
                 return Integer.parseInt(s);
             } catch (final NumberFormatException e) {
-                if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                    SshClient.getLogger()
-                            .log(Logger.ERROR, "Invalid value for key=" + key + ": " + s);
-                }
+                SshClient.getLogger()
+                         .log(Logger.ERROR, () -> "Invalid value for key=" + key + ": " + s);
             }
         }
         return defValue;
@@ -71,6 +72,7 @@ public interface BaseConfig {
      * Convenience method for a single-value {@code boolean}.
      *
      * @param key the key for the configuration option
+     *
      * @return the boolean value, or {@code defValue} if the key is not present.
      */
     default boolean getBooleanValue(@NonNull final String key,
@@ -88,6 +90,7 @@ public interface BaseConfig {
      * If the key is not found, we return an empty {@code List<String>}.
      *
      * @param key the key for the configuration option
+     *
      * @return the value corresponding to the key.
      */
     @NonNull

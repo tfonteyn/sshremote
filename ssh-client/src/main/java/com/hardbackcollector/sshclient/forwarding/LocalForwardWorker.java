@@ -3,6 +3,7 @@ package com.hardbackcollector.sshclient.forwarding;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.transport.SessionImpl;
 
 import java.io.IOException;
@@ -15,14 +16,14 @@ abstract class LocalForwardWorker
         implements Runnable {
 
     @NonNull
-    protected final SessionImpl session;
+    final SessionImpl session;
+    final int connectTimeout;
     @Nullable
-    protected final String address;
-    protected final int connectTimeout;
+    private final String address;
     @Nullable
     private final ServerSocketFactory ssf;
     @Nullable
-    protected Thread thread;
+    Thread thread;
     ServerSocket ss;
     private int localPort;
     private InetAddress bindAddress;
@@ -41,7 +42,7 @@ abstract class LocalForwardWorker
     }
 
     @NonNull
-    SessionImpl getSession() {
+    Session getSession() {
         return session;
     }
 
@@ -58,6 +59,7 @@ abstract class LocalForwardWorker
      * Start this PortWatcher as a thread listening and forwarding.
      *
      * @param asDaemon whether to start the thread as a daemon of not.
+     *
      * @see Thread#setDaemon(boolean)
      */
     void start(final boolean asDaemon)

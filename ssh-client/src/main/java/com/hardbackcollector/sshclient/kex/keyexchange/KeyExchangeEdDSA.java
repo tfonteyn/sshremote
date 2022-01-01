@@ -99,10 +99,8 @@ public class KeyExchangeEdDSA
                 .putString(agreement.getQ());
         io.write(packet);
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_KEX_ECDH_INIT(30) sent,"
-                    + " expecting SSH_MSG_KEX_ECDH_REPLY(31)");
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_ECDH_INIT(30) sent,"
+                + " expecting SSH_MSG_KEX_ECDH_REPLY(31)");
 
         state = SSH_MSG_KEX_ECDH_REPLY;
     }

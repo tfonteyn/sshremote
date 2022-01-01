@@ -46,6 +46,7 @@ public interface ChannelShell
      * @param rows           terminal height
      * @param widthInPixels  terminal width
      * @param heightInPixels terminal height
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.7">
      * RFC 4254 SSH Connection Protocol, section 6.7. Window Dimension Change Message</a>
      */

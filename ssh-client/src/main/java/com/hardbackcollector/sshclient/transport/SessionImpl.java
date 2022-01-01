@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.transport;
 
 import androidx.annotation.NonNull;
@@ -114,55 +86,47 @@ import java.util.StringJoiner;
 public class SessionImpl
         implements Session, PacketIO, Runnable {
 
-    /**
-     * All channels opened by this session.
-     */
+    /** All channels opened by this session. */
     private static final Map<Integer, Channel> channelPool =
             Collections.synchronizedMap(new HashMap<>());
 
-    private static final byte[] MSG_KEEP_ALIVE = "keepalive@jcraft.com"
+    private static final byte[] MSG_KEEP_ALIVE = "keepalive@sshclient4j.com"
             .getBytes(StandardCharsets.UTF_8);
 
-    private static final String ERROR_SESSION_IS_DOWN =
-            "Session is not connected";
+    private static final String ERROR_SESSION_IS_DOWN = "Session is not connected";
 
     @NonNull
     private final SshClientConfigImpl config;
-    /**
-     * Used for callback when this session is disconnected.
-     */
     @NonNull
-    private final SshClient client;
+    private final SshClient sshClient;
     @Nullable
     private final String username;
     @NonNull
     private final String host;
     private final int port;
-    /**
-     * Separates all logic for handling forwarding of ports and sockets.
-     */
+
+    /** Separates all logic for handling forwarding of ports and sockets. */
     @Nullable
     private RemoteForwardingHandlerImpl remoteForwardingHandler;
     @Nullable
     private LocalForwardingHandlerImpl localForwardingHandler;
+
     private int x11Forwarding;
     private boolean agentForwarding;
     private boolean runAsDaemonThread;
-    /**
-     * server version.
-     */
+
+    /** server version. */
     @Nullable
     private String serverVersion;
-    /**
-     * client version.
-     */
+
+    /** client version. */
     @NonNull
     private String clientVersion = SshClient.VERSION;
-    /**
-     * Unique session id, based on the hash from the KeyExchange.
-     */
+
+    /** Unique session id, based on the hash from the KeyExchange. */
     @Nullable
     private byte[] sessionId;
+
     @Nullable
     private TransportS2C s2c;
     @Nullable
@@ -189,54 +153,44 @@ public class SessionImpl
     private int serverAliveInterval;
     private int serverAliveCountMax = 1;
 
-    @NonNull
+    /** Always use {@link #getIdentityRepository()}. */
+    @Nullable
     private IdentityRepository identityRepository;
-    @NonNull
+    /** Always use {@link #getHostKeyRepository()}. */
+    @Nullable
     private HostKeyRepository hostKeyRepository;
+
     @Nullable
     private KexDelegate kexDelegate;
 
     /**
-     * Create a new session object.
+     * Constructor.
+     * <p>
      * Called from {@link SshClient#getSession(String, String, int)} ONLY.
-     *
-     * @param identityRepository the global {@link IdentityRepository}
-     *                           Can be overridden by calling
-     *                           {@link #setIdentityRepository(IdentityRepository)}
-     * @param hostKeyRepository  the global {@link HostKeyRepository}
-     *                           Can be overridden by calling
-     *                           {@link #setHostKeyRepository(HostKeyRepository)}
      */
     public SessionImpl(@NonNull final SshClient sshClient,
-                       @NonNull final SshClientConfigImpl config,
+                       @NonNull final SshClientConfig globalConfig,
+                       @Nullable final HostConfig hostConfig,
                        @Nullable final String username,
                        @NonNull final String hostnameOrAlias,
-                       final int port,
-                       @NonNull final IdentityRepository identityRepository,
-                       @NonNull final HostKeyRepository hostKeyRepository)
+                       final int port)
             throws IOException, GeneralSecurityException, SshAuthException {
 
-        this.client = sshClient;
-        this.config = config;
-
-        final HostConfig hostConfig = config.getHostConfig();
+        this.sshClient = sshClient;
+        // create a child config
+        this.config = new SshClientConfigImpl(globalConfig, hostConfig);
 
         this.username = resolveUsername(username, hostConfig);
         this.host = resolveHostname(hostnameOrAlias, hostConfig);
         this.hostKeyAlias = hostnameOrAlias;
         this.port = resolvePort(port, hostConfig);
 
-        this.identityRepository = identityRepository;
-        this.hostKeyRepository = hostKeyRepository;
-
         if (hostConfig != null) {
             applyHostConfig(hostConfig);
         }
 
-        if (SshClient.getLogger().isEnabled(Logger.INFO)) {
-            SshClient.getLogger().log(Logger.INFO, "Session created for "
-                    + username + "@" + hostnameOrAlias + ":" + port);
-        }
+        SshClient.getLogger().log(Logger.INFO, () -> "Session created for "
+                + username + "@" + hostnameOrAlias + ":" + port);
     }
 
     @NonNull
@@ -298,6 +252,12 @@ public class SessionImpl
         return 22;
     }
 
+    @NonNull
+    @Override
+    public SshClient getSshClient() {
+        return sshClient;
+    }
+
     @Nullable
     public byte[] getPassword() {
         return password;
@@ -331,17 +291,9 @@ public class SessionImpl
         this.userinfo = userinfo;
     }
 
-
-    /**
-     * Note that the {@link Session} interface API returns {@link SshClientConfig}.
-     * But here we return the implementation as this call is also used internally
-     * when we need internal methods from the configuration object.
-     *
-     * @return config object
-     */
     @Override
     @NonNull
-    public SshClientConfigImpl getConfig() {
+    public SshClientConfig getConfig() {
         return config;
     }
 
@@ -370,7 +322,7 @@ public class SessionImpl
     @Override
     @NonNull
     public IdentityRepository getIdentityRepository() {
-        return identityRepository;
+        return Objects.requireNonNullElseGet(identityRepository, sshClient::getIdentityRepository);
     }
 
     @Override
@@ -381,7 +333,7 @@ public class SessionImpl
     @Override
     @NonNull
     public HostKeyRepository getHostKeyRepository() {
-        return hostKeyRepository;
+        return Objects.requireNonNullElseGet(hostKeyRepository, sshClient::getHostKeyRepository);
     }
 
     @Override
@@ -403,9 +355,7 @@ public class SessionImpl
             throw new IOException("Session is already connected");
         }
 
-        if (SshClient.getLogger().isEnabled(Logger.INFO)) {
-            SshClient.getLogger().log(Logger.INFO, "Connecting to " + host + ":" + port);
-        }
+        SshClient.getLogger().log(Logger.INFO, () -> "Connecting to " + host + ":" + port);
 
         try {
             // Setup socket and input/output streams. Use a proxy if so configured.
@@ -435,8 +385,8 @@ public class SessionImpl
                 socket.setSoTimeout(timeoutInMillis);
             }
 
-            s2c = new TransportS2C(config, socketInputStream);
-            c2s = new TransportC2S(config, socketOutputStream);
+            s2c = new TransportS2C(this, socketInputStream);
+            c2s = new TransportC2S(this, socketOutputStream);
 
             connected = true;
 
@@ -446,9 +396,9 @@ public class SessionImpl
 
             // Step 2: the full KeyExchange to agree on
             kexDelegate = new KexDelegate(this, serverVersion, clientVersion,
-                    createHostKeyName());
+                                          createHostKeyName());
 
-            final KexKeys keys = kexDelegate.startExchange(hostKeyRepository, userinfo);
+            final KexKeys keys = kexDelegate.startExchange(getHostKeyRepository(), userinfo);
             takeKeysIntoUse(keys);
 
             // Step 3: the user must authenticate by a mutually agreed method
@@ -476,9 +426,7 @@ public class SessionImpl
                 }
             }
 
-            if (SshClient.getLogger().isEnabled(Logger.INFO)) {
-                SshClient.getLogger().log(Logger.INFO, "Connection established");
-            }
+            SshClient.getLogger().log(Logger.INFO, () -> "Connection established");
 
         } catch (final GeneralSecurityException | IOException | SshException e) {
             cleanup(e);
@@ -509,7 +457,7 @@ public class SessionImpl
 
     private void initForwards()
             throws IOException, GeneralSecurityException,
-            PortForwardException, SshChannelException {
+                   PortForwardException, SshChannelException {
 
         List<String> values;
 
@@ -538,9 +486,7 @@ public class SessionImpl
             kexDelegate.setKeyExchangeDone();
         }
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "KEX", e);
-        }
+        SshClient.getLogger().log(Logger.DEBUG, e, () -> "KEX");
 
         try {
             // If things went wrong, but we are in fact connected, we need to tell the server
@@ -612,7 +558,7 @@ public class SessionImpl
                     for (int k = nextMethod - 1; k < clientMethods.size(); k++) {
                         sj.add(clientMethods.get(k));
                     }
-                    SshClient.getLogger().log(Logger.INFO, sj.toString());
+                    SshClient.getLogger().log(Logger.INFO, sj::toString);
                 }
 
                 try {
@@ -620,10 +566,9 @@ public class SessionImpl
                     ua.init(config, username, userinfo);
                     auth = ua.authenticate(this, this, password);
                     if (auth) {
-                        if (SshClient.getLogger().isEnabled(Logger.INFO)) {
-                            SshClient.getLogger()
-                                    .log(Logger.INFO, "Authentication success: " + method);
-                        }
+                        SshClient.getLogger().log(Logger.INFO,
+                                                  () -> "Authentication success: " + method);
+
                         authenticated = true;
                         return;
                     }
@@ -645,10 +590,9 @@ public class SessionImpl
 
                 } catch (final SshAuthNoSuchMethodException e) {
                     // Don't fail here; loop and try the next method.
-                    if (SshClient.getLogger().isEnabled(Logger.WARN)) {
-                        SshClient.getLogger().log(Logger.WARN,
-                                "failed to load " + method + " method", e);
-                    }
+                    SshClient.getLogger().log(Logger.WARN,
+                                              e, () -> "failed to load " + method + " method");
+
                     methodCanceled = null;
 
                 } catch (final SshException e) {
@@ -656,9 +600,7 @@ public class SessionImpl
 
                 } catch (final Exception e) {
                     // quit the loop
-                    if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                        SshClient.getLogger().log(Logger.ERROR, "Authenticate: ", e);
-                    }
+                    SshClient.getLogger().log(Logger.ERROR, e, () -> "Authenticate: ");
                     break;
                 }
             }
@@ -687,9 +629,7 @@ public class SessionImpl
     private void takeKeysIntoUse(@NonNull final KexKeys keys)
             throws GeneralSecurityException, IOException {
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_NEWKEYS received");
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS received");
 
         final byte[] K = keys.getK();
         final byte[] H = keys.getH();
@@ -715,7 +655,7 @@ public class SessionImpl
         // The location for the 'A', 'B', ... character used
         final int cPos = buffer.writeOffset;
         buffer.putByte((byte) 'A')
-                .putBytes(sessionId);
+              .putBytes(sessionId);
         md.update(buffer.data, 0, buffer.writeOffset);
         final byte[] iv_c2s = md.digest();
 
@@ -826,14 +766,12 @@ public class SessionImpl
                     break;
                 }
                 case SshConstants.SSH_MSG_UNIMPLEMENTED: {
-                    if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
+                    SshClient.getLogger().log(Logger.DEBUG, () -> {
                         packet.startReadingPayload();
                         packet.getByte(); // command
                         final int packetId = packet.getInt();
-
-                        SshClient.getLogger()
-                                .log(Logger.DEBUG, "SSH_MSG_UNIMPLEMENTED: " + packetId);
-                    }
+                        return "SSH_MSG_UNIMPLEMENTED: " + packetId;
+                    });
                     // loop and get the next packet
                     break;
                 }
@@ -845,7 +783,7 @@ public class SessionImpl
                         final String message = packet.getJString();
                         packet.skipString(/* language_tag */);
 
-                        SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_DEBUG: " + message);
+                        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_DEBUG: " + message);
                         if (always_display && userinfo != null) {
                             userinfo.showMessage(message);
                         }
@@ -1008,11 +946,10 @@ public class SessionImpl
                                             || ChannelAgentForwarding.NAME.equals(channelType)
                                             && agentForwarding;
 
-                            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                                SshClient.getLogger().log(Logger.DEBUG,
-                                        "Remote request to open channel: "
-                                                + channelType + ", accept: " + accept);
-                            }
+                            SshClient.getLogger()
+                                     .log(Logger.DEBUG,
+                                          () -> "Remote request to open channel: "
+                                                  + channelType + ", accept: " + accept);
 
                             if (accept) {
                                 ForwardingChannel.openFromRemote(channelType, this, packet);
@@ -1055,12 +992,11 @@ public class SessionImpl
             if (kexDelegate != null) {
                 kexDelegate.setKeyExchangeDone();
             }
-            if (SshClient.getLogger().isEnabled(Logger.WARN)) {
-                if (e instanceof SocketException && !connected) {
-                    SshClient.getLogger().log(Logger.WARN, "Closing Session normally");
-                } else {
-                    SshClient.getLogger().log(Logger.WARN, "Closing Session with error", e);
-                }
+
+            if (e instanceof SocketException && !connected) {
+                SshClient.getLogger().log(Logger.INFO, () -> "Closing Session normally");
+            } else {
+                SshClient.getLogger().log(Logger.ERROR, e, () -> "Closing Session with error");
             }
         }
 
@@ -1091,9 +1027,7 @@ public class SessionImpl
             return;
         }
 
-        if (SshClient.getLogger().isEnabled(Logger.INFO)) {
-            SshClient.getLogger().log(Logger.INFO, "Disconnecting from " + host + ":" + port);
-        }
+        SshClient.getLogger().log(Logger.INFO, () -> "Disconnecting from " + host + ":" + port);
 
         // Disconnects all channels for the given session.
         // Channel disconnect will also remove from pool, so take a copy of the list first.
@@ -1145,7 +1079,7 @@ public class SessionImpl
 
         socket = null;
 
-        client.onSessionDisconnected(this);
+        sshClient.unregisterSession(this);
     }
 
 
@@ -1175,6 +1109,7 @@ public class SessionImpl
      *
      * @see #setTimeout
      */
+    @Override
     public int getTimeout() {
         return timeout;
     }
@@ -1235,7 +1170,7 @@ public class SessionImpl
      *
      * @see #setServerAliveInterval(int)
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public int getServerAliveInterval() {
         return this.serverAliveInterval;
     }
@@ -1249,6 +1184,7 @@ public class SessionImpl
      *
      * @param interval the timeout interval in milliseconds before sending
      *                 a server alive message, if no message is received from the server.
+     *
      * @see #getServerAliveInterval()
      */
     @SuppressWarnings("WeakerAccess")
@@ -1265,7 +1201,7 @@ public class SessionImpl
      *
      * @see #setServerAliveCountMax(int)
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public int getServerAliveCountMax() {
         return this.serverAliveCountMax;
     }
@@ -1277,9 +1213,10 @@ public class SessionImpl
      * be disconnected.  The default value is one.
      *
      * @param count the specified count
+     *
      * @see #getServerAliveCountMax()
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public void setServerAliveCountMax(final int count) {
         this.serverAliveCountMax = count;
     }
@@ -1350,16 +1287,16 @@ public class SessionImpl
         if (!fileNames.isEmpty()) {
             // Wrap the repo if required.
             synchronized (this) {
-                if (!identityRepository.supportsEncryption()
-                        && !(identityRepository instanceof IdentityRepositoryWrapper)) {
-
-                    identityRepository = new IdentityRepositoryWrapper(identityRepository, true);
+                final IdentityRepository repo = getIdentityRepository();
+                if (!repo.supportsEncryption() && !(repo instanceof IdentityRepositoryWrapper)) {
+                    this.identityRepository = new IdentityRepositoryWrapper(repo, true);
                 }
             }
 
             // and add any non-global keys overwriting (as intended) an already present key.
+            final IdentityRepository repo = this.getIdentityRepository();
             for (final String prvKeyFilename : fileNames) {
-                identityRepository.add(IdentityImpl.fromFiles(config, prvKeyFilename, null));
+                repo.add(IdentityImpl.fromFiles(config, prvKeyFilename, null));
             }
         }
     }
@@ -1432,47 +1369,28 @@ public class SessionImpl
         ChannelX11.setCookie(cookie);
     }
 
-    /**
-     * Sends a {@link SshConstants#SSH_MSG_IGNORE}.
-     * <p>
-     * Not used internally, but can called by users.
-     *
-     * @see <a href="https://www.rfc-editor.org/rfc/rfc4251.html#section-9.3.1">
-     * RFC 4251 Protocol Architecture, section 9.3.1. (to avoid the Rogaway attack)</a>
-     */
+    @Override
     public void sendIgnore()
             throws IOException, GeneralSecurityException {
         final Packet packet = new Packet(SshConstants.SSH_MSG_IGNORE);
         write(packet);
     }
 
-    /**
-     * Sends a global "keepalive" message.
-     * <p>
-     * This is used internally, but can also be called by users.
-     */
-    @SuppressWarnings("WeakerAccess")
+    @Override
     public void sendKeepAlive()
             throws IOException, GeneralSecurityException {
         final Packet packet = new Packet(SshConstants.SSH_MSG_GLOBAL_REQUEST)
                 .putString(MSG_KEEP_ALIVE)
-                .putByte((byte) 1);
+                .putBoolean(true);
         write(packet);
     }
 
-    /**
-     * Sends a global "no-more-sessions" message.
-     * <p>
-     * Not used internally, but can called by users.
-     *
-     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
-     * SSH protocol version 2 vendor extensions, section 2.2</a>
-     */
+    @Override
     public void sendNoMoreSessions()
             throws IOException, GeneralSecurityException {
         final Packet packet = new Packet(SshConstants.SSH_MSG_GLOBAL_REQUEST)
                 .putString("no-more-sessions@openssh.com")
-                .putByte((byte) 0);
+                .putBoolean(false);
         write(packet);
     }
 
@@ -1491,10 +1409,12 @@ public class SessionImpl
         write(packet);
     }
 
+    /** Internal house-keeping. */
     public void registerChannel(@NonNull final Channel channel) {
         channelPool.put(channel.getId(), channel);
     }
 
+    /** Internal house-keeping. */
     public void unregisterChannel(@NonNull final Channel channel) {
         channelPool.remove(channel.getId());
     }

@@ -16,22 +16,22 @@ import java.util.Arrays;
 public enum ECKeyType {
 
     ECDSA_SHA2_NISTP256(HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
-            "secp256r1",
-            "nistp256",
-            256,
-            SECObjectIdentifiers.secp256r1),
+                        "secp256r1",
+                        "nistp256",
+                        256,
+                        SECObjectIdentifiers.secp256r1),
 
     ECDSA_SHA2_NISTP384(HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
-            "secp384r1",
-            "nistp384",
-            384,
-            SECObjectIdentifiers.secp384r1),
+                        "secp384r1",
+                        "nistp384",
+                        384,
+                        SECObjectIdentifiers.secp384r1),
 
     ECDSA_SHA2_NISTP521(HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
-            "secp521r1",
-            "nistp521",
-            521,
-            SECObjectIdentifiers.secp521r1);
+                        "secp521r1",
+                        "nistp521",
+                        521,
+                        SECObjectIdentifiers.secp521r1);
 
     /**
      * Flag: (un)compressed.
@@ -67,45 +67,45 @@ public enum ECKeyType {
     public static ECKeyType getByHostKeyAlgorithm(@NonNull final String hostKeyAlgorithm)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.hostKeyAlgorithm.equalsIgnoreCase(hostKeyAlgorithm))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.hostKeyAlgorithm.equalsIgnoreCase(hostKeyAlgorithm))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static ECKeyType getByCurveName(@NonNull final String curveName)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.curveName.equalsIgnoreCase(curveName))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.curveName.equalsIgnoreCase(curveName))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static ECKeyType getByNistName(@NonNull final String nistName)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.nistName.equalsIgnoreCase(nistName))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.nistName.equalsIgnoreCase(nistName))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static ECKeyType getByKeySize(final int keySize)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.keySize == keySize)
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.keySize == keySize)
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static ECKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.keyOid.equals(oid))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.keyOid.equals(oid))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull

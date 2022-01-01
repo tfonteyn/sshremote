@@ -33,6 +33,9 @@ class PuttyReader {
 
     private final Base64.Decoder b64 = Base64.getDecoder();
 
+    /**
+     * Constructor.
+     */
     PuttyReader(@NonNull final SshClientConfig config) {
         this.config = config;
     }
@@ -41,6 +44,7 @@ class PuttyReader {
      * Loads a key pair from a PuTTY file.
      *
      * @param reader MUST be a BufferedReader as we'll need to use mark/reset.
+     *
      * @return the new KeyPair.
      */
     @Nullable

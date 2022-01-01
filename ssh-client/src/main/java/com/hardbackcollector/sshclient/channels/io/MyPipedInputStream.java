@@ -91,8 +91,8 @@ public class MyPipedInputStream
                 if (in != -1) {
                     System.arraycopy(buffer, 0, tmp, 0, in);
                     System.arraycopy(buffer, out,
-                            tmp, tmp.length - (buffer.length - out),
-                            (buffer.length - out));
+                                     tmp, tmp.length - (buffer.length - out),
+                                     (buffer.length - out));
                     out = tmp.length - (buffer.length - out);
                 }
             } else {

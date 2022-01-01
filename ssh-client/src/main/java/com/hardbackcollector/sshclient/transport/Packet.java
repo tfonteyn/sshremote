@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.transport;
 
 import androidx.annotation.NonNull;
@@ -82,21 +54,24 @@ public class Packet
      * This is an exact value; i.e. SHA-512
      * Used where fixed-size packets are used.
      */
+    @SuppressWarnings("WeakerAccess")
     public static final int MAX_MAC_SIZE = 64;
     /**
      * Maximum padding length.
      * Used where fixed-size packets are used.
      */
+    @SuppressWarnings("WeakerAccess")
     public static final int MAX_PAD_SIZE = 32;
     /**
      * Margin for deflater; compressing can in rare circumstances actually inflate data.
      * This is an safe estimate only.
      * Used where fixed-size packets are used.
      */
+    @SuppressWarnings("WeakerAccess")
     public static final int DEFLATER_MARGIN = 32;
 
     /**
-     * Safe margin where fixed-size packets are used.
+     * Safety margin where fixed-size packets are used.
      */
     public static final int SAFE_MARGIN = MAX_MAC_SIZE + MAX_PAD_SIZE + DEFLATER_MARGIN;
 
@@ -111,7 +86,7 @@ public class Packet
      *    than the uncompressed length noted above.  Implementations SHOULD
      *    support longer packets, where they might be needed.
      * </pre>
-     * So 35000, rounded up to 64k and doubled...
+     * Take 35000, rounded up to 64k and doubled... 128kb.
      * TODO: should be configurable.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.1">
@@ -120,6 +95,8 @@ public class Packet
     public static final int MAX_SIZE = 0x2_0000;
 
     /**
+     * Constructor.
+     * <p>
      * Create a Packet with a default size. The buffer MAY expand when needed.
      */
     public Packet() {
@@ -127,6 +104,8 @@ public class Packet
     }
 
     /**
+     * Constructor.
+     *
      * Create a packet with a FIXED size.
      *
      * @see #SAFE_MARGIN
@@ -136,6 +115,8 @@ public class Packet
     }
 
     /**
+     * Constructor.
+     *
      * Create a Packet with a default size. The buffer MAY expand when needed.
      * Put the given command byte in the buffer,
      * and set the buffer's WRITE-position to the start of the payload.
@@ -220,14 +201,18 @@ public class Packet
                 data[3] & 0x000000ff;
     }
 
+    /**
+     * Read the length of the padding.
+     *
+     * @return 0..255
+     */
     public int getPaddingLength() {
         return data[4];
     }
 
     /**
-     * returns the command, i.e. the byte identifying the type
-     * of an SSH packet. This is the first byte of the payload,
-     * i.e. the byte with index 5.
+     * Read the command, i.e. the byte identifying the type of an SSH packet.
+     * This is the first byte of the payload, i.e. the byte with index 5.
      *
      * <strong>The read/write offsets are NOT modified</strong>
      *

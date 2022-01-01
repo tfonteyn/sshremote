@@ -23,6 +23,7 @@ public final class KexAgreement {
     @NonNull
     private final String compression_s2c;
 
+    @SuppressWarnings("unused")
     KexAgreement(@NonNull final String kexAlgorithm,
                  @NonNull final String hostKeyAlgorithm,
                  @NonNull final String enc_c2s,
@@ -44,7 +45,7 @@ public final class KexAgreement {
     }
 
     @NonNull
-    public String getKeyAlgorithm() {
+    String getKeyAlgorithm() {
         return kexAlgorithm;
     }
 

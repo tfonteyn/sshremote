@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.userauth;
 
 import androidx.annotation.NonNull;
@@ -54,6 +26,7 @@ public class UserAuthPassword
         implements UserAuth {
 
     public static final String METHOD = "password";
+
     /**
      * byte      SSH_MSG_USERAUTH_PASSWD_CHANGEREQ
      * string    prompt in ISO-10646 UTF-8 encoding [RFC3629]
@@ -81,8 +54,8 @@ public class UserAuthPassword
                                 @NonNull final PacketIO io,
                                 @Nullable final byte[] authPassword)
             throws IOException, GeneralSecurityException,
-            SshAuthCancelException, SshPartialAuthException,
-            SshTooManyAuthAttemptException {
+                   SshAuthCancelException, SshPartialAuthException,
+                   SshTooManyAuthAttemptException {
 
         byte[] password = authPassword;
 
@@ -94,7 +67,7 @@ public class UserAuthPassword
         Packet packet = new Packet();
 
         final int maxAuthAttempts = config.getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
-                HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
+                                                       HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
         int attemptsLeft = maxAuthAttempts;
 
         try {
@@ -127,11 +100,11 @@ public class UserAuthPassword
                 // boolean   FALSE
                 // string    plaintext password in ISO-10646 UTF-8 encoding [RFC3629]
                 packet.startCommand(SshConstants.SSH_MSG_USERAUTH_REQUEST)
-                        .putString(username)
-                        .putString(UserAuth.SSH_CONNECTION)
-                        .putString(METHOD)
-                        .putBoolean(false)
-                        .putString(password);
+                      .putString(username)
+                      .putString(UserAuth.SSH_CONNECTION)
+                      .putString(METHOD)
+                      .putBoolean(false)
+                      .putString(password);
                 io.write(packet);
 
                 while (true) {
@@ -177,7 +150,7 @@ public class UserAuthPassword
                                     dest,
                                     rb.getString("PASSWORD_CHANGE_REQUIRED"),
                                     new String(prompt, 0, prompt.length,
-                                            StandardCharsets.UTF_8),
+                                               StandardCharsets.UTF_8),
                                     new String[]{rb.getString("PROMPT_NEW_PASSWORD")},
                                     new boolean[]{false});
                             if (response == null) {
@@ -195,12 +168,12 @@ public class UserAuthPassword
                             // string    plaintext old password (ISO-10646 UTF-8)
                             // string    plaintext new password (ISO-10646 UTF-8)
                             packet.startCommand(SshConstants.SSH_MSG_USERAUTH_REQUEST)
-                                    .putString(username)
-                                    .putString(UserAuth.SSH_CONNECTION)
-                                    .putString(METHOD)
-                                    .putBoolean(true)
-                                    .putString(password)
-                                    .putString(newPassword);
+                                  .putString(username)
+                                  .putString(UserAuth.SSH_CONNECTION)
+                                  .putString(METHOD)
+                                  .putBoolean(true)
+                                  .putString(password)
+                                  .putString(newPassword);
                             Arrays.fill(newPassword, (byte) 0);
                             io.write(packet);
                         } else {

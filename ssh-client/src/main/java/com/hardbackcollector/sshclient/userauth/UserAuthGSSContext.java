@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2004-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.userauth;
 
 import androidx.annotation.NonNull;
@@ -63,10 +35,11 @@ import org.ietf.jgss.MessageProp;
 public interface UserAuthGSSContext {
 
     /**
-     * creates the context.
+     * Creates the context.
      *
      * @param user the user name.
      * @param host the server's name.
+     *
      * @see org.ietf.jgss.GSSManager#createContext
      */
     void create(@NonNull String user,
@@ -87,7 +60,9 @@ public interface UserAuthGSSContext {
      *               At the start, this will be an empty array.
      * @param offset the index in {@code token} where the token actually starts.
      * @param len    the length of the token.
+     *
      * @return the token to be sent to the server (if length > 0).
+     *
      * @see org.ietf.jgss.GSSContext#initSecContext
      */
     @NonNull
@@ -97,14 +72,16 @@ public interface UserAuthGSSContext {
             throws SshAuthException;
 
     /**
-     * calculates a Message Integrity Code for a message.
+     * Calculates a Message Integrity Code for a message.
      *
      * @param inMsg  an array containing the message for which the
      *               the code should be calculated.
      * @param offset the index in {@code message} where the message actually
      *               starts
      * @param len    the length of the message.
+     *
      * @return a token containing the MIC for the message.
+     *
      * @see org.ietf.jgss.GSSContext#getMIC(byte[], int, int, MessageProp)
      */
     @NonNull

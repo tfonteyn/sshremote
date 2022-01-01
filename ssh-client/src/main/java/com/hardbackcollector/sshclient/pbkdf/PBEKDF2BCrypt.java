@@ -29,9 +29,7 @@ public class PBEKDF2BCrypt
         extends BCrypt
         implements PBKDF2 {
 
-    /**
-     * OpenBSD IV: "OxychromaticBlowfishSwatDynamite" in big endian
-     */
+    /** OpenBSD IV: "OxychromaticBlowfishSwatDynamite" in big endian. */
     private static final int[] openbsd_iv = {
             0x4f787963, 0x68726f6d, 0x61746963, 0x426c6f77,
             0x66697368, 0x53776174, 0x44796e61, 0x6d697465,

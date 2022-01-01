@@ -1,13 +1,16 @@
 package com.hardbackcollector.sshremote.ssh;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Channel;
 import com.hardbackcollector.sshclient.ChannelExec;
+import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.channels.SshChannelException;
@@ -25,9 +28,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class SshHelper {
+
+    public static final String PK_SSH_LOG_LEVEL = "global.ssh.log.level";
+    public static final String PK_STRICT_HOST_KEY_CHECKING = "global.ssh.strictHostKeyChecking";
 
     public static final String KNOWN_HOSTS = "known_hosts";
     private static final String CHANNEL_EXEC = "exec";
@@ -36,15 +43,18 @@ public class SshHelper {
 
     private final SshClient mSshClient;
 
-    public SshHelper(@NonNull final Host host) {
+    public SshHelper(@NonNull final SharedPreferences global,
+                     @NonNull final Host host) {
         mHost = host;
-        SshClient.setLogger(new JLogger());
 
-        mSshClient = new SshClient();
+        final int logLevel = global.getInt(PK_SSH_LOG_LEVEL, Logger.ERROR);
+
+        mSshClient = new SshClient(new JLogger(logLevel));
+
         mSshClient.setConfig(KexProposal.PROPOSAL_COMP_CTOS,
-                KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
+                             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
         mSshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC,
-                KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
+                             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
     }
 
     /**
@@ -119,22 +129,24 @@ public class SshHelper {
     public static class JLogger
             implements com.hardbackcollector.sshclient.Logger {
 
+        @IntRange(from = Logger.NONE, to = Logger.DEBUG)
+        private final int level;
+
+        JLogger(@IntRange(from = Logger.NONE, to = Logger.DEBUG) final int logLevel) {
+            level = logLevel;
+        }
+
         @Override
         public boolean isEnabled(final int level) {
-            return true;
+            return level >= this.level;
         }
 
         @Override
         public void log(final int level,
-                        @NonNull final String message) {
-            Log.d("SSH" + level, message);
-        }
-
-        @Override
-        public void log(final int level,
-                        @NonNull final String message,
-                        @NonNull final Throwable e) {
-            Log.d("SSH" + level, message, e);
+                        @NonNull final Supplier<String> message) {
+            if (level >= this.level) {
+                Log.d("SSH" + level, message.get());
+            }
         }
     }
 }

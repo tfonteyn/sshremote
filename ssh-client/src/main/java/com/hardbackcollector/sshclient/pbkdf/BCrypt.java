@@ -1,16 +1,3 @@
-// Copyright (c) 2006 Damien Miller <djm@mindrot.org>
-//
-// Permission to use, copy, modify, and distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-//
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 package com.hardbackcollector.sshclient.pbkdf;
 
@@ -383,7 +370,9 @@ class BCrypt {
      *
      * @param d   the byte array to encode
      * @param len the number of bytes to encode
+     *
      * @return base64-encoded string
+     *
      * @throws IllegalArgumentException if the length is invalid
      */
     private static String encode_base64(final byte[] d,
@@ -426,10 +415,11 @@ class BCrypt {
      * range-checking against conversion table
      *
      * @param x the base64-encoded value
+     *
      * @return the decoded value of x
      */
     private static byte char64(final char x) {
-        if ((int) x < 0 || (int) x > index_64.length) {
+        if ((int) x > index_64.length) {
             return -1;
         }
         return index_64[x];
@@ -442,7 +432,9 @@ class BCrypt {
      *
      * @param s       the string to decode
      * @param maxolen the maximum number of bytes to decode
+     *
      * @return an array containing the decoded bytes
+     *
      * @throws IllegalArgumentException if maxolen is invalid
      */
     private static byte[] decode_base64(final CharSequence s,
@@ -501,6 +493,7 @@ class BCrypt {
      * @param data the string to extract the data from
      * @param offp a "pointer" (as a one-entry array) to the
      *             current offset into data
+     *
      * @return the next word of material from data
      */
     private static int streamtoword(final byte[] data,
@@ -524,6 +517,7 @@ class BCrypt {
      * @param password the password to hash
      * @param salt     the salt to hash with (perhaps generated
      *                 using BCrypt.gensalt)
+     *
      * @return the hashed password
      */
     public static String hashpw(final String password,
@@ -564,7 +558,7 @@ class BCrypt {
 
         B = new BCrypt();
         hashed = B.crypt_raw(passwordb, saltb, rounds,
-                bf_crypt_ciphertext.clone());
+                             bf_crypt_ciphertext.clone());
 
         rs.append("$2");
         if (minor >= 'a') {
@@ -582,7 +576,7 @@ class BCrypt {
         rs.append("$");
         rs.append(encode_base64(saltb, saltb.length));
         rs.append(encode_base64(hashed,
-                bf_crypt_ciphertext.length * 4 - 1));
+                                bf_crypt_ciphertext.length * 4 - 1));
         return rs.toString();
     }
 
@@ -593,6 +587,7 @@ class BCrypt {
      *                   hashing to apply - the work factor therefore increases as
      *                   2**log_rounds.
      * @param random     an instance of SecureRandom to use
+     *
      * @return an encoded salt value
      */
     public static String gensalt(final int log_rounds,
@@ -622,6 +617,7 @@ class BCrypt {
      * @param log_rounds the log2 of the number of rounds of
      *                   hashing to apply - the work factor therefore increases as
      *                   2**log_rounds.
+     *
      * @return an encoded salt value
      */
     public static String gensalt(final int log_rounds) {
@@ -645,6 +641,7 @@ class BCrypt {
      *
      * @param plaintext the plaintext password to verify
      * @param hashed    the previously-hashed password
+     *
      * @return {@code true} if the passwords match, {@code false} otherwise
      */
     public static boolean checkpw(final String plaintext,
@@ -779,6 +776,7 @@ class BCrypt {
      * @param log_rounds the binary logarithm of the number
      *                   of rounds of hashing to apply
      * @param cdata      the plaintext to encrypt
+     *
      * @return an array containing the binary hashed password
      */
     public byte[] crypt_raw(final byte[] password,

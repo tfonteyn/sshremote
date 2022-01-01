@@ -3,7 +3,7 @@ package com.hardbackcollector.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbackcollector.sshclient.SshClientConfig;
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.ciphers.AEADCipher;
 import com.hardbackcollector.sshclient.ciphers.ChaChaCipher;
 import com.hardbackcollector.sshclient.compression.SshInflater;
@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import javax.crypto.Cipher;
 
-public class TransportS2C
+class TransportS2C
         extends Transport {
 
     private static final String ERROR_SOCKET_INPUT_STREAM_IS_NULL =
@@ -44,14 +44,12 @@ public class TransportS2C
     @Nullable
     private SshInflater inflater;
 
-    /**
-     * Sequence number of incoming packets.
-     */
+    /** Sequence number of incoming packets. */
     private int seq;
 
-    TransportS2C(@NonNull final SshClientConfig config,
+    TransportS2C(@NonNull final Session session,
                  @NonNull final InputStream socketInputStream) {
-        super(config, Cipher.DECRYPT_MODE);
+        super(session, Cipher.DECRYPT_MODE);
         this.socketInputStream = socketInputStream;
     }
 
@@ -111,7 +109,7 @@ public class TransportS2C
     public void read(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
         packet.reset();
-        //
+
         if (isChaCha()) {
             decodeChaCha(packet);
         } else if (isAEAD()) {
@@ -119,7 +117,7 @@ public class TransportS2C
         } else if (isEtM()) {
             decodeWithEtM(packet);
         } else {
-            decodeSimpleCipher(packet);
+            decode(packet);
         }
 
         if (inflater != null) {
@@ -231,7 +229,6 @@ public class TransportS2C
         // so that decompression (if enabled) will work
         // (in case you missed it: there is a negative sign here)
         packet.moveWritePosition(-((AEADCipher) cipher).getTagSizeInBytes());
-
     }
 
     private void decodeWithEtM(@NonNull final Packet packet)
@@ -242,8 +239,9 @@ public class TransportS2C
         Objects.requireNonNull(socketInputStream, ERROR_SOCKET_INPUT_STREAM_IS_NULL);
 
         // read ONLY the first 4 bytes, so we can get the length of the packet
-        //noinspection ResultOfMethodCallIgnored
-        socketInputStream.read(packet.data, 0, 4);
+        if (4 != socketInputStream.read(packet.data, 0, 4)) {
+            throw new IOException(ERROR_CONNECTION_CLOSED);
+        }
         packet.moveWritePosition(4);
 
         final int packetLen = packet.getPacketLength();
@@ -279,21 +277,19 @@ public class TransportS2C
         cipher.update(packet.data, 4, packetLen, packet.data, 4);
     }
 
-    private void decodeSimpleCipher(@NonNull final Packet packet)
+    private void decode(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
 
         Objects.requireNonNull(socketInputStream, ERROR_SOCKET_INPUT_STREAM_IS_NULL);
 
-        // 8 bytes is the block size of 'none' cipher
-        final int blockSize = cipher != null ? cipher.getBlockSize() : 8;
-
         // Read one block (or 8 bytes if we don't have a cipher yet)
-        // This is enough to read the packet length
+        // This is enough to read the actual packet length
+        final int blockSize = cipher != null ? cipher.getBlockSize() : 8;
         if (blockSize != socketInputStream.read(packet.data, 0, blockSize)) {
             throw new IOException(ERROR_CONNECTION_CLOSED);
         }
-
         packet.moveWritePosition(blockSize);
+
         if (cipher != null) {
             cipher.update(packet.data, 0, blockSize, packet.data, 0);
         }
@@ -350,9 +346,9 @@ public class TransportS2C
      *     The number of bytes actually read is returned as an integer.
      * </pre>
      */
-    public void read(@NonNull final byte[] bytes,
-                     int offset,
-                     int length)
+    private void read(@NonNull final byte[] bytes,
+                      int offset,
+                      int length)
             throws IOException {
 
         Objects.requireNonNull(socketInputStream, ERROR_SOCKET_INPUT_STREAM_IS_NULL);

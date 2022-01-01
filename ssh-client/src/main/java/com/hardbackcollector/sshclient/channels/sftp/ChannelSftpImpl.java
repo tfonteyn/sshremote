@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.channels.sftp;
 
 import androidx.annotation.NonNull;
@@ -112,10 +84,11 @@ public class ChannelSftpImpl
     private static final String ERROR_s_IS_A_DIRECTORY = " is a directory";
 
 
-    private static final int client_version = 3;
+    private static final int CLIENT_VERSION = 3;
 
     /* 1kb */
     private static final int COPY_BUFFER_SIZE = 0x400;
+
     /**
      * See {@link #sendWRITE(byte[], long, byte[], int, int)}.
      * <p>
@@ -129,10 +102,9 @@ public class ChannelSftpImpl
     private static final int WRITE_PACKET_HEADER_LEN =
             Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 21;
 
-    /**
-     * Keep a map to allow users to query for extensions.
-     */
+    /** Keep a map to allow users to query for extensions. */
     private final HashMap<String, String> extensions = new HashMap<>();
+
     /**
      * 10. Changes from previous protocol versions
      * The SSH File Transfer Protocol has changed over time, before it's
@@ -159,35 +131,27 @@ public class ChannelSftpImpl
     private boolean extStatvfs;
     private boolean extFstatvfs;
     private boolean extFsync;
-    /**
-     * remote home directory.
-     */
+
+    /** remote home directory. */
     private String home;
-    /**
-     * remote current working directory.
-     */
+    /** remote current working directory. */
     private String cwd;
-    /**
-     * local current working directory.
-     */
+    /** local current working directory. */
     private String lcwd;
+
     @NonNull
     private String filenameEncoding = UTF8;
     private boolean filenameEncodingIsUtf8 = true;
     @NonNull
     private RequestQueue requestQueue = new RequestQueue(DEFAULT_REQUEST_QUEUE_SIZE);
 
-    /**
-     * Package sequence counter.
-     */
+    /** Package sequence counter. */
     private int seq = 1;
 
     @Nullable
     private MyPipedInputStream mpIn;
 
-    /**
-     * Created when needed; then re-used until the channel is destroyed.
-     */
+    /** Created when needed; then re-used until the channel is destroyed. */
     @Nullable
     private Packet uploadPacket;
 
@@ -217,7 +181,7 @@ public class ChannelSftpImpl
             throws SftpException {
         if (!UTF8.equals(encoding) && (getServerVersion() > 3)) {
             throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                    ERROR_FILENAME_ENCODING_V4);
+                                    ERROR_FILENAME_ENCODING_V4);
         }
 
         filenameEncoding = encoding;
@@ -265,16 +229,16 @@ public class ChannelSftpImpl
         // boolean   want reply
         // string    subsystem name
         sendRequest((recipient, x) -> new Packet(SshConstants.SSH_MSG_CHANNEL_REQUEST)
-                        .putInt(recipient)
-                        .putString(ChannelSubsystem.NAME)
-                        .putBoolean(true)
-                        .putString(ChannelSftp.NAME),
-                true);
+                            .putInt(recipient)
+                            .putString(ChannelSubsystem.NAME)
+                            .putBoolean(true)
+                            .putString(ChannelSftp.NAME),
+                    true);
 
         // Protocol Initialization
         // https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-4
         final Packet initPacket = createFxpPacket(SftpConstants.SSH_FXP_INIT)
-                .putInt(client_version);
+                .putInt(CLIENT_VERSION);
         sendFxpPacket(initPacket);
 
         // receive SSH_FXP_VERSION
@@ -335,7 +299,7 @@ public class ChannelSftpImpl
     @Override
     @NonNull
     public String version() {
-        return String.valueOf(client_version);
+        return String.valueOf(CLIENT_VERSION);
     }
 
     @Override
@@ -491,7 +455,7 @@ public class ChannelSftpImpl
                     absNewPath = absoluteRemotePath(newPath);
                     if (Globber.isPattern(absNewPath)) {
                         throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                "Path has wildcards: " + absNewPath);
+                                                "Path has wildcards: " + absNewPath);
                     }
                     absNewPath = Globber.unquote(absNewPath);
                     break;
@@ -548,6 +512,7 @@ public class ChannelSftpImpl
      *                 The pattern can contain glob pattern wildcards ({@code *} or {@code ?})
      *                 in the last component (i.e. after the last {@code /}).
      * @param selector see above
+     *
      * @see LsEntry.Selector
      */
     public void ls(@NonNull final String pattern,
@@ -612,7 +577,7 @@ public class ChannelSftpImpl
 
                 if (fxpBuffer.getFxpType() != SftpConstants.SSH_FXP_NAME) {
                     throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                            "type=" + fxpBuffer.getFxpType());
+                                            "type=" + fxpBuffer.getFxpType());
                 }
 
                 // byte       SSH_FXP_NAME
@@ -697,7 +662,7 @@ public class ChannelSftpImpl
             throws SftpException {
         if (!softLink && !exHardlink) {
             throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                    EXT_HARDLINK_OPENSSH_COM + " not supported");
+                                    EXT_HARDLINK_OPENSSH_COM + " not supported");
         }
 
         try {
@@ -709,7 +674,7 @@ public class ChannelSftpImpl
 
             if (Globber.isPattern(absNewPath)) {
                 throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                        "Path has wildcards: " + absNewPath);
+                                        "Path has wildcards: " + absNewPath);
             }
 
             if (softLink) {
@@ -769,7 +734,7 @@ public class ChannelSftpImpl
 
         if (!extStatvfs) {
             throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                    EXT_STATVFS_OPENSSH_COM + " not supported");
+                                    EXT_STATVFS_OPENSSH_COM + " not supported");
         }
 
         try {
@@ -952,7 +917,7 @@ public class ChannelSftpImpl
             final SftpATTRS srcAttr = receiveATTRS();
             if (srcAttr.isDirectory()) {
                 throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                        srcFilename + ERROR_s_IS_A_DIRECTORY);
+                                        srcFilename + ERROR_s_IS_A_DIRECTORY);
             }
 
             if (monitor != null) {
@@ -1075,6 +1040,7 @@ public class ChannelSftpImpl
                     } catch (final OutOfOrderException e) {
                         requestOffset = e.offset;
                         // throw away the entire packet
+                        //noinspection ResultOfMethodCallIgnored
                         skip(fxpBuffer.getFxpLength());
                         requestQueue.cancel();
                         return 0;
@@ -1148,6 +1114,7 @@ public class ChannelSftpImpl
                         }
 
                         if (optional_data > 0) {
+                            //noinspection ResultOfMethodCallIgnored
                             mpIn.skip(optional_data);
                         }
 
@@ -1156,9 +1123,9 @@ public class ChannelSftpImpl
                             requestQueue.cancel();
                             try {
                                 sendREAD(handle,
-                                        queuedRequest.offset + payloadLength,
-                                        (int) (queuedRequest.length - payloadLength),
-                                        requestQueue);
+                                         queuedRequest.offset + payloadLength,
+                                         (int) (queuedRequest.length - payloadLength),
+                                         requestQueue);
                             } catch (final IOException e) {
                                 throw e;
                             } catch (final Exception e) {
@@ -1251,7 +1218,7 @@ public class ChannelSftpImpl
                 final SftpATTRS srcAttr = receiveATTRS();
                 if (srcAttr.isDirectory()) {
                     throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                            absSrcPath + ERROR_s_IS_A_DIRECTORY);
+                                            absSrcPath + ERROR_s_IS_A_DIRECTORY);
                 }
 
                 final String dstFilename;
@@ -1277,10 +1244,10 @@ public class ChannelSftpImpl
 
                         if (resolved.length() <= orig.length()
                                 || !resolved.substring(0, orig.length() + 1)
-                                .equals(orig + File.separator)) {
+                                            .equals(orig + File.separator)) {
                             throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                    "Attempt to write to an unexpected filename: "
-                                            + dstFilename);
+                                                    "Attempt to write to an unexpected filename: "
+                                                            + dstFilename);
                         }
                     }
                 } else {
@@ -1297,7 +1264,7 @@ public class ChannelSftpImpl
                     final long srcFileSize = srcAttr.getSize();
                     if (dstFileSize > srcFileSize) {
                         throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                ERROR_CANNOT_RESUME_s + absSrcPath);
+                                                ERROR_CANNOT_RESUME_s + absSrcPath);
 
                     } else if (dstFileSize == srcFileSize) {
                         // This file is already complete
@@ -1307,7 +1274,7 @@ public class ChannelSftpImpl
 
                 if (monitor != null) {
                     monitor.init(SftpProgressMonitor.GET, absSrcPath, dstFilename,
-                            srcAttr.getSize());
+                                 srcAttr.getSize());
                     if (mode == Mode.Resume) {
                         monitor.count(dstFileSize);
                     }
@@ -1348,14 +1315,14 @@ public class ChannelSftpImpl
             final SftpATTRS srcAttr = receiveATTRS();
             if (srcAttr.isDirectory()) {
                 throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                        srcFilename + ERROR_s_IS_A_DIRECTORY);
+                                        srcFilename + ERROR_s_IS_A_DIRECTORY);
             }
 
             if (mode == Mode.Resume) {
                 final long srcSize = srcAttr.getSize();
                 if (skip > srcSize) {
                     throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                            ERROR_CANNOT_RESUME_s + srcFilename);
+                                            ERROR_CANNOT_RESUME_s + srcFilename);
 
                 } else if (skip == srcSize) {
                     // This file is already complete
@@ -1470,8 +1437,8 @@ public class ChannelSftpImpl
                 int bytesStillToRead = payloadLength;
                 while (bytesStillToRead > 0) {
                     final int bytesRead = mpIn.read(fxpBuffer.data, 0,
-                            Math.min(bytesStillToRead,
-                                    fxpBuffer.data.length));
+                                                    Math.min(bytesStillToRead,
+                                                             fxpBuffer.data.length));
                     if (bytesRead < 0) {
                         // end-of-stream reached
                         break loop;
@@ -1501,9 +1468,9 @@ public class ChannelSftpImpl
                 if (payloadLength < queuedRequest.length) {
                     requestQueue.cancel();
                     sendREAD(handle,
-                            queuedRequest.offset + payloadLength,
-                            (int) (queuedRequest.length - payloadLength),
-                            requestQueue);
+                             queuedRequest.offset + payloadLength,
+                             (int) (queuedRequest.length - payloadLength),
+                             requestQueue);
                     requestOffset = queuedRequest.offset + queuedRequest.length;
                 }
 
@@ -1554,7 +1521,7 @@ public class ChannelSftpImpl
             // but if it did exist, it should NOT be a directory
             if (attr != null && attr.isDirectory()) {
                 throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                        dstFilename + ERROR_s_IS_A_DIRECTORY);
+                                        dstFilename + ERROR_s_IS_A_DIRECTORY);
             }
 
             // we need a 'final' but still need to be able to write to it...
@@ -1570,7 +1537,7 @@ public class ChannelSftpImpl
 
             if (monitor != null) {
                 monitor.init(SftpProgressMonitor.PUT, "", dstFilename,
-                        SftpProgressMonitor.UNKNOWN_SIZE);
+                             SftpProgressMonitor.UNKNOWN_SIZE);
             }
 
             if (mode == Mode.Overwrite) {
@@ -1623,7 +1590,7 @@ public class ChannelSftpImpl
                     try {
                         while (bytesToWrite > 0) {
                             final int bytesSend = sendWRITE(handle, _offset[0],
-                                    data, bufOffset, bytesToWrite);
+                                                            data, bufOffset, bytesToWrite);
                             writeCount++;
                             _offset[0] += bytesSend;
                             bufOffset += bytesSend;
@@ -1633,15 +1600,15 @@ public class ChannelSftpImpl
                                 while (mpIn.available() > 0) {
                                     final int ackId = checkStatus();
                                     if (startSeqId > ackId || ackId > seq - 1) {
-                                        if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                                            SshClient.getLogger().log(Logger.ERROR,
-                                                    "ack error:"
-                                                            + " startSeqId=" + startSeqId
-                                                            + ", seq=" + seq
-                                                            + ", ackId=" + ackId);
-                                        }
+                                        SshClient.getLogger()
+                                                 .log(Logger.ERROR,
+                                                      () -> "ack error:"
+                                                              + " startSeqId=" + startSeqId
+                                                              + ", seq=" + seq
+                                                              + ", ackId=" + ackId);
+
                                         throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                                                ERROR_SEQUENCE_MISMATCH);
+                                                                ERROR_SEQUENCE_MISMATCH);
                                     }
                                     ackCount++;
                                 }
@@ -1786,7 +1753,7 @@ public class ChannelSftpImpl
                     final long srcFileSize = new File(srcPath).length();
                     if (srcFileSize < dstFileSize) {
                         throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                ERROR_CANNOT_RESUME_s + dstFilename);
+                                                ERROR_CANNOT_RESUME_s + dstFilename);
                     }
                     if (srcFileSize == dstFileSize) {
                         // This file is already complete
@@ -1796,8 +1763,8 @@ public class ChannelSftpImpl
 
                 if (monitor != null) {
                     monitor.init(SftpProgressMonitor.PUT,
-                            srcPath, dstFilename,
-                            new File(srcPath).length());
+                                 srcPath, dstFilename,
+                                 new File(srcPath).length());
                     if (mode == Mode.Resume) {
                         monitor.count(dstFileSize);
                     }
@@ -1838,12 +1805,12 @@ public class ChannelSftpImpl
             // but if it did exist, it should NOT be a directory
             if (isDirectory) {
                 throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                        dstFilename + ERROR_s_IS_A_DIRECTORY);
+                                        dstFilename + ERROR_s_IS_A_DIRECTORY);
             }
 
             if (monitor != null) {
                 monitor.init(SftpProgressMonitor.PUT, "", dstFilename,
-                        SftpProgressMonitor.UNKNOWN_SIZE);
+                             SftpProgressMonitor.UNKNOWN_SIZE);
             }
 
             _put(srcStream, dstFilename, monitor, mode);
@@ -1897,7 +1864,7 @@ public class ChannelSftpImpl
                     final long skipped = srcStream.skip(skip);
                     if (skipped < skip) {
                         throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                ERROR_CANNOT_RESUME_s + dstFilename);
+                                                ERROR_CANNOT_RESUME_s + dstFilename);
                     }
                 }
 
@@ -1958,16 +1925,15 @@ public class ChannelSftpImpl
                         while (seq - startSeqId - ackCount >= bulkRequests) {
                             final int ackId = checkStatus();
                             if (startSeqId > ackId || ackId > seq - 1) {
-                                if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                                    SshClient.getLogger().log(Logger.ERROR,
-                                            "ack error:"
-                                                    + " startSeqId=" + startSeqId
-                                                    + ", seq=" + seq
-                                                    + ", ackId=" + ackId);
-                                }
+                                SshClient.getLogger().log(Logger.ERROR,
+                                                          () -> "ack error:"
+                                                                  + " startSeqId=" + startSeqId
+                                                                  + ", seq=" + seq
+                                                                  + ", ackId=" + ackId);
+
                                 if (ackId != seq) {
                                     throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                                            ERROR_SEQUENCE_MISMATCH);
+                                                            ERROR_SEQUENCE_MISMATCH);
                                 }
                             }
                             ackCount++;
@@ -2162,7 +2128,7 @@ public class ChannelSftpImpl
             throws IOException, GeneralSecurityException, SshChannelException {
 
         sendPacketPath(SftpConstants.SSH_FXP_RENAME, str2byte(p1), str2byte(p2),
-                extPosixRename ? EXT_POSIX_RENAME_OPENSSH_COM : null);
+                       extPosixRename ? EXT_POSIX_RENAME_OPENSSH_COM : null);
     }
 
     private void sendCLOSE(@NonNull final byte[] handle)
@@ -2188,7 +2154,7 @@ public class ChannelSftpImpl
             throws IOException, GeneralSecurityException, SshChannelException {
 
         sendOPEN(path,
-                SftpConstants.SSH_FXF_WRITE | SftpConstants.SSH_FXF_CREAT /* | SSH_FXF_APPEND */);
+                 SftpConstants.SSH_FXF_WRITE | SftpConstants.SSH_FXF_CREAT /* | SSH_FXF_APPEND */);
     }
 
     private void sendOPEN(@NonNull final String path,
@@ -2248,7 +2214,7 @@ public class ChannelSftpImpl
                     .putString(extension);
         }
         packet.putString(path1)
-                .putString(path2);
+              .putString(path2);
         sendFxpPacket(packet);
     }
 
@@ -2260,6 +2226,7 @@ public class ChannelSftpImpl
      * @param length number of bytes we would like to send
      *               The actual amount can be lower and the caller must check
      *               the return value of this call.
+     *
      * @return actual number of bytes send to the server
      */
     private int sendWRITE(@NonNull final byte[] handle,
@@ -2276,25 +2243,25 @@ public class ChannelSftpImpl
 
         // Always write a clean header (remember, we re-use this packet!)
         uploadPacket.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
-                .putInt(getRecipient())
-                .putInt(0xDEAD)
-                .putInt(0xBEEF)
-                .putByte(SftpConstants.SSH_FXP_WRITE)
-                .putInt(seq++)
-                .putString(handle)
-                .putLong(offset);
+                    .putInt(getRecipient())
+                    .putInt(0xDEAD)
+                    .putInt(0xBEEF)
+                    .putByte(SftpConstants.SSH_FXP_WRITE)
+                    .putInt(seq++)
+                    .putString(handle)
+                    .putLong(offset);
 
         // offset where the next set of file data will be written to the packet buffer
         final int dataOffset = WRITE_PACKET_HEADER_LEN + handle.length;
         // the amount of file data we can upload in this packet
         final int dataLength = Math.min(length,
-                localMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN));
+                                        localMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN));
 
         // optimization to avoid copying the array if possible
         // See #_put
         if (Arrays.equals(uploadPacket.data, data)) {
             uploadPacket.putInt(dataLength)
-                    .moveWritePosition(dataLength);
+                        .moveWritePosition(dataLength);
         } else {
             uploadPacket.putString(data, start, dataLength);
         }
@@ -2350,12 +2317,12 @@ public class ChannelSftpImpl
         final int writeOffset = packet.writeOffset;
 
         packet.setWriteOffSet(10)
-                .putInt(dataLength)
-                // "data": the SFX packet:
-                // uint32             length
-                .putInt(payloadLength)
-                // restore the position
-                .setWriteOffSet(writeOffset);
+              .putInt(dataLength)
+              // "data": the SFX packet:
+              // uint32             length
+              .putInt(payloadLength)
+              // restore the position
+              .setWriteOffSet(writeOffset);
 
         sendChannelDataPacket(packet, dataLength);
     }
@@ -2391,7 +2358,9 @@ public class ChannelSftpImpl
      * an error. An exception with the status code will be thrown.
      *
      * @param expectedType to check
+     *
      * @return the received packet
+     *
      * @throws SftpException either with the status, or with the wrong packet type.
      */
     @NonNull
@@ -2417,7 +2386,7 @@ public class ChannelSftpImpl
 
         } else {
             throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                    ERROR_INVALID_TYPE_s + fxpBuffer.getFxpType());
+                                    ERROR_INVALID_TYPE_s + fxpBuffer.getFxpType());
         }
     }
 
@@ -2455,6 +2424,7 @@ public class ChannelSftpImpl
      * and that the status is {@link SftpConstants#SSH_FX_OK}.
      *
      * @return the request id if the status was SSH_FX_OK
+     *
      * @throws SftpException on all failures or bad packet/status.
      */
     private int checkStatus()
@@ -2500,7 +2470,9 @@ public class ChannelSftpImpl
      * Resolve the given path to a fully qualified remote single file or directory name.
      *
      * @param path to resolve
+     *
      * @return fully qualified file or directory name
+     *
      * @throws SftpException if resolving fails, or if it resolves to multiple names
      */
     @NonNull
@@ -2520,6 +2492,7 @@ public class ChannelSftpImpl
      * <a href="#current-directory">current remote directory</a>.
      *
      * @param path to make absolute
+     *
      * @return absolute path
      */
     @NonNull
@@ -2542,6 +2515,7 @@ public class ChannelSftpImpl
      * <a href="#current-directory">current local directory</a>.
      *
      * @param path to make absolute
+     *
      * @return absolute path of which the file part MAY contain wildcards
      */
     @NonNull
@@ -2559,6 +2533,7 @@ public class ChannelSftpImpl
      * Expand the pattern (if any) in the given path.
      *
      * @param path to expand
+     *
      * @return expanded path(s)
      */
     @NonNull
@@ -2645,6 +2620,7 @@ public class ChannelSftpImpl
      * Expand the pattern (if any) in the given path.
      *
      * @param path to expand
+     *
      * @return expanded path(s)
      */
     @NonNull
@@ -2763,7 +2739,7 @@ public class ChannelSftpImpl
                     }
                 }
                 throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                        "RequestQueue: unknown request id " + id);
+                                        "RequestQueue: unknown request id " + id);
             }
             requestBuffer[i].id = 0;
             return requestBuffer[i];

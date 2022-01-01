@@ -47,6 +47,8 @@ abstract class KeyExchangeDHGroup_n
     private BigInteger e;
 
     /**
+     * Constructor.
+     *
      * @param digestAlgorithm standard JDK digest algorithm name
      */
     KeyExchangeDHGroup_n(@NonNull final String digestAlgorithm) {
@@ -89,10 +91,8 @@ abstract class KeyExchangeDHGroup_n
 
         io.write(packet);
 
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG, "SSH_MSG_KEXDH_INIT(30) sent,"
-                    + " expecting SSH_MSG_KEXDH_REPLY(31)");
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXDH_INIT(30) sent,"
+                + " expecting SSH_MSG_KEXDH_REPLY(31)");
 
         state = SSH_MSG_KEXDH_REPLY;
     }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.SshCipherConstants;
@@ -16,7 +17,6 @@ import com.hardbackcollector.sshclient.signature.SshSignature;
 import com.hardbackcollector.sshclient.transport.Packet;
 import com.hardbackcollector.sshclient.userauth.SshAuthException;
 import com.hardbackcollector.sshclient.utils.ImplementationFactory;
-import com.hardbackcollector.sshclient.utils.SshClientConfigImpl;
 import com.hardbackcollector.sshclient.utils.SshConstants;
 
 import java.io.IOException;
@@ -42,36 +42,22 @@ public class KexProposal {
     public static final String CHECK_CIP_ALGS = "class.check.ciphers";
     public static final String CHECK_MAC_ALGS = "class.check.macs";
 
-    /**
-     * {@link HostConfig#CIPHERS} specific for client-to-server.
-     */
+    /** {@link HostConfig#CIPHERS} specific for client-to-server. */
     public static final String PROPOSAL_CIPHER_CTOS = "cipher.c2s";
-    /**
-     * {@link HostConfig#CIPHERS} specific for server-to-client.
-     */
+    /** {@link HostConfig#CIPHERS} specific for server-to-client. */
     public static final String PROPOSAL_CIPHER_STOC = "cipher.s2c";
 
-    /**
-     * {@link HostConfig#MACS} specific for client-to-server.
-     */
+    /** {@link HostConfig#MACS} specific for client-to-server. */
     public static final String PROPOSAL_MAC_CTOS = "mac.c2s";
-    /**
-     * {@link HostConfig#MACS} specific for server-to-client.
-     */
+    /** {@link HostConfig#MACS} specific for server-to-client. */
     public static final String PROPOSAL_MAC_STOC = "mac.s2c";
 
-    /**
-     * {@link HostConfig#COMPRESSION} specific for client-to-server.
-     */
+    /** {@link HostConfig#COMPRESSION} specific for client-to-server. */
     public static final String PROPOSAL_COMP_CTOS = "compression.c2s";
-    /**
-     * {@link HostConfig#COMPRESSION} specific for server-to-client.
-     */
+    /** {@link HostConfig#COMPRESSION} specific for server-to-client. */
     public static final String PROPOSAL_COMP_STOC = "compression.s2c";
 
-    /**
-     * Language to be used for error messages; required by SSH but not actively used.
-     */
+    /** Language to be used for error messages; required by SSH but not actively used. */
     @SuppressWarnings("WeakerAccess")
     public static final String PROPOSAL_LANG_CTOS = "lang.c2s";
     @SuppressWarnings("WeakerAccess")
@@ -83,21 +69,14 @@ public class KexProposal {
     public static final String KEY_AGREEMENT_DH = "dh";
     public static final String KEY_AGREEMENT_ECDH = "ecdh-sha2-nistp";
     public static final String KEY_AGREEMENT_XDH = "xdh";
-    /**
-     * Compression type
-     */
+
+    /** Compression type. */
     public static final String COMPRESSION_NONE = "none";
-    /**
-     * Compression type
-     */
+    /** Compression type. */
     public static final String COMPRESSION_ZLIB = "zlib";
-    /**
-     * Compression type
-     */
+    /** Compression type. */
     public static final String COMPRESSION_ZLIB_OPENSSH_COM = "zlib@openssh.com";
-    /**
-     * Compression level.
-     */
+    /** Compression level. */
     public static final String COMPRESSION_LEVEL = "compression_level";
 
     private final List<String> kexAlgorithms;
@@ -109,27 +88,29 @@ public class KexProposal {
     private final List<String> compression_s2c;
     private final List<String> language_c2s;
     private final List<String> language_s2c;
-    private final SshClientConfigImpl config;
+    private final SshClientConfig config;
     private final Packet clientPacket;
     private List<String> hostKeyAlgorithms;
 
     /**
+     * Constructor.
+     *
      * @throws NoSuchAlgorithmException if a deliberately configured algorithm
      *                                  is not available (i.e. we can't run without it)
      */
-    public KexProposal(@NonNull final SshClientConfigImpl config)
+    public KexProposal(@NonNull final Session session)
             throws NoSuchAlgorithmException {
 
-        this.config = config;
+        this.config = session.getConfig();
 
-        kexAlgorithms = this.config.getStringList(HostConfig.KEX_ALGS);
-        hostKeyAlgorithms = this.config.getStringList(HostConfig.HOST_KEY_ALGS);
+        kexAlgorithms = config.getStringList(HostConfig.KEX_ALGS);
+        hostKeyAlgorithms = config.getStringList(HostConfig.HOST_KEY_ALGS);
 
-        ciphers_c2s = this.config.getStringList(PROPOSAL_CIPHER_CTOS);
-        ciphers_s2c = this.config.getStringList(PROPOSAL_CIPHER_STOC);
+        ciphers_c2s = config.getStringList(PROPOSAL_CIPHER_CTOS);
+        ciphers_s2c = config.getStringList(PROPOSAL_CIPHER_STOC);
 
-        mac_c2s = this.config.getStringList(PROPOSAL_MAC_CTOS);
-        mac_s2c = this.config.getStringList(PROPOSAL_MAC_STOC);
+        mac_c2s = config.getStringList(PROPOSAL_MAC_CTOS);
+        mac_s2c = config.getStringList(PROPOSAL_MAC_STOC);
 
         compression_c2s = getStringList(config, PROPOSAL_COMP_CTOS, COMPRESSION_NONE);
         compression_s2c = getStringList(config, PROPOSAL_COMP_STOC, COMPRESSION_NONE);
@@ -137,7 +118,7 @@ public class KexProposal {
         language_c2s = getStringList(config, PROPOSAL_LANG_CTOS, "");
         language_s2c = getStringList(config, PROPOSAL_LANG_STOC, "");
 
-        if (this.config.getBooleanValue(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, true)) {
+        if (config.getBooleanValue(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, true)) {
             validate();
         }
 
@@ -156,7 +137,7 @@ public class KexProposal {
         // boolean   first_kex_packet_follows
         // uint32    0 (reserved for future extension)
         clientPacket = new Packet(SshConstants.SSH_MSG_KEXINIT)
-                .putBytes(config.getRandom().nextBytes(16))
+                .putBytes(session.getSshClient().getRandom().nextBytes(16))
                 .putString(String.join(",", kexAlgorithms))
                 .putString(String.join(",", hostKeyAlgorithms))
                 .putString(String.join(",", ciphers_c2s))
@@ -246,12 +227,11 @@ public class KexProposal {
                 return clientAlg;
             }
         }
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG,
-                    "KEX failed negotiate: " + type
-                            + "|client=" + String.join(",", client)
-                            + "|server=" + server);
-        }
+        SshClient.getLogger().log(Logger.DEBUG, () ->
+                "KEX failed negotiate: " + type
+                        + "|client=" + String.join(",", client)
+                        + "|server=" + server);
+
         throw new KexException("Algorithm negotiation failed: " + type);
     }
 
@@ -297,7 +277,7 @@ public class KexProposal {
         validateServerHostKeyAlgorithms();
 
         validateAlgorithmPair(ciphers_c2s, ciphers_s2c, CHECK_CIP_ALGS,
-                "cipher", name -> {
+                              "cipher", name -> {
                     try {
                         ImplementationFactory.getCipher(config, name);
                         return true;

@@ -1,11 +1,10 @@
 package com.hardbackcollector.sshclient.connections;
 
 import com.hardbackcollector.sshclient.DbgJLogger;
+import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.kex.KexProposal;
 import com.hardbackcollector.sshclient.utils.ImplementationFactory;
-
-import org.junit.jupiter.api.BeforeAll;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +14,7 @@ import java.security.SecureRandom;
 public class BaseConnectionTest {
 
     protected static final SecureRandom RANDOM = new SecureRandom();
+    private static final Logger LOGGER = new DbgJLogger();
 
     protected static final String HOST = "192.168.0.203";
     protected static final String USERNAME = "tom";
@@ -49,17 +49,12 @@ public class BaseConnectionTest {
     private static final String KNOWN_HOSTS = "C:/tmp/ssh/known_hosts";
     protected SshClient sshClient;
 
-    @BeforeAll
-    static void setupLogger() {
-        SshClient.setLogger(new DbgJLogger());
-    }
-
     /**
      * @param zipper one of {@link #ZIPPER}
      */
     protected void setup(final String zipper)
             throws IOException, GeneralSecurityException {
-        sshClient = new SshClient();
+        sshClient = new SshClient(LOGGER);
 
         sshClient.setConfig(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, "false");
 

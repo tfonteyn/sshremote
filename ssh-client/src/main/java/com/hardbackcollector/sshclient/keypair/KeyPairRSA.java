@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.keypair;
 
 import androidx.annotation.NonNull;
@@ -97,46 +69,30 @@ public class KeyPairRSA
 
     private static final String serverHostKeyAlgorithm = HostKeyAlgorithm.SSH_RSA;
 
-    /**
-     * prime p
-     */
+    /** prime p */
     @Nullable
     private BigInteger p;
-    /**
-     * prime q
-     */
+    /** prime q */
     @Nullable
     private BigInteger q;
 
-    /**
-     * e: publicExponent
-     */
+    /** e: publicExponent */
     @Nullable
     private BigInteger publicExponent;
-    /**
-     * d: privateExponent: e^-1 mod (p-1)(q-1)
-     */
+    /** d: privateExponent: e^-1 mod (p-1)(q-1) */
     @Nullable
     private BigInteger privateExponent;
-    /**
-     * n: modulus   p multiply q
-     */
+    /** n: modulus   p multiply q */
     @Nullable
     private BigInteger modulus;
 
-    /**
-     * prime exponent p  dmp1 == prv mod (p-1)
-     */
+    /** prime exponent p  dmp1 == prv mod (p-1) */
     @Nullable
     private BigInteger primeEP;
-    /**
-     * prime exponent q  dmq1 == prv mod (q-1)
-     */
+    /** prime exponent q  dmq1 == prv mod (q-1) */
     @Nullable
     private BigInteger primeEQ;
-    /**
-     * coefficient  iqmp == modinv(q, p) == q^-1 mod p
-     */
+    /** coefficient  iqmp == modinv(q, p) == q^-1 mod p */
     @Nullable
     private BigInteger coefficient;
 
@@ -210,6 +166,7 @@ public class KeyPairRSA
      *
      * @param privateExponent the private exponent.
      * @param modulus         the modulus.
+     *
      * @return key
      */
     @SuppressWarnings("WeakerAccess")
@@ -227,6 +184,7 @@ public class KeyPairRSA
      *
      * @param publicExponent the public exponent.
      * @param modulus        the modulus.
+     *
      * @return key
      */
     @NonNull
@@ -262,8 +220,8 @@ public class KeyPairRSA
             return null;
         }
         return wrapPublicKey(serverHostKeyAlgorithm,
-                publicExponent.toByteArray(),
-                modulus.toByteArray());
+                             publicExponent.toByteArray(),
+                             modulus.toByteArray());
     }
 
     @NonNull
@@ -386,10 +344,9 @@ public class KeyPairRSA
             throw e;
 
         } catch (final Exception e) {
-            if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-                SshClient.getLogger()
-                        .log(Logger.DEBUG, "Parsing failed, key is probably encrypted");
-            }
+            SshClient.getLogger()
+                     .log(Logger.DEBUG, () -> "Parsing failed, key is probably encrypted");
+
             privateKeyBlob.setEncrypted(true);
             return;
         }

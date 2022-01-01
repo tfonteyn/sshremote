@@ -32,20 +32,18 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     private static final String ERROR_PACKET_SIZE_EXCEEDED_INT_MAX =
             "Packet size exceeded Integer.MAX_VALUE";
-    /**
-     * The default size for the buffer
-     */
+
+    /** The default size for the buffer. */
     private static final int DEFAULT_SIZE = 256;
+
     private final boolean fixedSize;
+
     @NonNull
     public byte[] data;
-    /**
-     * The position where the next PUT operation will put data.
-     */
+
+    /** The position where the next PUT operation will put data. */
     public int writeOffset;
-    /**
-     * The position from which the next GET operation will read.
-     */
+    /** The position from which the next GET operation will read. */
     private int readOffset;
 
     /**
@@ -438,6 +436,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * Get a Java String (converted from an SSH String).
      *
      * @return String
+     *
      * @throws IOException for illegal sizes
      */
     @NonNull
@@ -453,6 +452,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * reads an SSH String, which is a byte[]
      *
      * @return a new byte[] with the contents of the string.
+     *
      * @throws IOException for illegal sizes
      * @see #putString
      */

@@ -37,27 +37,22 @@ class PrivateKeyBlob {
     private final SshClientConfig config;
     @Nullable
     private byte[] blob;
-    /**
-     * The format of the key blob
-     */
+    /** The format of the key blob */
     @Nullable
     private Vendor format;
 
-    /**
-     * whether the key is encrypted with a passphrase or not.
-     */
+    /** Whether the key is encrypted with a passphrase or not. */
     private boolean encrypted;
-    /**
-     * key is encrypted - the cipher
-     */
+    /** key is encrypted - the cipher. */
     @Nullable
     private SshCipher cipher;
-    /**
-     * key is encrypted - the IV for the cipher
-     */
+    /** key is encrypted - the IV for the cipher. */
     @Nullable
     private byte[] cipherIV;
 
+    /**
+     * Constructor.
+     */
     PrivateKeyBlob(@NonNull final SshClientConfig config) {
         this.config = config;
     }
@@ -266,11 +261,9 @@ class PrivateKeyBlob {
         //noinspection ConstantConditions
         final ASN1InputStream stream = new ASN1InputStream(blob);
         final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
-        if (SshClient.getLogger().isEnabled(Logger.DEBUG)) {
-            SshClient.getLogger().log(Logger.DEBUG,
-                    "~~~ PrivateKeyBlob#decryptPKCS8 ~~~\n" +
-                            ASN1Dump.dumpAsString(root, true));
-        }
+        SshClient.getLogger().log(Logger.DEBUG,
+                                  () -> "~~~ PrivateKeyBlob#decryptPKCS8 ~~~\n" +
+                                          ASN1Dump.dumpAsString(root, true));
 
         //    Sequence
         final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(0));
@@ -294,7 +287,7 @@ class PrivateKeyBlob {
             final byte[] salt = ASN1OctetString.getInstance(pkcs5Params.getObjectAt(0)).getOctets();
             //                Integer(2048)
             final int iterations = ASN1Integer.getInstance(pkcs5Params.getObjectAt(1))
-                    .intValueExact();
+                                              .intValueExact();
             //                Sequence
             final ASN1Sequence yaSeq = ASN1Sequence.getInstance(pkcs5Params.getObjectAt(2));
             //                    ObjectIdentifier

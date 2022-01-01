@@ -1,31 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 package com.hardbackcollector.sshclient.channels;
 
 import androidx.annotation.NonNull;
@@ -69,16 +41,12 @@ public abstract class BaseChannel
 
     @SuppressWarnings("WeakerAccess")
     public static final int LOCAL_MAXIMUM_PACKET_SIZE = Packet.MAX_SIZE;
-    /**
-     * Default: 1mb
-     */
+    /** Default: 1mb */
     @SuppressWarnings("WeakerAccess")
     public static final int LOCAL_DEFAULT_WINDOW_SIZE = 0x10_0000;
 
 
-    /**
-     * Config option: Maximum Channel input buffer size.
-     */
+    /** Config option: Maximum Channel input buffer size. */
     @SuppressWarnings("WeakerAccess")
     public static final String MAX_INPUT_BUFFER_SIZE = "max_input_buffer_size";
 
@@ -98,42 +66,26 @@ public abstract class BaseChannel
 
     protected static final String ERROR_SESSION_NOT_CONNECTED = "Session is closed";
 
-    /**
-     * Local channel id generator.
-     */
+    /** Local channel id generator. */
     private static final AtomicInteger channelIdGenerator = new AtomicInteger();
 
     @NonNull
     protected final IOStreams ioStreams;
-
-    /**
-     * Channel type name.
-     */
+    private static final int NO_RECIPIENT = -1;
+    /** Channel type name. */
     @NonNull
     private final String type;
-
-    /**
-     * LOCAL Unique ID for this channel instance. (incremental/generated).
-     */
+    /** LOCAL Unique ID for this channel instance. (incremental/generated). */
     private final int id;
-
-    /**
-     * Session instance this channel belongs to.
-     */
-    @NonNull
-    private final SessionImpl session;
 
     /**
      * {@code true} if the OPEN Packet was send to the remote, or in the case of a local
      * channel, the channel is ready for action.
      */
     protected boolean connected;
-
-    /**
-     * Self reference. When set, we're running as a thread ready to accept incoming traffic.
-     */
-    @Nullable
-    protected Thread channelThread;
+    /** Session instance this channel belongs to. */
+    @NonNull
+    private final SessionImpl session;
 
     /**
      * Default local maximum packet size.
@@ -162,18 +114,16 @@ public abstract class BaseChannel
      * @see #localMaxPacketSize
      */
     protected long remoteWindowSize;
-    /**
-     * Local maximum window size. Maybe make this configurable ?
-     */
+    /** Self reference. When set, we're running as a thread ready to accept incoming traffic. */
+    @Nullable
+    protected Thread channelThread;
+    /** Local maximum window size. Maybe make this configurable ? */
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
     private int maxLocalWindowSize = LOCAL_DEFAULT_WINDOW_SIZE;
-    /**
-     * REMOTE Channel ID assigned by the SSH server to delegate packets.
-     */
+    /** REMOTE Channel ID assigned by the SSH server to delegate packets. */
     private int recipient = NO_RECIPIENT;
-    /**
-     * {@code true} if the remote confirmed the connection.
-     */
+
+    /** {@code true} if the remote confirmed the connection. */
     private boolean openConfirmationReceived;
 
     /**
@@ -189,27 +139,18 @@ public abstract class BaseChannel
      */
     private boolean closePacketSend;
 
-    /**
-     * Reply status from a channel request.
-     */
+    /** Reply status from a channel request. */
     @NonNull
     private ReplyStatus reply = ReplyStatus.None;
-    /**
-     * Connection timeout in milliseconds (zero indicates no timeout).
-     */
+    /** Connection timeout in milliseconds (zero indicates no timeout). */
     private int connectTimeout;
-    /**
-     * The number of outstanding global requests waiting to be notified for this channel.
-     */
+    /** The number of outstanding global requests waiting to be notified for this channel. */
     private int notifyMe;
-    /**
-     * {@code true} if the local output has reached EOF.
-     */
+    /** {@code true} if the local output has reached EOF. */
     private boolean eofLocal;
-    /**
-     * {@code true} if the remote output has reached EOF.
-     */
+    /** {@code true} if the remote output has reached EOF. */
     private boolean eofRemote;
+
     private int openFailureCode;
     private String openFailureMessage;
 
@@ -255,6 +196,7 @@ public abstract class BaseChannel
      * Override this method to define additional/specific behavior.
      *
      * @param session passed in as a convenience
+     *
      * @throws SshChannelException if any errors occur
      */
     protected void onAfterConnect(@NonNull final SessionImpl session)
@@ -271,7 +213,7 @@ public abstract class BaseChannel
      *
      * @return remote channel id
      */
-    public int getRecipient() {
+    protected int getRecipient() {
         return recipient;
     }
 
@@ -301,6 +243,7 @@ public abstract class BaseChannel
      * Checks if we have already read all the data,
      * i.e. whether the remote sent an end-of-file notification for this channel.
      */
+    @SuppressWarnings("unused")
     public boolean isRemoteEof() {
         return eofRemote;
     }
@@ -440,7 +383,7 @@ public abstract class BaseChannel
                     // start at the next free position
                     final int dstOffset = CHANNEL_PACKET_HEADER_LEN + dataLength + 1;
                     final int _len = Math.min(length,
-                            packet.data.length - dstOffset - Packet.SAFE_MARGIN);
+                                              packet.data.length - dstOffset - Packet.SAFE_MARGIN);
 
                     if (_len <= 0) {
                         flush();
@@ -464,10 +407,10 @@ public abstract class BaseChannel
                 }
                 //noinspection ConstantConditions
                 packet.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
-                        .putInt(recipient)
-                        .putInt(dataLength)
-                        // we already copied the actual data in #write
-                        .moveWritePosition(dataLength);
+                      .putInt(recipient)
+                      .putInt(dataLength)
+                      // we already copied the actual data in #write
+                      .moveWritePosition(dataLength);
                 try {
                     synchronized (channel) {
                         final int _dataLength = dataLength;
@@ -507,6 +450,7 @@ public abstract class BaseChannel
      *
      * @param do_not_close set to {@code true}, to keep the stream open when the channel
      *                     is disconnected. i.e. the stream is under 'caller' control.
+     *
      * @see #getInputStream
      */
     @Override
@@ -527,6 +471,7 @@ public abstract class BaseChannel
      *
      * @param do_not_close set to {@code true}, to keep the stream open when the channel
      *                     is disconnected. i.e. the stream is under 'caller' control.
+     *
      * @see #getExtInputStream
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5.2">
      * RFC 4254 SSH Connection Protocol, section 5.2: Data Transfer</a>
@@ -544,7 +489,7 @@ public abstract class BaseChannel
 
     private int getMaxInputBufferSize() {
         return session.getConfig()
-                .getIntValue(MAX_INPUT_BUFFER_SIZE, getDefaultInputBufferSize());
+                      .getIntValue(MAX_INPUT_BUFFER_SIZE, getDefaultInputBufferSize());
     }
 
     protected void startThread() {
@@ -580,7 +525,7 @@ public abstract class BaseChannel
             while (isConnected() && channelThread != null && ioStreams.hasInputStream()) {
                 // read the data directly to the proper location in the packet
                 dataLength = ioStreams.read(packet.data, CHANNEL_PACKET_HEADER_LEN + 1,
-                        bytesToRead);
+                                            bytesToRead);
 
                 if (dataLength == -1) {
                     sendEOF();
@@ -590,9 +535,9 @@ public abstract class BaseChannel
                 // Complete the packet with the header,
                 // and set the write offset behind the payload ready to send.
                 packet.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
-                        .putInt(recipient)
-                        .putInt(dataLength)
-                        .moveWritePosition(dataLength);
+                      .putInt(recipient)
+                      .putInt(dataLength)
+                      .moveWritePosition(dataLength);
 
                 synchronized (this) {
                     if (isConnected()) {
@@ -602,9 +547,7 @@ public abstract class BaseChannel
                 }
             }
         } catch (final Exception e) {
-            if (SshClient.getLogger().isEnabled(Logger.ERROR)) {
-                SshClient.getLogger().log(Logger.ERROR, "", e);
-            }
+            SshClient.getLogger().log(Logger.ERROR, e, () -> "");
         }
 
         disconnect();
@@ -632,6 +575,7 @@ public abstract class BaseChannel
      * @param bytes  the (full) Packet containing the payload
      * @param offset start pointer into the bytes array for the payload data
      * @param length of the payload
+     *
      * @throws SshChannelException is not thrown for now, but added to be consistent
      *                             with {@link #writeData(byte[], int, int)}
      */
@@ -726,7 +670,8 @@ public abstract class BaseChannel
             }
 
             if (sendNow) {
-                session.getTransportC2s().write(packet);
+                session.getTransportC2s()
+                       .write(packet);
                 // All done?
                 if (dataLength == 0) {
                     return;
@@ -746,12 +691,14 @@ public abstract class BaseChannel
         }
 
         // we get here when the remote window size is big enough and we can just send it.
-        session.getTransportC2s().write(packet);
+        session.getTransportC2s()
+               .write(packet);
     }
 
     protected void sendPacket(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
-        session.getTransportC2s().write(packet);
+        session.getTransportC2s()
+               .write(packet);
     }
 
     /**
@@ -793,8 +740,8 @@ public abstract class BaseChannel
         final int destPos = srcPos + needed;
 
         System.arraycopy(packet.data, srcPos,
-                packet.data, destPos,
-                packet.writeOffset - srcPos);
+                         packet.data, destPos,
+                         packet.writeOffset - srcPos);
 
 
         // command is position 5, followed by an int32 (4 bytes) for the recipient.
@@ -817,13 +764,13 @@ public abstract class BaseChannel
                          final int dataLength) {
         // create space
         System.arraycopy(packet.data, offset,
-                packet.data, CHANNEL_PACKET_HEADER_LEN + 1,
-                dataLength);
+                         packet.data, CHANNEL_PACKET_HEADER_LEN + 1,
+                         dataLength);
         // and reconstruct the channel data header.
         packet.startCommand(command)
-                .putInt(recipient)
-                .putInt(dataLength)
-                .moveWritePosition(dataLength);
+              .putInt(recipient)
+              .putInt(dataLength)
+              .moveWritePosition(dataLength);
     }
 
     /**
@@ -1036,7 +983,7 @@ public abstract class BaseChannel
                 if (wantReply) {
                     // re-use the packet
                     packet.startCommand(SshConstants.SSH_MSG_CHANNEL_FAILURE)
-                            .putInt(getRecipient());
+                          .putInt(getRecipient());
                     session.write(packet);
                 }
                 break;
@@ -1104,7 +1051,6 @@ public abstract class BaseChannel
                 try {
                     synchronized (this) {
                         session.write(packet);
-                        closePacketSend = true;
                     }
                 } catch (final Exception ignore) {
                 }

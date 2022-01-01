@@ -20,6 +20,7 @@ public final class Globber {
      * Check if the given path has <strong>un-escaped</strong> wildcards.
      *
      * @param path to check
+     *
      * @return {@code true} if this path represents a pattern
      */
     public static boolean isPattern(@NonNull final String path) {
@@ -96,9 +97,9 @@ public final class Globber {
         final String[] children = new File(dir).list();
         if (children != null) {
             return Arrays.stream(children)
-                    .filter(child -> glob(pattern, child.getBytes(StandardCharsets.UTF_8)))
-                    .map(child -> dir + File.separatorChar + child)
-                    .collect(Collectors.toList());
+                         .filter(child -> glob(pattern, child.getBytes(StandardCharsets.UTF_8)))
+                         .map(child -> dir + File.separatorChar + child)
+                         .collect(Collectors.toList());
 
         }
         return new ArrayList<>();
@@ -186,7 +187,7 @@ public final class Globber {
                     while (j < name_len) {
                         if (foo == name[j]) {
                             if (glob(pattern, i + skipUTF8Char(foo),
-                                    name, j + skipUTF8Char(name[j]))) {
+                                     name, j + skipUTF8Char(name[j]))) {
                                 return true;
                             }
                         }

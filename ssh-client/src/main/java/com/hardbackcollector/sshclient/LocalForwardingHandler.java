@@ -34,13 +34,14 @@ public interface LocalForwardingHandler {
      * Specifies that connections to the given TCP port on the local (client)
      * host are to be forwarded to the given host and port, on the remote side.
      * <p>
-     * ssh -L [bind_address:]port:host:hostport
+     * Equivalent to {@code ssh -L [bind_address:]port:host:hostport}
      *
      * @param connectionString in the format like "[bind_address:]port:host:hostport".
      *                         If {@code bindAddress} is an empty string or {@code "*"},
      *                         the port should be available from all interfaces.
      *                         If {@code bindAddress} is {@code "localhost"} or is not given,
      *                         the listening port will be bound for local use only.
+     *
      * @return the allocated local port number
      */
     int add(@NonNull String connectionString)
@@ -56,6 +57,7 @@ public interface LocalForwardingHandler {
      * @param connectTimeout timeout for establishing connections
      * @param host           host address
      * @param remotePort     remote port
+     *
      * @return the allocated local port number
      */
     int add(@Nullable String bindAddress,
@@ -80,7 +82,9 @@ public interface LocalForwardingHandler {
      * @param localPort  local port for local port forwarding
      * @param host       host address for local port forwarding
      * @param remotePort remote port number for local port forwarding
+     *
      * @return an allocated local TCP port number
+     *
      * @see #add(String, int, ServerSocketFactory, int, String, int)
      */
     default int add(final int localPort,
@@ -91,7 +95,9 @@ public interface LocalForwardingHandler {
     }
 
     /**
-     * Registers the local port forwarding.  If {@code bindAddress} is an empty string
+     * Registers the local port forwarding.
+     * <p>
+     * If {@code bindAddress} is an empty string
      * or '*', the port should be available from all interfaces.
      * If {@code bindAddress} is {@code "localhost"} or
      * {@code null}, the listening port will be bound for local use only.
@@ -101,7 +107,9 @@ public interface LocalForwardingHandler {
      * @param localPort   local port for local port forwarding
      * @param host        host address for local port forwarding
      * @param remotePort  remote port number for local port forwarding
+     *
      * @return an allocated local TCP port number
+     *
      * @see #add(String, int, ServerSocketFactory, int, String, int)
      */
     default int add(@Nullable final String bindAddress,
@@ -114,6 +122,7 @@ public interface LocalForwardingHandler {
 
     /**
      * Registers the local port forwarding.
+     * <p>
      * If {@code bindAddress} is an empty string or {@code "*"},
      * the port should be available from all interfaces.
      * If {@code bindAddress} is {@code "localhost"} or
@@ -125,7 +134,9 @@ public interface LocalForwardingHandler {
      * @param ssf         socket factory
      * @param host        host address for local port forwarding
      * @param remotePort  remote port number for local port forwarding
+     *
      * @return an allocated local TCP port number
+     *
      * @see #add(String, int, ServerSocketFactory, int, String, int)
      */
     default int add(@Nullable final String bindAddress,

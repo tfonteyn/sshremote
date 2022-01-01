@@ -19,6 +19,14 @@
     <SwitchPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_outline_vpn_key_24"
-        android:key="global.strictHostKeyChecking"
+        android:key="global.ssh.strictHostKeyChecking"
         android:title="@string/lbl_strict_host_key_checking" />
+
+    <SeekBarPreference
+        android:defaultValue="2"
+        android:icon="@drawable/ic_baseline_bug_report_24"
+        android:key="global.ssh.log.level"
+        android:max="5"
+        android:title="@string/lbl_log_level"
+        app:min="0" />
 </PreferenceScreen>

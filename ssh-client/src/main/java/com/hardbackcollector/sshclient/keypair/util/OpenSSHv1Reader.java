@@ -24,6 +24,9 @@ public class OpenSSHv1Reader {
     @NonNull
     private final KeyPairOpenSSHv1.Builder keyPairBuilder;
 
+    /**
+     * Constructor.
+     */
     OpenSSHv1Reader(@NonNull final SshClientConfig config,
                     @NonNull final KeyPairOpenSSHv1.Builder keyPairBuilder) {
         this.config = config;
@@ -105,7 +108,7 @@ public class OpenSSHv1Reader {
             // the type can only be determined after decryption,
             // so we take this intermediate here:
             keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
-                    .setPkeCipher(ImplementationFactory.getCipher(config, cipherName));
+                          .setPkeCipher(ImplementationFactory.getCipher(config, cipherName));
         }
     }
 }

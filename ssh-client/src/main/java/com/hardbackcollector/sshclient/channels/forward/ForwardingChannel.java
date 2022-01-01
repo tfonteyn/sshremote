@@ -87,6 +87,7 @@ public abstract class ForwardingChannel
      * with the specified reason code.
      *
      * @param reasonCode to send to server
+     *
      * @see #onRemoteOpen(Packet)
      */
     void sendChannelOpenFailure(final int reasonCode) {

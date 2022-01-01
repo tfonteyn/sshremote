@@ -18,9 +18,9 @@ public enum EdKeyType {
             EdECObjectIdentifiers.id_Ed25519),
 
     Ed448(HostKeyAlgorithm.SSH_ED448,
-            "Ed448",
-            57,
-            EdECObjectIdentifiers.id_Ed448);
+          "Ed448",
+          57,
+          EdECObjectIdentifiers.id_Ed448);
 
     @NonNull
     public final String hostKeyAlgorithm;
@@ -46,36 +46,36 @@ public enum EdKeyType {
     public static EdKeyType getByHostKeyAlgorithm(@NonNull final String hostKeyAlgorithm)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.hostKeyAlgorithm.equalsIgnoreCase(hostKeyAlgorithm))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.hostKeyAlgorithm.equalsIgnoreCase(hostKeyAlgorithm))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static EdKeyType getByCurveName(@NonNull final String curveName)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.curveName.equalsIgnoreCase(curveName))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.curveName.equalsIgnoreCase(curveName))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static EdKeyType getByKeySize(final int keySize)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.keySize == keySize)
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.keySize == keySize)
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
     public static EdKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
-                .filter(e -> e.keyOid.equals(oid))
-                .findFirst()
-                .orElseThrow(NoSuchAlgorithmException::new);
+                     .filter(e -> e.keyOid.equals(oid))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
     }
 
     @NonNull
