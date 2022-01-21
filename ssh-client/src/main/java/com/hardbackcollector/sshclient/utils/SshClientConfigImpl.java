@@ -286,7 +286,6 @@ public class SshClientConfigImpl
                                           + ',' + HostKeyAlgorithm.SSH_ED25519
                                           + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
                                           + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
-                                          + ',' + HostKeyAlgorithm.SSH_RSA
             );
 
             // These will be tested to see if their implementations CAN be instantiated.
@@ -393,7 +392,6 @@ public class SshClientConfigImpl
                                           + ',' + HostKeyAlgorithm.SSH_ED25519
                                           + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
                                           + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
-                                          + ',' + HostKeyAlgorithm.SSH_RSA
             );
         }
     }
