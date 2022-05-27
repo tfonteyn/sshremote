@@ -56,10 +56,18 @@ public class SshClient {
     /**
      * client version: {code SSH-protoversion-softwareversion SP comments CR LF}
      * The CR+LF is added when the version is send to the server.
+     * <ul>
+     * <li>protoversion is always "2.0"</li>
+     * <li>softwareversion MUST consist of
+     *     printable US-ASCII characters, with the exception of whitespace
+     *     characters and the minus sign (-)</li>
+     * </ul>
      *
      * @see Session#setClientVersion(String)
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-4.2">
+     * RFC 4253, section4.2</a>
      */
-    public static final String VERSION = "SSH-2.0-JSCH-2.0";
+    public static final String VERSION = "SSH-2.0-JSCH_2.0";
 
     /**
      * Boolean:
