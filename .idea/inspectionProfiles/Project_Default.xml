@@ -74,7 +74,6 @@
     <inspection_tool class="Finalize" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoreTrivialFinalizers" value="true" />
     </inspection_tool>
-    <inspection_tool class="FinalizeNotProtected" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="GroovyReturnFromFinallyBlock" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="GroovyThrowFromFinallyBlock" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="GroovyVariableCanBeFinal" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -167,7 +166,6 @@
     </inspection_tool>
     <inspection_tool class="ProblematicVarargsMethodOverride" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ProblematicWhitespace" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="ProtectedMemberInFinalClass" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantFieldInitialization" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantImplements" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoreSerializable" value="false" />
@@ -239,7 +237,7 @@
       <option name="useParameterizedTypeForCollectionMethods" value="true" />
       <option name="doNotWeakenToJavaLangObject" value="true" />
       <option name="onlyWeakentoInterface" value="true" />
-      <stopClasses>com.hardbacknutter.nevertoomanybooks.entities.TocEntry,com.hardbacknutter.nevertoomanybooks.entities.Author,com.hardbacknutter.nevertoomanybooks.entities.Series,com.hardbacknutter.nevertoomanybooks.entities.Bookshelf,com.hardbacknutter.nevertoomanybooks.entities.Publisher,java.time.LocalDateTime,com.hardbacknutter.nevertoomanybooks.entities.Book,com.hardbacknutter.nevertoomanybooks.booklist.style.BooklistStyle,com.hardbacknutter.nevertoomanybooks.utils.dates.PartialDate,java.util.Set,java.util.List,com.hardbacknutter.nevertoomanybooks.tasks.messages.FinishedMessage,java.util.Collection,android.text.Editable,com.hardbacknutter.nevertoomanybooks.backup.base.ImportResults,com.hardbacknutter.nevertoomanybooks.backup.ImportResults,com.hardbacknutter.nevertoomanybooks.backup.base.ArchiveInfo,com.hardbacknutter.nevertoomanybooks.tasks.FinishedMessage,com.hardbacknutter.nevertoomanybooks.tasks.ProgressListener,java.math.BigInteger,org.bouncycastle.asn1.pkcs.PrivateKeyInfo,org.bouncycastle.asn1.x509.SubjectPublicKeyInfo</stopClasses>
+      <stopClasses>com.hardbacknutter.nevertoomanybooks.entities.TocEntry,com.hardbacknutter.nevertoomanybooks.entities.Author,com.hardbacknutter.nevertoomanybooks.entities.Series,com.hardbacknutter.nevertoomanybooks.entities.Bookshelf,com.hardbacknutter.nevertoomanybooks.entities.Publisher,java.time.LocalDateTime,com.hardbacknutter.nevertoomanybooks.entities.Book,com.hardbacknutter.nevertoomanybooks.booklist.style.BooklistStyle,com.hardbacknutter.nevertoomanybooks.utils.dates.PartialDate,java.util.Set,java.util.List,com.hardbacknutter.nevertoomanybooks.tasks.messages.FinishedMessage,java.util.Collection,android.text.Editable,com.hardbacknutter.nevertoomanybooks.backup.base.ImportResults,com.hardbacknutter.nevertoomanybooks.backup.ImportResults,com.hardbacknutter.nevertoomanybooks.backup.base.ArchiveInfo,com.hardbacknutter.nevertoomanybooks.tasks.FinishedMessage,com.hardbacknutter.nevertoomanybooks.tasks.ProgressListener,java.math.BigInteger,org.bouncycastle.asn1.pkcs.PrivateKeyInfo,org.bouncycastle.asn1.x509.SubjectPublicKeyInfo,com.hardbackcollector.sshclient.SshClientConfig,com.hardbackcollector.sshclient.hostconfig.HostConfig</stopClasses>
     </inspection_tool>
     <inspection_tool class="UncheckedExceptionClass" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UnnecessarilyQualifiedStaticUsage" enabled="true" level="WARNING" enabled_by_default="true">
