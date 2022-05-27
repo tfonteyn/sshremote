@@ -71,8 +71,6 @@ public class ChannelSftpImpl
 
     private static final int DEFAULT_REQUEST_QUEUE_SIZE = 16;
 
-    private static final String ERROR_FILENAME_ENCODING_V4 =
-            "Server version 4 or higher cannot be changed.";
     private static final String ERROR_SERVER_MUST_BE_V3 =
             "The server must be at least version 3";
     private static final String ERROR_NO_SUCH_DIRECTORY =
@@ -162,11 +160,6 @@ public class ChannelSftpImpl
     /**
      * Sets the encoding used to convert file names from Strings to bytes.
      * This should be the the same encoding actually used on the server.
-     * <p>
-     * This method throws an exception if the server's version is
-     * <em>4 or higher</em> and the encoding is not {@code "UTF-8"}.
-     * <p>
-     * Changes of seeing SFTP versions 4+ are very slim.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.2">
      * SFTP v3 has no specific rule on filename encoding</a>
@@ -179,11 +172,6 @@ public class ChannelSftpImpl
      */
     public void setFilenameEncoding(@NonNull final String encoding)
             throws SftpException {
-        if (!UTF8.equals(encoding) && (getServerVersion() > 3)) {
-            throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED,
-                                    ERROR_FILENAME_ENCODING_V4);
-        }
-
         filenameEncoding = encoding;
         filenameEncodingIsUtf8 = UTF8.equals(filenameEncoding);
     }
