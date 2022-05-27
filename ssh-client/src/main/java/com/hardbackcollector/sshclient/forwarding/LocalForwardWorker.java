@@ -12,8 +12,7 @@ import java.net.ServerSocket;
 
 import javax.net.ServerSocketFactory;
 
-abstract class LocalForwardWorker
-        implements Runnable {
+abstract class LocalForwardWorker {
 
     @NonNull
     final SessionImpl session;
@@ -76,13 +75,15 @@ abstract class LocalForwardWorker
         }
         bindAddress = tmpAddress;
 
-        thread = new Thread(this);
+        thread = new Thread(this::run);
         thread.setName("PortWatcher Thread for " + localPort);
         if (asDaemon) {
             thread.setDaemon(true);
         }
         thread.start();
     }
+
+    protected abstract void run();
 
     void close() {
         // Signal to run() to quit looping

@@ -43,7 +43,7 @@ public abstract class ChannelDirect
      * The channel transfer loop.
      */
     @Override
-    public void run() {
+    protected void run() {
         try {
             sendChannelOpen();
 

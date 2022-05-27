@@ -30,8 +30,7 @@ import java.io.OutputStream;
  * @see RemoteForwardingHandler
  */
 @SuppressWarnings("unused")
-public interface ForwardedTCPIPDaemon
-        extends Runnable {
+public interface ForwardedTCPIPDaemon {
 
     /**
      * Sets additional arguments given when the forwarding was created.
@@ -65,5 +64,5 @@ public interface ForwardedTCPIPDaemon
      * at the end (otherwise we will have a dangling connection,
      *  if the remote client host does not close it).
      */
-    //void run();
+    void run();
 }

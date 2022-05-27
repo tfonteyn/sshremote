@@ -325,7 +325,7 @@ public class ChannelSessionImpl
      * The channel transfer loop.
      */
     @Override
-    public void run() {
+    protected void run() {
         runDataTransferLoop();
     }
 

@@ -27,17 +27,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The abstract base class for the different
  * types of channel which may be associated with a {@link Session}.
  *
- * <p>It should be considered an implementation detail that
- * Channel implements {@link Runnable} &ndash; external code never
- * has to invoke the {@link #run} method.
- * </p>
- *
  * @see Session#openChannel
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5">
  * RFC 4254 SSH Connection Protocol, section 5. Channel Mechanism</a>
  */
 public abstract class BaseChannel
-        implements Runnable, Channel {
+        implements Channel {
 
     @SuppressWarnings("WeakerAccess")
     public static final int LOCAL_MAXIMUM_PACKET_SIZE = Packet.MAX_SIZE;
@@ -493,7 +488,7 @@ public abstract class BaseChannel
     }
 
     protected void startThread() {
-        channelThread = new Thread(this);
+        channelThread = new Thread(this::run);
         channelThread.setName(type + " thread " + session.getHost());
         if (session.isRunningAsDaemonThread()) {
             channelThread.setDaemon(true);
@@ -504,8 +499,7 @@ public abstract class BaseChannel
     /**
      * Overridden by subclasses which need to do special processing of channel data.
      */
-    @Override
-    public void run() {
+    protected void run() {
     }
 
     /**

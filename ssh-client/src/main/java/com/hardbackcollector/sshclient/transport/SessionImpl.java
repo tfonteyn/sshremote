@@ -80,11 +80,9 @@ import java.util.StringJoiner;
  * <p>
  * One session can contain multiple {@link Channel}s of various types,
  * created with {@link #openChannel} and closed with {@link Channel#disconnect()}
- * <p>
- * The fact that a Session implements Runnable is an implementation detail.
  */
 public class SessionImpl
-        implements Session, PacketIO, Runnable {
+        implements Session, PacketIO {
 
     /** All channels opened by this session. */
     private static final Map<Integer, Channel> channelPool =
@@ -412,7 +410,7 @@ public class SessionImpl
             // Step 4: start this session as a Thread to handle all further communication
             synchronized (this) {
                 if (connected) {
-                    sessionThread = new Thread(this);
+                    sessionThread = new Thread(this::run);
                     sessionThread.setName("Session to: " + host);
                     if (runAsDaemonThread) {
                         sessionThread.setDaemon(true);
@@ -880,8 +878,7 @@ public class SessionImpl
     /**
      * The main data receiving loop.
      */
-    @Override
-    public void run() {
+    private void run() {
         Packet packet;
 
         int stimeout = 0;

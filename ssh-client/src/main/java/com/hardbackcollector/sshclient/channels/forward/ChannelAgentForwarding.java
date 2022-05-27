@@ -114,7 +114,7 @@ public class ChannelAgentForwarding
      * The channel transfer loop.
      */
     @Override
-    public void run() {
+    protected void run() {
         // just confirm open or fail, and we're done here.
         // Actual forwarding is done on demand when the session receives
         // SSH_MSG_CHANNEL_DATA and sends it to #writeData

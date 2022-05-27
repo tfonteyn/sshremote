@@ -185,7 +185,7 @@ public class ChannelX11
      * The channel transfer loop.
      */
     @Override
-    public void run() {
+    protected void run() {
         try {
             final Socket socket = socketFactory.createSocket(host, port, TIMEOUT_IN_MILLIS);
             socket.setTcpNoDelay(true);

@@ -77,7 +77,7 @@ public class ChannelForwardedTCPIP
      * The channel transfer loop.
      */
     @Override
-    public void run() {
+    protected void run() {
         // first create the daemon or socket
         try {
             if (remoteForwardConfig instanceof RemoteForwardDaemonConfig) {
@@ -88,7 +88,7 @@ public class ChannelForwardedTCPIP
                 setInputStream(new PassiveInputStream(pout, getDefaultInputBufferSize()));
 
                 daemon.setChannel(this, getInputStream(), pout);
-                new Thread(daemon).start();
+                new Thread(daemon::run).start();
 
             } else if (remoteForwardConfig instanceof RemoteForwardSocketConfig) {
                 final Socket socket = ((RemoteForwardSocketConfig) remoteForwardConfig)
