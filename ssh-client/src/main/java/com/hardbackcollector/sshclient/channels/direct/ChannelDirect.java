@@ -3,8 +3,6 @@ package com.hardbackcollector.sshclient.channels.direct;
 import androidx.annotation.NonNull;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.channels.BaseChannel;
 import com.hardbackcollector.sshclient.channels.SshChannelException;
 import com.hardbackcollector.sshclient.transport.SessionImpl;
@@ -25,7 +23,6 @@ public abstract class ChannelDirect
             throws SshChannelException, IOException, GeneralSecurityException {
 
         if (ioStreams.hasInputStream()) {
-            final Session session = getSession();
             if (!session.isConnected()) {
                 disconnect();
                 throw new SshChannelException(ERROR_SESSION_NOT_CONNECTED);
@@ -48,7 +45,7 @@ public abstract class ChannelDirect
             sendChannelOpen();
 
         } catch (final Exception e) {
-            SshClient.getLogger().log(Logger.ERROR, e, () -> "ChannelDirect:" + getType());
+            session.getLogger().log(Logger.ERROR, e, () -> "ChannelDirect:" + getType());
 
             // Whenever an exception is thrown by sendChannelOpen(),
             // 'connected' is false.

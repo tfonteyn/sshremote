@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.Channel;
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.channels.io.IOStreams;
 import com.hardbackcollector.sshclient.channels.io.MyPipedInputStream;
 import com.hardbackcollector.sshclient.channels.io.PassiveOutputStream;
@@ -80,7 +79,7 @@ public abstract class BaseChannel
     protected boolean connected;
     /** Session instance this channel belongs to. */
     @NonNull
-    private final SessionImpl session;
+    protected final SessionImpl session;
 
     /**
      * Default local maximum packet size.
@@ -541,7 +540,7 @@ public abstract class BaseChannel
                 }
             }
         } catch (final Exception e) {
-            SshClient.getLogger().log(Logger.ERROR, e, () -> "");
+            session.getLogger().log(Logger.ERROR, e, () -> "");
         }
 
         disconnect();

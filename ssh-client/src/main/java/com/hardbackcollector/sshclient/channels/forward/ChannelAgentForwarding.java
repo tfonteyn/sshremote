@@ -3,7 +3,6 @@ package com.hardbackcollector.sshclient.channels.forward;
 import androidx.annotation.NonNull;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
@@ -154,11 +153,9 @@ public class ChannelAgentForwarding
 
         final byte messageType = rbuf.getByte();
 
-        final Session session = getSession();
-
         responseBuffer.reset();
 
-        SshClient.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
+        session.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
 
         switch (messageType) {
             case SSH2_AGENTC_SIGN_REQUEST: {

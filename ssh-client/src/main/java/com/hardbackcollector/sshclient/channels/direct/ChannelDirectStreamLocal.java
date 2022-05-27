@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.transport.Packet;
 import com.hardbackcollector.sshclient.transport.SessionImpl;
 import com.hardbackcollector.sshclient.utils.SshConstants;
@@ -40,7 +39,7 @@ public class ChannelDirectStreamLocal
     protected Packet createChannelOpenPacket() {
 
         if (socketPath == null) {
-            SshClient.getLogger().log(Logger.FATAL, () -> ERROR_SOCKET_PATH_MUST_BE_SET);
+            session.getLogger().log(Logger.FATAL, () -> ERROR_SOCKET_PATH_MUST_BE_SET);
             throw new IllegalStateException(ERROR_SOCKET_PATH_MUST_BE_SET);
         }
 

@@ -94,13 +94,13 @@ public class UserAuthPublicKey
                 }
 
                 if (!encrypted) {
-                    List<String> allAlgorithms = filterAlgorithms(identity);
+                    List<String> allAlgorithms = filterAlgorithms(session, identity);
                     if (allAlgorithms != null) {
                         final byte[] publicKeyBlob = identity.getPublicKeyBlob();
 
                         String preAuthAlgorithm = null;
                         if (publicKeyBlob != null) {
-                            preAuthAlgorithm = preAuth(io, allAlgorithms, publicKeyBlob);
+                            preAuthAlgorithm = preAuth(session, io, allAlgorithms, publicKeyBlob);
                             if (preAuthAlgorithm == null) {
                                 // try next identity
                                 continue;
@@ -169,7 +169,8 @@ public class UserAuthPublicKey
     }
 
     @Nullable
-    private List<String> filterAlgorithms(@NonNull final Identity identity)
+    private List<String> filterAlgorithms(@NonNull final Session session,
+                                          @NonNull final Identity identity)
             throws GeneralSecurityException {
 
         final String identityKeyAlgorithm = identity.getHostKeyAlgorithm();
@@ -183,10 +184,10 @@ public class UserAuthPublicKey
                                 .collect(Collectors.toList());
         }
 
-        SshClient.getLogger()
-                 .log(Logger.DEBUG, () -> identityKeyAlgorithm
-                         + " cannot be used as public key type for "
-                         + identity.getName());
+        session.getLogger()
+               .log(Logger.DEBUG, () -> identityKeyAlgorithm
+                       + " cannot be used as public key type for "
+                       + identity.getName());
 
         return null;
     }
@@ -203,7 +204,8 @@ public class UserAuthPublicKey
      * or {@code null} if pre-auth failed.
      */
     @Nullable
-    private String preAuth(@NonNull final PacketIO io,
+    private String preAuth(@NonNull final Session session,
+                           @NonNull final PacketIO io,
                            @NonNull final List<String> algorithms,
                            @NonNull final byte[] publicKeyBlob)
             throws IOException, GeneralSecurityException {
@@ -238,14 +240,14 @@ public class UserAuthPublicKey
                 //       byte      SSH_MSG_USERAUTH_PK_OK
                 //       string    public key algorithm name from the request
                 //       string    public key blob from the request
-                SshClient.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth success");
+                session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth success");
                 return algorithm;
 
             } else if (command != SshConstants.SSH_MSG_USERAUTH_FAILURE) {
                 // This should never happen
                 throw new ProtocolException("preAuth failure; received command=" + command);
             }
-            SshClient.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth failure");
+            session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth failure");
             // try next algorithm
         }
         // Pre-auth failed
@@ -281,7 +283,7 @@ public class UserAuthPublicKey
 
                 switch (command) {
                     case SshConstants.SSH_MSG_USERAUTH_SUCCESS: {
-                        SshClient.getLogger().log(Logger.DEBUG, () -> algorithm + " auth success");
+                        session.getLogger().log(Logger.DEBUG, () -> algorithm + " auth success");
                         return true;
                     }
                     case SshConstants.SSH_MSG_USERAUTH_BANNER: {
@@ -308,10 +310,10 @@ public class UserAuthPublicKey
                         return false;
                     }
                     default: {
-                        SshClient.getLogger().log(Logger.DEBUG,
-                                                  () -> algorithm
-                                                          + " auth failure; received command="
-                                                          + command);
+                        session.getLogger().log(Logger.DEBUG,
+                                                () -> algorithm
+                                                        + " auth failure; received command="
+                                                        + command);
                         return false;
                     }
                 }
@@ -376,8 +378,8 @@ public class UserAuthPublicKey
 
         } catch (final GeneralSecurityException e) {
             // signing failed; e.g. key length too long,...
-            SshClient.getLogger()
-                     .log(Logger.DEBUG, () -> publicKeyAlgorithm + " signature failure");
+            session.getLogger()
+                   .log(Logger.DEBUG, () -> publicKeyAlgorithm + " signature failure");
             return false;
         }
     }

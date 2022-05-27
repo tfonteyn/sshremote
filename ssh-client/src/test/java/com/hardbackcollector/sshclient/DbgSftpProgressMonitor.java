@@ -7,8 +7,8 @@ public class DbgSftpProgressMonitor
 
     private final Logger mLogger;
 
-    DbgSftpProgressMonitor() {
-        mLogger = SshClient.getLogger();
+    DbgSftpProgressMonitor(@NonNull final Session session) {
+        mLogger = session.getLogger();
     }
 
     @Override

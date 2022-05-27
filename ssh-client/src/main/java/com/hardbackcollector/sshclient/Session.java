@@ -149,6 +149,11 @@ public interface Session {
     @Nullable
     byte[] getSessionId();
 
+    /**
+     * returns the current session {@link Logger}.
+     */
+    @NonNull
+    Logger getLogger();
 
     /**
      * Creates a NEW ChannelSession instance of specified type.

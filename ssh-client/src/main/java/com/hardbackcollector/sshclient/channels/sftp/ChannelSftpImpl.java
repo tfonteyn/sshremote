@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.ChannelSftp;
 import com.hardbackcollector.sshclient.ChannelSubsystem;
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.channels.SshChannelException;
 import com.hardbackcollector.sshclient.channels.io.MyPipedInputStream;
 import com.hardbackcollector.sshclient.channels.session.ChannelSessionImpl;
@@ -1588,12 +1587,12 @@ public class ChannelSftpImpl
                                 while (mpIn.available() > 0) {
                                     final int ackId = checkStatus();
                                     if (startSeqId > ackId || ackId > seq - 1) {
-                                        SshClient.getLogger()
-                                                 .log(Logger.ERROR,
-                                                      () -> "ack error:"
-                                                              + " startSeqId=" + startSeqId
-                                                              + ", seq=" + seq
-                                                              + ", ackId=" + ackId);
+                                        session.getLogger()
+                                               .log(Logger.ERROR,
+                                                    () -> "ack error:"
+                                                            + " startSeqId=" + startSeqId
+                                                            + ", seq=" + seq
+                                                            + ", ackId=" + ackId);
 
                                         throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
                                                                 ERROR_SEQUENCE_MISMATCH);
@@ -1913,11 +1912,11 @@ public class ChannelSftpImpl
                         while (seq - startSeqId - ackCount >= bulkRequests) {
                             final int ackId = checkStatus();
                             if (startSeqId > ackId || ackId > seq - 1) {
-                                SshClient.getLogger().log(Logger.ERROR,
-                                                          () -> "ack error:"
-                                                                  + " startSeqId=" + startSeqId
-                                                                  + ", seq=" + seq
-                                                                  + ", ackId=" + ackId);
+                                session.getLogger().log(Logger.ERROR,
+                                                        () -> "ack error:"
+                                                                + " startSeqId=" + startSeqId
+                                                                + ", seq=" + seq
+                                                                + ", ackId=" + ackId);
 
                                 if (ackId != seq) {
                                     throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,

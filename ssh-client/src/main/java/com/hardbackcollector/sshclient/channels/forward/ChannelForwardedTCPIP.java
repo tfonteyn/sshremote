@@ -6,8 +6,6 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.ForwardedTCPIPDaemon;
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.RemoteForwardingHandler;
-import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.channels.SshChannelException;
 import com.hardbackcollector.sshclient.channels.io.PassiveInputStream;
 import com.hardbackcollector.sshclient.transport.Packet;
@@ -58,8 +56,6 @@ public class ChannelForwardedTCPIP
         packet.skipString(); // originator address  (e.g., "192.168.7.38")
         packet.getInt(); // originator port
 
-        final Session session = getSession();
-
         // lookup our configuration
         remoteForwardConfig = RemoteForwardingHandlerImpl.find(session, bindAddress, port);
         if (remoteForwardConfig == null) {
@@ -68,7 +64,7 @@ public class ChannelForwardedTCPIP
 
         if (remoteForwardConfig == null) {
             final String msg = bindAddress + ":" + port + " is not registered.";
-            SshClient.getLogger().log(Logger.ERROR, () -> msg);
+            session.getLogger().log(Logger.ERROR, () -> msg);
             throw new SshChannelException(msg);
         }
     }

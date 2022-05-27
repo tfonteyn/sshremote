@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.SshCipherConstants;
 import com.hardbackcollector.sshclient.hostconfig.HostConfig;
@@ -90,6 +89,7 @@ public class KexProposal {
     private final List<String> language_s2c;
     private final SshClientConfig config;
     private final Packet clientPacket;
+    private final Logger logger;
     private List<String> hostKeyAlgorithms;
 
     /**
@@ -102,6 +102,7 @@ public class KexProposal {
             throws NoSuchAlgorithmException {
 
         this.config = session.getConfig();
+        logger = session.getLogger();
 
         kexAlgorithms = config.getStringList(HostConfig.KEX_ALGS);
         hostKeyAlgorithms = config.getStringList(HostConfig.HOST_KEY_ALGS);
@@ -227,7 +228,7 @@ public class KexProposal {
                 return clientAlg;
             }
         }
-        SshClient.getLogger().log(Logger.DEBUG, () ->
+        logger.log(Logger.DEBUG, () ->
                 "KEX failed negotiate: " + type
                         + "|client=" + String.join(",", client)
                         + "|server=" + server);

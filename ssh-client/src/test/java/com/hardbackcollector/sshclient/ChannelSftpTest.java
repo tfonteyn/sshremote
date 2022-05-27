@@ -52,7 +52,7 @@ class ChannelSftpTest
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
-        try (InputStream is = channel.get(filename, new DbgSftpProgressMonitor(), offset);
+        try (InputStream is = channel.get(filename, new DbgSftpProgressMonitor(session), offset);
              Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(reader, 50000)) {
             String line;

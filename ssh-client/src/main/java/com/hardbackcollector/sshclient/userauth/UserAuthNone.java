@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.transport.Packet;
 import com.hardbackcollector.sshclient.transport.PacketIO;
@@ -54,7 +53,7 @@ public class UserAuthNone
                 .putString(UserAuth.SSH_USERAUTH);
         io.write(packet);
 
-            SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
 
         // receive
         // byte      SSH_MSG_SERVICE_ACCEPT(6)
@@ -63,7 +62,7 @@ public class UserAuthNone
         final boolean serviceAccepted =
                 (packet.getCommand() == SshConstants.SSH_MSG_SERVICE_ACCEPT);
 
-        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_ACCEPT received;"
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_ACCEPT received;"
                 + " serviceAccepted: " + serviceAccepted);
 
         if (!serviceAccepted) {
