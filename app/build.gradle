@@ -35,10 +35,6 @@ android {
         }
     }
 
-    lintOptions {
-        // allow command line builds to complete
-        abortOnError false
-    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -66,6 +62,11 @@ android {
         }
     }
     namespace 'com.hardbackcollector.sshremote'
+
+    lint {
+        // allow command line builds to complete
+        abortOnError false
+    }
 }
 
 dependencies {
@@ -74,33 +75,33 @@ dependencies {
     // https://github.com/google/desugar_jdk_libs
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.6'
     //
-    implementation 'androidx.activity:activity:1.5.0'
+    implementation 'androidx.activity:activity:1.5.1'
     implementation 'androidx.annotation:annotation:1.4.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.0-beta01'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.core:core:1.8.0'
     implementation 'androidx.customview:customview:1.1.0'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
-    implementation 'androidx.fragment:fragment:1.5.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.5.0'
-    implementation 'androidx.navigation:navigation-fragment:2.5.0'
-    implementation 'androidx.navigation:navigation-ui:2.5.0'
+    implementation 'androidx.fragment:fragment:1.5.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.5.1'
+    implementation 'androidx.navigation:navigation-fragment:2.5.1'
+    implementation 'androidx.navigation:navigation-ui:2.5.1'
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.room:room-runtime:2.4.2'
-    annotationProcessor 'androidx.room:room-compiler:2.4.2'
+    implementation 'androidx.room:room-runtime:2.4.3'
+    annotationProcessor 'androidx.room:room-compiler:2.4.3'
 
     // https://github.com/material-components/material-components-android/releases
-    implementation 'com.google.android.material:material:1.7.0-alpha02'
+    implementation 'com.google.android.material:material:1.7.0-alpha03'
 
 
     // local tests use JUnit5
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
     // device tests use JUnit4
     androidTestImplementation 'androidx.test:core:1.4.0'
