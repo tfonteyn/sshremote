@@ -84,7 +84,7 @@ dependencies {
     implementation 'androidx.customview:customview:1.1.0'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
-    implementation 'androidx.fragment:fragment:1.5.1'
+    implementation 'androidx.fragment:fragment:1.5.2'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.5.1'
     implementation 'androidx.navigation:navigation-fragment:2.5.1'
