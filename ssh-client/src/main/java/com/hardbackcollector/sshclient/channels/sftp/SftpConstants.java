@@ -282,6 +282,24 @@ final class SftpConstants {
      * where `id' is the request identifier, `linkpath' specifies the path
      * name of the symlink to be created and `targetpath' specifies the
      * target of the symlink.
+     *
+     * @see com.hardbackcollector.sshclient.ChannelSftp#ln(String, String, boolean)
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     * * OpenSSH protocol deviations.</a>
+     * 4. SFTP protocol changes
+     * <p>
+     * 4.1. sftp: Reversal of arguments to SSH_FXP_SYMLINK
+     * <p>
+     * When OpenSSH's sftp-server was implemented, the order of the arguments
+     * to the SSH_FXP_SYMLINK method was inadvertently reversed. Unfortunately,
+     * the reversal was not noticed until the server was widely deployed. Since
+     * fixing this to follow the specification would cause incompatibility, the
+     * current order was retained. For correct operation, clients should send
+     * SSH_FXP_SYMLINK as follows:
+     * <p>
+     * uint32		id
+     * string		targetpath
+     * string		linkpath
      */
     static final byte SSH_FXP_SYMLINK = 20;
 

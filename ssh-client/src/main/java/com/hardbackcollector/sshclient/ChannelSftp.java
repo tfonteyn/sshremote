@@ -174,18 +174,18 @@ public interface ChannelSftp
      * as specified, you might have to swap the arguments.
      * </p>
      *
-     * @param oldPath the path of the link target,  relative to the
-     *                <a href="#current-directory">current remote directory</a>
-     * @param newPath the path of the link to be created, relative to the
-     *                <a href="#current-directory">current remote directory</a>
+     * @param targetPath the path of the link target,  relative to the
+     *                   <a href="#current-directory">current remote directory</a>
+     * @param linkPath   the path of the link to be created, relative to the
+     *                   <a href="#current-directory">current remote directory</a>
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.10">
      * Internet draft, 6.10.  Dealing with Symbolic links</a>
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
      * OpenSSH protocol deviations.</a>
      */
-    void ln(@NonNull String oldPath,
-            @NonNull String newPath,
+    void ln(@NonNull String targetPath,
+            @NonNull String linkPath,
             boolean softLink)
             throws SftpException;
 
@@ -336,9 +336,9 @@ public interface ChannelSftp
     /**
      * Starts downloading a file as an InputStream.
      *
-     * @param srcFilename the source file name, relative to the
-     *                    <a href="#current-directory">current remote directory</a>.
-     * @param monitor     (optional) progress listener
+     * @param srcFilename      the source file name, relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
      *
      * @return an InputStream from which the contents of the file can be read.
      *
@@ -346,25 +346,25 @@ public interface ChannelSftp
      */
     @NonNull
     default InputStream get(@NonNull final String srcFilename,
-                            @Nullable final SftpProgressMonitor monitor)
+                            @Nullable final SftpProgressMonitor progressListener)
             throws SftpException {
-        return get(srcFilename, monitor, 0L);
+        return get(srcFilename, progressListener, 0L);
     }
 
     /**
      * Starts downloading a file as an InputStream.
      *
-     * @param srcPath       the source file name, relative to the
-     *                      <a href="#current-directory">current remote directory</a>.
-     * @param monitor       (optional) progress listener
-     * @param initialOffset the position in the remote file where
-     *                      we should start the download
+     * @param srcPath          the source file name, relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
+     * @param initialOffset    the position in the remote file where
+     *                         we should start the download
      *
      * @return an InputStream from which the contents of the file can be read.
      */
     @NonNull
     InputStream get(@NonNull String srcPath,
-                    @Nullable SftpProgressMonitor monitor,
+                    @Nullable SftpProgressMonitor progressListener,
                     long initialOffset)
             throws SftpException;
 
@@ -386,9 +386,9 @@ public interface ChannelSftp
      */
     default void get(@NonNull final String src,
                      @NonNull final OutputStream outputStream,
-                     @Nullable final SftpProgressMonitor monitor)
+                     @Nullable final SftpProgressMonitor progressListener)
             throws SftpException {
-        get(src, outputStream, monitor, Mode.Overwrite, 0);
+        get(src, outputStream, progressListener, Mode.Overwrite, 0);
     }
 
     /**
@@ -411,9 +411,9 @@ public interface ChannelSftp
      */
     default void get(@NonNull final String src,
                      @NonNull final String dst,
-                     @Nullable final SftpProgressMonitor monitor)
+                     @Nullable final SftpProgressMonitor progressListener)
             throws SftpException {
-        get(src, dst, monitor, Mode.Overwrite);
+        get(src, dst, progressListener, Mode.Overwrite);
     }
 
     /**
@@ -489,18 +489,18 @@ public interface ChannelSftp
     /**
      * Uploads a file from an InputStream using {@link Mode#Overwrite}.
      *
-     * @param src     the source file, in form of an input stream.
-     * @param dst     the remote destination file name, relative to the
-     *                <a href="#current-directory">current remote directory</a>.
-     * @param monitor (optional) progress listener
+     * @param src              the source file, in form of an input stream.
+     * @param dst              the remote destination file name, relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
      *
      * @see #put(InputStream, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final InputStream src,
                      @NonNull final String dst,
-                     @Nullable final SftpProgressMonitor monitor)
+                     @Nullable final SftpProgressMonitor progressListener)
             throws SftpException {
-        put(src, dst, monitor, Mode.Overwrite);
+        put(src, dst, progressListener, Mode.Overwrite);
     }
 
     /**
@@ -540,10 +540,10 @@ public interface ChannelSftp
     /**
      * Starts an upload from an OutputStream.
      *
-     * @param dst     the remote destination file name, relative to the
-     *                <a href="#current-directory">current remote directory</a>.
-     * @param monitor (optional) progress listener
-     * @param mode    the transfer {@link Mode}
+     * @param dst              the remote destination file name, relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
+     * @param mode             the transfer {@link Mode}
      *
      * @return an OutputStream to which the application should write the file contents.
      *
@@ -551,10 +551,10 @@ public interface ChannelSftp
      */
     @NonNull
     default OutputStream put(@NonNull final String dst,
-                             @Nullable final SftpProgressMonitor monitor,
+                             @Nullable final SftpProgressMonitor progressListener,
                              @NonNull final Mode mode)
             throws SftpException {
-        return put(dst, monitor, mode, 0);
+        return put(dst, progressListener, mode, 0);
     }
 
     /**
@@ -594,19 +594,19 @@ public interface ChannelSftp
     /**
      * Uploads a file using {@link Mode#Overwrite}.
      *
-     * @param src     the local source file name, absolute or relative to the
-     *                <a href="#current-directory">current local directory</a>.
-     * @param dst     the remote destination file name, absolute or relative to the
-     *                <a href="#current-directory">current remote directory</a>.
-     * @param monitor (optional) progress listener
+     * @param src              the local source file name, absolute or relative to the
+     *                         <a href="#current-directory">current local directory</a>.
+     * @param dst              the remote destination file name, absolute or relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
      *
      * @see #put(String, String, SftpProgressMonitor, Mode)
      */
     default void put(@NonNull final String src,
                      @NonNull final String dst,
-                     @Nullable final SftpProgressMonitor monitor)
+                     @Nullable final SftpProgressMonitor progressListener)
             throws SftpException {
-        put(src, dst, monitor, Mode.Overwrite);
+        put(src, dst, progressListener, Mode.Overwrite);
     }
 
     /**
@@ -616,21 +616,21 @@ public interface ChannelSftp
      * write data, which will then be uploaded to the remote file.
      * Closing the stream will finish the upload.
      *
-     * @param dstPath the remote destination file name, relative to the
-     *                <a href="#current-directory">current remote directory</a>.
-     * @param monitor (optional) progress listener
-     * @param mode    the transfer {@link Mode}
-     * @param offset  the position in the remote file where we want to start writing.
-     *                In the {@link Mode#Resume} and {@link Mode#Append}
-     *                modes, this is added to the current size of the file
-     *                (i.e. an offset > 0 creates a sparse section of that
-     *                size in the file).
+     * @param dstPath          the remote destination file name, relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
+     * @param mode             the transfer {@link Mode}
+     * @param offset           the position in the remote file where we want to start writing.
+     *                         In the {@link Mode#Resume} and {@link Mode#Append}
+     *                         modes, this is added to the current size of the file
+     *                         (i.e. an offset > 0 creates a sparse section of that
+     *                         size in the file).
      *
      * @return an OutputStream to which the application should write the file contents.
      */
     @NonNull
     OutputStream put(@NonNull String dstPath,
-                     @Nullable SftpProgressMonitor monitor,
+                     @Nullable SftpProgressMonitor progressListener,
                      @NonNull Mode mode,
                      long offset)
             throws SftpException;
@@ -643,31 +643,31 @@ public interface ChannelSftp
      * If the destination is a directory, the source can contain wildcards.
      * The transfer mode will be applied to ALL resolved filenames.
      *
-     * @param srcFilename the local source file name, absolute or relative to the
-     *                    <a href="#current-directory">current local directory</a>.
-     * @param dstPath     the remote destination file name, absolute or relative to the
-     *                    <a href="#current-directory">current remote directory</a>.
-     * @param monitor     (optional) progress listener
-     * @param mode        the transfer {@link Mode}
+     * @param srcFilename      the local source file name, absolute or relative to the
+     *                         <a href="#current-directory">current local directory</a>.
+     * @param dstPath          the remote destination file name, absolute or relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
+     * @param mode             the transfer {@link Mode}
      */
     void put(@NonNull String srcFilename,
              @NonNull String dstPath,
-             @Nullable SftpProgressMonitor monitor,
+             @Nullable SftpProgressMonitor progressListener,
              @NonNull Mode mode)
             throws SftpException;
 
     /**
      * Uploads a file from an input stream.
      *
-     * @param srcStream the source file, in the form of an input stream.
-     * @param dstPath   the remote destination file name, relative to the
-     *                  <a href="#current-directory">current remote directory</a>.
-     * @param monitor   (optional) progress listener
-     * @param mode      the transfer {@link Mode}
+     * @param srcStream        the source file, in the form of an input stream.
+     * @param dstPath          the remote destination file name, relative to the
+     *                         <a href="#current-directory">current remote directory</a>.
+     * @param progressListener (optional) progress listener
+     * @param mode             the transfer {@link Mode}
      */
     void put(@NonNull InputStream srcStream,
              @NonNull String dstPath,
-             @Nullable SftpProgressMonitor monitor,
+             @Nullable SftpProgressMonitor progressListener,
              @NonNull Mode mode)
             throws SftpException;
 
