@@ -124,7 +124,9 @@ class UserButton {
             mOutput = ssh.read(channel);
 
         } finally {
-            mExitStatus = channel.getExitStatus();
+            if (channel != null) {
+                mExitStatus = channel.getExitStatus();
+            }
             ssh.safeClose(session, channel);
         }
     }
