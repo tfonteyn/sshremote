@@ -69,7 +69,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/user_name"
             style="@style/TIE"
-            tools:text="foo" />
+            tools:text="user" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
