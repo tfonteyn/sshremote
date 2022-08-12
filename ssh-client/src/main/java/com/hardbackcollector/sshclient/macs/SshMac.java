@@ -74,7 +74,7 @@ public interface SshMac {
      * Updates the MAC with some data.
      *
      * @param input  an array containing the data to authenticate.
-     * @param offset the position in {@code foo} where the data starts.
+     * @param offset the position in {@code input} where the data starts.
      * @param len    the length of the data.
      */
     void update(@NonNull byte[] input,
