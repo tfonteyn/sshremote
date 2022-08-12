@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.SshCipher;
 import com.hardbackcollector.sshclient.keypair.util.Vendor;
@@ -261,9 +260,11 @@ class PrivateKeyBlob {
         //noinspection ConstantConditions
         final ASN1InputStream stream = new ASN1InputStream(blob);
         final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
-        SshClient.getLogger().log(Logger.DEBUG,
-                                  () -> "~~~ PrivateKeyBlob#decryptPKCS8 ~~~\n" +
-                                          ASN1Dump.dumpAsString(root, true));
+
+        if (config.getLogger().isEnabled(Logger.DEBUG)) {
+            config.getLogger().log(Logger.DEBUG, () -> "~~~ PrivateKeyBlob#decryptPKCS8 ~~~\n" +
+                    ASN1Dump.dumpAsString(root, true));
+        }
 
         //    Sequence
         final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(0));

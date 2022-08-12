@@ -39,7 +39,9 @@ public class ChannelDirectStreamLocal
     protected Packet createChannelOpenPacket() {
 
         if (socketPath == null) {
-            session.getLogger().log(Logger.FATAL, () -> ERROR_SOCKET_PATH_MUST_BE_SET);
+            if (session.getLogger().isEnabled(Logger.FATAL)) {
+                session.getLogger().log(Logger.FATAL, () -> ERROR_SOCKET_PATH_MUST_BE_SET);
+            }
             throw new IllegalStateException(ERROR_SOCKET_PATH_MUST_BE_SET);
         }
 

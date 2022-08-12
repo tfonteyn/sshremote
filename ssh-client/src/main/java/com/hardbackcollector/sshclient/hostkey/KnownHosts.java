@@ -287,7 +287,9 @@ public class KnownHosts
                 try {
                     writeToFile();
                 } catch (final Exception e) {
-                    SshClient.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
+                    if (config.getLogger().isEnabled(Logger.ERROR)) {
+                        config.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
+                    }
                 }
             }
         }
@@ -328,7 +330,9 @@ public class KnownHosts
             try {
                 writeToFile();
             } catch (final Exception e) {
-                SshClient.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
+                if (config.getLogger().isEnabled(Logger.ERROR)) {
+                    config.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
+                }
             }
         }
     }

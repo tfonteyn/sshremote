@@ -64,7 +64,9 @@ public class ChannelForwardedTCPIP
 
         if (remoteForwardConfig == null) {
             final String msg = bindAddress + ":" + port + " is not registered.";
-            session.getLogger().log(Logger.ERROR, () -> msg);
+            if (session.getLogger().isEnabled(Logger.ERROR)) {
+                session.getLogger().log(Logger.ERROR, () -> msg);
+            }
             throw new SshChannelException(msg);
         }
     }

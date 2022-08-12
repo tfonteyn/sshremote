@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.keypair.util.Vendor;
@@ -288,9 +287,10 @@ public class KeyPairDSA
                     final ASN1InputStream stream = new ASN1InputStream(encodedKey);
                     final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
 
-                    SshClient.getLogger().log(Logger.DEBUG,
-                                              () -> "~~~ KeyPairDSA#parse ~~~\n" +
-                                                      ASN1Dump.dumpAsString(root, true));
+                    if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                        config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairDSA#parse ~~~\n" +
+                                ASN1Dump.dumpAsString(root, true));
+                    }
 
                     p = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
                     q = ASN1Integer.getInstance(root.getObjectAt(2)).getPositiveValue();
@@ -305,8 +305,10 @@ public class KeyPairDSA
             throw e;
 
         } catch (final Exception e) {
-            SshClient.getLogger()
-                     .log(Logger.DEBUG, () -> "Parsing failed, key is probably encrypted");
+            if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                config.getLogger().log(Logger.DEBUG, () ->
+                        "Parsing failed, key is probably encrypted");
+            }
 
             privateKeyBlob.setEncrypted(true);
             return;

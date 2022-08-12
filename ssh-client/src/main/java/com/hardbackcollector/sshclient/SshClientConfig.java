@@ -1,6 +1,7 @@
 package com.hardbackcollector.sshclient;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.ciphers.SshCipher;
 import com.hardbackcollector.sshclient.compression.SshDeflater;
@@ -60,6 +61,11 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public interface SshClientConfig
         extends BaseConfig {
+
+    @NonNull
+    Logger getLogger();
+
+    void setLogger(@Nullable Logger logger);
 
     @NonNull
     Map<String, String> getAll();

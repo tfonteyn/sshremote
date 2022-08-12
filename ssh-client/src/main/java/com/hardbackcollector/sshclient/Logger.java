@@ -15,24 +15,12 @@ public interface Logger {
 
     boolean isEnabled(int level);
 
-    /**
-     * An implementation should use {@link #isEnabled(int)}.
-     * <pre>
-     *     {@code
-     *          void log(final int level, @NonNull final Supplier<String> message) {
-     *              if (isEnabled(level) {
-     *                  printToLog(... message.get() ...);
-     *              }
-     *          }
-     *     }
-     * </pre>
-     */
     void log(int level,
              @NonNull Supplier<String> message);
 
     default void log(final int level,
                      @NonNull final Throwable e,
                      @NonNull final Supplier<String> message) {
-        log(level, () -> message + "|" + e.getMessage());
+        log(level, () -> message.get() + "|" + e.getMessage());
     }
 }

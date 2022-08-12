@@ -3,7 +3,6 @@ package com.hardbackcollector.sshclient.kex.keyexchange;
 import androidx.annotation.NonNull;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.kex.KexProtocolException;
 import com.hardbackcollector.sshclient.kex.keyagreements.XDH;
@@ -99,9 +98,10 @@ public class KeyExchangeEdDSA
                 .putString(agreement.getQ());
         io.write(packet);
 
-        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_ECDH_INIT(30) sent,"
-                + " expecting SSH_MSG_KEX_ECDH_REPLY(31)");
-
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_ECDH_INIT(30) sent,"
+                    + " expecting SSH_MSG_KEX_ECDH_REPLY(31)");
+        }
         state = SSH_MSG_KEX_ECDH_REPLY;
     }
 

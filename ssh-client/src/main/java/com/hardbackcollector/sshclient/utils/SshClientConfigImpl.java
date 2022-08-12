@@ -3,9 +3,11 @@ package com.hardbackcollector.sshclient.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
+import com.hardbackcollector.sshclient.SshSessionConfig;
 import com.hardbackcollector.sshclient.ciphers.SshCipherConstants;
 import com.hardbackcollector.sshclient.hostconfig.HostConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
@@ -22,14 +24,36 @@ import com.hardbackcollector.sshclient.userauth.jgss.UserAuthGSSContextKrb5;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
+/**
+ * Each {@link SshClient} has ONE configuration object.
+ * A new {@link Session} created from that client inherits the configuration,
+ * but options/logger can be overridden on the session level.
+ */
 @SuppressWarnings("WeakerAccess")
-public class SshClientConfigImpl
-        implements SshClientConfig {
+public final class SshClientConfigImpl
+        implements SshSessionConfig {
 
     /** The prefix for configuration options set as system properties. */
     public static final String SYS_PROP_PREFIX = "sshjc.";
+    /**
+     * The default logger implementation logs nothing.
+     */
+    public static final Logger DEV_NULL = new Logger() {
+        @Override
+        public boolean isEnabled(final int level) {
+            return false;
+        }
+
+        @Override
+        public void log(final int level,
+                        @NonNull final Supplier<String> message) {
+
+        }
+    };
 
     private static final Set<String> KEY_IS_LIST_VALUE = Set.of(
             HostConfig.KEX_ALGS.toLowerCase(Locale.ENGLISH)
@@ -50,7 +74,7 @@ public class SshClientConfigImpl
             , HostConfig.REMOTE_FORWARD.toLowerCase(Locale.ENGLISH)
     );
 
-    // FIRST try here, i.e. the session options.
+    // FIRST try here, i.e. the local options.
     private final Map<String, String> config = new HashMap<>();
     // SECONDLY try the (optional) host configuration file which is set on the session
     @Nullable
@@ -60,27 +84,63 @@ public class SshClientConfigImpl
     private final SshClientConfig parentConfig;
 
     /**
-     * Construct the GLOBAL configuration.
-     * This is done <strong>ONCE</strong>> for each {@link SshClient} object.
+     * The active logger. The configuration object is the owner of the Logger.
+     * Any other object spun of should keep a reference to the config and
+     * use {@link SshClientConfig#getLogger()}.
      */
-    public SshClientConfigImpl() {
-        this.hostConfig = null;
+    @NonNull
+    private Logger logger;
+
+    /**
+     * Private constructor. Always use the static factory methods to get the correct type back.
+     */
+    private SshClientConfigImpl(@Nullable final SshClientConfig parentConfig,
+                                @Nullable final HostConfig hostConfig,
+                                @Nullable final Logger logger) {
+        this.parentConfig = parentConfig;
+        this.hostConfig = hostConfig;
+        this.logger = Objects.requireNonNullElse(logger, DEV_NULL);
         loadDefaultConfig();
-        this.parentConfig = null;
     }
 
     /**
-     * Construct a configuration for a specific {@link Session} object.
-     * It's based on the passed in (global) configuration overloaded with the (optional)
-     * host-based configuration.
+     * Construct an {@link SshClient} configuration.
+     *
+     * @return a {@link SshClientConfig}
      */
-    public SshClientConfigImpl(@Nullable final SshClientConfig parentConfig,
-                               @Nullable final HostConfig hostConfig) {
-        this.hostConfig = hostConfig;
-        loadDefaultConfig();
-        this.parentConfig = parentConfig;
+    @NonNull
+    public static SshClientConfig createClientConfig(@Nullable final Logger logger) {
+        return new SshClientConfigImpl(null, null, logger);
     }
 
+    /**
+     * Construct a {@link Session} configuration.
+     * It's based on the passed in {@link SshClient} configuration,
+     * overloaded with the optional host-based configuration.
+     *
+     * @param parentConfig the config object from the {@link SshClient}.
+     * @param hostConfig   (optional) host-based configuration.
+     *
+     * @return a {@link SshSessionConfig}
+     */
+    @NonNull
+    public static SshSessionConfig createSessionConfig(@NonNull final SshClientConfig parentConfig,
+                                                       @Nullable final HostConfig hostConfig) {
+        return new SshClientConfigImpl(parentConfig, hostConfig, parentConfig.getLogger());
+    }
+
+    @NonNull
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
+    @Override
+    public void setLogger(@Nullable final Logger logger) {
+        this.logger = Objects.requireNonNullElse(logger, DEV_NULL);
+    }
+
+    @Override
     @Nullable
     public HostConfig getHostConfig() {
         return hostConfig;

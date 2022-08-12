@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.keypair.util.Vendor;
 import com.hardbackcollector.sshclient.signature.SshSignature;
@@ -132,8 +131,10 @@ public class KeyPairPKCS8
         try {
             final ASN1InputStream stream = new ASN1InputStream(encodedKey);
             final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
-            SshClient.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairPKCS8#parse ~~~\n" +
-                    ASN1Dump.dumpAsString(root, true));
+            if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairPKCS8#parse ~~~\n" +
+                        ASN1Dump.dumpAsString(root, true));
+            }
 
             // DSA unencrypted:
             // Sequence                                         ==> 'root'
@@ -228,9 +229,10 @@ public class KeyPairPKCS8
             throw e;
 
         } catch (final Exception e) {
-            SshClient.getLogger()
-                     .log(Logger.DEBUG, () -> "Parsing failed, key is probably encrypted");
-
+            if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                config.getLogger().log(Logger.DEBUG, () ->
+                        "Parsing failed, key is probably encrypted");
+            }
             privateKeyBlob.setEncrypted(true);
             return;
         }

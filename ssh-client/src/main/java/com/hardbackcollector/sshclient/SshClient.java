@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * This class is the central entry/configuration point.
@@ -77,25 +76,6 @@ public class SshClient {
     private static final String PREFER_BOUNCY_CASTLE = "prefer_bouncycastle";
 
     /**
-     * The default logger implementation logs nothing.
-     */
-    private static final Logger DEVNULL = new Logger() {
-        @Override
-        public boolean isEnabled(final int level) {
-            return false;
-        }
-
-        @Override
-        public void log(final int level,
-                        @NonNull final Supplier<String> message) {
-
-        }
-    };
-
-    /** The active logger. */
-    private static Logger logger = DEVNULL;
-
-    /**
      * A pool of all sessions currently active for this instance.
      * A {@link Session} is added when it's created, and removed upon {@link Session#disconnect()}.
      * <p>
@@ -105,7 +85,7 @@ public class SshClient {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Set<Session> sessionPool = new HashSet<>();
 
-    /** The global configuration for this client. */
+    /** The configuration for this client. */
     @NonNull
     private final SshClientConfig config;
 
@@ -137,7 +117,7 @@ public class SshClient {
      * The entry point for user-code.
      */
     public SshClient() {
-        this(DEVNULL);
+        this(null);
     }
 
     /**
@@ -148,9 +128,7 @@ public class SshClient {
      * @param logger to use; can be {@code null} for no logging at all.
      */
     public SshClient(@Nullable final Logger logger) {
-        SshClient.logger = Objects.requireNonNullElse(logger, DEVNULL);
-
-        config = new SshClientConfigImpl();
+        config = SshClientConfigImpl.createClientConfig(logger);
         defaultIdentityRepository = new InMemoryIdentityRepository(config);
         identityRepository = defaultIdentityRepository;
 
@@ -168,33 +146,44 @@ public class SshClient {
             }
 
             if (pos == -1) {
-                getLogger().log(Logger.DEBUG, () -> "BouncyCastleProvider already installed");
+                if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                    config.getLogger().log(Logger.DEBUG, () ->
+                            "BouncyCastleProvider already installed");
+                }
             }
         } catch (final SecurityException e) {
-            getLogger().log(Logger.FATAL, e, () -> "BouncyCastleProvider failed to install");
+            if (config.getLogger().isEnabled(Logger.FATAL)) {
+                config.getLogger().log(Logger.FATAL, e, () ->
+                        "BouncyCastleProvider failed to install");
+            }
         }
     }
 
     /**
-     * returns the current global/static {@link Logger}.
+     * returns the current client {@link Logger}.
+     *
+     * @return the current logger
      */
     @NonNull
-    public static Logger getLogger() {
-        return logger;
+    public Logger getLogger() {
+        return config.getLogger();
     }
 
     /**
-     * Sets the {@link Logger} to be used by this library.
+     * Sets the {@link Logger} to be used by this client.
+     * Existing sessions will keep using the logger as set when they where created.
      *
      * @param logger the new logger. If {@code null}, we use a builtin
      *               Logger which logs nothing.
+     *
+     * @see Session#setLogger(Logger)
      */
-    public static void setLogger(@Nullable final Logger logger) {
-        SshClient.logger = Objects.requireNonNullElse(logger, DEVNULL);
+    public void setLogger(@Nullable final Logger logger) {
+        config.setLogger(logger);
     }
 
     /**
-     * Put a configuration {@link String} option.
+     * Set a configuration {@link String} option.
      *
      * @param key   the key for the configuration option
      * @param value to set
@@ -456,8 +445,7 @@ public class SshClient {
             hostConfig = null;
         }
 
-        final Session session = new SessionImpl(this, config, hostConfig,
-                                                username, host, port);
+        final Session session = SessionImpl.createSession(this, hostConfig, username, host, port);
 
         // Not strictly needed to set the Identity and Host repos here, but it's cleaner.
         // set the global {@link IdentityRepository} for public key authentication

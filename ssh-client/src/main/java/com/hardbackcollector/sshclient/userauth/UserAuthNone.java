@@ -53,7 +53,9 @@ public class UserAuthNone
                 .putString(UserAuth.SSH_USERAUTH);
         io.write(packet);
 
-        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
+        if (session.getLogger().isEnabled(Logger.DEBUG)) {
+            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
+        }
 
         // receive
         // byte      SSH_MSG_SERVICE_ACCEPT(6)
@@ -62,8 +64,10 @@ public class UserAuthNone
         final boolean serviceAccepted =
                 (packet.getCommand() == SshConstants.SSH_MSG_SERVICE_ACCEPT);
 
-        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_ACCEPT received;"
-                + " serviceAccepted: " + serviceAccepted);
+        if (session.getLogger().isEnabled(Logger.DEBUG)) {
+            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_ACCEPT received;"
+                    + " serviceAccepted: " + serviceAccepted);
+        }
 
         if (!serviceAccepted) {
             return false;

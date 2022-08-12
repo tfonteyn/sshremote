@@ -51,10 +51,6 @@ class BaseKeyPairTest {
                     + "   and the minimal set of algorithms that are needed to implement the\n"
                     + "   SSH transport layer protocol.\n";
 
-    static {
-        SshClient.setLogger(new DbgJLogger());
-    }
-
     void keyPairTest(@NonNull final String keyType,
                      final int keySize)
             throws GeneralSecurityException, IOException {

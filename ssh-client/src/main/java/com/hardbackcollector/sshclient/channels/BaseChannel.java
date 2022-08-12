@@ -540,7 +540,9 @@ public abstract class BaseChannel
                 }
             }
         } catch (final Exception e) {
-            session.getLogger().log(Logger.ERROR, e, () -> "");
+            if (session.getLogger().isEnabled(Logger.ERROR)) {
+                session.getLogger().log(Logger.ERROR, e, () -> "");
+            }
         }
 
         disconnect();

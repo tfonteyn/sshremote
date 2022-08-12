@@ -3,7 +3,6 @@ package com.hardbackcollector.sshclient.kex.keyexchange;
 import androidx.annotation.NonNull;
 
 import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.kex.KexProtocolException;
 import com.hardbackcollector.sshclient.kex.keyagreements.DH;
@@ -130,13 +129,11 @@ public class KeyExchangeDHGroupExchange
                 .putInt(maxKeySize);
         io.write(packet);
 
-        SshClient.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_DH_GEX_REQUEST(34)("
-                + minKeySize + "<"
-                + preferredKeySize
-                + "<" + maxKeySize
-                + ") sent,"
-                + " expecting SSH_MSG_KEX_DH_GEX_GROUP(31)");
-
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_DH_GEX_REQUEST(34)("
+                    + minKeySize + "<" + preferredKeySize + "<" + maxKeySize + ") sent,"
+                    + " expecting SSH_MSG_KEX_DH_GEX_GROUP(31)");
+        }
         state = SSH_MSG_KEX_DH_GEX_GROUP;
     }
 
@@ -170,10 +167,10 @@ public class KeyExchangeDHGroupExchange
                         .putBigInteger(e);
                 io.write(packet);
 
-                SshClient.getLogger().log(Logger.DEBUG,
-                                          () -> "SSH_MSG_KEX_DH_GEX_INIT(32) sent,"
-                                                  + " expecting SSH_MSG_KEX_DH_GEX_REPLY(33)");
-
+                if (getLogger().isEnabled(Logger.DEBUG)) {
+                    getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_DH_GEX_INIT(32) sent,"
+                            + " expecting SSH_MSG_KEX_DH_GEX_REPLY(33)");
+                }
                 state = SSH_MSG_KEX_DH_GEX_REPLY;
                 break;
             }

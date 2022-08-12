@@ -3,9 +3,6 @@ package com.hardbackcollector.sshclient.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbackcollector.sshclient.Logger;
-import com.hardbackcollector.sshclient.SshClient;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +37,7 @@ public interface BaseConfig {
      *
      * @param key the key for the configuration option
      *
-     * @return the int value, or {@code null} if the key is not present.
+     * @return the value, or {@code null} if the key is not present.
      */
     @Nullable
     default String getString(@NonNull final String key) {
@@ -52,7 +49,7 @@ public interface BaseConfig {
      *
      * @param key the key for the configuration option
      *
-     * @return the int value, or {@code defValue} if the key is not present.
+     * @return the value, or {@code defValue} if the key is not present.
      */
     default int getIntValue(@NonNull final String key,
                             final int defValue) {
@@ -61,8 +58,8 @@ public interface BaseConfig {
             try {
                 return Integer.parseInt(s);
             } catch (final NumberFormatException e) {
-                SshClient.getLogger()
-                         .log(Logger.ERROR, () -> "Invalid value for key=" + key + ": " + s);
+                // SshClient.getLogger()
+                //  .log(Logger.ERROR, () -> "Invalid value for key=" + key + ": " + s);
             }
         }
         return defValue;
@@ -73,7 +70,7 @@ public interface BaseConfig {
      *
      * @param key the key for the configuration option
      *
-     * @return the boolean value, or {@code defValue} if the key is not present.
+     * @return the value, or {@code defValue} if the key is not present.
      */
     default boolean getBooleanValue(@NonNull final String key,
                                     final boolean defValue) {

@@ -1587,12 +1587,12 @@ public class ChannelSftpImpl
                                 while (mpIn.available() > 0) {
                                     final int ackId = checkStatus();
                                     if (startSeqId > ackId || ackId > seq - 1) {
-                                        session.getLogger()
-                                               .log(Logger.ERROR,
-                                                    () -> "ack error:"
-                                                            + " startSeqId=" + startSeqId
-                                                            + ", seq=" + seq
-                                                            + ", ackId=" + ackId);
+                                        if (session.getLogger().isEnabled(Logger.ERROR)) {
+                                            session.getLogger().log(Logger.ERROR, () -> "ack error:"
+                                                    + " startSeqId=" + startSeqId
+                                                    + ", seq=" + seq
+                                                    + ", ackId=" + ackId);
+                                        }
 
                                         throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
                                                                 ERROR_SEQUENCE_MISMATCH);
@@ -1912,12 +1912,12 @@ public class ChannelSftpImpl
                         while (seq - startSeqId - ackCount >= bulkRequests) {
                             final int ackId = checkStatus();
                             if (startSeqId > ackId || ackId > seq - 1) {
-                                session.getLogger().log(Logger.ERROR,
-                                                        () -> "ack error:"
-                                                                + " startSeqId=" + startSeqId
-                                                                + ", seq=" + seq
-                                                                + ", ackId=" + ackId);
-
+                                if (session.getLogger().isEnabled(Logger.ERROR)) {
+                                    session.getLogger().log(Logger.ERROR, () -> "ack error:"
+                                            + " startSeqId=" + startSeqId
+                                            + ", seq=" + seq
+                                            + ", ackId=" + ackId);
+                                }
                                 if (ackId != seq) {
                                     throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
                                                             ERROR_SEQUENCE_MISMATCH);

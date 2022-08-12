@@ -155,7 +155,9 @@ public class ChannelAgentForwarding
 
         responseBuffer.reset();
 
-        session.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
+        if (session.getLogger().isEnabled(Logger.DEBUG)) {
+            session.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
+        }
 
         switch (messageType) {
             case SSH2_AGENTC_SIGN_REQUEST: {

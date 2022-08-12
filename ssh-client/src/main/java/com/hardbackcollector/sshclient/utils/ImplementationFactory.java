@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.Random;
-import com.hardbackcollector.sshclient.SshClient;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.ciphers.AESGCMCipher;
 import com.hardbackcollector.sshclient.ciphers.ChaCha20Poly1305;
@@ -154,8 +153,9 @@ public final class ImplementationFactory {
             // We have a SERIOUS problem...
             final String errMsg = "Failed to instantiate " + defClass.getCanonicalName()
                     + " for " + configKey;
-
-            SshClient.getLogger().log(Logger.FATAL, e, () -> errMsg);
+            if (config.getLogger().isEnabled(Logger.FATAL)) {
+                config.getLogger().log(Logger.FATAL, e, () -> errMsg);
+            }
 
             throw new IllegalStateException(errMsg, e);
         }

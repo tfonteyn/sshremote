@@ -151,9 +151,19 @@ public interface Session {
 
     /**
      * returns the current session {@link Logger}.
+     *
+     * @return the current logger
      */
     @NonNull
     Logger getLogger();
+
+    /**
+     * Override the {@link Logger} to be used by this session.
+     *
+     * @param logger the new logger. If {@code null}, we use a builtin
+     *               Logger which logs nothing.
+     */
+    void setLogger(@Nullable Logger logger);
 
     /**
      * Creates a NEW ChannelSession instance of specified type.

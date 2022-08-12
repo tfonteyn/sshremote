@@ -2,6 +2,7 @@ package com.hardbackcollector.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
+import com.hardbackcollector.sshclient.Logger;
 import com.hardbackcollector.sshclient.SshClientConfig;
 import com.hardbackcollector.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbackcollector.sshclient.keypair.ECKeyType;
@@ -59,6 +60,7 @@ abstract class KeyExchangeBase
     /** The NEXT packet we expect. i.e. the reply to our send. */
     byte state;
     PacketIO io;
+
     private SshClientConfig config;
     /** The hash generator. */
     private MessageDigest md;
@@ -94,6 +96,11 @@ abstract class KeyExchangeBase
         this.V_C = V_C;
         this.I_S = I_S;
         this.I_C = I_C;
+    }
+
+    @NonNull
+    protected Logger getLogger() {
+        return config.getLogger();
     }
 
     /**

@@ -89,7 +89,6 @@ public class KexProposal {
     private final List<String> language_s2c;
     private final SshClientConfig config;
     private final Packet clientPacket;
-    private final Logger logger;
     private List<String> hostKeyAlgorithms;
 
     /**
@@ -102,7 +101,6 @@ public class KexProposal {
             throws NoSuchAlgorithmException {
 
         this.config = session.getConfig();
-        logger = session.getLogger();
 
         kexAlgorithms = config.getStringList(HostConfig.KEX_ALGS);
         hostKeyAlgorithms = config.getStringList(HostConfig.HOST_KEY_ALGS);
@@ -194,10 +192,10 @@ public class KexProposal {
         // 22 bytes: packet header(5) + command(1) + cookie(16)
         server.setReadOffSet(22);
 
-        final String kex = negotiate("kex", kexAlgorithms, server.getJString());
-        final String key = negotiate("key", hostKeyAlgorithms, server.getJString());
-        final String c_c2s = negotiate("c_c2s", ciphers_c2s, server.getJString());
-        final String c_s2c = negotiate("c_s2c", ciphers_s2c, server.getJString());
+        final String kex = negotiate("kexAlgorithms", kexAlgorithms, server.getJString());
+        final String key = negotiate("hostKeyAlgorithms", hostKeyAlgorithms, server.getJString());
+        final String c_c2s = negotiate("ciphers_c2s", ciphers_c2s, server.getJString());
+        final String c_s2c = negotiate("ciphers_s2c", ciphers_s2c, server.getJString());
 
         if (!authenticated &&
                 (SshCipherConstants.NONE.equals(c_c2s) ||
@@ -207,15 +205,26 @@ public class KexProposal {
 
         return new KexAgreement(
                 kex, key, c_c2s, c_s2c,
-                negotiate("m_c2s", mac_c2s, server.getJString()),
-                negotiate("m_s2c", mac_s2c, server.getJString()),
-                negotiate("z_c2s", compression_c2s, server.getJString()),
-                negotiate("z_s2c", compression_s2c, server.getJString()),
-                negotiate("l_c2s", language_c2s, server.getJString()),
-                negotiate("l_s2c", language_s2c, server.getJString())
+                negotiate("mac_c2s", mac_c2s, server.getJString()),
+                negotiate("mac_s2c", mac_s2c, server.getJString()),
+                negotiate("compression_c2s", compression_c2s, server.getJString()),
+                negotiate("compression_s2c", compression_s2c, server.getJString()),
+                negotiate("language_c2s", language_c2s, server.getJString()),
+                negotiate("language_s2c", language_s2c, server.getJString())
         );
     }
 
+    /**
+     * Try and select an option which is acceptable to both client and server.
+     *
+     * @param type   the type of option; this is for <strong>log/error reporting</strong> only
+     * @param client what the client proposes
+     * @param server what the server proposes
+     *
+     * @return the agreed upon value
+     *
+     * @throws KexException if no agreement can be found
+     */
     @NonNull
     private String negotiate(@NonNull final String type,
                              @NonNull final List<String> client,
@@ -228,10 +237,12 @@ public class KexProposal {
                 return clientAlg;
             }
         }
-        logger.log(Logger.DEBUG, () ->
-                "KEX failed negotiate: " + type
-                        + "|client=" + String.join(",", client)
-                        + "|server=" + server);
+        if (config.getLogger().isEnabled(Logger.DEBUG)) {
+            config.getLogger().log(Logger.DEBUG, () ->
+                    "KEX failed negotiate: " + type
+                            + "|client=" + String.join(",", client)
+                            + "|server=" + server);
+        }
 
         throw new KexException("Algorithm negotiation failed: " + type);
     }

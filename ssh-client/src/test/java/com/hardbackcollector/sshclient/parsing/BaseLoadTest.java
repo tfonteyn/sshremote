@@ -24,7 +24,7 @@ abstract class BaseLoadTest {
     static final String TEST_RESOURCES = "src/test/resources/";
 
     private static final Logger LOGGER = new DbgJLogger();
-    private static final SshClient SSH_CLIENT = new SshClient(LOGGER);
+    static final SshClient SSH_CLIENT = new SshClient(LOGGER);
 
     private static final String longText =
             "Status of This Memo\n"
@@ -57,10 +57,6 @@ abstract class BaseLoadTest {
                     + "   This document also describes the Diffie-Hellman key exchange method\n"
                     + "   and the minimal set of algorithms that are needed to implement the\n"
                     + "   SSH transport layer protocol.\n";
-
-    static {
-        SshClient.setLogger(new DbgJLogger());
-    }
 
     SshKeyPair parseFile(@NonNull final String pathname,
                          @Nullable final String passPhrase)
