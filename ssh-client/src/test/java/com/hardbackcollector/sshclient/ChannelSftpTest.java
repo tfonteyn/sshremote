@@ -29,6 +29,29 @@ class ChannelSftpTest
         super.setup(ZIPPER[ZIP]);
     }
 
+    // This test will fail.
+    // The sun.nio.cs.StreamDecoder seems to be created with the default 8192.
+    // Setting our own buffered reader to less than 8192 (instead of the 50_000)
+    // does not solve the issue, as Java seems to use the default StreamDecoder
+    // constructor. i.e. one of the StreamDecoder forInputStreamReader
+    // which always use the default 8192 buffer.
+    // Is this a Java bug ??
+    //
+    //
+    // newPosition > limit: (12711 > 8192)
+    //java.lang.IllegalArgumentException: newPosition > limit: (12711 > 8192)
+    //	at java.base/java.nio.Buffer.createPositionException(Buffer.java:341)
+    //	at java.base/java.nio.Buffer.position(Buffer.java:316)
+    //	at java.base/java.nio.ByteBuffer.position(ByteBuffer.java:1516)
+    //	at java.base/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:276)
+    //	at java.base/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:313)
+    //	at java.base/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:188)
+    //	at java.base/java.io.InputStreamReader.read(InputStreamReader.java:177)
+    //	at java.base/java.io.BufferedReader.fill(BufferedReader.java:162)
+    //	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:329)
+    //	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:396)
+    //	at com.hardbackcollector.sshclient.ChannelSftpTest.sftp_get_is_offset(ChannelSftpTest.java:59)
+    //	at com.hardbackcollector.sshclient.ChannelSftpTest.sftp_get_is(ChannelSftpTest.java:35)
     @Test
     void sftp_get_is()
             throws SshException, GeneralSecurityException, IOException {
@@ -72,23 +95,19 @@ class ChannelSftpTest
         session.setPassword(PASSWORD);
         session.connect();
 
-        final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
+        ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
         channel.get("/boot/kernel.img", "C:\\tmp\\ssh");
 
         session.disconnect();
-    }
 
-    @Test
-    void sftp_put()
-            throws SshException, GeneralSecurityException, IOException {
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
         session.connect();
 
-        final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
+        channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
         channel.put("C:/tmp/ssh/kernel.img", "k1");
