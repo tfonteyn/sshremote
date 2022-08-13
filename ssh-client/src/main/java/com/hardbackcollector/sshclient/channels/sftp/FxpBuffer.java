@@ -41,7 +41,7 @@ class FxpBuffer
     /**
      * Constructor.
      *
-     * @param remoteMaxPacketSize size of packet
+     * @param remoteMaxPacketSize the maximum size of the packet as defined by the server.
      */
     FxpBuffer(final int remoteMaxPacketSize) {
         super(remoteMaxPacketSize, false);
@@ -57,7 +57,7 @@ class FxpBuffer
      */
     void readHeader(@NonNull final InputStream inputStream)
             throws IOException {
-        // 9 bytes: the channel payload data length + type + requestId
+        // 9 bytes: the channel payload data length(4) + type(1) + requestId(4)
         reset();
         read(inputStream, 0, 9);
 
@@ -65,12 +65,18 @@ class FxpBuffer
         this.length = getInt() - 5;
         this.type = getByte();
 
+        // note that for SSH_FXP_VERSION this will be the version!
+        // See the subclass FxpVersionPacket
         this.requestId = getInt();
     }
 
     /**
-     * Read 4 bytes from the input stream into the start of the buffer,
+     * Read 4 bytes from the input into the data buffer,
+     * <strong>starting at position ZERO</strong>,
      * and return them as an int.
+     * <p>
+     * For code-clarity this method should only be called from a subclass.
+     * e.g. {@link FxpDataPacketBuffer}, {@link FxpNamePacket}.
      *
      * @param inputStream to read from
      *
@@ -84,7 +90,8 @@ class FxpBuffer
     }
 
     /**
-     * Read the Sftp payload into the data buffer, <strong>starting at position ZERO</strong>.
+     * Read the Sftp payload into the data buffer,
+     * <strong>starting at position ZERO</strong>.
      * <p>
      * After this call, the buffer is just a data blob with the payload.
      *
@@ -99,32 +106,31 @@ class FxpBuffer
     }
 
     /**
-     * Read 'len' bytes from the input stream into the buffer.
-     * They will be appended to the data already there.
+     * Read 'len' bytes from the input stream into the data buffer.
+     * They will be <strong>appended</strong> to the data already there.
      *
      * @param inputStream to read from
-     * @param len         number of bytes to read.
+     * @param length      number of bytes to read.
      *
      * @return total amount of bytes <strong>actually</strong> read.
      *
      * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
      */
     int readAppending(@NonNull final InputStream inputStream,
-                      final int len)
+                      final int length)
             throws IOException, IndexOutOfBoundsException {
-        return read(inputStream, writeOffset, len);
+        return read(inputStream, writeOffset, length);
     }
 
     /**
-     * Read data from the input stream at the given offset and length.
-     * Data is written into the packet starting at position 0.
+     * Read data from the input stream into the data buffer at the given offset and length.
      * <p>
      * The internal write-offset is updated to point to the position AFTER the
      * last byte put into the buffer. The internal read-offset is NOT changed.
      *
      * @param inputStream to read from
-     * @param offset      in the inputStream from where to start reading
-     * @param length      how many bytes to read
+     * @param offset      the start offset in the data buffer at which the data is written.
+     * @param length      the maximum number of bytes to read.
      *
      * @return total amount of bytes <strong>actually</strong> read.
      *
@@ -150,14 +156,36 @@ class FxpBuffer
 
     }
 
+    /**
+     * Get the length of the DATA in the FXP packet.
+     * <p>
+     * Note: this class has already the original 4 bytes for the request id,
+     * so this length in 4 bytes less then the value found in the binary packet header.
+     * This can be ignored for all intended purposes.
+     *
+     * @return length of data payload
+     */
     int getFxpLength() {
         return length;
     }
 
+    /**
+     * Get the type of this packet. This is normally one of
+     * {@link SftpConstants#SSH_FXP_DATA} or {@link SftpConstants#SSH_FXP_STATUS}
+     * <p>
+     * Anything else is (probably) an error.
+     *
+     * @return type
+     */
     byte getFxpType() {
         return type;
     }
 
+    /**
+     * Get the request id originally used to request this data packet.
+     *
+     * @return request id
+     */
     int getRequestId() {
         return requestId;
     }
