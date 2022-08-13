@@ -261,61 +261,47 @@ public final class Globber {
         }
     }
 
+    /**
+     * Unescape the given path for '?', '*' and '\'.
+     *
+     * @param path to unescape
+     *
+     * @return processed path
+     */
     @NonNull
-    public static String unquote(@NonNull final String path) {
-        final byte[] _path = path.getBytes(StandardCharsets.UTF_8);
-        final byte[] _uPath = unquote(_path);
-
-        if (_path.length == _uPath.length) {
-            return path;
-        }
-        return new String(_uPath, 0, _uPath.length, StandardCharsets.UTF_8);
-    }
-
-    @NonNull
-    public static byte[] unquote(@NonNull final byte[] path) {
-        int originalPathLength = path.length;
-
+    public static String unquote(@NonNull final CharSequence path) {
+        final StringBuilder out = new StringBuilder();
         int i = 0;
-        while (i < originalPathLength) {
-            if (path[i] == '\\') {
-                if (i + 1 == originalPathLength) {
-                    break;
-                }
-                System.arraycopy(path, i + 1, path, i, path.length - (i + 1));
-                originalPathLength--;
+        while (i < path.length()) {
+            final char c = path.charAt(i);
+            if (c != '\\') {
+                out.append(c);
+            } else if (i + 1 < path.length() && path.charAt(i + 1) == '\\') {
+                // double backslash becomes a single backslash
+                out.append(c);
+                i++;
             }
             i++;
         }
-
-        if (originalPathLength == path.length) {
-            return path;
-        }
-        final byte[] tmpPath = new byte[originalPathLength];
-        System.arraycopy(path, 0, tmpPath, 0, originalPathLength);
-        return tmpPath;
+        return out.toString();
     }
 
+    /**
+     * Escape the given path for '?', '*' and '\'.
+     *
+     * @param path to escape
+     *
+     * @return processed path
+     */
     @NonNull
-    private static String quote(@NonNull final String path) {
-        final byte[] _path = path.getBytes(StandardCharsets.UTF_8);
-        int count = 0;
-        for (final byte b : _path) {
-            if (b == '\\' || b == '?' || b == '*') {
-                count++;
+    public static String quote(@NonNull final CharSequence path) {
+        final StringBuilder out = new StringBuilder();
+        path.chars().forEach(i -> {
+            if ((i == '\\') || (i == '?') || (i == '*')) {
+                out.append('\\');
             }
-        }
-        if (count == 0) {
-            return path;
-        }
-        final byte[] _path2 = new byte[_path.length + count];
-        for (int i = 0, j = 0; i < _path.length; i++) {
-            final byte b = _path[i];
-            if (b == '\\' || b == '?' || b == '*') {
-                _path2[j++] = '\\';
-            }
-            _path2[j++] = b;
-        }
-        return new String(_path2, 0, _path2.length, StandardCharsets.UTF_8);
+            out.append((char) i);
+        });
+        return out.toString();
     }
 }
