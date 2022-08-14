@@ -1,107 +1,47 @@
 package com.hardbackcollector.sshclient.channels.sftp;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.ChannelSftp;
 
-import java.util.Objects;
-
 /**
- * Represents a directory entry, representing a remote file or directory.
+ * Represents a directory entry, i.e. representing a remote file or directory.
  * <p>
- * A list of objects of this class is returned by
- * {@link ChannelSftp#ls}.
+ * A list of objects of this class is returned by {@link ChannelSftp#ls(String)}.
  */
-public class LsEntry
-        implements Comparable<LsEntry> {
-
-    @NonNull
-    private String filename;
-    @NonNull
-    private String longname;
-    @NonNull
-    private SftpATTRS attrs;
-
-    LsEntry(@NonNull final String filename,
-            @NonNull final String longname,
-            @NonNull final SftpATTRS attrs) {
-        this.filename = filename;
-        this.longname = longname;
-        this.attrs = attrs;
-    }
+public interface LsEntry extends Comparable<LsEntry> {
 
     /**
-     * gets the file name of this file.
+     * Get the file name of this entry.
      */
     @NonNull
-    public String getFilename() {
-        return filename;
-    }
-
-    void setFilename(@NonNull final String filename) {
-        this.filename = filename;
-    }
+    String getFilename();
 
     /**
-     * returns the "longname" of a file.
+     * Get the "longname" of this entry.
      */
     @NonNull
-    public String getLongname() {
-        return longname;
-    }
-
-    void setLongname(@NonNull final String longname) {
-        this.longname = longname;
-    }
+    String getLongname();
 
     /**
-     * return the attributes of the file.
+     * Get the attributes of this entry.
      */
     @NonNull
-    public SftpATTRS getAttrs() {
-        return attrs;
-    }
-
-    void setAttrs(@NonNull final SftpATTRS attrs) {
-        this.attrs = attrs;
-    }
-
-    @Override
-    public int compareTo(@Nullable final LsEntry o)
-            throws ClassCastException {
-        if (o != null) {
-            return filename.compareTo(o.getFilename());
-        }
-        throw new ClassCastException("a descendant of LsEntry must be given.");
-    }
-
-    @Override
-    public boolean equals(@Nullable final Object o) {
-        if (!(o instanceof LsEntry)) {
-            return false;
-        }
-        return compareTo((LsEntry) o) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(filename, longname, attrs);
-    }
+    public SftpATTRS getAttrs();
 
     /**
-     * Objects implementing this interface can be passed as an argument for
-     * {@link ChannelSftp#ls} method.
+     * Objects implementing this interface can be passed as an argument to the
+     * {@link ChannelSftp#ls(String, Selector)} method.
      */
-    public interface Selector {
+    interface Selector {
 
         int CONTINUE = 0;
         int BREAK = 1;
 
         /**
-         * <p> The {@code select} method will be invoked in {@code ls}
-         * method for each file entry. If this method returns {@link #BREAK}
-         * {@code ls} will be canceled.
+         * <p> This method will be invoked by {@link ChannelSftp#ls(String, Selector)}
+         * for each file entry. If this method returns {@link #BREAK}
+         * the {@code ls} operation will be canceled.
          *
          * @param entry current item from {@code ls}
          *
