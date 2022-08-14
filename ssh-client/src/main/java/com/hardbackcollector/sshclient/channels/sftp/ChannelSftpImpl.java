@@ -503,68 +503,28 @@ public class ChannelSftpImpl
             sendOPENDIR(dir);
             final byte[] handle = receiveHANDLE();
 
-            final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
+            final FxpNamePacket receivedPacket = new FxpNamePacket(remoteMaxPacketSize);
 
             int action = LsEntry.Selector.CONTINUE;
             while (action == LsEntry.Selector.CONTINUE) {
 
                 sendREADDIR(handle);
 
-                // not using #receive(byte expectedType) as we need to allow for SSH_FX_EOF
-                fxpBuffer.readHeader(mpIn);
-                if (fxpBuffer.getFxpType() == SftpConstants.SSH_FXP_STATUS) {
-                    fxpBuffer.readPayload(mpIn);
-                    final int status = fxpBuffer.getInt();
-                    if (status == SftpConstants.SSH_FX_EOF) {
-                        // no more files in the directory
-                        break;
-                    }
-                    throw createStatusException(fxpBuffer, status);
+                receivedPacket.decodeHeader(mpIn);
+
+                int nrOfEntries = receivedPacket.getNrOfEntries();
+                if (nrOfEntries <= 0) {
+                    break;
                 }
 
-                if (fxpBuffer.getFxpType() != SftpConstants.SSH_FXP_NAME) {
-                    throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                                            "type=" + fxpBuffer.getFxpType());
-                }
-
-                // byte       SSH_FXP_NAME
-                // uint32     request-id
-                // ==> mpIn is positioned here.
-                // uint32     count
-                // repeats count times:
-                //     string     filename
-                //     string     longname   (server version 1-3 only; not present in 4+)
-                //     ATTRS      attrs
-
-                // the count might be very large, we'll use the packet length + its data length
-                // to read blobs from the input stream without creating OutOfMemoryError's
-                int length = fxpBuffer.getFxpLength();
-
-                int nrOfEntries = fxpBuffer.readInt(mpIn);
-                length -= 4;
-
-                fxpBuffer.reset();
                 while (nrOfEntries > 0 && action == LsEntry.Selector.CONTINUE) {
-                    if (length > 0) {
-                        // Fill the available space of the packet without expanding it.
-                        fxpBuffer.shiftBuffer();
-                        final int bytesRead = fxpBuffer
-                                .readAppending(mpIn, Math.min(fxpBuffer.spaceLeft(), length));
-                        length -= bytesRead;
-                    }
+                    receivedPacket.fillBuffer(mpIn);
 
                     // Read one LS entry:
                     //     string     filename
                     //     string     longname
                     //     ATTRS      attrs
-                    final byte[] _filename = fxpBuffer.getString();
-
-                    byte[] _longname = null;
-                    if (server_version <= 3) {
-                        // This field no longer exists in v4+
-                        _longname = fxpBuffer.getString();
-                    }
-                    final SftpATTRS attrs = SftpATTRS.getATTR(fxpBuffer);
+                    final byte[] _filename = receivedPacket.readString();
 
                     // filter the files we want based on the pattern
                     final boolean wanted;
@@ -578,6 +538,17 @@ public class ChannelSftpImpl
 
                     if (wanted) {
                         final String filename = byte2str(_filename);
+
+                        // Read the remaining fields
+                        final byte[] _longname;
+                        if (server_version <= 3) {
+                            _longname = receivedPacket.readString();
+                        } else {
+                            // This field no longer exists in v4+
+                            _longname = null;
+                        }
+                        final SftpATTRS attrs = receivedPacket.readATTRS();
+
                         final String longname;
                         if (_longname == null) {
                             // generate it from the attrs
@@ -2511,45 +2482,22 @@ public class ChannelSftpImpl
 
         final List<String> list = new ArrayList<>();
 
-        final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
-
+        final FxpNamePacket fxpBuffer = new FxpNamePacket(remoteMaxPacketSize);
         while (true) {
-
             sendREADDIR(handle);
 
             //noinspection ConstantConditions
-            fxpBuffer.readHeader(mpIn);
-            if (fxpBuffer.getFxpType() == SftpConstants.SSH_FXP_STATUS) {
-                fxpBuffer.readPayload(mpIn);
-                final int status = fxpBuffer.getInt();
-                if (status == SftpConstants.SSH_FX_EOF) {
-                    // no more files in the directory
-                    break;
-                }
-                throw createStatusException(fxpBuffer, status);
+            fxpBuffer.decodeHeader(mpIn);
+
+            int nrOfEntries = fxpBuffer.getNrOfEntries();
+            if (nrOfEntries <= 0) {
+                break;
             }
 
-            if (fxpBuffer.getFxpType() != SftpConstants.SSH_FXP_NAME) {
-                throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE, ERROR_INVALID_TYPE_s
-                        + fxpBuffer.getFxpType());
-            }
-
-            int length = fxpBuffer.getFxpLength();
-
-            int nrOfEntries = fxpBuffer.readInt(mpIn);
-            length -= 4;
-
-            fxpBuffer.reset();
             while (nrOfEntries > 0) {
-                if (length > 0) {
-                    fxpBuffer.shiftBuffer();
+                fxpBuffer.fillBuffer(mpIn);
 
-                    final int bytesRead = fxpBuffer.readAppending(
-                            mpIn, Math.min(fxpBuffer.spaceLeft(), length));
-                    length -= bytesRead;
-                }
-
-                final byte[] _filename = fxpBuffer.getString();
+                final byte[] _filename = fxpBuffer.readString();
 
                 if (glob(_pattern, _filename)) {
                     list.add((dir + "/") + byte2str(_filename));
