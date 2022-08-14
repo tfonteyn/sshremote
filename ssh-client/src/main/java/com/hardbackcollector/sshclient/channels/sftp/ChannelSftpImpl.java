@@ -157,8 +157,7 @@ public class ChannelSftpImpl
     }
 
     /**
-     * This method will return the value how many requests may be
-     * sent at any one time.
+     * Get the amount of requests which may be sent at any one time.
      *
      * @return how many requests may be sent at any one time.
      */
@@ -457,22 +456,22 @@ public class ChannelSftpImpl
      *     // entries will now contain the full list
      * </pre>
      *
-     * @param pattern  a pattern relative to the
+     * @param path     a path relative to the
      *                 <a href="#current-directory">current remote directory</a>.
-     *                 The pattern can contain glob pattern wildcards ({@code *} or {@code ?})
+     *                 The path can contain glob pattern wildcards ({@code *} or {@code ?})
      *                 in the last component (i.e. after the last {@code /}).
      * @param selector see above
      *
      * @see LsEntry.Selector
      */
-    public void ls(@NonNull final String pattern,
+    public void ls(@NonNull final String path,
                    @NonNull final LsEntry.Selector selector)
             throws SftpException {
         try {
             //noinspection ConstantConditions
             mpIn.updateReadSide();
 
-            final String absPath = absoluteRemotePath(pattern);
+            final String absPath = absoluteRemotePath(path);
 
             final int lastFileSepChar = absPath.lastIndexOf('/');
             // split into directory and last part of the name, with (potentially) a pattern
@@ -867,7 +866,10 @@ public class ChannelSftpImpl
                 private long current_offset = initialOffset;
 
                 private int request_max = 1;
+
+                /** Flag set when close() has been called. */
                 private boolean streamClosed;
+
                 private int rest_length;
                 private byte[] rest_byte = new byte[COPY_BUFFER_SIZE];
 
@@ -950,6 +952,7 @@ public class ChannelSftpImpl
                         }
                     }
 
+                    // start reading the next packet
                     fxpBuffer.readHeader(mpIn);
                     rest_length = fxpBuffer.getFxpLength();
 
@@ -968,6 +971,7 @@ public class ChannelSftpImpl
                         throw new IOException(e);
                     }
 
+                    // a status packet is a valid response
                     if (fxpBuffer.getFxpType() == SftpConstants.SSH_FXP_STATUS) {
                         fxpBuffer.readPayload(mpIn);
                         final int status = fxpBuffer.getInt();
@@ -979,6 +983,7 @@ public class ChannelSftpImpl
                         throw new IOException(createStatusException(fxpBuffer, status));
                     }
 
+                    // but if we did not get a status or data packet, we have a problem
                     if (fxpBuffer.getFxpType() != SftpConstants.SSH_FXP_DATA) {
                         final SftpException cause = new SftpException(
                                 SftpConstants.SSH_FX_BAD_MESSAGE,
@@ -999,7 +1004,8 @@ public class ChannelSftpImpl
                      string data
                      bool   end-of-file [optional]
 
-                     but some sftp server will send such a field in the sftp protocol 3 ;-(
+                     but some sftp server will send such a field in the sftp protocol 3,
+                     so check if there are more bytes than expected
                      */
                     final int optional_data = rest_length - payloadLength;
 
@@ -1328,6 +1334,7 @@ public class ChannelSftpImpl
                     continue;
                 }
 
+                // a status packet is a valid response
                 if (fxpBuffer.getFxpType() == SftpConstants.SSH_FXP_STATUS) {
                     fxpBuffer.readPayload(mpIn);
                     final int status = fxpBuffer.getInt();
@@ -1337,6 +1344,7 @@ public class ChannelSftpImpl
                     throw createStatusException(fxpBuffer, status);
                 }
 
+                // but if we did not get a status or data packet, we have a problem
                 if (fxpBuffer.getFxpType() != SftpConstants.SSH_FXP_DATA) {
                     break;
                 }
