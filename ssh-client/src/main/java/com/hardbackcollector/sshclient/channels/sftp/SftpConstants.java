@@ -282,10 +282,9 @@ final class SftpConstants {
      * where `id' is the request identifier, `linkpath' specifies the path
      * name of the symlink to be created and `targetpath' specifies the
      * target of the symlink.
+     * <p>
+     * <strong>HOWEVER:</strong>
      *
-     * @see com.hardbackcollector.sshclient.ChannelSftp#ln(String, String, boolean)
-     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
-     * * OpenSSH protocol deviations.</a>
      * 4. SFTP protocol changes
      * <p>
      * 4.1. sftp: Reversal of arguments to SSH_FXP_SYMLINK
@@ -300,6 +299,10 @@ final class SftpConstants {
      * uint32		id
      * string		targetpath
      * string		linkpath
+     *
+     * @see com.hardbackcollector.sshclient.ChannelSftp#ln(String, String, boolean)
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     * * OpenSSH protocol deviations.</a>
      */
     static final byte SSH_FXP_SYMLINK = 20;
 

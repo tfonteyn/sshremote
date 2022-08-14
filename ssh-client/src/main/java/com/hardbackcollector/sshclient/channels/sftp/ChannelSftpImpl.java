@@ -576,8 +576,8 @@ public class ChannelSftpImpl
     }
 
     @Override
-    public void ln(@NonNull final String oldPath,
-                   @NonNull final String newPath,
+    public void ln(@NonNull final String targetPath,
+                   @NonNull final String linkPath,
                    final boolean softLink)
             throws SftpException {
         if (!softLink && !exHardlink) {
@@ -589,18 +589,18 @@ public class ChannelSftpImpl
             //noinspection ConstantConditions
             mpIn.updateReadSide();
 
-            final String absOldPath = resolveRemotePath(oldPath);
-            final String absNewPath = absoluteRemotePath(newPath);
+            final String absTargetPath = resolveRemotePath(targetPath);
+            final String absLinkPath = absoluteRemotePath(linkPath);
 
-            if (Globber.isPattern(absNewPath)) {
+            if (Globber.isPattern(absLinkPath)) {
                 throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                        "Path has wildcards: " + absNewPath);
+                                        "Path has wildcards: " + absLinkPath);
             }
 
             if (softLink) {
-                sendSYMLINK(absOldPath, Globber.unquote(absNewPath));
+                sendSYMLINK(absTargetPath, Globber.unquote(absLinkPath));
             } else {
-                sendHARDLINK(absOldPath, Globber.unquote(absNewPath));
+                sendHARDLINK(absTargetPath, Globber.unquote(absLinkPath));
             }
             checkStatus();
 
