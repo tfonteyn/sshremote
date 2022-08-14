@@ -66,8 +66,6 @@ public class ChannelSftpImpl
     private static final String EXT_FSTATVFS_OPENSSH_COM = "fstatvfs@openssh.com";
     private static final String EXT_FSYNC_OPENSSH_COM = "fsync@openssh.com";
 
-    private static final String UTF8 = "UTF-8";
-
     private static final int DEFAULT_REQUEST_QUEUE_SIZE = 16;
 
     private static final String ERROR_NO_SUCH_DIRECTORY =
@@ -115,8 +113,8 @@ public class ChannelSftpImpl
     private String lcwd;
 
     @NonNull
-    private String filenameEncoding = UTF8;
-    private boolean filenameEncodingIsUtf8 = true;
+    private Charset fileNameEncoding = StandardCharsets.UTF_8;
+
     @NonNull
     private RequestQueue requestQueue = new RequestQueue(DEFAULT_REQUEST_QUEUE_SIZE);
 
@@ -148,9 +146,12 @@ public class ChannelSftpImpl
      * SFTP v6 extensions to deal with encoding</a>
      */
     public void setFilenameEncoding(@NonNull final String encoding)
-            throws SftpException {
-        filenameEncoding = encoding;
-        filenameEncodingIsUtf8 = UTF8.equals(filenameEncoding);
+            throws UnsupportedEncodingException {
+        try {
+            fileNameEncoding = Charset.forName(encoding);
+        } catch (final IllegalArgumentException e) {
+            throw new UnsupportedEncodingException(encoding);
+        }
     }
 
     /**
@@ -491,7 +492,7 @@ public class ChannelSftpImpl
                     _pattern = null;
                 } else {
                     // its a file
-                    if (filenameEncodingIsUtf8) {
+                    if (StandardCharsets.UTF_8.equals(fileNameEncoding)) {
                         _pattern = Globber.unquote(filenamePart.getBytes(StandardCharsets.UTF_8));
                     } else {
                         _pattern = str2byte(Globber.unquote(filenamePart));
@@ -2525,7 +2526,7 @@ public class ChannelSftpImpl
 
     private boolean glob(@NonNull final byte[] pattern,
                          @NonNull final byte[] filename) {
-        if (filenameEncodingIsUtf8) {
+        if (StandardCharsets.UTF_8.equals(fileNameEncoding)) {
             return Globber.glob(pattern, filename);
         } else {
             return Globber.glob(pattern, byte2str(filename).getBytes(StandardCharsets.UTF_8));
@@ -2534,20 +2535,12 @@ public class ChannelSftpImpl
 
     @NonNull
     private byte[] str2byte(@NonNull final String str) {
-        try {
-            return str.getBytes(filenameEncoding);
-        } catch (final UnsupportedEncodingException e) {
-            return str.getBytes(StandardCharsets.UTF_8);
-        }
+        return str.getBytes(fileNameEncoding);
     }
 
     @NonNull
     private String byte2str(@NonNull final byte[] bytes) {
-        try {
-            return new String(bytes, 0, bytes.length, filenameEncoding);
-        } catch (final UnsupportedEncodingException e) {
-            return new String(bytes, 0, bytes.length, StandardCharsets.UTF_8);
-        }
+        return new String(bytes, 0, bytes.length, fileNameEncoding);
     }
 
     private static class QueuedRequest {
