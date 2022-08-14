@@ -148,15 +148,47 @@ public interface ChannelSftp
      * <p>
      * List the contents of a remote directory.
      *
-     * @param pattern a pattern relative to the
-     *                <a href="#current-directory">current remote directory</a>.
-     *                The pattern can contain glob pattern wildcards ({@code *} or {@code ?})
-     *                in the last component (i.e. after the last {@code /}).
+     * @param path a path relative to the
+     *             <a href="#current-directory">current remote directory</a>.
+     *             The pattern can contain glob pattern wildcards ({@code *} or {@code ?})
+     *             in the last component (i.e. after the last {@code /}).
      *
      * @return a list of {@link LsEntry} objects.
      */
     @NonNull
-    List<LsEntry> ls(@NonNull String pattern)
+    List<LsEntry> ls(@NonNull String path)
+            throws SftpException;
+
+    /**
+     * List files specified by the remote {@code path}.
+     * <p>
+     * Each file/directory will be passed to the {@link LsEntry.Selector#select(LsEntry)} method.
+     * This functions similar to the {@link java.io.FileFilter} interface.
+     * <p>
+     * If {@code select} returns {@code Selector#BREAK}, the ls-operation will be
+     * canceled immediately.
+     * <p>
+     * A simple 'get all' selector:
+     * <pre>
+     *     final List<LsEntry> entries = new ArrayList<>();
+     *     final Selector selector = entry -> {
+     *             entries.add(entry);
+     *             return Selector.CONTINUE;
+     *     };
+     *     ls(path, selector);
+     *     // entries will now contain the full list
+     * </pre>
+     *
+     * @param path     a path relative to the
+     *                 <a href="#current-directory">current remote directory</a>.
+     *                 The path can contain glob pattern wildcards ({@code *} or {@code ?})
+     *                 in the last component (i.e. after the last {@code /}).
+     * @param selector see above
+     *
+     * @see LsEntry.Selector
+     */
+    void ls(@NonNull String path,
+            @NonNull LsEntry.Selector selector)
             throws SftpException;
 
     /**

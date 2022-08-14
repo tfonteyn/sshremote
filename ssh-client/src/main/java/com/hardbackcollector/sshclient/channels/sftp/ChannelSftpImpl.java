@@ -424,46 +424,19 @@ public class ChannelSftpImpl
     }
 
     @NonNull
-    public List<LsEntry> ls(@NonNull final String pattern)
+    public List<LsEntry> ls(@NonNull final String path)
             throws SftpException {
-
         final List<LsEntry> entries = new ArrayList<>();
         final LsEntry.Selector selector = entry -> {
             entries.add(entry);
             return LsEntry.Selector.CONTINUE;
         };
 
-        ls(pattern, selector);
+        ls(path, selector);
         return entries;
     }
 
-    /**
-     * List files specified by the remote {@code path}.
-     * <p>
-     * Each file and directory will be passed to the
-     * {@code LsEntrySelector#select(LsEntry)} method.
-     * If that method returns {@code LsEntrySelector#BREAK}, the ls-operation will be
-     * canceled immediately.
-     * <p>
-     * A simple 'get all' selector:
-     * <pre>
-     *     final List<LsEntry> entries = new ArrayList<>();
-     *     final LsEntrySelector selector = entry -> {
-     *             entries.add(entry);
-     *             return LsEntrySelector.CONTINUE;
-     *     };
-     *     ls(path, selector);
-     *     // entries will now contain the full list
-     * </pre>
-     *
-     * @param path     a path relative to the
-     *                 <a href="#current-directory">current remote directory</a>.
-     *                 The path can contain glob pattern wildcards ({@code *} or {@code ?})
-     *                 in the last component (i.e. after the last {@code /}).
-     * @param selector see above
-     *
-     * @see LsEntry.Selector
-     */
+    @Override
     public void ls(@NonNull final String path,
                    @NonNull final LsEntry.Selector selector)
             throws SftpException {
@@ -558,7 +531,7 @@ public class ChannelSftpImpl
                         } else {
                             longname = byte2str(_longname);
                         }
-                        action = selector.select(new LsEntry(filename, longname, attrs));
+                        action = selector.select(new LsEntryImpl(filename, longname, attrs));
                     }
 
                     nrOfEntries--;
