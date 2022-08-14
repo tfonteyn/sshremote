@@ -70,8 +70,6 @@ public class ChannelSftpImpl
 
     private static final int DEFAULT_REQUEST_QUEUE_SIZE = 16;
 
-    private static final String ERROR_SERVER_MUST_BE_V3 =
-            "The server must be at least version 3";
     private static final String ERROR_NO_SUCH_DIRECTORY =
             "No such directory";
     private static final String ERROR_MULTIPLE_FILES =
@@ -100,28 +98,8 @@ public class ChannelSftpImpl
             Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 21;
 
     /** Keep a map to allow users to query for extensions. */
-    private final HashMap<String, String> extensions = new HashMap<>();
-
-    /**
-     * 10. Changes from previous protocol versions
-     * The SSH File Transfer Protocol has changed over time, before it's
-     * standardization.  The following is a description of the incompatible
-     * changes between different versions.
-     * <p>
-     * 10.1 Changes between versions 3 and 2
-     * o  The SSH_FXP_READLINK and SSH_FXP_SYMLINK messages were added.
-     * o  The SSH_FXP_EXTENDED and SSH_FXP_EXTENDED_REPLY messages were added.
-     * o  The SSH_FXP_STATUS message was changed to include fields `error
-     * message' and `language tag'.
-     * <p>
-     * 10.2 Changes between versions 2 and 1
-     * o  The SSH_FXP_RENAME message was added.
-     * <p>
-     * 10.3 Changes between versions 1 and 0
-     * o  Implementation changes, no actual protocol changes.
-     * <p>
-     * Given that SFTP v3 is 20+ years old, the minimum supported version is 3.
-     */
+    @Nullable
+    private HashMap<String, String> extensions;
     private int server_version = 3;
     private boolean extPosixRename;
     private boolean exHardlink;
@@ -229,31 +207,11 @@ public class ChannelSftpImpl
         sendFxpPacket(initPacket);
 
         // receive SSH_FXP_VERSION
-        final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
-        // there is no FXP request id, but the first int from the payload is the server version
-        fxpBuffer.readHeader(mpIn);
-        server_version = fxpBuffer.getRequestId();
-        if (server_version < 3) {
-            throw new SftpException(SftpConstants.SSH_FX_OP_UNSUPPORTED, ERROR_SERVER_MUST_BE_V3);
-        }
+        final FxpVersionPacket receivedPacket = new FxpVersionPacket(remoteMaxPacketSize);
+        receivedPacket.decode(mpIn);
 
-        int payloadLength = fxpBuffer.getFxpLength();
-        if (payloadLength > 0) {
-            // we have extension data, read it
-            fxpBuffer.readPayload(mpIn);
-
-            String name;
-            String value;
-            while (payloadLength > 0) {
-                name = fxpBuffer.getJString();
-                payloadLength -= 4 + name.length();
-
-                value = fxpBuffer.getJString();
-                payloadLength -= 4 + value.length();
-
-                extensions.put(name, value);
-            }
-        }
+        server_version = receivedPacket.getVersion();
+        extensions = receivedPacket.getExtensions();
 
         // http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
         extPosixRename = "1".equals(extensions.get(EXT_POSIX_RENAME_OPENSSH_COM));
@@ -275,8 +233,10 @@ public class ChannelSftpImpl
     }
 
     /**
-     * returns the extension data sent by the server
-     * corresponding to some extension name.
+     * Get the extension data sent by the server
+     * corresponding to the given extension name.
+     *
+     * @return the String value
      */
     @Nullable
     public String getExtension(@NonNull final String key) {
