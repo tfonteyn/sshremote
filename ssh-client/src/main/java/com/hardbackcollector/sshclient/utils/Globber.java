@@ -116,10 +116,13 @@ public final class Globber {
         if (name.length > 0 && name[0] == '.') {
             if (pattern.length > 0 && pattern[0] == '.') {
                 if (pattern.length == 2 && pattern[1] == '*') {
+                    // ".*" matches everything
                     return true;
                 }
+                // both name and pattern started with a '.'
                 return glob(pattern, 1, name, 1);
             }
+            // the name started with '.', but the pattern did not -> no match
             return false;
         }
         return glob(pattern, 0, name, 0);
