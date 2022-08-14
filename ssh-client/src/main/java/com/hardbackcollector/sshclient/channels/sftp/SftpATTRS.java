@@ -6,6 +6,7 @@ import com.hardbackcollector.sshclient.ChannelSftp;
 import com.hardbackcollector.sshclient.transport.Packet;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -124,9 +125,11 @@ public final class SftpATTRS {
     }
 
     /**
-     * parses an ATTR structure from a buffer.
+     * Factory constructor.
+     * <p>
+     * Parses an ATTR structure from a buffer.
      */
-    public static SftpATTRS getATTR(@NonNull final FxpBuffer fxpBuffer)
+    static SftpATTRS getATTR(@NonNull final FxpBuffer fxpBuffer)
             throws IOException {
         final SftpATTRS attr = new SftpATTRS();
         attr.flags = fxpBuffer.getInt();
@@ -287,7 +290,7 @@ public final class SftpATTRS {
     /**
      * sets the flags indicating which fields are included.
      */
-    public void setFLAGS(@SuppressWarnings("SameParameterValue") final int flags) {
+    void setFLAGS(@SuppressWarnings("SameParameterValue") final int flags) {
         this.flags = flags;
     }
 
@@ -302,8 +305,8 @@ public final class SftpATTRS {
     /**
      * Sets user and group Identifier.
      */
-    public void setUIDGID(final int uid,
-                          final int gid) {
+    void setUIDGID(final int uid,
+                   final int gid) {
         flags |= SSH_FILEXFER_ATTR_UIDGID;
         this.uid = uid;
         this.gid = gid;
@@ -312,8 +315,8 @@ public final class SftpATTRS {
     /**
      * Sets access and modification time.
      */
-    public void setACMODTIME(final int atime,
-                             final int mtime) {
+    void setACMODTIME(final int atime,
+                      final int mtime) {
         flags |= SSH_FILEXFER_ATTR_ACMODTIME;
         this.atime = atime;
         this.mtime = mtime;
@@ -325,10 +328,9 @@ public final class SftpATTRS {
      * @param permissions a bit mask containing some combination
      *                    of the bits 0-11.
      */
-    public void setPERMISSIONS(int permissions) {
+    void setPERMISSIONS(final int permissions) {
         flags |= SSH_FILEXFER_ATTR_PERMISSIONS;
-        permissions = this.permissions & ~pmask | permissions & pmask;
-        this.permissions = permissions;
+        this.permissions = this.permissions & ~pmask | permissions & pmask;
     }
 
     public boolean isType(final int mask) {
@@ -469,5 +471,19 @@ public final class SftpATTRS {
                 + " " + getGid()
                 + " " + getSize()
                 + " " + getModificationTimeString();
+    }
+
+    @Override
+    public String toString() {
+        return "SftpATTRS{" +
+                "uid=" + uid +
+                ", gid=" + gid +
+                ", flags=0b" + Integer.toBinaryString(flags) +
+                ", size=" + size +
+                ", permissions=" + getPermissionsString() +
+                ", atime=" + getAccessTimeString() +
+                ", mtime=" + getModificationTimeString() +
+                ", extended=" + Arrays.toString(extended) +
+                '}';
     }
 }
