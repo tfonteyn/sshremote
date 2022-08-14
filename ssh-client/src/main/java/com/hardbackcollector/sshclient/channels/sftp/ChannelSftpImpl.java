@@ -824,7 +824,7 @@ public class ChannelSftpImpl
     @Override
     @NonNull
     public InputStream get(@NonNull final String srcPath,
-                           @Nullable final SftpProgressMonitor monitor,
+                           @Nullable final SftpProgressMonitor progressListener,
                            final long initialOffset)
             throws SftpException {
         try {
@@ -839,8 +839,8 @@ public class ChannelSftpImpl
                                         srcFilename + ERROR_s_IS_A_DIRECTORY);
             }
 
-            if (monitor != null) {
-                monitor.init(SftpProgressMonitor.GET, srcFilename, "", srcAttr.getSize());
+            if (progressListener != null) {
+                progressListener.init(SftpProgressMonitor.GET, srcFilename, "", srcAttr.getSize());
             }
 
             sendOPENR(srcFilename);
@@ -919,7 +919,8 @@ public class ChannelSftpImpl
                             System.arraycopy(rest_byte, foo, rest_byte, 0, rest_length - foo);
                         }
 
-                        if (monitor != null && !monitor.count(foo)) {
+                        if (progressListener != null && !progressListener.count(length)) {
+                            // we're cancelled
                             close();
                             return -1;
                         }
@@ -1057,10 +1058,11 @@ public class ChannelSftpImpl
                             request_max++;
                         }
 
-                        if (monitor != null && !monitor.count(bytesRead)) {
-                            close();
-                            return -1;
-                        }
+                    if (progressListener != null && !progressListener.count(totalBytesRead)) {
+                        // we're cancelled
+                        close();
+                        return -1;
+                    }
 
                         return bytesRead;
                     }
@@ -1074,8 +1076,8 @@ public class ChannelSftpImpl
                         return;
                     }
                     streamClosed = true;
-                    if (monitor != null) {
-                        monitor.end();
+                    if (progressListener != null) {
+                        progressListener.end();
                     }
 
                     requestQueue.cancel();
@@ -1419,7 +1421,7 @@ public class ChannelSftpImpl
     @Override
     @NonNull
     public OutputStream put(@NonNull final String dstPath,
-                            @Nullable final SftpProgressMonitor monitor,
+                            @Nullable final SftpProgressMonitor progressListener,
                             @NonNull final Mode mode,
                             final long offset)
             throws SftpException {
@@ -1454,9 +1456,9 @@ public class ChannelSftpImpl
                 }
             }
 
-            if (monitor != null) {
-                monitor.init(SftpProgressMonitor.PUT, "", dstFilename,
-                             SftpProgressMonitor.UNKNOWN_SIZE);
+            if (progressListener != null) {
+                progressListener.init(SftpProgressMonitor.PUT, "", dstFilename,
+                                      SftpProgressMonitor.UNKNOWN_SIZE);
             }
 
             if (mode == Mode.Overwrite) {
@@ -1534,9 +1536,9 @@ public class ChannelSftpImpl
                             }
                         }
 
-                        if (monitor != null && !monitor.count(length)) {
+                        if (progressListener != null && !progressListener.count(length)) {
                             close();
-                            throw new IOException("canceled by monitor");
+                            throw new IOException("canceled by progressListener");
                         }
                     } catch (final IOException e) {
                         throw e;
@@ -1575,8 +1577,8 @@ public class ChannelSftpImpl
 
                     flush();
 
-                    if (monitor != null) {
-                        monitor.end();
+                    if (progressListener != null) {
+                        progressListener.end();
                     }
                     try {
                         sendCLOSE(handle);
@@ -1601,7 +1603,7 @@ public class ChannelSftpImpl
     @Override
     public void put(@NonNull final String srcFilename,
                     @NonNull final String dstPath,
-                    @Nullable final SftpProgressMonitor monitor,
+                    @Nullable final SftpProgressMonitor progressListener,
                     @NonNull final Mode mode)
             throws SftpException {
         try {
@@ -1680,17 +1682,17 @@ public class ChannelSftpImpl
                     }
                 }
 
-                if (monitor != null) {
-                    monitor.init(SftpProgressMonitor.PUT,
-                                 srcPath, dstFilename,
-                                 new File(srcPath).length());
+                if (progressListener != null) {
+                    progressListener.init(SftpProgressMonitor.PUT,
+                                          srcPath, dstFilename,
+                                          new File(srcPath).length());
                     if (mode == Mode.Resume) {
-                        monitor.count(dstFileSize);
+                        progressListener.count(dstFileSize);
                     }
                 }
 
                 try (final FileInputStream srcStream = new FileInputStream(srcPath)) {
-                    _put(srcStream, dstFilename, monitor, mode);
+                    _put(srcStream, dstFilename, progressListener, mode);
                 }
             }
         } catch (final SftpException e) {
@@ -1703,7 +1705,7 @@ public class ChannelSftpImpl
     @Override
     public void put(@NonNull final InputStream srcStream,
                     @NonNull final String dstPath,
-                    @Nullable final SftpProgressMonitor monitor,
+                    @Nullable final SftpProgressMonitor progressListener,
                     @NonNull final Mode mode)
             throws SftpException {
         try {
@@ -1727,12 +1729,12 @@ public class ChannelSftpImpl
                                         dstFilename + ERROR_s_IS_A_DIRECTORY);
             }
 
-            if (monitor != null) {
-                monitor.init(SftpProgressMonitor.PUT, "", dstFilename,
-                             SftpProgressMonitor.UNKNOWN_SIZE);
+            if (progressListener != null) {
+                progressListener.init(SftpProgressMonitor.PUT, "", dstFilename,
+                                      SftpProgressMonitor.UNKNOWN_SIZE);
             }
 
-            _put(srcStream, dstFilename, monitor, mode);
+            _put(srcStream, dstFilename, progressListener, mode);
 
         } catch (final SftpException e) {
             throw e;
