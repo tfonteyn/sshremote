@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A Channel connected to an sftp server (as a subsystem of the ssh server).
@@ -903,10 +904,7 @@ public class ChannelSftpImpl
                         return -1;
                     }
 
-                    if (offset < 0 || len < 0 || offset + len > buf.length) {
-                        throw new IndexOutOfBoundsException();
-                    }
-
+                    Objects.checkFromIndexSize(off, len, b.length);
                     if (len == 0) {
                         return 0;
                     }
