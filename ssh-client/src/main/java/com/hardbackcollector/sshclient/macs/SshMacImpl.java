@@ -79,22 +79,22 @@ public class SshMacImpl
         mac = Mac.getInstance(algorithm);
         macBuffer = new byte[mac.getMacLength()];
 
-        final byte[] _key;
+        final byte[] normalisedKey;
         if (key.length > macBuffer.length) {
             //TODO: RFC 2104 section 2:
             // Applications that use keys longer than B bytes will
             // first hash the key using H and then use the
             // resultant L byte string as the actual key to HMAC.
             // Here we just cut it down to size
-            _key = new byte[macBuffer.length];
-            System.arraycopy(key, 0, _key, 0, macBuffer.length);
+            normalisedKey = new byte[macBuffer.length];
+            System.arraycopy(key, 0, normalisedKey, 0, macBuffer.length);
 
         } else {
             // if the key is to small, it will automatically be padded with zeros
-            _key = key;
+            normalisedKey = key;
         }
 
-        final Key keySpec = new SecretKeySpec(_key, algorithm);
+        final Key keySpec = new SecretKeySpec(normalisedKey, algorithm);
         mac.init(keySpec);
     }
 
