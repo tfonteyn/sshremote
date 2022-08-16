@@ -3,18 +3,25 @@ package com.hardbackcollector.sshclient.channels.sftp;
 final class SftpConstants {
 
     /**
+     * Initial packet the client sends to the server.
+     * <p>
      * uint32 version
-     * <extension data>
+     * [extension data]
      * <p>
      * The extension data may be empty, or may be a sequence of
      * string extension_name
      * string extension_data
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-4">
+     * Protocol Initialization</a>
      */
     static final byte SSH_FXP_INIT = 1;
 
     /**
+     * Response to the SSH_FXP_INIT packet.
+     * <p>
      * uint32 version
-     * <extension data>
+     * [extension data]
      * <p>
      * The extension data may be empty, or may be a sequence of
      * string extension_name
