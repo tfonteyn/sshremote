@@ -51,7 +51,7 @@ public class NullCipher
 
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] keyBuf,
+                     @NonNull final byte[] key,
                      @NonNull final byte[] iv) {
     }
 
