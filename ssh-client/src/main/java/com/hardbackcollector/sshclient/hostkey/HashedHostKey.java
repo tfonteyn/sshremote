@@ -49,22 +49,22 @@ class HashedHostKey
             final String data = hostnames.substring(HASH_MAGIC.length());
             final Base64.Decoder decoder = Base64.getDecoder();
 
-            final byte[] _salt = decoder.decode(
+            final byte[] tmpSalt = decoder.decode(
                     data.substring(0, data.indexOf(HASH_DELIM))
                         .getBytes(StandardCharsets.UTF_8));
 
-            final byte[] _hash = decoder.decode(
+            final byte[] tmpHash = decoder.decode(
                     data.substring(data.indexOf(HASH_DELIM) + 1)
                         .getBytes(StandardCharsets.UTF_8));
 
-            if (_salt.length != mac.getDigestLength() ||
-                    _hash.length != mac.getDigestLength()) {
+            if (tmpSalt.length != mac.getDigestLength() ||
+                    tmpHash.length != mac.getDigestLength()) {
                 salt = null;
                 hash = null;
                 hashed = false;
             } else {
-                salt = _salt;
-                hash = _hash;
+                salt = tmpSalt;
+                hash = tmpHash;
                 hashed = true;
             }
         }
