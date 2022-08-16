@@ -1,16 +1,23 @@
 package com.hardbackcollector.sshclient.channels.sftp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 
-class FxpNamePacket {
+/**
+ * Handle the response to a {@link SftpConstants#SSH_FXP_READDIR} request.
+ * <p>
+ * The response is a {@link SftpConstants#SSH_FXP_NAME} packet with a directory listing.
+ */
+class FxpReadDirResponsePacket {
 
     private static final String ERROR_INVALID_TYPE_s = "Invalid type: ";
     @NonNull
     private final FxpBuffer fxpBuffer;
+    private final int serverVersion;
 
     private int nrOfEntries;
 
@@ -18,8 +25,6 @@ class FxpNamePacket {
      * The number of LS entries might be very large.
      * We'll use the packet length + its data length to read blobs
      * from the input stream without creating OutOfMemoryError's.
-     *
-     * @see #fillBuffer(InputStream)
      */
     private int length;
 
@@ -28,22 +33,15 @@ class FxpNamePacket {
      *
      * @param remoteMaxPacketSize the maximum size of the packet as defined by the server.
      */
-    FxpNamePacket(final int remoteMaxPacketSize) {
+    FxpReadDirResponsePacket(final int remoteMaxPacketSize,
+                             final int serverVersion) {
         fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
+        this.serverVersion = serverVersion;
     }
 
-    // byte       SSH_FXP_NAME
-    // uint32     request-id
-    // ==> mpIn is positioned here.
-    // uint32     count
-    // repeats count times:
-    //     string     filename
-    //     string     longname   (server version 1-3 only; not present in 4+)
-    //     ATTRS      attrs
-    void decodeHeader(@NonNull final InputStream inputStream)
+    private void decodeHeader(@NonNull final InputStream inputStream)
             throws IOException, SftpException {
 
-        // not using #receive(byte expectedType) as we need to allow for SSH_FX_EOF
         fxpBuffer.readHeader(inputStream);
 
         // a status packet is a valid response
@@ -86,43 +84,65 @@ class FxpNamePacket {
     }
 
     /**
-     * Fill the available space of the packet without expanding it.
+     * Read the number of entries found.
      *
-     * @param inputStream to read from
+     * @return number of entries
      */
-    void fillBuffer(@NonNull final InputStream inputStream)
+    int readNrOfEntries(@NonNull final InputStream inputStream)
+            throws SftpException, IOException {
+        decodeHeader(inputStream);
+        return nrOfEntries;
+    }
+
+    /**
+     * Read one <strong>raw</strong> LS entry:
+     * <pre>
+     *      string     filename
+     *      string     longname
+     *      ATTRS      attrs
+     * </pre>
+     *
+     * @return the raw LS record
+     */
+    @NonNull
+    LSStruct readRawEntry(@NonNull final InputStream inputStream)
             throws IOException {
+        // Fill the available space of the packet without expanding it.
         if (length > 0) {
-            //
             fxpBuffer.shiftBuffer();
             final int bytesRead = fxpBuffer.readAppending(
                     inputStream, Math.min(fxpBuffer.spaceLeft(), length));
             length -= bytesRead;
         }
+
+        if (serverVersion <= 3) {
+            return new LSStruct(
+                    fxpBuffer.getString(),
+                    fxpBuffer.getString(),
+                    SftpATTRS.getATTR(fxpBuffer));
+        } else {
+            return new LSStruct(
+                    fxpBuffer.getString(),
+                    // longname no longer exists in v4+
+                    null,
+                    SftpATTRS.getATTR(fxpBuffer));
+        }
     }
 
-    /**
-     * Get the number of entries found.
-     * <p>
-     * {@link #decodeHeader(InputStream)} (InputStream)} MUST already have been called.
-     *
-     * @return number of entries
-     */
-    int getNrOfEntries() {
-        return nrOfEntries;
-    }
+    static class LSStruct {
+        @NonNull
+        final byte[] filename;
+        @Nullable
+        final byte[] longname;
+        @NonNull
+        final SftpATTRS attr;
 
-
-    @NonNull
-    byte[] readString()
-            throws IOException {
-        return fxpBuffer.getString();
-    }
-
-    @NonNull
-    SftpATTRS readATTRS() throws
-                          IOException {
-
-        return SftpATTRS.getATTR(fxpBuffer);
+        LSStruct(@NonNull final byte[] filename,
+                 @Nullable final byte[] longname,
+                 @NonNull final SftpATTRS attr) {
+            this.filename = filename;
+            this.longname = longname;
+            this.attr = attr;
+        }
     }
 }
