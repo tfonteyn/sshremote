@@ -151,29 +151,29 @@ public class ChaCha20Poly1305
 
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] _keyBuf,
+                     @NonNull final byte[] key,
                      @NonNull final byte[] iv) {
 
         this.opmode = opmode;
 
         // Make sure to limit the key length to the length the cipher wants.
-        final byte[] keyBuf;
+        final byte[] normalisedKey;
         // key size is 32, but we need 2 x 256 bit keys, hence this value MUST be 64.
-        if (_keyBuf.length > doubleKeyLength) {
-            keyBuf = new byte[doubleKeyLength];
-            System.arraycopy(_keyBuf, 0, keyBuf, 0, keyBuf.length);
+        if (key.length > doubleKeyLength) {
+            normalisedKey = new byte[doubleKeyLength];
+            System.arraycopy(key, 0, normalisedKey, 0, normalisedKey.length);
         } else {
-            keyBuf = _keyBuf;
+            normalisedKey = key;
         }
 
         // use the second part of the 512 bits
         final byte[] K_1 = new byte[keyLength];
-        System.arraycopy(keyBuf, keyLength, K_1, 0, keyLength);
+        System.arraycopy(normalisedKey, keyLength, K_1, 0, keyLength);
         k1_spec = new SecretKeySpec(K_1, keyAlgorithm);
 
         // use the first part of the 512 bits
         final byte[] K_2 = new byte[keyLength];
-        System.arraycopy(keyBuf, 0, K_2, 0, keyLength);
+        System.arraycopy(normalisedKey, 0, K_2, 0, keyLength);
         k2_spec = new SecretKeySpec(K_2, keyAlgorithm);
     }
 
