@@ -3,11 +3,13 @@ package com.hardbackcollector.sshclient.channels.sftp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbackcollector.sshclient.ChannelSftp;
+
 import java.util.Objects;
 
 
 class LsEntryImpl
-        implements LsEntry {
+        implements ChannelSftp.LsEntry {
 
     @NonNull
     private final String filename;
@@ -44,7 +46,7 @@ class LsEntryImpl
 
 
     @Override
-    public int compareTo(@Nullable final LsEntry o)
+    public int compareTo(@Nullable final ChannelSftp.LsEntry o)
             throws NullPointerException, ClassCastException {
         Objects.requireNonNull(o);
         return filename.compareTo(o.getFilename());
@@ -58,7 +60,7 @@ class LsEntryImpl
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final LsEntry that = (LsEntry) o;
+        final ChannelSftp.LsEntry that = (ChannelSftp.LsEntry) o;
         return filename.equals(that.getFilename())
                 && longname.equals(that.getLongname())
                 && attrs.equals(that.getAttrs());

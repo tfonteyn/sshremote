@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbackcollector.sshclient.channels.SshChannelException;
-import com.hardbackcollector.sshclient.channels.sftp.LsEntry;
 import com.hardbackcollector.sshclient.channels.sftp.SftpATTRS;
 import com.hardbackcollector.sshclient.channels.sftp.SftpException;
 import com.hardbackcollector.sshclient.channels.sftp.SftpStatVFS;
@@ -12,6 +11,7 @@ import com.hardbackcollector.sshclient.channels.sftp.SftpStatVFS;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
@@ -20,6 +20,28 @@ public interface ChannelSftp
         extends ChannelSession {
 
     String NAME = "sftp";
+
+    /**
+     * Set the remote filename encoding.
+     * This should be the the same encoding actually used on the server.
+     * <p>
+     * The default is UTF-8.
+     *
+     * @param encoding which is used on the server
+     *
+     * @throws UnsupportedEncodingException if this client does not support the
+     *                                      desired server encoding
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.2">
+     * SFTP v3 has no specific rule on filename encoding</a>
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-04#section-6.2">
+     * SFTP v4 enforces all file names to be UTF-8</a>
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-05#section-6.2">
+     * SFTP v5 enforces all file names to be UTF-8</a>
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-13#section-6">
+     * SFTP v6 extensions to deal with encoding</a>
+     */
+    void setFilenameEncoding(@NonNull String encoding)
+            throws UnsupportedEncodingException;
 
     /**
      * returns the server's protocol version number.
@@ -38,7 +60,7 @@ public interface ChannelSftp
     /**
      * local command "lcd"
      * <p>
-     * Changes the <a href="#current-directory">current local directory</a>.
+     * Changes the <em>current local directory<em>.
      *
      * @param path a directory path, absolute or relative to the current local path.
      *
@@ -51,7 +73,7 @@ public interface ChannelSftp
     /**
      * local command "lpwd"
      *
-     * @return the <a href="#current-directory">current local directory</a> in absolute form.
+     * @return the <em>current local directory</em> in absolute form.
      *
      * @see #lcd
      */
@@ -61,12 +83,12 @@ public interface ChannelSftp
     /**
      * sftp command "cd"
      * <p>
-     * Changes the current remote directory.
+     * Changes the <em>current remote directory</em>.
      * <p>
      * This checks the existence and accessibility of the indicated directory,
-     * and changes the <a href="#current-directory">current remote directory</a> setting.
+     * and changes the <em>current remote directory</em> setting.
      *
-     * @param path a directory path, absolute or relative to the current remote path.
+     * @param path a directory path, absolute or relative to the <em>current remote directory</em>.
      *
      * @throws SftpException if the named path does not indicate a directory,
      *                       if it is not accessible by the user, or some other problem occurs.
@@ -78,7 +100,7 @@ public interface ChannelSftp
     /**
      * sftp command "pwd"
      *
-     * @return the <a href="#current-directory">current remote directory</a> in absolute form.
+     * @return the <em>current remote directory</em> in absolute form.
      *
      * @see #cd
      */
@@ -99,7 +121,7 @@ public interface ChannelSftp
      * creates a new remote directory.
      *
      * @param path the path of the new directory, relative
-     *             to the <a href="#current-directory">current remote directory</a>.
+     *             to the <em>current remote directory</em>.
      */
     void mkdir(@NonNull String path)
             throws IOException, SshChannelException, GeneralSecurityException;
@@ -110,7 +132,7 @@ public interface ChannelSftp
      * Removes one or several remote directories.
      *
      * @param path a glob pattern of the directories to be removed, relative
-     *             to the <a href="#current-directory">current remote directory</a>.
+     *             to the <em>current remote directory</em>.
      */
     void rmdir(@NonNull String path)
             throws SftpException;
@@ -121,7 +143,7 @@ public interface ChannelSftp
      * removes one or several files.
      *
      * @param path a glob pattern of the files to be removed, relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      */
     void rm(@NonNull String path)
             throws SftpException;
@@ -132,9 +154,9 @@ public interface ChannelSftp
      * Renames a file or directory.
      *
      * @param oldPath the old name of the file, relative to the
-     *                <a href="#current-directory">current remote directory</a>.
+     *                <em>current remote directory</em>.
      * @param newPath the new name of the file, relative to the
-     *                <a href="#current-directory">current remote directory</a>.
+     *                <em>current remote directory</em>.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.5">
      * Internet draft, 6.5 Removing and Renaming Files</a>
@@ -148,10 +170,9 @@ public interface ChannelSftp
      * <p>
      * List the contents of a remote directory.
      *
-     * @param path a path relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     * @param path a path relative to the <em>current remote directory</em>.
      *             The pattern can contain glob pattern wildcards ({@code *} or {@code ?})
-     *             in the last component (i.e. after the last {@code /}).
+     *             in the last component (i.e. after the last file-separator char).
      *
      * @return a list of {@link LsEntry} objects.
      */
@@ -180,7 +201,7 @@ public interface ChannelSftp
      * </pre>
      *
      * @param path     a path relative to the
-     *                 <a href="#current-directory">current remote directory</a>.
+     *                 <em>current remote directory</em>.
      *                 The path can contain glob pattern wildcards ({@code *} or {@code ?})
      *                 in the last component (i.e. after the last {@code /}).
      * @param selector see above
@@ -207,9 +228,9 @@ public interface ChannelSftp
      * </p>
      *
      * @param targetPath the path of the link target,  relative to the
-     *                   <a href="#current-directory">current remote directory</a>
+     *                   <em>current remote directory</em>
      * @param linkPath   the path of the link to be created, relative to the
-     *                   <a href="#current-directory">current remote directory</a>
+     *                   <em>current remote directory</em>
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.10">
      * Internet draft, 6.10.  Dealing with Symbolic links</a>
@@ -225,7 +246,7 @@ public interface ChannelSftp
      * reads a symbolic link.
      *
      * @param path a path relative to the
-     *             <a href="#current-directory">current remote directory</a>,
+     *             <em>current remote directory</em>,
      *             which should correspond to a symbolic link.
      *
      * @return the link target, relative to the location
@@ -242,7 +263,7 @@ public interface ChannelSftp
      * converts a remote path to its absolute (and to a certain degree canonical) version.
      *
      * @param path a path name, relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      *
      * @return an absolute version of the path (but not resolving symbolic links).
      */
@@ -257,7 +278,7 @@ public interface ChannelSftp
      *
      * @param gid  the identifier of the new group.
      * @param path a glob pattern of the files to be changed, relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      */
     void chgrp(int gid,
                @NonNull String path)
@@ -270,7 +291,7 @@ public interface ChannelSftp
      *
      * @param uid  the identifier of the new owner.
      * @param path a glob pattern of the files to be changed, relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      */
     void chown(int uid,
                @NonNull String path)
@@ -284,7 +305,7 @@ public interface ChannelSftp
      * @param permissions the new permission pattern.
      *                    This may be modified by a current mask before being applied.
      * @param path        a glob pattern of the files to be changed, relative to the
-     *                    <a href="#current-directory">current remote directory</a>.
+     *                    <em>current remote directory</em>.
      */
     void chmod(int permissions,
                @NonNull String path)
@@ -297,7 +318,7 @@ public interface ChannelSftp
      * the attributes of the target and not the link).
      *
      * @param path the path of the file or directory, relative
-     *             to the <a href="#current-directory">current remote directory</a>.
+     *             to the <em>current remote directory</em>.
      *
      * @return an SftpAttrs object containing the file's attributes.
      *
@@ -314,7 +335,7 @@ public interface ChannelSftp
      * the attributes of the link and not the target).
      *
      * @param path the path of the file or directory, relative
-     *             to the <a href="#current-directory">current remote directory</a>.
+     *             to the <em>current remote directory</em>.
      *
      * @return an SftpAttrs object containing the file's attributes.
      *
@@ -328,7 +349,7 @@ public interface ChannelSftp
      * "statvfs@openssh.com" correspond to the statvfs and POSIX system interfaces.
      *
      * @param path the path of the file or directory, relative
-     *             to the <a href="#current-directory">current remote directory</a>.
+     *             to the <em>current remote directory</em>.
      *
      * @return an SftpStatVFS object containing the file's attributes.
      * <p>
@@ -342,7 +363,7 @@ public interface ChannelSftp
      * Changes attributes of a remote file or directory.
      *
      * @param path the path of the file or directory, relative
-     *             to the <a href="#current-directory">current remote directory</a>.
+     *             to the <em>current remote directory</em>.
      * @param attr the attribute set containing the attributes to be changed.
      */
     void setStat(@NonNull String path,
@@ -350,14 +371,27 @@ public interface ChannelSftp
             throws SftpException;
 
     /**
+     * Changes the modification time of one or more remote files.
+     * <p>
+     * This is the equivalent of "touch -m".
+     *
+     * @param modificationTime the new modification time, in seconds from the unix epoch.
+     * @param path             a glob pattern of the files to be changed, relative to the
+     *                         <em>current remote directory</em>.
+     */
+    void setModificationTime(int modificationTime,
+                             @NonNull String path)
+            throws SftpException;
+
+    /**
      * Starts downloading a file as an InputStream.
      *
      * @param srcFilename the source file name, relative to the
-     *                    <a href="#current-directory">current remote directory</a>.
+     *                    <em>current remote directory</em>.
      *
      * @return an InputStream from which the contents of the file can be read.
      *
-     * @see #get(String, SftpProgressMonitor, long)
+     * @see #get(String, ProgressListener, long)
      */
     @NonNull
     default InputStream get(@NonNull final String srcFilename)
@@ -369,16 +403,16 @@ public interface ChannelSftp
      * Starts downloading a file as an InputStream.
      *
      * @param srcFilename      the source file name, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      *
      * @return an InputStream from which the contents of the file can be read.
      *
-     * @see #get(String, SftpProgressMonitor, long)
+     * @see #get(String, ProgressListener, long)
      */
     @NonNull
     default InputStream get(@NonNull final String srcFilename,
-                            @Nullable final SftpProgressMonitor progressListener)
+                            @Nullable final ProgressListener progressListener)
             throws SftpException {
         return get(srcFilename, progressListener, 0L);
     }
@@ -387,7 +421,7 @@ public interface ChannelSftp
      * Starts downloading a file as an InputStream.
      *
      * @param srcPath          the source file name, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      * @param initialOffset    the position in the remote file where
      *                         we should start the download
@@ -396,14 +430,14 @@ public interface ChannelSftp
      */
     @NonNull
     InputStream get(@NonNull String srcPath,
-                    @Nullable SftpProgressMonitor progressListener,
+                    @Nullable ProgressListener progressListener,
                     long initialOffset)
             throws SftpException;
 
     /**
      * Downloads a file to an OutputStream; starts from start of the file.
      *
-     * @see #get(String, OutputStream, SftpProgressMonitor, Mode, long)
+     * @see #get(String, OutputStream, ProgressListener, Mode, long)
      */
     default void get(@NonNull final String src,
                      @NonNull final OutputStream outputStream)
@@ -414,11 +448,11 @@ public interface ChannelSftp
     /**
      * Downloads a file to an OutputStream; starts from start of the file.
      *
-     * @see #get(String, OutputStream, SftpProgressMonitor, Mode, long)
+     * @see #get(String, OutputStream, ProgressListener, Mode, long)
      */
     default void get(@NonNull final String src,
                      @NonNull final OutputStream outputStream,
-                     @Nullable final SftpProgressMonitor progressListener)
+                     @Nullable final ProgressListener progressListener)
             throws SftpException {
         get(src, outputStream, progressListener, Mode.Overwrite, 0);
     }
@@ -427,7 +461,7 @@ public interface ChannelSftp
      * Downloads a file to a specified filename or directory using
      * {@link Mode#Overwrite}.
      *
-     * @see #get(String, String, SftpProgressMonitor, Mode)
+     * @see #get(String, String, ProgressListener, Mode)
      */
     default void get(@NonNull final String src,
                      @NonNull final String dst)
@@ -439,11 +473,11 @@ public interface ChannelSftp
      * Downloads a file to a specified filename or directory using
      * {@link Mode#Overwrite}.
      *
-     * @see #get(String, String, SftpProgressMonitor, Mode)
+     * @see #get(String, String, ProgressListener, Mode)
      */
     default void get(@NonNull final String src,
                      @NonNull final String dst,
-                     @Nullable final SftpProgressMonitor progressListener)
+                     @Nullable final ProgressListener progressListener)
             throws SftpException {
         get(src, dst, progressListener, Mode.Overwrite);
     }
@@ -452,9 +486,9 @@ public interface ChannelSftp
      * Downloads a file to a specified filename or directory.
      *
      * @param srcPath the source file name, relative to the
-     *                <a href="#current-directory">current remote directory</a>.
+     *                <em>current remote directory</em>.
      * @param dstPath the destination file name or directory, relative to the
-     *                <a href="#current-directory">current local directory</a>.
+     *                <em>current local directory</em>.
      * @param monitor (optional) progress listener
      * @param mode    the transfer {@link Mode}
      *
@@ -462,7 +496,7 @@ public interface ChannelSftp
      */
     void get(@NonNull String srcPath,
              @NonNull String dstPath,
-             @Nullable SftpProgressMonitor monitor,
+             @Nullable ProgressListener monitor,
              @NonNull Mode mode)
             throws SftpException;
 
@@ -470,7 +504,7 @@ public interface ChannelSftp
      * Downloads a file to an OutputStream.
      *
      * @param srcPath   the source file name, relative to the
-     *                  <a href="#current-directory">current remote directory</a>.
+     *                  <em>current remote directory</em>.
      * @param dstStream the destination output stream.
      * @param monitor   (optional) progress listener
      * @param mode      the transfer {@link Mode}
@@ -481,7 +515,7 @@ public interface ChannelSftp
      */
     void get(@NonNull String srcPath,
              @NonNull OutputStream dstStream,
-             @Nullable SftpProgressMonitor monitor,
+             @Nullable ProgressListener monitor,
              @NonNull Mode mode,
              long skip)
             throws SftpException;
@@ -491,9 +525,9 @@ public interface ChannelSftp
      *
      * @param src the source file, in the form of an InputStream
      * @param dst the remote destination file name, relative to the
-     *            <a href="#current-directory">current remote directory</a>.
+     *            <em>current remote directory</em>.
      *
-     * @see #put(InputStream, String, SftpProgressMonitor, Mode)
+     * @see #put(InputStream, String, ProgressListener, Mode)
      */
     default void put(@NonNull final InputStream src,
                      @NonNull final String dst)
@@ -506,10 +540,10 @@ public interface ChannelSftp
      *
      * @param src  the source file, in the form of an InputStream
      * @param dst  the remote destination file name, relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      * @param mode the transfer {@link Mode}
      *
-     * @see #put(InputStream, String, SftpProgressMonitor, Mode)
+     * @see #put(InputStream, String, ProgressListener, Mode)
      */
     default void put(@NonNull final InputStream src,
                      @NonNull final String dst,
@@ -523,14 +557,14 @@ public interface ChannelSftp
      *
      * @param src              the source file, in form of an input stream.
      * @param dst              the remote destination file name, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      *
-     * @see #put(InputStream, String, SftpProgressMonitor, Mode)
+     * @see #put(InputStream, String, ProgressListener, Mode)
      */
     default void put(@NonNull final InputStream src,
                      @NonNull final String dst,
-                     @Nullable final SftpProgressMonitor progressListener)
+                     @Nullable final ProgressListener progressListener)
             throws SftpException {
         put(src, dst, progressListener, Mode.Overwrite);
     }
@@ -539,11 +573,11 @@ public interface ChannelSftp
      * Starts an upload from an OutputStream using {@link Mode#Overwrite}.
      *
      * @param dst the remote destination file name, relative to the
-     *            <a href="#current-directory">current remote directory</a>.
+     *            <em>current remote directory</em>.
      *
      * @return an OutputStream to which the application should write the file contents.
      *
-     * @see #put(String, SftpProgressMonitor, Mode, long)
+     * @see #put(String, ProgressListener, Mode, long)
      */
     @NonNull
     default OutputStream put(@NonNull final String dst)
@@ -555,12 +589,12 @@ public interface ChannelSftp
      * Starts an upload from an OutputStream.
      *
      * @param dst  the remote destination file name, relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      * @param mode the transfer {@link Mode}
      *
      * @return an OutputStream to which the application should write the file contents.
      *
-     * @see #put(String, SftpProgressMonitor, Mode, long)
+     * @see #put(String, ProgressListener, Mode, long)
      */
     @NonNull
     default OutputStream put(@NonNull final String dst,
@@ -573,17 +607,17 @@ public interface ChannelSftp
      * Starts an upload from an OutputStream.
      *
      * @param dst              the remote destination file name, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      * @param mode             the transfer {@link Mode}
      *
      * @return an OutputStream to which the application should write the file contents.
      *
-     * @see #put(String, SftpProgressMonitor, Mode, long)
+     * @see #put(String, ProgressListener, Mode, long)
      */
     @NonNull
     default OutputStream put(@NonNull final String dst,
-                             @Nullable final SftpProgressMonitor progressListener,
+                             @Nullable final ProgressListener progressListener,
                              @NonNull final Mode mode)
             throws SftpException {
         return put(dst, progressListener, mode, 0);
@@ -593,11 +627,11 @@ public interface ChannelSftp
      * Uploads a file using {@link Mode#Overwrite}.
      *
      * @param src the local source file name, absolute or relative to the
-     *            <a href="#current-directory">current local directory</a>.
+     *            <em>current local directory</em>.
      * @param dst the remote destination file name, absolute or relative to the
-     *            <a href="#current-directory">current remote directory</a>.
+     *            <em>current remote directory</em>.
      *
-     * @see #put(String, String, SftpProgressMonitor, Mode)
+     * @see #put(String, String, ProgressListener, Mode)
      */
     default void put(@NonNull final String src,
                      @NonNull final String dst)
@@ -609,12 +643,12 @@ public interface ChannelSftp
      * Uploads a file.
      *
      * @param src  the local source file name, absolute or relative to the
-     *             <a href="#current-directory">current local directory</a>.
+     *             <em>current local directory</em>.
      * @param dst  the remote destination file name, absolute or relative to the
-     *             <a href="#current-directory">current remote directory</a>.
+     *             <em>current remote directory</em>.
      * @param mode the transfer {@link Mode}
      *
-     * @see #put(String, String, SftpProgressMonitor, Mode)
+     * @see #put(String, String, ProgressListener, Mode)
      */
     default void put(@NonNull final String src,
                      @NonNull final String dst,
@@ -627,16 +661,16 @@ public interface ChannelSftp
      * Uploads a file using {@link Mode#Overwrite}.
      *
      * @param src              the local source file name, absolute or relative to the
-     *                         <a href="#current-directory">current local directory</a>.
+     *                         <em>current local directory</em>.
      * @param dst              the remote destination file name, absolute or relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      *
-     * @see #put(String, String, SftpProgressMonitor, Mode)
+     * @see #put(String, String, ProgressListener, Mode)
      */
     default void put(@NonNull final String src,
                      @NonNull final String dst,
-                     @Nullable final SftpProgressMonitor progressListener)
+                     @Nullable final ProgressListener progressListener)
             throws SftpException {
         put(src, dst, progressListener, Mode.Overwrite);
     }
@@ -649,7 +683,7 @@ public interface ChannelSftp
      * Closing the stream will finish the upload.
      *
      * @param dstPath          the remote destination file name, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      * @param mode             the transfer {@link Mode}
      * @param offset           the position in the remote file where we want to start writing.
@@ -662,7 +696,7 @@ public interface ChannelSftp
      */
     @NonNull
     OutputStream put(@NonNull String dstPath,
-                     @Nullable SftpProgressMonitor progressListener,
+                     @Nullable ProgressListener progressListener,
                      @NonNull Mode mode,
                      long offset)
             throws SftpException;
@@ -676,15 +710,15 @@ public interface ChannelSftp
      * The transfer mode will be applied to ALL resolved filenames.
      *
      * @param srcFilename      the local source file name, absolute or relative to the
-     *                         <a href="#current-directory">current local directory</a>.
+     *                         <em>current local directory</em>.
      * @param dstPath          the remote destination file name, absolute or relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      * @param mode             the transfer {@link Mode}
      */
     void put(@NonNull String srcFilename,
              @NonNull String dstPath,
-             @Nullable SftpProgressMonitor progressListener,
+             @Nullable ProgressListener progressListener,
              @NonNull Mode mode)
             throws SftpException;
 
@@ -693,13 +727,13 @@ public interface ChannelSftp
      *
      * @param srcStream        the source file, in the form of an input stream.
      * @param dstPath          the remote destination file name, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
+     *                         <em>current remote directory</em>.
      * @param progressListener (optional) progress listener
      * @param mode             the transfer {@link Mode}
      */
     void put(@NonNull InputStream srcStream,
              @NonNull String dstPath,
-             @Nullable SftpProgressMonitor progressListener,
+             @Nullable ProgressListener progressListener,
              @NonNull Mode mode)
             throws SftpException;
 
@@ -724,6 +758,20 @@ public interface ChannelSftp
     }
 
     /**
+     * file transfer direction.
+     */
+    enum Direction {
+        /**
+         * Direction constant for upload.
+         */
+        Put,
+        /**
+         * Direction constant for download.
+         */
+        Get
+    }
+
+    /**
      * A callback to get information about the progress of a file transfer operation.
      * <p>
      * An application will implement this interface to get information
@@ -737,29 +785,19 @@ public interface ChannelSftp
      *
      * @see ChannelSftp
      */
-    interface SftpProgressMonitor {
-
-        /**
-         * Direction constant for upload.
-         */
-        int PUT = 0;
-        /**
-         * Direction constant for download.
-         */
-        int GET = 1;
+    interface ProgressListener {
 
         long UNKNOWN_SIZE = -1L;
 
         /**
          * Will be called when a new operation starts.
          *
-         * @param op   a code indicating the direction of transfer,
-         *             one of {@link #PUT} and {@link #GET}
-         * @param src  the source file name.
-         * @param dest the destination file name.
-         * @param max  the final count (i.e. length of file to transfer).
+         * @param direction flag indicating the direction of transfer
+         * @param src       the source file name.
+         * @param dest      the destination file name.
+         * @param max       the final count (i.e. length of file to transfer).
          */
-        void init(int op,
+        void init(@NonNull Direction direction,
                   @NonNull String src,
                   @NonNull String dest,
                   long max);
@@ -780,5 +818,50 @@ public interface ChannelSftp
          * was transferred, or because the transfer was cancelled.
          */
         void end();
+
+    }
+
+    /**
+     * Represents a directory entry, i.e. representing a remote file or directory.
+     * <p>
+     * A list of objects of this class is returned by {@link ChannelSftp#ls(String)}.
+     */
+    interface LsEntry extends Comparable<LsEntry> {
+
+        /**
+         * Get the file name of this entry.
+         */
+        @NonNull
+        String getFilename();
+
+        /**
+         * Get the "longname" of this entry.
+         */
+        @NonNull
+        String getLongname();
+
+        /**
+         * Get the attributes of this entry.
+         */
+        @NonNull
+        SftpATTRS getAttrs();
+
+        /**
+         * Objects implementing this interface can be passed as an argument to the
+         * {@link ChannelSftp#ls(String, Selector)} method.
+         */
+        interface Selector {
+
+            /**
+             * <p> This method will be invoked by {@link ChannelSftp#ls(String, Selector)}
+             * for each file entry. If this method returns {@code false}
+             * the {@code ls} operation will be canceled.
+             *
+             * @param entry current item from {@code ls}
+             *
+             * @return {@code true} to keep reading, or {@code false} to interrupt.
+             */
+            boolean select(@NonNull LsEntry entry);
+        }
     }
 }
