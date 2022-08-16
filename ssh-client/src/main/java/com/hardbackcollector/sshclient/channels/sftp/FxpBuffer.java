@@ -76,7 +76,7 @@ class FxpBuffer
      * and return them as an int.
      * <p>
      * For code-clarity this method should only be called from a subclass.
-     * e.g. {@link FxpDataPacketBuffer}, {@link FxpNamePacket}.
+     * e.g. {@link FxpDataPacketBuffer}, {@link FxpReadDirResponsePacket}.
      *
      * @param inputStream to read from
      *
