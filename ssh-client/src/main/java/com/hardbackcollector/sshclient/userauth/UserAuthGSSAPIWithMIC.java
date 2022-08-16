@@ -89,7 +89,7 @@ public class UserAuthGSSAPIWithMIC
                                 @Nullable final byte[] password)
             throws IOException, GeneralSecurityException, SshPartialAuthException {
 
-        final byte[] _username = username.getBytes(StandardCharsets.UTF_8);
+        final byte[] usernameBytes = username.getBytes(StandardCharsets.UTF_8);
 
         // https://datatracker.ietf.org/doc/html/rfc4462#section-3.2
         // send
@@ -100,7 +100,7 @@ public class UserAuthGSSAPIWithMIC
         // uint32    n, the number of mechanism OIDs client supports
         // string[n] mechanism OIDs
         Packet packet = new Packet(SshConstants.SSH_MSG_USERAUTH_REQUEST)
-                .putString(_username)
+                .putString(usernameBytes)
                 .putString(UserAuth.SSH_CONNECTION)
                 .putString(METHOD)
                 .putInt(supported_oid.length);
@@ -236,7 +236,7 @@ public class UserAuthGSSAPIWithMIC
         final Buffer micBuffer = new Buffer()
                 .putString(Objects.requireNonNull(session.getSessionId()))
                 .putByte(SshConstants.SSH_MSG_USERAUTH_REQUEST)
-                .putString(_username)
+                .putString(usernameBytes)
                 .putString(UserAuth.SSH_CONNECTION)
                 .putString(METHOD);
 
