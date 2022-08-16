@@ -325,7 +325,7 @@ public abstract class BaseChannel
         final BaseChannel channel = this;
         return new OutputStream() {
             /** Temporary buffer for writing a single byte of data. */
-            private final byte[] _bb = new byte[1];
+            private final byte[] singleByte = new byte[1];
             private boolean streamClosed;
 
             @Nullable
@@ -351,8 +351,8 @@ public abstract class BaseChannel
             @Override
             public void write(final int w)
                     throws IOException {
-                _bb[0] = (byte) w;
-                write(_bb, 0, 1);
+                singleByte[0] = (byte) w;
+                write(singleByte, 0, 1);
             }
 
             /**
