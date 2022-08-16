@@ -29,13 +29,13 @@ public class KeyManagementViewModel
 
     private List<KeyManagementViewModel.HostLine> mList;
 
-    private String mMd;
+    private String fingerPrintAlgorithm;
     private boolean mImportIsAppend;
 
     public void init(@NonNull final Context context) {
-        if (mMd == null) {
+        if (fingerPrintAlgorithm == null) {
             // using hardcoded md5 for now... maybe just use the default which is SSH-256?
-            mMd = "MD5";
+            fingerPrintAlgorithm = "MD5";
 
             try {
                 mList = readFile(context.openFileInput(SshHelper.KNOWN_HOSTS));
@@ -100,7 +100,7 @@ public class KeyManagementViewModel
                     final String[] parts = line.split(" ");
                     if (parts.length == 3) {
                         final byte[] key = Base64.getDecoder().decode(parts[2]);
-                        final String fingerPrint = HostKey.getFingerPrint(mMd, key);
+                        final String fingerPrint = HostKey.getFingerPrint(fingerPrintAlgorithm, key);
                         list.add(new HostLine(parts[0], parts[1], fingerPrint, line));
                     }
                 }
