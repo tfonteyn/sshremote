@@ -112,7 +112,7 @@ public interface SshCipher {
      *
      * @param opmode one of {@link javax.crypto.Cipher#ENCRYPT_MODE}
      *               or {@link  javax.crypto.Cipher#DECRYPT_MODE}.
-     * @param keyBuf the key to use for the operation.
+     * @param key    the key to use for the operation.
      * @param iv     the initialization vector necessary for operation.
      *
      * @throws InvalidKeyException  if the given key is inappropriate for
@@ -123,7 +123,7 @@ public interface SshCipher {
      *                              short to hold the operation result.
      */
     void init(int opmode,
-              @NonNull byte[] keyBuf,
+              @NonNull byte[] key,
               @NonNull byte[] iv)
             throws GeneralSecurityException;
 
