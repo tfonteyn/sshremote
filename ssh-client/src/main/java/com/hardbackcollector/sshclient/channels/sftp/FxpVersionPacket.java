@@ -7,7 +7,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 /**
- * {@link SftpConstants#SSH_FXP_VERSION}.
+ * Handle the response to a {@link SftpConstants#SSH_FXP_INIT} request.
+ *
+ * The response is a {@link SftpConstants#SSH_FXP_VERSION} packet.
+ *
  * <p>
  * 10. Changes from previous protocol versions
  * The SSH File Transfer Protocol has changed over time, before it's
