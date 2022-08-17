@@ -338,13 +338,18 @@ public class ChannelSftpImpl
 
     @Override
     public void mkdir(@NonNull final String path)
-            throws IOException, SshChannelException, GeneralSecurityException {
+            throws SftpException {
+        try {
+            //noinspection ConstantConditions
+            mpIn.updateReadSide();
 
-        //noinspection ConstantConditions
-        mpIn.updateReadSide();
-
-        sendMKDIR(absoluteRemotePath(path), null);
-        checkStatus();
+            sendMKDIR(getAbsoluteRemotePath(path), null);
+            checkStatus();
+        } catch (final SftpException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new SftpException(SftpConstants.SSH_FX_FAILURE, e);
+        }
     }
 
     @Override

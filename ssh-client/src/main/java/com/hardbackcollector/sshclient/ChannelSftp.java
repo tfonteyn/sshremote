@@ -3,16 +3,13 @@ package com.hardbackcollector.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbackcollector.sshclient.channels.SshChannelException;
 import com.hardbackcollector.sshclient.channels.sftp.SftpATTRS;
 import com.hardbackcollector.sshclient.channels.sftp.SftpException;
 import com.hardbackcollector.sshclient.channels.sftp.SftpStatVFS;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -124,7 +121,7 @@ public interface ChannelSftp
      *             to the <em>current remote directory</em>.
      */
     void mkdir(@NonNull String path)
-            throws IOException, SshChannelException, GeneralSecurityException;
+            throws SftpException;
 
     /**
      * sftp command "rmdir"
