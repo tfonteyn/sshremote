@@ -104,7 +104,6 @@ class LocalPathTest {
     @BeforeEach
     void setup() throws IOException {
         lpwd = new File("").toPath();
-        System.out.println("lpwd: " + lpwd);
     }
 
     /**
