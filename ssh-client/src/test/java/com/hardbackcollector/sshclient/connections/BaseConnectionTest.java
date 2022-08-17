@@ -16,7 +16,7 @@ public class BaseConnectionTest {
     protected static final SecureRandom RANDOM = new SecureRandom();
     private static final Logger LOGGER = new DbgJLogger();
 
-    protected static final String HOST = "192.168.0.203";
+    protected static final String HOST = "192.168.0.15";
     protected static final String USERNAME = "tom";
     protected static final String PASSWORD = "tom";
 

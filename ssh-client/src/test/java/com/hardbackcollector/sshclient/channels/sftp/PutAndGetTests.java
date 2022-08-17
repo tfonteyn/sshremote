@@ -93,16 +93,15 @@ class PutAndGetTests
     @Test
     void sftp_get_f_d()
             throws SshException, GeneralSecurityException, IOException {
+        ChannelSftp channel;
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.connect();
-
-        ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
-        channel.connect();
-        channel.get("/boot/kernel.img", "C:\\tmp\\ssh", new DbgProgressListener(session));
-
-        session.disconnect();
+//        session = sshClient.getSession(USERNAME, HOST, PORT);
+//        session.setPassword(PASSWORD);
+//        session.connect();
+//        channel = session.openChannel(ChannelSftp.NAME);
+//        channel.connect();
+//        channel.get("test5m", "C:\\tmp\\ssh", new DbgProgressListener(session));
+//        session.disconnect();
 
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
@@ -112,7 +111,7 @@ class PutAndGetTests
         channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
-        channel.put("C:/tmp/ssh/kernel.img", "k1", new DbgProgressListener(session));
+        channel.put("C:/tmp/ssh/test5m", "k1", new DbgProgressListener(session));
 
         session.disconnect();
     }

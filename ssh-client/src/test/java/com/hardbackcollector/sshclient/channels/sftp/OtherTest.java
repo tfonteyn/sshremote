@@ -38,7 +38,7 @@ class OtherTest
 
         System.out.println("pwd=" + channel.pwd());
 
-        channel.cd("log");
+        channel.cd(".config");
 
         System.out.println("pwd=" + channel.pwd());
 

@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.ChannelSftp;
 import com.hardbackcollector.sshclient.ChannelSubsystem;
 import com.hardbackcollector.sshclient.Logger;
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.channels.SshChannelException;
 import com.hardbackcollector.sshclient.channels.io.MyPipedInputStream;
 import com.hardbackcollector.sshclient.channels.session.ChannelSessionImpl;
@@ -24,12 +25,16 @@ import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A Channel connected to an sftp server (as a subsystem of the ssh server).
@@ -68,16 +73,13 @@ public class ChannelSftpImpl
     private static final String EXT_FSTATVFS_OPENSSH_COM = "fstatvfs@openssh.com";
     private static final String EXT_FSYNC_OPENSSH_COM = "fsync@openssh.com";
 
-    private static final int DEFAULT_REQUEST_QUEUE_SIZE = 16;
-
-    private static final String ERROR_NO_SUCH_DIRECTORY =
-            "No such directory";
     private static final String ERROR_MULTIPLE_FILES =
             "Copying multiple files, but the destination is missing or is a file.";
     private static final String ERROR_CANNOT_RESUME_s =
             "Size mismatch. Cannot resume ";
     private static final String ERROR_s_IS_A_DIRECTORY = " is a directory";
-
+    private static final String ERROR_PATH_HAS_WILDCARDS_s = "Path has wildcards: ";
+    private static final String ERROR_NO_SUCH_DIRECTORY = "No such directory";
 
     private static final int CLIENT_VERSION = 3;
 
@@ -97,6 +99,20 @@ public class ChannelSftpImpl
     private static final int WRITE_PACKET_HEADER_LEN =
             Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 21;
 
+    /** SftpConstants.SSH_FXP_OPEN mode. */
+    private static final int OPEN_FOR_WRITE = SftpConstants.SSH_FXF_WRITE
+            | SftpConstants.SSH_FXF_CREAT
+            | SftpConstants.SSH_FXF_TRUNC;
+    /** SftpConstants.SSH_FXP_OPEN mode. */
+    private static final int OPEN_FOR_APPEND = SftpConstants.SSH_FXF_WRITE
+            | SftpConstants.SSH_FXF_CREAT /* | SSH_FXF_APPEND */;
+    /** SftpConstants.SSH_FXP_OPEN mode. */
+    private static final int OPEN_FOR_READ = SftpConstants.SSH_FXF_READ;
+    @NonNull
+    private final RequestQueue requestQueue = new RequestQueue();
+    /** <em>local current working directory</em>. */
+    @NonNull
+    private Path lcwd;
     /** Keep a map to allow users to query for extensions. */
     @Nullable
     private HashMap<String, String> extensions;
@@ -106,19 +122,13 @@ public class ChannelSftpImpl
     private boolean extStatvfs;
     private boolean extFstatvfs;
     private boolean extFsync;
-
     /** remote home directory. */
     private String home;
     /** remote current working directory. */
     private String cwd;
-    /** local current working directory. */
-    private String lcwd;
-
+    /** the remote filename encoding as used on the server. */
     @NonNull
-    private Charset fileNameEncoding = StandardCharsets.UTF_8;
-
-    @NonNull
-    private RequestQueue requestQueue = new RequestQueue(DEFAULT_REQUEST_QUEUE_SIZE);
+    private Charset remoteCharset = StandardCharsets.UTF_8;
 
     /** Package sequence counter. */
     private int seq = 1;
@@ -130,30 +140,102 @@ public class ChannelSftpImpl
     @Nullable
     private Packet uploadPacket;
 
+    /**
+     * Constructor.
+     *
+     * @param session {@link Session} instance this channel belongs to.
+     */
     public ChannelSftpImpl(@NonNull final SessionImpl session) {
         super(session);
+        lcwd = new File("").toPath();
     }
 
     /**
-     * Sets the encoding used to convert file names from Strings to bytes.
-     * This should be the the same encoding actually used on the server.
+     * Expand the pattern (if any) in the given path.
+     * <p>
+     * (static to ease testing)
      *
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-6.2">
-     * SFTP v3 has no specific rule on filename encoding</a>
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-04#section-6.2">
-     * SFTP v4 enforces all file names to be UTF-8</a>
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-05#section-6.2">
-     * SFTP v5 enforces all file names to be UTF-8</a>
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-13#section-6">
-     * SFTP v6 extensions to deal with encoding</a>
+     * @param path a path relative to the <em>current local directory</em>.
+     *             The path can contain glob pattern wildcards {@code *} and {@code ?}
+     *             in the last component (i.e. after the last file-separator char).
+     *
+     * @return a list of matching file-names.
      */
+    @NonNull
+    static List<String> expandLocalPattern(@NonNull final Path currentDir,
+                                           @NonNull final String path) {
+        // reminder:
+        // We MUST manually concat/split the parts as the last part can hold a pattern!
+
+        final String absPath;
+        if (!path.isEmpty() && new File(path).isAbsolute()) {
+            absPath = path;
+        } else {
+            absPath = currentDir.toString() + File.separatorChar + path;
+        }
+
+        final int i;
+        if (File.separatorChar == '\\') {
+            // Windows...
+            i = Math.max(absPath.lastIndexOf('\\'), absPath.lastIndexOf('/'));
+        } else {
+            i = absPath.lastIndexOf(File.separatorChar);
+        }
+
+        final String dir;
+        final String pattern;
+        if (i >= 0) {
+            dir = absPath.substring(0, i);
+            pattern = absPath.substring(i + 1);
+        } else {
+            return new ArrayList<>();
+        }
+
+        // Note we're not using Files.newDirectoryStream as we want to enforce backwards
+        // compatibility in Globber.globLocalPath
+        final String[] children = new File(dir).list();
+        if (children != null) {
+            return Arrays.stream(children)
+                         .filter(child -> Globber.globLocalPath(pattern, child))
+                         .map(child -> new File(dir, child).getAbsolutePath())
+                         .collect(Collectors.toList());
+
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public void setFilenameEncoding(@NonNull final String encoding)
             throws UnsupportedEncodingException {
         try {
-            fileNameEncoding = Charset.forName(encoding);
+            remoteCharset = Charset.forName(encoding);
         } catch (final IllegalArgumentException e) {
             throw new UnsupportedEncodingException(encoding);
         }
+    }
+
+    /**
+     * Convert a String into a {@code byte[]} using the remote charset.
+     *
+     * @param s to convert
+     *
+     * @return a {@code byte[]} in the remote charset
+     */
+    @NonNull
+    private byte[] str2byte(@NonNull final String s) {
+        return s.getBytes(remoteCharset);
+    }
+
+    /**
+     * Convert the {@code byte[]} using the remote charset into a String.
+     *
+     * @param bytes to convert
+     *
+     * @return string
+     */
+    @NonNull
+    private String byte2str(@NonNull final byte[] bytes) {
+        return new String(bytes, 0, bytes.length, remoteCharset);
     }
 
     /**
@@ -162,7 +244,7 @@ public class ChannelSftpImpl
      * @return how many requests may be sent at any one time.
      */
     public int getBulkRequests() {
-        return requestQueue.size();
+        return requestQueue.getMaxSize();
     }
 
     /**
@@ -173,11 +255,7 @@ public class ChannelSftpImpl
      * @param maxRequests how many requests may be outstanding at any one time.
      */
     public void setBulkRequests(final int maxRequests) {
-        if (maxRequests > 0) {
-            requestQueue = new RequestQueue(maxRequests);
-        } else {
-            requestQueue = new RequestQueue(DEFAULT_REQUEST_QUEUE_SIZE);
-        }
+        requestQueue.init(maxRequests);
     }
 
     @Override
@@ -187,7 +265,7 @@ public class ChannelSftpImpl
         final PipedOutputStream pos = new PipedOutputStream();
         setOutputStream(pos);
 
-        mpIn = new MyPipedInputStream(pos, requestQueue.size() * remoteMaxPacketSize);
+        mpIn = new MyPipedInputStream(pos, requestQueue.getMaxSize() * remoteMaxPacketSize);
         setInputStream(mpIn);
 
         // byte      SSH_MSG_CHANNEL_REQUEST
@@ -202,18 +280,15 @@ public class ChannelSftpImpl
                             .putString(ChannelSftp.NAME),
                     true);
 
-        // Protocol Initialization
-        // https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02#section-4
         final Packet initPacket = createFxpPacket(SftpConstants.SSH_FXP_INIT)
                 .putInt(CLIENT_VERSION);
         sendFxpPacket(initPacket);
 
-        // receive SSH_FXP_VERSION
-        final FxpVersionPacket receivedPacket = new FxpVersionPacket(remoteMaxPacketSize);
-        receivedPacket.decode(mpIn);
+        final FxpVersionPacket versionPacket = new FxpVersionPacket(remoteMaxPacketSize);
+        versionPacket.decode(mpIn);
 
-        server_version = receivedPacket.getVersion();
-        extensions = receivedPacket.getExtensions();
+        server_version = versionPacket.getVersion();
+        extensions = versionPacket.getExtensions();
 
         // http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
         extPosixRename = "1".equals(extensions.get(EXT_POSIX_RENAME_OPENSSH_COM));
@@ -221,8 +296,6 @@ public class ChannelSftpImpl
         extStatvfs = "2".equals(extensions.get(EXT_STATVFS_OPENSSH_COM));
         extFstatvfs = "2".equals(extensions.get(EXT_FSTATVFS_OPENSSH_COM));
         extFsync = "1".equals(extensions.get(EXT_FSYNC_OPENSSH_COM));
-
-        lcwd = new File(".").getCanonicalPath();
     }
 
     @Override
@@ -254,13 +327,8 @@ public class ChannelSftpImpl
     @Override
     public void lcd(@NonNull final String path)
             throws SftpException {
-
-        String absPath = absoluteLocalPath(path);
-        if (new File(absPath).isDirectory()) {
-            try {
-                absPath = new File(absPath).getCanonicalPath();
-            } catch (final Exception ignore) {
-            }
+        final Path absPath = lcwd.resolve(path);
+        if (absPath.toFile().isDirectory()) {
             lcwd = absPath;
             return;
         }
@@ -268,9 +336,9 @@ public class ChannelSftpImpl
     }
 
     @Override
-    @Nullable
+    @NonNull
     public String lpwd() {
-        return lcwd;
+        return lcwd.toString();
     }
 
     @Override
@@ -283,10 +351,10 @@ public class ChannelSftpImpl
             final String absPath = resolveRemotePath(path);
 
             sendREALPATH(absPath);
-            final byte[] _cwd = receiveNAME();
-            final String tmpCwd = byte2str(_cwd);
+            final byte[] remoteDir = receiveNAME();
+            final String tmpCwd = byte2str(remoteDir);
 
-            sendSTAT(_cwd);
+            sendSTAT(remoteDir);
             final SftpATTRS attr = receiveATTRS();
 
             if ((attr.getFlags() & SftpATTRS.SSH_FILEXFER_ATTR_PERMISSIONS) == 0) {
@@ -296,7 +364,7 @@ public class ChannelSftpImpl
                 throw new SftpException(SftpConstants.SSH_FX_FAILURE, "Not a directory: " + tmpCwd);
             }
 
-            cwd = tmpCwd;
+            this.cwd = tmpCwd;
 
         } catch (final SftpException e) {
             throw e;
@@ -406,12 +474,12 @@ public class ChannelSftpImpl
                     break;
                 }
                 case 0: {
-                    absNewPath = absoluteRemotePath(newPath);
-                    if (Globber.isPattern(absNewPath)) {
+                    absNewPath = getAbsoluteRemotePath(newPath);
+                    if (isPattern(absNewPath)) {
                         throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                                "Path has wildcards: " + absNewPath);
+                                                ERROR_PATH_HAS_WILDCARDS_s + absNewPath);
                     }
-                    absNewPath = Globber.unquote(absNewPath);
+                    absNewPath = Globber.unescapePath(absNewPath);
                     break;
                 }
                 default:
@@ -434,7 +502,7 @@ public class ChannelSftpImpl
         final List<LsEntry> entries = new ArrayList<>();
         final LsEntry.Selector selector = entry -> {
             entries.add(entry);
-            return LsEntry.Selector.CONTINUE;
+            return true;
         };
 
         ls(path, selector);
@@ -449,33 +517,27 @@ public class ChannelSftpImpl
             //noinspection ConstantConditions
             mpIn.updateReadSide();
 
-            final String absPath = absoluteRemotePath(path);
+            final String absPath = getAbsoluteRemotePath(path);
 
-            final int lastFileSepChar = absPath.lastIndexOf('/');
             // split into directory and last part of the name, with (potentially) a pattern
-            String dir = Globber
-                    .unquote(absPath.substring(0, lastFileSepChar == 0 ? 1 : lastFileSepChar));
-            final String filenamePart = absPath.substring(lastFileSepChar + 1);
+            final int sep = absPath.lastIndexOf('/');
+            String dir = Globber.unescapePath(absPath.substring(0, sep == 0 ? 1 : sep));
+            final String filenamePart = absPath.substring(sep + 1);
 
-            final boolean patternHasWildcards = Globber.isPattern(filenamePart);
-            final byte[] _pattern;
+            final boolean patternHasWildcards = isPattern(filenamePart);
+            final String pattern;
             if (patternHasWildcards) {
-                _pattern = filenamePart.getBytes(StandardCharsets.UTF_8);
+                pattern = filenamePart;
 
             } else {
-                final String uPath = Globber.unquote(absPath);
+                final String uPath = Globber.unescapePath(absPath);
                 sendSTAT(uPath);
                 final SftpATTRS attr = receiveATTRS();
                 if (attr.isDirectory()) {
                     dir = uPath;
-                    _pattern = null;
+                    pattern = null;
                 } else {
-                    // its a file
-                    if (StandardCharsets.UTF_8.equals(fileNameEncoding)) {
-                        _pattern = Globber.unquote(filenamePart.getBytes(StandardCharsets.UTF_8));
-                    } else {
-                        _pattern = str2byte(Globber.unquote(filenamePart));
-                    }
+                    pattern = Globber.unescapePath(filenamePart);
                 }
             }
 
@@ -483,60 +545,44 @@ public class ChannelSftpImpl
             sendOPENDIR(dir);
             final byte[] handle = receiveHANDLE();
 
-            final FxpNamePacket receivedPacket = new FxpNamePacket(remoteMaxPacketSize);
+            final FxpReadDirResponsePacket namePacket =
+                    new FxpReadDirResponsePacket(remoteMaxPacketSize, server_version);
 
-            int action = LsEntry.Selector.CONTINUE;
-            while (action == LsEntry.Selector.CONTINUE) {
-
+            FxpReadDirResponsePacket.LSStruct lsStruct;
+            boolean keepReading = true;
+            while (keepReading) {
                 sendREADDIR(handle);
+                int nrOfEntries = namePacket.readNrOfEntries(mpIn);
+                keepReading = nrOfEntries > 0;
 
-                receivedPacket.decodeHeader(mpIn);
-
-                int nrOfEntries = receivedPacket.getNrOfEntries();
-                if (nrOfEntries <= 0) {
-                    break;
-                }
-
-                while (nrOfEntries > 0 && action == LsEntry.Selector.CONTINUE) {
-                    receivedPacket.fillBuffer(mpIn);
-
-                    // Read one LS entry:
-                    //     string     filename
-                    //     string     longname
-                    //     ATTRS      attrs
-                    final byte[] _filename = receivedPacket.readString();
+                while (nrOfEntries > 0 && keepReading) {
+                    lsStruct = namePacket.readRawEntry(mpIn);
 
                     // filter the files we want based on the pattern
                     final boolean wanted;
-                    if (_pattern == null) {
+
+                    if (pattern == null) {
                         wanted = true;
+
                     } else if (patternHasWildcards) {
-                        wanted = glob(_pattern, _filename);
+                        final String filename = byte2str(lsStruct.filename);
+                        wanted = Globber.globRemotePath(pattern, filename);
+
                     } else {
-                        wanted = Arrays.equals(_pattern, _filename);
+                        final String filename = byte2str(lsStruct.filename);
+                        wanted = pattern.equals(filename);
                     }
 
                     if (wanted) {
-                        final String filename = byte2str(_filename);
-
-                        // Read the remaining fields
-                        final byte[] _longname;
-                        if (server_version <= 3) {
-                            _longname = receivedPacket.readString();
-                        } else {
-                            // This field no longer exists in v4+
-                            _longname = null;
-                        }
-                        final SftpATTRS attrs = receivedPacket.readATTRS();
-
                         final String longname;
-                        if (_longname == null) {
-                            // generate it from the attrs
-                            longname = attrs.getAsString() + " " + filename;
+                        if (lsStruct.longname == null) {
+                            longname = null;
                         } else {
-                            longname = byte2str(_longname);
+                            longname = byte2str(lsStruct.longname);
                         }
-                        action = selector.select(new LsEntryImpl(filename, longname, attrs));
+
+                        keepReading = selector.select(new LsEntryImpl(
+                                byte2str(lsStruct.filename), longname, lsStruct.attr));
                     }
 
                     nrOfEntries--;
@@ -568,17 +614,17 @@ public class ChannelSftpImpl
             mpIn.updateReadSide();
 
             final String absTargetPath = resolveRemotePath(targetPath);
-            final String absLinkPath = absoluteRemotePath(linkPath);
+            final String absLinkPath = getAbsoluteRemotePath(linkPath);
 
-            if (Globber.isPattern(absLinkPath)) {
+            if (isPattern(absLinkPath)) {
                 throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                        "Path has wildcards: " + absLinkPath);
+                                        ERROR_PATH_HAS_WILDCARDS_s + absLinkPath);
             }
 
             if (softLink) {
-                sendSYMLINK(absTargetPath, Globber.unquote(absLinkPath));
+                sendSYMLINK(absTargetPath, Globber.unescapePath(absLinkPath));
             } else {
-                sendHARDLINK(absTargetPath, Globber.unquote(absLinkPath));
+                sendHARDLINK(absTargetPath, Globber.unescapePath(absLinkPath));
             }
             checkStatus();
 
@@ -737,13 +783,7 @@ public class ChannelSftpImpl
         }
     }
 
-    /**
-     * Changes the modification time of one or more remote files.
-     *
-     * @param modificationTime the new modification time, in seconds from the unix epoch.
-     * @param path             a glob pattern of the files to be changed, relative to the
-     *                         <a href="#current-directory">current remote directory</a>.
-     */
+    @Override
     public void setModificationTime(final int modificationTime,
                                     @NonNull final String path)
             throws SftpException {
@@ -789,7 +829,7 @@ public class ChannelSftpImpl
     public String realpath(@NonNull final String path)
             throws SftpException {
         try {
-            sendREALPATH(absoluteRemotePath(path));
+            sendREALPATH(getAbsoluteRemotePath(path));
             return byte2str(receiveNAME());
 
         } catch (final SftpException e) {
@@ -799,11 +839,10 @@ public class ChannelSftpImpl
         }
     }
 
-
     @Override
     @NonNull
     public InputStream get(@NonNull final String srcPath,
-                           @Nullable final SftpProgressMonitor progressListener,
+                           @Nullable final ProgressListener progressListener,
                            final long initialOffset)
             throws SftpException {
         try {
@@ -819,10 +858,11 @@ public class ChannelSftpImpl
             }
 
             if (progressListener != null) {
-                progressListener.init(SftpProgressMonitor.GET, srcFilename, "", srcAttr.getSize());
+                progressListener.init(ChannelSftp.Direction.Get,
+                                      srcFilename, "", srcAttr.getSize());
             }
 
-            sendOPENR(srcFilename);
+            sendOPEN(srcFilename, OPEN_FOR_READ);
             final byte[] handle = receiveHANDLE();
 
             requestQueue.init();
@@ -834,23 +874,25 @@ public class ChannelSftpImpl
                  * The amount of bytes we'll ask the server to send in each request.
                  * (Always try to fill the entire packet)
                  */
-                private final int requestLen = remoteMaxPacketSize - CHANNEL_PACKET_HEADER_LEN;
+                private final int maxRequestLen = remoteMaxPacketSize - CHANNEL_PACKET_HEADER_LEN;
                 /** Temporary buffer for reading a single byte of data. */
-                private final byte[] _bb = new byte[1];
+                private final byte[] singleByte = new byte[1];
 
                 /** the offset in the remote file from where to read the next blob of data. */
                 private long requestOffset = initialOffset;
 
-                private long current_offset = initialOffset;
-
-                private int request_max = 1;
-
                 /** Flag set when close() has been called. */
                 private boolean streamClosed;
 
-                private int rest_length;
-                private byte[] rest_byte = new byte[COPY_BUFFER_SIZE];
+                /** the remaining number of bytes we can/should read from the current packet. */
+                private int remainingData;
 
+                /**
+                 * The buffer used to cache the data read.
+                 * We always try to read as much as possible in one-go.
+                 * The size of this buffer will be adjusted (made bigger) as/when needed.
+                 */
+                private byte[] cacheBuffer = new byte[COPY_BUFFER_SIZE];
 
                 @Override
                 public int read()
@@ -858,26 +900,17 @@ public class ChannelSftpImpl
                     if (streamClosed) {
                         return -1;
                     }
-                    final int i = read(_bb, 0, 1);
+                    final int i = read(singleByte, 0, 1);
                     if (i == -1) {
                         return -1;
                     } else {
-                        return _bb[0] & 0xff;
+                        return singleByte[0] & 0xff;
                     }
                 }
 
                 @Override
-                public int read(@NonNull final byte[] buf)
-                        throws IOException {
-                    if (streamClosed) {
-                        return -1;
-                    }
-                    return read(buf, 0, buf.length);
-                }
-
-                @Override
-                public int read(@NonNull final byte[] buf,
-                                final int offset,
+                public int read(@NonNull final byte[] b,
+                                final int off,
                                 int len)
                         throws IOException {
                     if (streamClosed) {
@@ -889,13 +922,19 @@ public class ChannelSftpImpl
                         return 0;
                     }
 
-                    // read 'len' bytes as required from the cached buffer until exhausted
-                    if (rest_length > 0) {
-                        final int foo = Math.min(rest_length, len);
-                        System.arraycopy(rest_byte, 0, buf, offset, foo);
+                    // Read 'len' bytes as required from the cached buffer until exhausted.
+                    if (remainingData > 0) {
+                        // copy the requested 'len' or the remaining 'rest_len' bytes
+                        // from the cache buffer to the output buffer
+                        final int length = Math.min(remainingData, len);
+                        System.arraycopy(cacheBuffer, 0, b, off, length);
 
-                        if (foo != rest_length) {
-                            System.arraycopy(rest_byte, foo, rest_byte, 0, rest_length - foo);
+                        // If there are more bytes left in the buffer,
+                        if (remainingData - length > 0) {
+                            // move them to the start of the cache buffer
+                            System.arraycopy(cacheBuffer, length,
+                                             cacheBuffer, 0,
+                                             remainingData - length);
                         }
 
                         if (progressListener != null && !progressListener.count(length)) {
@@ -904,42 +943,32 @@ public class ChannelSftpImpl
                             return -1;
                         }
 
-                        rest_length -= foo;
-                        return foo;
+                        remainingData -= length;
+                        return length;
                     }
 
-                    // contact the server to get more data
-                    if (remoteMaxPacketSize - CHANNEL_PACKET_HEADER_LEN < len) {
-                        len = remoteMaxPacketSize - CHANNEL_PACKET_HEADER_LEN;
-                    }
-
-                    if (requestQueue.count() == 0
-                            || true // working around slow transfer speed for
-                        // some sftp servers including Titan FTP.
-                    ) {
-                        // send as many requests in parallel as we can to speed things up
-                        while (requestQueue.count() < request_max) {
-                            try {
-                                sendREAD(handle, requestOffset, requestLen, requestQueue);
-                            } catch (final IOException e) {
-                                throw e;
-                            } catch (final Exception e) {
-                                throw new IOException(e);
-                            }
-                            requestOffset += requestLen;
+                    // The cache was empty, we need to contact the server to get more data.
+                    // Send as many requests in parallel as we can to speed things up
+                    while (requestQueue.hasSpace()) {
+                        try {
+                            sendREAD(handle, requestOffset, maxRequestLen);
+                        } catch (final IOException e) {
+                            throw e;
+                        } catch (final Exception e) {
+                            throw new IOException(e);
                         }
+                        requestOffset += maxRequestLen;
                     }
 
                     // start reading the next packet
                     fxpBuffer.readHeader(mpIn);
-                    rest_length = fxpBuffer.getFxpLength();
+                    remainingData = fxpBuffer.getFxpLength();
 
                     final QueuedRequest queuedRequest;
                     try {
                         queuedRequest = requestQueue.get(fxpBuffer.getRequestId());
                     } catch (final OutOfOrderException e) {
                         requestOffset = e.offset;
-                        // throw away the entire packet
                         //noinspection ResultOfMethodCallIgnored
                         skip(fxpBuffer.getFxpLength());
                         requestQueue.cancel();
@@ -951,28 +980,41 @@ public class ChannelSftpImpl
 
                     // a status packet is a valid response
                     if (fxpBuffer.getFxpType() == SftpConstants.SSH_FXP_STATUS) {
-                        fxpBuffer.readPayload(mpIn);
-                        final int status = fxpBuffer.getInt();
-                        rest_length = 0;
-                        if (status == SftpConstants.SSH_FX_EOF) {
-                            close();
-                            return -1;
+                        try {
+                            fxpBuffer.readPayload(mpIn);
+                            final int status = fxpBuffer.getInt();
+                            if (status == SftpConstants.SSH_FX_EOF) {
+                                close();
+                                return -1;
+
+                            } else {
+                                String message;
+                                try {
+                                    message = fxpBuffer.getJString();
+                                } catch (final IOException e) {
+                                    message = e.getMessage();
+                                }
+                                throw new SftpException(status, message);
+                            }
+                        } catch (final SftpException e) {
+                            throw new IOException(e);
                         }
-                        throw new IOException(createStatusException(fxpBuffer, status));
                     }
 
                     // but if we did not get a status or data packet, we have a problem
                     if (fxpBuffer.getFxpType() != SftpConstants.SSH_FXP_DATA) {
                         final SftpException cause = new SftpException(
                                 SftpConstants.SSH_FX_BAD_MESSAGE,
-                                "invalid type=" + fxpBuffer.getFxpType());
+                                ERROR_INVALID_TYPE_s + fxpBuffer.getFxpType());
                         throw new IOException(cause);
                     }
 
-                    // throwing away the header, read the next field from the input stream
-                    // for the current SSH_FXP_DATA packet which is the payload length.
+                    // Start processing the data packet
+
+                    // Read the next field from the input stream for the current
+                    // SSH_FXP_DATA packet which is the payload length.
                     final int payloadLength = fxpBuffer.readInt(mpIn);
-                    rest_length -= 4;
+                    remainingData -= 4;
 
                     /*
                      Since sftp protocol version 6, "end-of-file" has been defined,
@@ -985,61 +1027,61 @@ public class ChannelSftpImpl
                      but some sftp server will send such a field in the sftp protocol 3,
                      so check if there are more bytes than expected
                      */
-                    final int optional_data = rest_length - payloadLength;
+                    final int optionalDataToSkip = remainingData - payloadLength;
 
-                    current_offset += payloadLength;
+                    // limit the amount of bytes to fetch to the max package size.
+                    len = Math.min(maxRequestLen, len);
+                    // and again limit that to the actual payloadLength
+                    len = Math.min(payloadLength, len);
 
-                    int foo = payloadLength;
-                    if (foo > 0) {
-                        int bytesRead = mpIn.read(buf, offset, Math.min(foo, len));
-                        if (bytesRead < 0) {
-                            // end-of-stream reached
-                            return -1;
+                    // Read as much as we can of the data into the output buffer
+                    int totalBytesRead = mpIn.read(b, off, len);
+                    if (totalBytesRead == -1) {
+                        // end-of-stream reached
+                        return -1;
+                    }
+
+                    remainingData = payloadLength - totalBytesRead;
+
+                    // If there is more data available, read it into the cache buffer.
+                    if (remainingData > 0) {
+                        if (cacheBuffer.length < remainingData) {
+                            cacheBuffer = new byte[remainingData];
                         }
-                        foo -= bytesRead;
-                        rest_length = foo;
 
-                        if (foo > 0) {
-                            if (rest_byte.length < foo) {
-                                rest_byte = new byte[foo];
+                        int bytesToRead = remainingData;
+                        int offset = 0;
+                        int bytesRead;
+                        do {
+                            bytesRead = mpIn.read(cacheBuffer, offset, bytesToRead);
+                            if (bytesRead != -1) {
+                                offset += bytesRead;
+                                bytesToRead -= bytesRead;
+                                totalBytesRead += bytesRead;
                             }
-                            int _s = 0;
-                            int _len = foo;
-                            while (_len > 0) {
-                                bytesRead = mpIn.read(rest_byte, _s, _len);
-                                if (bytesRead <= 0) {
-                                    // end-of-stream reached
-                                    break;
-                                }
-                                _s += bytesRead;
-                                _len -= bytesRead;
-                            }
-                        }
+                        } while (bytesToRead > 0 && bytesRead != -1);
+                    }
 
-                        if (optional_data > 0) {
-                            //noinspection ResultOfMethodCallIgnored
-                            mpIn.skip(optional_data);
-                        }
+                    if (optionalDataToSkip > 0) {
+                        //noinspection ResultOfMethodCallIgnored
+                        mpIn.skip(optionalDataToSkip);
+                    }
 
-                        // Are we expecting more data? If so, request the server for it.
-                        if (payloadLength < queuedRequest.length) {
-                            requestQueue.cancel();
-                            try {
-                                sendREAD(handle,
-                                         queuedRequest.offset + payloadLength,
-                                         (int) (queuedRequest.length - payloadLength),
-                                         requestQueue);
-                            } catch (final IOException e) {
-                                throw e;
-                            } catch (final Exception e) {
-                                throw new IOException(e);
-                            }
-                            requestOffset = queuedRequest.offset + queuedRequest.length;
+                    // Are we expecting even more data? If so, request the server for it.
+                    if (payloadLength < queuedRequest.length) {
+                        requestQueue.cancel();
+                        try {
+                            sendREAD(handle,
+                                     queuedRequest.offset + payloadLength,
+                                     (int) (queuedRequest.length - payloadLength)
+                            );
+                        } catch (final IOException e) {
+                            throw e;
+                        } catch (final Exception e) {
+                            throw new IOException(e);
                         }
-
-                        if (request_max < requestQueue.size()) {
-                            request_max++;
-                        }
+                        requestOffset = queuedRequest.offset + queuedRequest.length;
+                    }
 
                     if (progressListener != null && !progressListener.count(totalBytesRead)) {
                         // we're cancelled
@@ -1047,9 +1089,7 @@ public class ChannelSftpImpl
                         return -1;
                     }
 
-                        return bytesRead;
-                    }
-                    return 0;
+                    return totalBytesRead;
                 }
 
                 @Override
@@ -1085,7 +1125,7 @@ public class ChannelSftpImpl
     @Override
     public void get(@NonNull final String srcPath,
                     @NonNull final String dstPath,
-                    @Nullable final SftpProgressMonitor monitor,
+                    @Nullable final ProgressListener progressListener,
                     @NonNull final Mode mode)
             throws SftpException {
 
@@ -1096,12 +1136,8 @@ public class ChannelSftpImpl
 
             // The destination MUST be a single name (i.e. no wildcards)
             // but MAY be either a file or a directory.
-            String absDstPath = absoluteLocalPath(dstPath);
-            final boolean dstIsDirectory = new File(absDstPath).isDirectory();
-            // make sure a directory has the local file separator at the end
-            if (dstIsDirectory && !absDstPath.endsWith(File.separator)) {
-                absDstPath += File.separator;
-            }
+            final Path absDstPath = lcwd.resolve(dstPath);
+            final boolean dstIsDirectory = absDstPath.toFile().isDirectory();
 
             // expand the remote path. We MUST have at least one file to continue.
             final List<String> srcFilenames = globRemotePath(srcPath);
@@ -1114,9 +1150,8 @@ public class ChannelSftpImpl
             }
 
             // We now have either:
-            // ONE source file, and either a file or dir as destination;
-            // one or more source files, and a DIR as destination.
-
+            // - ONE source file, and either a file or dir as destination;
+            // - one or more source files, and a DIR as destination.
             for (final String absSrcPath : srcFilenames) {
                 sendSTAT(absSrcPath);
                 final SftpATTRS srcAttr = receiveATTRS();
@@ -1125,41 +1160,17 @@ public class ChannelSftpImpl
                                             absSrcPath + ERROR_s_IS_A_DIRECTORY);
                 }
 
-                final String dstFilename;
-                // If the destination is a directory, create a fully qualified
-                // filename by combining remote directory + source (local) filename
                 if (dstIsDirectory) {
-                    // absDstPath already has a File.separator at the end
-                    final StringBuilder sb = new StringBuilder(absDstPath);
-                    // grab the last part of the source path, i.e. the filename
+                    // Combine local directory name + the remote filename
                     final int i = absSrcPath.lastIndexOf('/');
                     if (i == -1) {
-                        sb.append(absSrcPath);
+                        currentDestFile = absDstPath.resolve(absSrcPath).toFile();
                     } else {
-                        sb.append(absSrcPath.substring(i + 1));
-                    }
-
-                    dstFilename = sb.toString();
-
-                    //TODO: this logic is flawed... revise
-                    if (dstFilename.contains("..")) {
-                        final String orig = new File(absDstPath).getCanonicalPath();
-                        final String resolved = new File(dstFilename).getCanonicalPath();
-
-                        if (resolved.length() <= orig.length()
-                                || !resolved.substring(0, orig.length() + 1)
-                                            .equals(orig + File.separator)) {
-                            throw new SftpException(SftpConstants.SSH_FX_FAILURE,
-                                                    "Attempt to write to an unexpected filename: "
-                                                            + dstFilename);
-                        }
+                        currentDestFile = absDstPath.resolve(absSrcPath.substring(i + 1)).toFile();
                     }
                 } else {
-                    // It's already a fully qualified filename
-                    dstFilename = absDstPath;
+                    currentDestFile = absDstPath.toFile();
                 }
-
-                currentDestFile = new File(dstFilename);
 
                 long dstFileSize = 0;
                 if (mode == Mode.Resume) {
@@ -1176,22 +1187,22 @@ public class ChannelSftpImpl
                     }
                 }
 
-                if (monitor != null) {
-                    monitor.init(SftpProgressMonitor.GET, absSrcPath, dstFilename,
-                                 srcAttr.getSize());
+                if (progressListener != null) {
+                    progressListener.init(ChannelSftp.Direction.Get,
+                                          absSrcPath, currentDestFile.getName(),
+                                          srcAttr.getSize());
                     if (mode == Mode.Resume) {
-                        monitor.count(dstFileSize);
+                        progressListener.count(dstFileSize);
                     }
                 }
 
                 try (final OutputStream fos =
                              new FileOutputStream(currentDestFile, mode != Mode.Overwrite)) {
-                    _get(absSrcPath, fos, monitor, mode, dstFileSize);
+                    _get(absSrcPath, fos, progressListener, mode, dstFileSize);
                 }
-                // reset when done (see catch clause below)
+                // reset when done!
                 currentDestFile = null;
             }
-
         } catch (final SftpException e) {
             cleanupZeroByteFiles(currentDestFile);
             throw e;
@@ -1206,7 +1217,7 @@ public class ChannelSftpImpl
     @Override
     public void get(@NonNull final String srcPath,
                     @NonNull final OutputStream dstStream,
-                    @Nullable final SftpProgressMonitor monitor,
+                    @Nullable final ProgressListener progressListener,
                     @NonNull final Mode mode,
                     final long skip)
             throws SftpException {
@@ -1234,15 +1245,16 @@ public class ChannelSftpImpl
                 }
             }
 
-            if (monitor != null) {
-                monitor.init(SftpProgressMonitor.GET, srcFilename, "", srcAttr.getSize());
+            if (progressListener != null) {
+                progressListener.init(ChannelSftp.Direction.Get,
+                                      srcFilename, "", srcAttr.getSize());
 
                 if (mode == Mode.Resume) {
-                    monitor.count(skip);
+                    progressListener.count(skip);
                 }
             }
 
-            _get(srcFilename, dstStream, monitor, mode, skip);
+            _get(srcFilename, dstStream, progressListener, mode, skip);
 
         } catch (final SftpException e) {
             throw e;
@@ -1255,30 +1267,30 @@ public class ChannelSftpImpl
      * Downloads an <strong>absolute path (filename)</strong> to an OutputStream.
      * The path MUST be valid and checked before.
      *
-     * @param srcFilename the fully qualified remote source file name
-     * @param dstStream   the destination output stream.
-     * @param monitor     (optional) progress listener
-     * @param mode        the transfer {@link Mode}
-     * @param skip        only used If the {@code mode} == {@code Mode#Resume} :
-     *                    the position in the remote file where we should start the download
+     * @param srcFilename      the fully qualified remote source file name
+     * @param dstStream        the destination output stream.
+     * @param progressListener (optional) progress listener
+     * @param mode             the transfer {@link Mode}
+     * @param position         only used If the {@code mode} == {@code Mode#Resume} :
+     *                         the position in the remote file where we should start the download
      */
     private void _get(@NonNull final String srcFilename,
                       @NonNull final OutputStream dstStream,
-                      @Nullable final SftpProgressMonitor monitor,
+                      @Nullable final ProgressListener progressListener,
                       @NonNull final Mode mode,
-                      final long skip)
+                      final long position)
             throws SftpException, IOException {
         try {
             // single, fully qualified filename
-            sendOPENR(srcFilename);
+
+            sendOPEN(srcFilename, OPEN_FOR_READ);
             final byte[] handle = receiveHANDLE();
 
             long offset = 0;
             if (mode == Mode.Resume) {
-                offset = skip;
+                offset = position;
             }
 
-            int request_max = 1;
             requestQueue.init();
 
             // the offset in the remote file from where to read the next blob of data.
@@ -1286,7 +1298,7 @@ public class ChannelSftpImpl
 
             // The amount of bytes we'll ask the server to send in each request.
             // (Always try to fill the entire packet)
-            final int requestLen = remoteMaxPacketSize - CHANNEL_PACKET_HEADER_LEN;
+            final int maxRequestLen = remoteMaxPacketSize - CHANNEL_PACKET_HEADER_LEN;
 
             final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
 
@@ -1294,13 +1306,15 @@ public class ChannelSftpImpl
             while (true) {
 
                 // send as many requests in parallel as we can to speed things up
-                while (requestQueue.count() < request_max) {
-                    sendREAD(handle, requestOffset, requestLen, requestQueue);
-                    requestOffset += requestLen;
+                while (requestQueue.hasSpace()) {
+                    sendREAD(handle, requestOffset, maxRequestLen);
+                    requestOffset += maxRequestLen;
                 }
 
                 //noinspection ConstantConditions
                 fxpBuffer.readHeader(mpIn);
+                // the remaining number of bytes we can/should read from the current packet.
+                int remainingData = fxpBuffer.getFxpLength();
 
                 final QueuedRequest queuedRequest;
                 try {
@@ -1318,8 +1332,16 @@ public class ChannelSftpImpl
                     final int status = fxpBuffer.getInt();
                     if (status == SftpConstants.SSH_FX_EOF) {
                         break;
+
+                    } else {
+                        String message;
+                        try {
+                            message = fxpBuffer.getJString();
+                        } catch (final IOException e) {
+                            message = e.getMessage();
+                        }
+                        throw new SftpException(status, message);
                     }
-                    throw createStatusException(fxpBuffer, status);
                 }
 
                 // but if we did not get a status or data packet, we have a problem
@@ -1327,25 +1349,32 @@ public class ChannelSftpImpl
                     break;
                 }
 
-                // the total length of data we can read from the input stream
-                // for the current SSH_FXP_DATA packet
-                int length = fxpBuffer.getFxpLength();
+                // Start processing the data packet
 
-                // throwing away the header, read the next field from the input stream
-                // for the current SSH_FXP_DATA packet which is the payload length.
+                // Read the next field from the input stream for the current
+                // SSH_FXP_DATA packet which is the payload length.
                 final int payloadLength = fxpBuffer.readInt(mpIn);
-                length -= 4;
+                remainingData -= 4;
 
-                // Do we have any extra data ? (i.e. "end-of-file" field, see SSH_FXP_DATA docs).
-                // Not all servers send this.
-                final int optionalDataLen = length - payloadLength;
+                  /*
+                     Since sftp protocol version 6, "end-of-file" has been defined,
+
+                     byte   SSH_FXP_DATA
+                     uint32 request-id
+                     string data
+                     bool   end-of-file [optional]
+
+                     but some sftp server will send such a field in the sftp protocol 3,
+                     so check if there are more bytes than expected
+                     */
+                final int optionalDataLen = remainingData - payloadLength;
 
                 int bytesStillToRead = payloadLength;
                 while (bytesStillToRead > 0) {
                     final int bytesRead = mpIn.read(fxpBuffer.data, 0,
                                                     Math.min(bytesStillToRead,
                                                              fxpBuffer.data.length));
-                    if (bytesRead < 0) {
+                    if (bytesRead == -1) {
                         // end-of-stream reached
                         break loop;
                     }
@@ -1355,7 +1384,7 @@ public class ChannelSftpImpl
                     offset += bytesRead;
                     bytesStillToRead -= bytesRead;
 
-                    if (monitor != null && !monitor.count(bytesRead)) {
+                    if (progressListener != null && !progressListener.count(bytesRead)) {
                         // user (process) cancelled us. Remove all expected remaining data.
                         skip(bytesStillToRead);
                         if (optionalDataLen > 0) {
@@ -1375,19 +1404,15 @@ public class ChannelSftpImpl
                     requestQueue.cancel();
                     sendREAD(handle,
                              queuedRequest.offset + payloadLength,
-                             (int) (queuedRequest.length - payloadLength),
-                             requestQueue);
+                             (int) (queuedRequest.length - payloadLength)
+                    );
                     requestOffset = queuedRequest.offset + queuedRequest.length;
-                }
-
-                if (request_max < requestQueue.size()) {
-                    request_max++;
                 }
             }
             dstStream.flush();
 
-            if (monitor != null) {
-                monitor.end();
+            if (progressListener != null) {
+                progressListener.end();
             }
 
             requestQueue.cancel();
@@ -1402,11 +1427,10 @@ public class ChannelSftpImpl
         }
     }
 
-
     @Override
     @NonNull
     public OutputStream put(@NonNull final String dstPath,
-                            @Nullable final SftpProgressMonitor progressListener,
+                            @Nullable final ProgressListener progressListener,
                             @NonNull final Mode mode,
                             final long offset)
             throws SftpException {
@@ -1442,20 +1466,22 @@ public class ChannelSftpImpl
             }
 
             if (progressListener != null) {
-                progressListener.init(SftpProgressMonitor.PUT, "", dstFilename,
-                                      SftpProgressMonitor.UNKNOWN_SIZE);
+                progressListener.init(ChannelSftp.Direction.Put,
+                                      "", dstFilename, ProgressListener.UNKNOWN_SIZE);
             }
 
             if (mode == Mode.Overwrite) {
-                sendOPENW(dstFilename);
+
+                sendOPEN(dstFilename, OPEN_FOR_WRITE);
             } else {
-                sendOPENA(dstFilename);
+
+                sendOPEN(dstFilename, OPEN_FOR_APPEND);
             }
             final byte[] handle = receiveHANDLE();
 
             return new OutputStream() {
                 /** Temporary buffer for writing a single byte of data. */
-                private final byte[] _bb = new byte[1];
+                private final byte[] singleByte = new byte[1];
                 private boolean streamClosed;
 
                 private boolean initialized;
@@ -1470,8 +1496,8 @@ public class ChannelSftpImpl
                 @Override
                 public void write(final int w)
                         throws IOException {
-                    _bb[0] = (byte) w;
-                    write(_bb, 0, 1);
+                    singleByte[0] = (byte) w;
+                    write(singleByte, 0, 1);
                 }
 
                 /**
@@ -1588,7 +1614,7 @@ public class ChannelSftpImpl
     @Override
     public void put(@NonNull final String srcFilename,
                     @NonNull final String dstPath,
-                    @Nullable final SftpProgressMonitor progressListener,
+                    @Nullable final ProgressListener progressListener,
                     @NonNull final Mode mode)
             throws SftpException {
         try {
@@ -1612,7 +1638,7 @@ public class ChannelSftpImpl
             }
 
             // expand the local path. We MUST have at least one file to continue.
-            final List<String> srcFilenames = globLocalPath(srcFilename);
+            final List<String> srcFilenames = expandLocalPattern(lcwd, srcFilename);
             if (srcFilenames.isEmpty()) {
                 throw new SftpException(SftpConstants.SSH_FX_NO_SUCH_FILE, srcFilename);
             }
@@ -1668,9 +1694,8 @@ public class ChannelSftpImpl
                 }
 
                 if (progressListener != null) {
-                    progressListener.init(SftpProgressMonitor.PUT,
-                                          srcPath, dstFilename,
-                                          new File(srcPath).length());
+                    progressListener.init(ChannelSftp.Direction.Put,
+                                          srcPath, dstFilename, new File(srcPath).length());
                     if (mode == Mode.Resume) {
                         progressListener.count(dstFileSize);
                     }
@@ -1690,7 +1715,7 @@ public class ChannelSftpImpl
     @Override
     public void put(@NonNull final InputStream srcStream,
                     @NonNull final String dstPath,
-                    @Nullable final SftpProgressMonitor progressListener,
+                    @Nullable final ProgressListener progressListener,
                     @NonNull final Mode mode)
             throws SftpException {
         try {
@@ -1715,8 +1740,8 @@ public class ChannelSftpImpl
             }
 
             if (progressListener != null) {
-                progressListener.init(SftpProgressMonitor.PUT, "", dstFilename,
-                                      SftpProgressMonitor.UNKNOWN_SIZE);
+                progressListener.init(ChannelSftp.Direction.Put,
+                                      "", dstFilename, ProgressListener.UNKNOWN_SIZE);
             }
 
             _put(srcStream, dstFilename, progressListener, mode);
@@ -1731,14 +1756,14 @@ public class ChannelSftpImpl
     /**
      * Not for external use.
      *
-     * @param srcStream   the local source we want to upload
-     * @param dstFilename fully qualified remote single filename
-     * @param monitor     (optional) progress listener
-     * @param mode        the transfer {@link Mode}
+     * @param srcStream        the local source we want to upload
+     * @param dstFilename      fully qualified remote single filename
+     * @param progressListener (optional) progress listener
+     * @param mode             the transfer {@link Mode}
      */
     private void _put(@NonNull final InputStream srcStream,
                       @NonNull final String dstFilename,
-                      @Nullable final SftpProgressMonitor monitor,
+                      @Nullable final ProgressListener progressListener,
                       @NonNull final Mode mode)
             throws SftpException {
 
@@ -1748,7 +1773,7 @@ public class ChannelSftpImpl
         }
 
         // we can send multiple packets in parallel.
-        final int bulkRequests = requestQueue.size();
+        final int maxRequests = requestQueue.getMaxSize();
 
         try {
             //noinspection ConstantConditions
@@ -1779,9 +1804,11 @@ public class ChannelSftpImpl
 
             // open the remote file, and get the file handle.
             if (mode == Mode.Overwrite) {
-                sendOPENW(dstFilename);
+
+                sendOPEN(dstFilename, OPEN_FOR_WRITE);
             } else {
-                sendOPENA(dstFilename);
+
+                sendOPEN(dstFilename, OPEN_FOR_APPEND);
             }
             final byte[] handle = receiveHANDLE();
 
@@ -1826,17 +1853,19 @@ public class ChannelSftpImpl
                 int bytesToWrite = totalBytes;
                 while (bytesToWrite > 0) {
                     // First check and process any incoming acknowledgement packets
-                    if (seq - 1 == startSeqId || seq - startSeqId - ackCount >= bulkRequests) {
+                    if (seq - 1 == startSeqId || seq - startSeqId - ackCount >= maxRequests) {
 
-                        while (seq - startSeqId - ackCount >= bulkRequests) {
+                        while (seq - startSeqId - ackCount >= maxRequests) {
                             final int ackId = checkStatus();
                             if (startSeqId > ackId || ackId > seq - 1) {
+
                                 if (session.getLogger().isEnabled(Logger.ERROR)) {
                                     session.getLogger().log(Logger.ERROR, () -> "ack error:"
                                             + " startSeqId=" + startSeqId
                                             + ", seq=" + seq
                                             + ", ackId=" + ackId);
                                 }
+
                                 if (ackId != seq) {
                                     throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
                                                             ERROR_SEQUENCE_MISMATCH);
@@ -1859,7 +1888,7 @@ public class ChannelSftpImpl
 
                 offset += totalBytes;
 
-                if (monitor != null && !monitor.count(totalBytes)) {
+                if (progressListener != null && !progressListener.count(totalBytes)) {
                     break;
                 }
             }
@@ -1870,8 +1899,8 @@ public class ChannelSftpImpl
                 ackCount++;
             }
 
-            if (monitor != null) {
-                monitor.end();
+            if (progressListener != null) {
+                progressListener.end();
             }
 
             sendCLOSE(handle);
@@ -1928,11 +1957,9 @@ public class ChannelSftpImpl
                              @NonNull final SftpATTRS attr)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        final byte[] _path = str2byte(path);
-
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_SETSTAT)
                 .putInt(seq++)
-                .putString(_path);
+                .putString(str2byte(path));
         attr.putInto(packet);
         sendFxpPacket(packet);
     }
@@ -1958,10 +1985,9 @@ public class ChannelSftpImpl
                            @SuppressWarnings("SameParameterValue") @Nullable final SftpATTRS attr)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        final byte[] _path = str2byte(path);
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_MKDIR)
                 .putInt(seq++)
-                .putString(_path);
+                .putString(str2byte(path));
         if (attr != null) {
             attr.putInto(packet);
         } else {
@@ -2043,35 +2069,13 @@ public class ChannelSftpImpl
         sendPacketPath(SftpConstants.SSH_FXP_CLOSE, handle, null);
     }
 
-    private void sendOPENR(@NonNull final String path)
-            throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendOPEN(path, SftpConstants.SSH_FXF_READ);
-    }
-
-    private void sendOPENW(@NonNull final String path)
-            throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendOPEN(path, SftpConstants.SSH_FXF_WRITE | SftpConstants.SSH_FXF_CREAT
-                | SftpConstants.SSH_FXF_TRUNC);
-    }
-
-    private void sendOPENA(@NonNull final String path)
-            throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendOPEN(path,
-                 SftpConstants.SSH_FXF_WRITE | SftpConstants.SSH_FXF_CREAT /* | SSH_FXF_APPEND */);
-    }
-
     private void sendOPEN(@NonNull final String path,
                           final int mode)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        final byte[] _path = str2byte(path);
-
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_OPEN)
                 .putInt(seq++)
-                .putString(_path)
+                .putString(str2byte(path))
                 .putInt(mode)
                 // no attrs
                 .putInt(0);
@@ -2144,7 +2148,7 @@ public class ChannelSftpImpl
 
         // Create on first use, re-use otherwise; the logic flow relies on that.
         if (uploadPacket == null) {
-            uploadPacket = new Packet(localMaxPacketSize);
+            uploadPacket = new Packet(remoteMaxPacketSize);
         }
 
         // Always write a clean header (remember, we re-use this packet!)
@@ -2161,7 +2165,7 @@ public class ChannelSftpImpl
         final int dataOffset = WRITE_PACKET_HEADER_LEN + handle.length;
         // the amount of file data we can upload in this packet
         final int dataLength = Math.min(length,
-                                        localMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN));
+                                        remoteMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN));
 
         // optimization to avoid copying the array if possible
         // See #_put
@@ -2183,24 +2187,21 @@ public class ChannelSftpImpl
      * @param offset the offset (in bytes) relative to the beginning of the file
      *               from where to start reading
      * @param length the maximum number of bytes to read
-     * @param rrq    (optional) RequestQueue to use (used for sending parallel requests)
      */
     private void sendREAD(@NonNull final byte[] handle,
                           final long offset,
-                          final int length,
-                          @Nullable final RequestQueue rrq)
+                          final int length)
             throws IOException, GeneralSecurityException, SshChannelException {
 
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_READ)
-                .putInt(seq++)
+                .putInt(seq)
                 .putString(handle)
                 .putLong(offset)
                 .putInt(length);
         sendFxpPacket(packet);
 
-        if (rrq != null) {
-            rrq.add(seq - 1, offset, length);
-        }
+        requestQueue.add(seq, offset, length);
+        seq++;
     }
 
     /**
@@ -2239,7 +2240,7 @@ public class ChannelSftpImpl
      * @param fxpType SSH_SFX_* command byte
      */
     private Packet createFxpPacket(final byte fxpType) {
-        return new Packet(localMaxPacketSize)
+        return new Packet(remoteMaxPacketSize)
                 // byte      SSH_MSG_CHANNEL_DATA
                 // uint32    recipient channel
                 // string    data
@@ -2357,20 +2358,66 @@ public class ChannelSftpImpl
         return new SftpException(status, message);
     }
 
-
     private void skip(long n)
             throws IOException {
         while (n > 0) {
             //noinspection ConstantConditions
             final long bytesSkipped = mpIn.skip(n);
-            if (bytesSkipped <= 0) {
+            if (bytesSkipped > 0) {
+                n -= bytesSkipped;
+            } else {
                 // eof, we're done
-                break;
+                n = 0;
             }
-            n -= bytesSkipped;
         }
     }
 
+    /**
+     * Check if the given path has <strong>un-escaped</strong> wildcards.
+     *
+     * @param path to check
+     *
+     * @return {@code true} if this path represents a pattern
+     */
+    private boolean isPattern(@NonNull final String path) {
+        final byte[] pathBytes = path.getBytes(StandardCharsets.UTF_8);
+
+        final int length = pathBytes.length;
+        int i = 0;
+        while (i < length) {
+            if (pathBytes[i] == '*' || pathBytes[i] == '?') {
+                return true;
+            }
+            if (pathBytes[i] == '\\' && i + 1 < length) {
+                // skip the next char, it's escaped
+                i++;
+            }
+            i++;
+        }
+        return false;
+    }
+
+    /**
+     * If the given remote path is not already an absolute path,
+     * make it one by prefixing it with the <em>current remote directory</em>.
+     *
+     * @param path to make absolute
+     *
+     * @return absolute path
+     */
+    @NonNull
+    private String getAbsoluteRemotePath(@NonNull final String path)
+            throws SftpException {
+        if (path.startsWith("/")) {
+            return path;
+        }
+
+        final String tmpCwd = pwd();
+        if (tmpCwd.endsWith("/")) {
+            return tmpCwd + path;
+        }
+        return tmpCwd + '/' + path;
+    }
 
     /**
      * Resolve the given path to a fully qualified remote single file or directory name.
@@ -2386,53 +2433,10 @@ public class ChannelSftpImpl
             throws IOException, GeneralSecurityException, SshChannelException {
 
         final List<String> list = globRemotePath(path);
-        if (list.size() != 1) {
-            throw new SftpException(SftpConstants.SSH_FX_FAILURE, path + " is not unique: " + list);
+        if (list.size() == 1) {
+            return list.get(0);
         }
-        return list.get(0);
-    }
-
-    /**
-     * If the given remote path is not already an absolute path,
-     * make it one by prefixing it with the
-     * <a href="#current-directory">current remote directory</a>.
-     *
-     * @param path to make absolute
-     *
-     * @return absolute path
-     */
-    @NonNull
-    private String absoluteRemotePath(@NonNull final String path)
-            throws SftpException {
-        if (!path.isEmpty() && path.charAt(0) == '/') {
-            return path;
-        }
-
-        final String dir = pwd();
-        if (dir.endsWith("/")) {
-            return dir + path;
-        }
-        return dir + "/" + path;
-    }
-
-    /**
-     * If the given local path is not already an absolute path,
-     * make it one by prefixing it with the
-     * <a href="#current-directory">current local directory</a>.
-     *
-     * @param path to make absolute
-     *
-     * @return absolute path of which the file part MAY contain wildcards
-     */
-    @NonNull
-    private String absoluteLocalPath(@NonNull final String path) {
-        if (!path.isEmpty() && new File(path).isAbsolute()) {
-            return path;
-        }
-        if (lcwd.endsWith(File.separator)) {
-            return lcwd + path;
-        }
-        return lcwd + File.separator + path;
+        throw new SftpException(SftpConstants.SSH_FX_FAILURE, path + " is not unique: " + list);
     }
 
     /**
@@ -2446,49 +2450,45 @@ public class ChannelSftpImpl
     private List<String> globRemotePath(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        final String absPath = absoluteRemotePath(path);
+        final String absPath = getAbsoluteRemotePath(path);
 
         // split into directory and last part of the name, with (potentially) a pattern
-        final int lastFileSepChar = absPath.lastIndexOf('/');
-        final String dir = Globber.unquote(
-                absPath.substring(0, lastFileSepChar == 0 ? 1 : lastFileSepChar));
-        final String filenamePart = absPath.substring(lastFileSepChar + 1);
+        final int sep = absPath.lastIndexOf('/');
+        final String dir = Globber.unescapePath(absPath.substring(0, sep == 0 ? 1 : sep));
+        final String filenamePart = absPath.substring(sep + 1);
 
         // if we don't have a pattern, just return the reconstructed/unquoted path
-        if (!Globber.isPattern(filenamePart)) {
+        if (!isPattern(filenamePart)) {
             final List<String> list = new ArrayList<>();
-            list.add((dir + "/") + Globber.unquote(filenamePart));
+            list.add(dir + "/" + Globber.unescapePath(filenamePart));
             return list;
         }
 
-        // We have a pattern
-        final byte[] _pattern = filenamePart.getBytes(StandardCharsets.UTF_8);
+        // filenamePart is a pattern
 
         // Ask the server to send us the dir listing. ('dir' must NOT have a trailing slash)
         sendOPENDIR(dir);
         final byte[] handle = receiveHANDLE();
 
-        final List<String> list = new ArrayList<>();
+        final List<String> results = new ArrayList<>();
 
-        final FxpNamePacket fxpBuffer = new FxpNamePacket(remoteMaxPacketSize);
-        while (true) {
+        final FxpReadDirResponsePacket namePacket =
+                new FxpReadDirResponsePacket(remoteMaxPacketSize, server_version);
+
+        FxpReadDirResponsePacket.LSStruct tmpLsStruct;
+        boolean keepReading = true;
+        while (keepReading) {
             sendREADDIR(handle);
-
             //noinspection ConstantConditions
-            fxpBuffer.decodeHeader(mpIn);
-
-            int nrOfEntries = fxpBuffer.getNrOfEntries();
-            if (nrOfEntries <= 0) {
-                break;
-            }
+            int nrOfEntries = namePacket.readNrOfEntries(mpIn);
+            keepReading = nrOfEntries > 0;
 
             while (nrOfEntries > 0) {
-                fxpBuffer.fillBuffer(mpIn);
+                tmpLsStruct = namePacket.readRawEntry(mpIn);
 
-                final byte[] _filename = fxpBuffer.readString();
-
-                if (glob(_pattern, _filename)) {
-                    list.add((dir + "/") + byte2str(_filename));
+                final String filename = byte2str(tmpLsStruct.filename);
+                if (Globber.globRemotePath(filenamePart, filename)) {
+                    results.add((dir + "/") + filename);
                 }
                 nrOfEntries--;
             }
@@ -2496,45 +2496,29 @@ public class ChannelSftpImpl
 
         sendCLOSE(handle);
         checkStatus();
-        return list;
-    }
-
-    /**
-     * Expand the pattern (if any) in the given path.
-     *
-     * @param path to expand
-     *
-     * @return expanded path(s)
-     */
-    @NonNull
-    private List<String> globLocalPath(@NonNull final String path) {
-        return Globber.globAbsoluteLocalPath(absoluteLocalPath(path));
-    }
-
-    private boolean glob(@NonNull final byte[] pattern,
-                         @NonNull final byte[] filename) {
-        if (StandardCharsets.UTF_8.equals(fileNameEncoding)) {
-            return Globber.glob(pattern, filename);
-        } else {
-            return Globber.glob(pattern, byte2str(filename).getBytes(StandardCharsets.UTF_8));
-        }
-    }
-
-    @NonNull
-    private byte[] str2byte(@NonNull final String str) {
-        return str.getBytes(fileNameEncoding);
-    }
-
-    @NonNull
-    private String byte2str(@NonNull final byte[] bytes) {
-        return new String(bytes, 0, bytes.length, fileNameEncoding);
+        return results;
     }
 
     private static class QueuedRequest {
+        final int id;
+        final long offset;
+        final long length;
 
-        int id;
-        long offset;
-        long length;
+        /**
+         * Constructor.
+         *
+         * @param id     Package sequence id
+         * @param offset the offset (in bytes) relative to the beginning of the file
+         *               from where the packet is requesting to start reading
+         * @param length the maximum number of bytes to read overall
+         */
+        QueuedRequest(final int id,
+                      final long offset,
+                      final long length) {
+            this.id = id;
+            this.offset = offset;
+            this.length = length;
+        }
     }
 
     private static class OutOfOrderException
@@ -2550,106 +2534,86 @@ public class ChannelSftpImpl
 
     private class RequestQueue {
 
-        final QueuedRequest[] requestBuffer;
-        int head;
-        int count;
+        private static final int DEFAULT_SIZE = 16;
+        private final List<QueuedRequest> requestBuffer = new LinkedList<>();
+        private int maxSize = DEFAULT_SIZE;
 
-        RequestQueue(final int size) {
-            requestBuffer = new QueuedRequest[size];
-            for (int i = 0; i < requestBuffer.length; i++) {
-                requestBuffer[i] = new QueuedRequest();
-            }
+        RequestQueue() {
         }
 
         void init() {
-            head = 0;
-            count = 0;
+            requestBuffer.clear();
         }
 
-        int count() {
-            return count;
+        void init(final int maxSize) {
+            if (maxSize > 0) {
+                this.maxSize = maxSize;
+            } else {
+                this.maxSize = DEFAULT_SIZE;
+            }
+            requestBuffer.clear();
         }
 
-        int size() {
-            return requestBuffer.length;
+
+        boolean hasSpace() {
+            return requestBuffer.size() < maxSize;
+        }
+
+        int getMaxSize() {
+            return maxSize;
         }
 
         void add(final int id,
                  final long offset,
                  final int length) {
-            if (count == 0) {
-                head = 0;
-            }
-
-            int tail = head + count;
-            if (tail >= requestBuffer.length) {
-                tail -= requestBuffer.length;
-            }
-
-            requestBuffer[tail].id = id;
-            requestBuffer[tail].offset = offset;
-            requestBuffer[tail].length = length;
-
-            count++;
+            requestBuffer.add(new QueuedRequest(id, offset, length));
         }
 
         @NonNull
         QueuedRequest get(final int id)
                 throws OutOfOrderException, SftpException {
-            count--;
 
-            final int i = head;
+            final QueuedRequest current = requestBuffer.get(0);
+            if (current.id == id) {
+                requestBuffer.remove(0);
+                return current;
 
-            head++;
-            if (head == requestBuffer.length) {
-                head = 0;
-            }
+            } else {
+                final Optional<QueuedRequest> req = requestBuffer
+                        .stream().filter(p -> p.id == id).findFirst();
+                if (req.isPresent()) {
+                    // We found the packet id we were actually looking for,
+                    // but not in the order we expected.
+                    // Calculate the offset from where we should/could continue
+                    // the download if another attempt is done.
+                    final long offset = requestBuffer
+                            .stream()
+                            .mapToLong(request -> request.offset)
+                            .min()
+                            .orElse(Long.MAX_VALUE);
+                    throw new OutOfOrderException(offset);
 
-            if (requestBuffer[i].id != id) {
-                final long offset = getOffset();
-                for (final QueuedRequest request : requestBuffer) {
-                    if (request.id == id) {
-                        request.id = 0;
-                        throw new OutOfOrderException(offset);
-                    }
-                }
-                throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
-                                        "RequestQueue: unknown request id " + id);
-            }
-            requestBuffer[i].id = 0;
-            return requestBuffer[i];
-        }
-
-        private long getOffset() {
-            long result = Long.MAX_VALUE;
-
-            for (final QueuedRequest request : requestBuffer) {
-                if (request.id != 0) {
-                    if (result > request.offset) {
-                        result = request.offset;
-                    }
+                } else {
+                    throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
+                                            "RequestQueue: unknown request id " + id);
                 }
             }
-            return result;
         }
 
         void cancel()
                 throws IOException {
-            final int _count = count;
-            // Remove outstanding data from the input stream
-            final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
-            for (int i = 0; i < _count; i++) {
-                //noinspection ConstantConditions
-                fxpBuffer.readHeader(mpIn);
-                for (final QueuedRequest request : requestBuffer) {
-                    if (request.id == fxpBuffer.getRequestId()) {
-                        request.id = 0;
-                        break;
-                    }
+            final int count = requestBuffer.size();
+            if (count > 0) {
+                // Remove all outstanding data from the input stream
+                final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
+                for (int i = 0; i < count; i++) {
+                    //noinspection ConstantConditions
+                    fxpBuffer.readHeader(mpIn);
+                    skip(fxpBuffer.getFxpLength());
                 }
-                skip(fxpBuffer.getFxpLength());
+                // and clear the queue
+                init();
             }
-            init();
         }
     }
 }
