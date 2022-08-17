@@ -13,13 +13,13 @@ class LsEntryImpl
 
     @NonNull
     private final String filename;
-    @NonNull
-    private final String longname;
+    @Nullable
+    private String longname;
     @NonNull
     private final SftpATTRS attrs;
 
     LsEntryImpl(@NonNull final String filename,
-                @NonNull final String longname,
+                @Nullable final String longname,
                 @NonNull final SftpATTRS attrs) {
         this.filename = filename;
         this.longname = longname;
@@ -35,6 +35,10 @@ class LsEntryImpl
     @Override
     @NonNull
     public String getLongname() {
+        if (longname == null) {
+            // generate it from the attrs
+            longname = attrs.getAsString() + " " + filename;
+        }
         return longname;
     }
 
@@ -53,7 +57,7 @@ class LsEntryImpl
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(@Nullable final Object o) {
         if (this == o) {
             return true;
         }
@@ -61,8 +65,8 @@ class LsEntryImpl
             return false;
         }
         final ChannelSftp.LsEntry that = (ChannelSftp.LsEntry) o;
+        // longname is ignored
         return filename.equals(that.getFilename())
-                && longname.equals(that.getLongname())
                 && attrs.equals(that.getAttrs());
     }
 
@@ -72,6 +76,7 @@ class LsEntryImpl
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "LsEntryImpl{"
                 + "filename='" + filename + '\''
