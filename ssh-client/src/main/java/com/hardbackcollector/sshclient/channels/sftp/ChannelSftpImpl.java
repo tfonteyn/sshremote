@@ -1744,7 +1744,7 @@ public class ChannelSftpImpl
 
         // Create on first use, re-use otherwise; the logic flow relies on that.
         if (uploadPacket == null) {
-            uploadPacket = new Packet(localMaxPacketSize);
+            uploadPacket = new Packet(remoteMaxPacketSize);
         }
 
         // we can send multiple packets in parallel.
@@ -1788,7 +1788,7 @@ public class ChannelSftpImpl
             // offset where the next set of file data will be written to the packet buffer
             final int dataOffset = WRITE_PACKET_HEADER_LEN + handle.length;
             // the amount of file data we can upload in this packet
-            int dataLength = localMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN);
+            int dataLength = remoteMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN);
 
             final int startSeqId = seq;
             int ackCount = 0;
@@ -1853,7 +1853,7 @@ public class ChannelSftpImpl
                     // See #sendWRITE
                     if (!Arrays.equals(data, uploadPacket.data)) {
                         data = uploadPacket.data;
-                        dataLength = localMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN);
+                        dataLength = remoteMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN);
                     }
                 }
 
