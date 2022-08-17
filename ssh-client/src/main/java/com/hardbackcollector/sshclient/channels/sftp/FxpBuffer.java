@@ -72,11 +72,7 @@ class FxpBuffer
 
     /**
      * Read 4 bytes from the input into the data buffer,
-     * <strong>starting at position ZERO</strong>,
-     * and return them as an int.
-     * <p>
-     * For code-clarity this method should only be called from a subclass.
-     * e.g. {@link FxpDataPacketBuffer}, {@link FxpReadDirResponsePacket}.
+     * <strong>starting at position ZERO</strong>, and return them as an int.
      *
      * @param inputStream to read from
      *
