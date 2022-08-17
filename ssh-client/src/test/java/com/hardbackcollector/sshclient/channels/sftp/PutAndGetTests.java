@@ -1,7 +1,10 @@
-package com.hardbackcollector.sshclient;
+package com.hardbackcollector.sshclient.channels.sftp;
 
 import androidx.annotation.NonNull;
 
+import com.hardbackcollector.sshclient.ChannelSftp;
+import com.hardbackcollector.sshclient.DbgProgressListener;
+import com.hardbackcollector.sshclient.Session;
 import com.hardbackcollector.sshclient.connections.BaseConnectionTest;
 import com.hardbackcollector.sshclient.utils.SshException;
 
@@ -17,7 +20,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
-class ChannelSftpTest
+class PutAndGetTests
         extends BaseConnectionTest {
 
     private static final int ZIP = 1;
@@ -50,8 +53,8 @@ class ChannelSftpTest
     //	at java.base/java.io.BufferedReader.fill(BufferedReader.java:162)
     //	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:329)
     //	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:396)
-    //	at com.hardbackcollector.sshclient.ChannelSftpTest.sftp_get_is_offset(ChannelSftpTest.java:59)
-    //	at com.hardbackcollector.sshclient.ChannelSftpTest.sftp_get_is(ChannelSftpTest.java:35)
+    //	at com.hardbackcollector.sshclient.PutAndGetTests.sftp_get_is_offset(PutAndGetTests.java:59)
+    //	at com.hardbackcollector.sshclient.PutAndGetTests.sftp_get_is(PutAndGetTests.java:35)
     @Test
     void sftp_get_is()
             throws SshException, GeneralSecurityException, IOException {
@@ -75,7 +78,7 @@ class ChannelSftpTest
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
-        try (InputStream is = channel.get(filename, new DbgSftpProgressMonitor(session), offset);
+        try (InputStream is = channel.get(filename, new DbgProgressListener(session), offset);
              Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(reader, 50000)) {
             String line;
@@ -97,8 +100,7 @@ class ChannelSftpTest
 
         ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
-
-        channel.get("/boot/kernel.img", "C:\\tmp\\ssh");
+        channel.get("/boot/kernel.img", "C:\\tmp\\ssh", new DbgProgressListener(session));
 
         session.disconnect();
 
@@ -110,7 +112,7 @@ class ChannelSftpTest
         channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
-        channel.put("C:/tmp/ssh/kernel.img", "k1");
+        channel.put("C:/tmp/ssh/kernel.img", "k1", new DbgProgressListener(session));
 
         session.disconnect();
     }
@@ -126,7 +128,8 @@ class ChannelSftpTest
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
-        channel.get(".bashrc", "C:\\tmp\\ssh\\" + "f" + RANDOM.nextInt());
+        channel.get(".bashrc", "C:\\tmp\\ssh\\" + "f" + RANDOM.nextInt(),
+                    new DbgProgressListener(session));
 
         session.disconnect();
     }
@@ -144,56 +147,11 @@ class ChannelSftpTest
 
         try (FileOutputStream fw = new FileOutputStream("C:\\tmp\\ssh\\"
                 + "f" + RANDOM.nextInt())) {
-            channel.get(".bashrc", fw);
+            channel.get(".bashrc", fw, new DbgProgressListener(session));
         }
 
         session.disconnect();
     }
 
 
-    @Test
-    void sftp_cd()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.connect();
-
-        final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
-        channel.connect();
-
-        System.out.println("Server version=" + channel.getServerVersion());
-
-        System.out.println("pwd=" + channel.pwd());
-
-        channel.cd("log");
-
-        System.out.println("pwd=" + channel.pwd());
-
-        channel.cd("..");
-
-        session.disconnect();
-    }
-
-    @Test
-    void sftp_ls()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.connect();
-
-        final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
-        channel.connect();
-
-        channel.ls("").forEach(lsEntry -> System.out.println(
-                ": {name='" + lsEntry.getFilename() + "',long='" + lsEntry.getLongname()
-                        + "'}"));
-
-        channel.ls("/").forEach(lsEntry -> System.out.println(
-                "root: {name='" + lsEntry.getFilename() + "',long='" + lsEntry.getLongname()
-                        + "'}"));
-
-        session.disconnect();
-    }
 }
