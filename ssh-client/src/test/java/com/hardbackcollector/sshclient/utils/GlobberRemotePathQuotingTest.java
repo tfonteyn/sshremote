@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-class GlobberTest {
+class GlobberRemotePathQuotingTest {
 
-    private static final Map<String, String> m = Map.of(
+    private static final Map<String, String> PAIRS = Map.of(
             "", "",
 
             "test*/by? some* and another ? char",
@@ -26,17 +26,17 @@ class GlobberTest {
 
     /**
      * The original byte[] based algorithms from jsch.
-     * Any changes to the {@link Globber} String based algorithms should be tested against these.
+     * Any changes to the String based algorithms should be tested against these.
      */
     @NonNull
     private static String unquote_with_bytes(@NonNull final String path) {
-        final byte[] _path = path.getBytes(StandardCharsets.UTF_8);
-        final byte[] _uPath = unquote_with_bytes(_path);
+        final byte[] pathBytes = path.getBytes(StandardCharsets.UTF_8);
+        final byte[] uPath = unquote_with_bytes(pathBytes);
 
-        if (_path.length == _uPath.length) {
+        if (pathBytes.length == uPath.length) {
             return path;
         }
-        return new String(_uPath, 0, _uPath.length, StandardCharsets.UTF_8);
+        return new String(uPath, 0, uPath.length, StandardCharsets.UTF_8);
     }
 
     @NonNull
@@ -65,9 +65,9 @@ class GlobberTest {
 
     @NonNull
     private static String quote_with_bytes(@NonNull final String path) {
-        final byte[] _path = path.getBytes(StandardCharsets.UTF_8);
+        final byte[] pathBytes = path.getBytes(StandardCharsets.UTF_8);
         int count = 0;
-        for (final byte b : _path) {
+        for (final byte b : pathBytes) {
             if (b == '\\' || b == '?' || b == '*') {
                 count++;
             }
@@ -75,26 +75,26 @@ class GlobberTest {
         if (count == 0) {
             return path;
         }
-        final byte[] _path2 = new byte[_path.length + count];
-        for (int i = 0, j = 0; i < _path.length; i++) {
-            final byte b = _path[i];
+        final byte[] pathBytes2 = new byte[pathBytes.length + count];
+        for (int i = 0, j = 0; i < pathBytes.length; i++) {
+            final byte b = pathBytes[i];
             if (b == '\\' || b == '?' || b == '*') {
-                _path2[j++] = '\\';
+                pathBytes2[j++] = '\\';
             }
-            _path2[j++] = b;
+            pathBytes2[j++] = b;
         }
-        return new String(_path2, 0, _path2.length, StandardCharsets.UTF_8);
+        return new String(pathBytes2, 0, pathBytes2.length, StandardCharsets.UTF_8);
     }
 
     @Test
     void quoting() {
-        m.forEach((in, out) -> {
-            final String quoted = Globber.quote(in);
+        PAIRS.forEach((in, out) -> {
+            final String quoted = Globber.escapePath(in);
             final String quoted_wb = quote_with_bytes(in);
             assertEquals(quoted, quoted_wb, "in: <" + in + ">\n" +
                     "string: <" + quoted + ">\nbytes: <" + quoted_wb + ">\n");
 
-            final String unquoted = Globber.unquote(quoted);
+            final String unquoted = Globber.unescapePath(quoted);
             final String unquoted_wb = unquote_with_bytes(quoted_wb);
             assertEquals(unquoted, unquoted_wb, "in: <" + in + ">\n" +
                     "string: <" + unquoted + ">\nbytes: <" + unquoted_wb + ">\n");
