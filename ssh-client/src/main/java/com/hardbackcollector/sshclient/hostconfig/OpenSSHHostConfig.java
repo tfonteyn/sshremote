@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import com.hardbackcollector.sshclient.kex.KexProposal;
 import com.hardbackcollector.sshclient.utils.Globber;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,8 +75,6 @@ final class OpenSSHHostConfig
 
         // sanity check to see if there are actual entries beside the globals
         if (repo.keySet().size() > 1) {
-            final byte[] _hostOrAlias = hostOrAlias.getBytes(StandardCharsets.UTF_8);
-
             repo.forEach((hostKey, hostOptions) -> {
                 // skip globals for now
                 if (!hostKey.isBlank()) {
@@ -88,18 +85,14 @@ final class OpenSSHHostConfig
                               // Patterns within pattern-lists may be negated by preceding
                               // them with an exclamation mark (‘!’)
                               if (hostnamePattern.startsWith("!")) {
-                                  if (!Globber.glob(hostnamePattern
-                                                            .substring(1).strip()
-                                                            .getBytes(StandardCharsets.UTF_8),
-                                                    _hostOrAlias)) {
-                                      this.config.add(hostOptions);
-                                  } else {
+                                  if (Globber.globLocalPath(hostnamePattern.substring(1).strip(),
+                                                            hostOrAlias)) {
                                       this.config.remove(hostOptions);
+                                  } else {
+                                      this.config.add(hostOptions);
                                   }
                               } else {
-                                  if (Globber.glob(hostnamePattern
-                                                           .getBytes(StandardCharsets.UTF_8),
-                                                   _hostOrAlias)) {
+                                  if (Globber.globLocalPath(hostnamePattern, hostOrAlias)) {
                                       this.config.add(hostOptions);
                                   }
                               }
