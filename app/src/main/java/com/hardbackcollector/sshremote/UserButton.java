@@ -19,6 +19,7 @@ import com.hardbackcollector.sshremote.ssh.SshHelper;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Objects;
 
 class UserButton {
 
@@ -37,11 +38,7 @@ class UserButton {
                final int position) {
 
         final Config config = db.getConfigDao().findByPosition(position);
-        if (config == null) {
-            mConfig = new Config(position);
-        } else {
-            mConfig = config;
-        }
+        mConfig = Objects.requireNonNullElseGet(config, () -> new Config(position));
 
         if (mConfig.hostId != 0) {
             mHost = db.getHostDao().findById(mConfig.hostId);
