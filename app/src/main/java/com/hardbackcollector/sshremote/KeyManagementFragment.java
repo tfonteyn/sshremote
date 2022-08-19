@@ -14,7 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 public class KeyManagementFragment
-        extends Fragment {
+        extends BaseFragment {
 
     private static final String MIME_TYPES = "*/*";
 
@@ -45,7 +45,7 @@ public class KeyManagementFragment
      */
     private final ActivityResultLauncher<String> mCreateDocumentLauncher =
             registerForActivityResult(new ActivityResultContracts.CreateDocument(),
-                    this::exportToUri);
+                                      this::exportToUri);
     private NavController mNavController;
     private HostKeyAdapter mAdapter;
     /**
@@ -54,12 +54,6 @@ public class KeyManagementFragment
     private final ActivityResultLauncher<String> mOpenUriLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), this::onOpenUri);
     private ItemTouchHelper mItemTouchHelper;
-
-    @Override
-    public void onCreate(@Nullable final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
     @Nullable
     @Override
@@ -92,43 +86,8 @@ public class KeyManagementFragment
         sitHelperCallback.setItemViewSwipeEnabled(true);
         mItemTouchHelper = new ItemTouchHelper(sitHelperCallback);
         mItemTouchHelper.attachToRecyclerView(mVb.keyList);
-    }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu,
-                                    @NonNull final MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_key_management, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        final int itemId = item.getItemId();
-
-        if (itemId == R.id.MENU_SAVE) {
-            try {
-                //noinspection ConstantConditions
-                mVm.save(getContext());
-                mNavController.popBackStack();
-            } catch (final IOException e) {
-                Snackbar.make(mVb.getRoot(), R.string.error_save_failed, Snackbar.LENGTH_LONG)
-                        .show();
-            }
-            return true;
-
-        } else if (itemId == R.id.MENU_IMPORT) {
-            mVm.setImportIsAppend(false);
-            mOpenUriLauncher.launch(MIME_TYPES);
-            return true;
-
-        } else if (itemId == R.id.MENU_IMPORT_APPEND) {
-            mVm.setImportIsAppend(true);
-            mOpenUriLauncher.launch(MIME_TYPES);
-            return true;
-
-        } else if (itemId == R.id.MENU_EXPORT) {
-            mCreateDocumentLauncher.launch(SshHelper.KNOWN_HOSTS);
-        }
-        return false;
+        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
     }
 
     private void onOpenUri(@Nullable final Uri uri) {
@@ -206,6 +165,46 @@ public class KeyManagementFragment
         public void onItemSwiped(final int position) {
             mVm.getHostList().remove(position);
             notifyItemRemoved(position);
+        }
+    }
+
+    private class ToolbarMenuProvider implements MenuProvider {
+
+        @Override
+        public void onCreateMenu(@NonNull final Menu menu,
+                                 @NonNull final MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.menu_key_management, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull final MenuItem menuItem) {
+            final int itemId = menuItem.getItemId();
+
+            if (itemId == R.id.MENU_SAVE) {
+                try {
+                    //noinspection ConstantConditions
+                    mVm.save(getContext());
+                    mNavController.popBackStack();
+                } catch (final IOException e) {
+                    Snackbar.make(mVb.getRoot(), R.string.error_save_failed, Snackbar.LENGTH_LONG)
+                            .show();
+                }
+                return true;
+
+            } else if (itemId == R.id.MENU_IMPORT) {
+                mVm.setImportIsAppend(false);
+                mOpenUriLauncher.launch(MIME_TYPES);
+                return true;
+
+            } else if (itemId == R.id.MENU_IMPORT_APPEND) {
+                mVm.setImportIsAppend(true);
+                mOpenUriLauncher.launch(MIME_TYPES);
+                return true;
+
+            } else if (itemId == R.id.MENU_EXPORT) {
+                mCreateDocumentLauncher.launch(SshHelper.KNOWN_HOSTS);
+            }
+            return false;
         }
     }
 }

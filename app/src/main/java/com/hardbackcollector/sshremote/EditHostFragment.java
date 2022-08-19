@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -21,19 +21,13 @@ import com.hardbackcollector.sshremote.db.Host;
 import com.hardbackcollector.sshremote.widgets.ExtTextWatcher;
 
 public class EditHostFragment
-        extends Fragment {
+        extends BaseFragment {
 
     private FragmentEditHostBinding mVb;
 
     private EditHostViewModel mVm;
 
     private NavController mNavController;
-
-    @Override
-    public void onCreate(@Nullable final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
     @Nullable
     @Override
@@ -56,6 +50,8 @@ public class EditHostFragment
         mVm = new ViewModelProvider(this).get(EditHostViewModel.class);
         mVm.init(context, getArguments());
         mVm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
+
+        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
     }
 
     private void onConfigLoaded(@NonNull final Host host) {
@@ -95,28 +91,32 @@ public class EditHostFragment
                 (ExtTextWatcher) s -> mVm.setUserPassword(s.toString().trim()));
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu,
-                                    @NonNull final MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_edit, menu);
-    }
+    private class ToolbarMenuProvider implements MenuProvider {
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        final int itemId = item.getItemId();
-
-        if (itemId == R.id.MENU_SAVE) {
-            //noinspection ConstantConditions
-            mVm.save(getActivity());
-            mNavController.popBackStack();
-            return true;
-
-        } else if (itemId == R.id.MENU_DELETE) {
-            //noinspection ConstantConditions
-            mVm.delete(getActivity());
-            mNavController.popBackStack();
-            return true;
+        @Override
+        public void onCreateMenu(@NonNull final Menu menu,
+                                 @NonNull final MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.menu_edit, menu);
         }
-        return false;
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull final MenuItem menuItem) {
+            final int itemId = menuItem.getItemId();
+
+            if (itemId == R.id.MENU_SAVE) {
+                //noinspection ConstantConditions
+                mVm.save(getActivity());
+                mNavController.popBackStack();
+                return true;
+
+            } else if (itemId == R.id.MENU_DELETE) {
+                //noinspection ConstantConditions
+                mVm.delete(getActivity());
+                mNavController.popBackStack();
+                return true;
+            }
+            return false;
+        }
     }
+
 }

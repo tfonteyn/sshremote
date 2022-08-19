@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -27,7 +27,7 @@ import com.hardbackcollector.sshremote.widgets.ExtTextWatcher;
 import java.util.List;
 
 public class EditConfigFragment
-        extends Fragment {
+        extends BaseFragment {
 
     private NavController mNavController;
 
@@ -36,12 +36,6 @@ public class EditConfigFragment
     private EditConfigViewModel mVm;
     private CommandAdapter mCommandAdapter;
     private HostAdapter mHostAdapter;
-
-    @Override
-    public void onCreate(@Nullable final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
@@ -64,6 +58,8 @@ public class EditConfigFragment
         mVm = new ViewModelProvider(getActivity()).get(EditConfigViewModel.class);
         mVm.init(context, getArguments());
         mVm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
+
+        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
     }
 
     private void onConfigLoaded(@NonNull final Config config) {
@@ -126,33 +122,6 @@ public class EditConfigFragment
         mNavController.navigate(R.id.action_editConfigFragment_to_editCommandFragment, args);
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu,
-                                    @NonNull final MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_edit, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        final int itemId = item.getItemId();
-
-        if (itemId == R.id.MENU_SAVE) {
-            if (mVm.save()) {
-                mNavController.popBackStack();
-            } else {
-                Snackbar.make(mVb.getRoot(), R.string.button_not_set, Snackbar.LENGTH_SHORT)
-                        .show();
-            }
-            return true;
-
-        } else if (itemId == R.id.MENU_DELETE) {
-            mVm.delete();
-            mNavController.popBackStack();
-            return true;
-        }
-        return false;
-    }
-
     private static class HostAdapter
             extends ExtArrayAdapter<Host> {
 
@@ -192,6 +161,36 @@ public class EditConfigFragment
         @Override
         protected CharSequence getItemText(@Nullable final Command command) {
             return command == null ? "" : command.label;
+        }
+    }
+
+    private class ToolbarMenuProvider implements MenuProvider {
+
+        @Override
+        public void onCreateMenu(@NonNull final Menu menu,
+                                 @NonNull final MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.menu_edit, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull final MenuItem menuItem) {
+            final int itemId = menuItem.getItemId();
+
+            if (itemId == R.id.MENU_SAVE) {
+                if (mVm.save()) {
+                    mNavController.popBackStack();
+                } else {
+                    Snackbar.make(mVb.getRoot(), R.string.button_not_set, Snackbar.LENGTH_SHORT)
+                            .show();
+                }
+                return true;
+
+            } else if (itemId == R.id.MENU_DELETE) {
+                mVm.delete();
+                mNavController.popBackStack();
+                return true;
+            }
+            return false;
         }
     }
 }

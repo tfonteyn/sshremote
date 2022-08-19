@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.util.Pair;
-import androidx.fragment.app.Fragment;
+import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class MainFragment
-        extends Fragment {
+        extends BaseFragment {
 
     private final List<UserButton> mList = new ArrayList<>();
     private FragmentMainBinding mVb;
@@ -51,12 +51,6 @@ public class MainFragment
 
     private boolean mMovingButtons;
     private BottomSheetBehavior<ConstraintLayout> mBottomSheetBehavior;
-
-    @Override
-    public void onCreate(@Nullable final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
@@ -126,6 +120,8 @@ public class MainFragment
         mVb.topScroller.setOnScrollChangeListener(
                 (View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY)
                         -> mFab.setVisibility(scrollY == 0 ? View.INVISIBLE : View.VISIBLE));
+
+        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
     }
 
     private void setButtonOrder(final boolean save) {
@@ -137,31 +133,6 @@ public class MainFragment
             //noinspection ConstantConditions
             mVm.init(getContext());
         }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu,
-                                    @NonNull final MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_main, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
-        final int itemId = item.getItemId();
-
-        if (itemId == R.id.MENU_GLOBAL_SETTINGS) {
-            mNavController.navigate(R.id.action_mainFragment_to_settingsFragment);
-            return true;
-
-        } else if (itemId == R.id.MENU_KEY_MANAGEMENT) {
-            mNavController.navigate(R.id.action_mainFragment_to_keyManagementFragment);
-            return true;
-
-        } else if (itemId == R.id.MENU_EDIT_BUTTON_ORDER) {
-            mMovingButtons = true;
-            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        }
-        return false;
     }
 
     private void onConfigLoaded(@NonNull final List<UserButton> userButtons) {
@@ -326,6 +297,34 @@ public class MainFragment
             Collections.swap(mList, fromPosition, toPosition);
             notifyItemMoved(fromPosition, toPosition);
             return true;
+        }
+    }
+
+    private class ToolbarMenuProvider implements MenuProvider {
+
+        @Override
+        public void onCreateMenu(@NonNull final Menu menu,
+                                 @NonNull final MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.menu_main, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull final MenuItem menuItem) {
+            final int itemId = menuItem.getItemId();
+
+            if (itemId == R.id.MENU_GLOBAL_SETTINGS) {
+                mNavController.navigate(R.id.action_mainFragment_to_settingsFragment);
+                return true;
+
+            } else if (itemId == R.id.MENU_KEY_MANAGEMENT) {
+                mNavController.navigate(R.id.action_mainFragment_to_keyManagementFragment);
+                return true;
+
+            } else if (itemId == R.id.MENU_EDIT_BUTTON_ORDER) {
+                mMovingButtons = true;
+                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+            return false;
         }
     }
 }
