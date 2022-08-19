@@ -89,11 +89,9 @@ public class KeyPairTool {
             case "ecdsa":
                 return new KeyPairECDSA(config, keySize);
 
-            case "Ed25519":
             case "ed25519":
                 return new KeyPairEdDSA(config, EdKeyType.Ed25519);
 
-            case "Ed448":
             case "ed448":
                 return new KeyPairEdDSA(config, EdKeyType.Ed448);
 
@@ -113,11 +111,9 @@ public class KeyPairTool {
     public SshKeyPair generateKeyPair(@NonNull final String keyType)
             throws GeneralSecurityException {
         switch (keyType.toLowerCase(Locale.ENGLISH)) {
-            case "Ed25519":
             case "ed25519":
                 return new KeyPairEdDSA(config, EdKeyType.Ed25519);
 
-            case "Ed448":
             case "ed448":
                 return new KeyPairEdDSA(config, EdKeyType.Ed448);
 
