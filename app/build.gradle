@@ -73,11 +73,12 @@ dependencies {
     implementation project(path: ':ssh-client')
     debugImplementation project(path: ':ssh-client')
     // https://github.com/google/desugar_jdk_libs
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.6'
+    // 1.2.0 requires a bleeding-edge Android Studio with AGP 7.4
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.8'
     //
     // https://developer.android.com/jetpack/androidx/versions
-    implementation 'androidx.activity:activity:1.5.1'
-    implementation 'androidx.annotation:annotation:1.4.0'
+    implementation 'androidx.activity:activity:1.6.0'
+    implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -85,7 +86,7 @@ dependencies {
     implementation 'androidx.customview:customview:1.1.0'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
-    implementation 'androidx.fragment:fragment:1.5.2'
+    implementation 'androidx.fragment:fragment:1.5.3'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.5.1'
     implementation 'androidx.navigation:navigation-fragment:2.5.2'
@@ -100,9 +101,9 @@ dependencies {
 
 
     // local tests use JUnit5
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
 
     // device tests use JUnit4
     androidTestImplementation 'androidx.test:core:1.4.0'
