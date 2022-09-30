@@ -27,12 +27,10 @@
         <item name="endIconMode">clear_text</item>
     </style>
 
-    <style name="TIL.EditText.Label">
-        <item name="android:paddingBottom">20dp</item>
-    </style>
-
-    <!-- The TextInputLayout view for a NON-editable AutoCompleteTextView; equivalent of a Spinner. -->
-    <style name="TIL.ExposedDropdownMenu" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+    <!-- The TextInputLayout view for a NON-editable AutoCompleteTextView;
+     equivalent of a Spinner. -->
+    <style name="TIL.ExposedDropdownMenu"
+           parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <!-- make the drop down arrow better visible. -->
@@ -65,13 +63,5 @@
         <item name="indicatorColor">?attr/colorPrimaryDark</item>
         <item name="indicatorSize">96dp</item>
         <item name="trackColor">?attr/colorSecondary</item>
-    </style>
-
-    <!-- NestedScrollView -->
-    <style name="TopNestedScroller">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:fillViewport">true</item>
-        <item name="layout_behavior">@string/appbar_scrolling_view_behavior</item>
     </style>
 </resources>

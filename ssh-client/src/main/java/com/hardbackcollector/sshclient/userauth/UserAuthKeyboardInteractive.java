@@ -62,8 +62,9 @@ public class UserAuthKeyboardInteractive
 
         boolean cancel = false;
 
-        final int maxAuthAttempts = config.getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
-                                                       HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
+        final int maxAuthAttempts = config.getIntValue(
+                HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
+                HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
         int attemptsLeft = maxAuthAttempts;
 
         while (true) {

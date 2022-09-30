@@ -66,8 +66,9 @@ public class UserAuthPassword
 
         Packet packet = new Packet();
 
-        final int maxAuthAttempts = config.getIntValue(HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
-                                                       HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
+        final int maxAuthAttempts = config.getIntValue(
+                HostConfig.NUMBER_OF_PASSWORD_PROMPTS,
+                HostConfig.DEFAULT_NUMBER_OF_PASSWORD_PROMPTS);
         int attemptsLeft = maxAuthAttempts;
 
         try {

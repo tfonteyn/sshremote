@@ -100,8 +100,8 @@ public class KeyManagementViewModel
                     final String[] parts = line.split(" ");
                     if (parts.length == 3) {
                         final byte[] key = Base64.getDecoder().decode(parts[2]);
-                        final String fingerPrint = HostKey.getFingerPrint(fingerPrintAlgorithm, key);
-                        list.add(new HostLine(parts[0], parts[1], fingerPrint, line));
+                        final String fp = HostKey.getFingerPrint(fingerPrintAlgorithm, key);
+                        list.add(new HostLine(parts[0], parts[1], fp, line));
                     }
                 }
             }

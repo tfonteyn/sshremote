@@ -44,18 +44,20 @@ public class SettingsFragment
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
 
+        //noinspection ConstantConditions
         getPreferenceScreen().getSharedPreferences()
                              .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
-    public void onPause() {
+    public void onStop() {
+        //noinspection ConstantConditions
         getPreferenceScreen().getSharedPreferences()
                              .unregisterOnSharedPreferenceChangeListener(this);
-        super.onPause();
+        super.onStop();
     }
 
     @Override
