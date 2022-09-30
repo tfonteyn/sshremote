@@ -1,30 +1,56 @@
 plugins {
-    id 'com.android.application'
-    id 'de.mannodermaus.android-junit5'
+    id("com.android.application")
+    id("de.mannodermaus.android-junit5")
 }
 
-if (project.hasProperty("hbn.signing")
-        && new File(project.property("hbn.signing")).exists()) {
-    apply from: project.property("hbn.signing")
+/*
+    $HOME/.gradle/gradle.properties:
+        SSHRemote.properties=$HOME/blah/blah/SSHRemote.properties
+
+    $HOME/blah/blah/SSHRemote.properties:
+        sign.storeFile=$HOME/blah/blah/keystore.jks
+        sign.storePassword=MyStorePassword
+        sign.keyAlias=MyKeyAlias
+        sign.keyPassword=MyKeyPassword
+ */
+final def props = new Properties()
+if (project.hasProperty("SSHRemote.properties")) {
+    final def file = new File(project.property("SSHRemote.properties"))
+    if (file.exists()) {
+        props.load(new FileInputStream(file))
+    }
 }
 
 android {
     compileSdk 33
 
+    namespace 'com.hardbackcollector.sshremote'
+
     defaultConfig {
         applicationId "com.hardbacknutter.sshremote"
         minSdkVersion 26
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 3
         versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            storeFile file(props['sign.storeFile'])
+            storePassword props['sign.storePassword']
+            keyAlias props['sign.keyAlias']
+            keyPassword props['sign.keyPassword']
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
+            signingConfig signingConfigs.release
+
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
         }
@@ -32,6 +58,7 @@ android {
         debug {
             debuggable true
             minifyEnabled false
+            signingConfig signingConfigs.release
         }
     }
 
@@ -61,7 +88,6 @@ android {
             }
         }
     }
-    namespace 'com.hardbackcollector.sshremote'
 
     lint {
         // allow command line builds to complete
@@ -73,40 +99,39 @@ dependencies {
     implementation project(path: ':ssh-client')
     debugImplementation project(path: ':ssh-client')
     // https://github.com/google/desugar_jdk_libs
-    // 1.2.0 requires a bleeding-edge Android Studio with AGP 7.4
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.8'
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.0.0")
     //
     // https://developer.android.com/jetpack/androidx/versions
-    implementation 'androidx.activity:activity:1.6.0'
-    implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.core:core:1.9.0'
-    implementation 'androidx.customview:customview:1.1.0'
-    implementation 'androidx.documentfile:documentfile:1.0.1'
-    implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
-    implementation 'androidx.fragment:fragment:1.5.3'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.5.1'
-    implementation 'androidx.navigation:navigation-fragment:2.5.2'
-    implementation 'androidx.navigation:navigation-ui:2.5.2'
-    implementation 'androidx.preference:preference:1.2.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.room:room-runtime:2.4.3'
-    annotationProcessor 'androidx.room:room-compiler:2.4.3'
+    implementation("androidx.activity:activity:1.6.0")
+    implementation("androidx.annotation:annotation:1.5.0")
+    implementation("androidx.appcompat:appcompat:1.5.1")
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.core:core:1.9.0")
+    implementation("androidx.customview:customview:1.1.0")
+    implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation("androidx.drawerlayout:drawerlayout:1.1.1")
+    implementation("androidx.fragment:fragment:1.5.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.5.1")
+    implementation("androidx.navigation:navigation-fragment:2.5.2")
+    implementation("androidx.navigation:navigation-ui:2.5.2")
+    implementation("androidx.preference:preference:1.2.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("androidx.room:room-runtime:2.4.3")
+    annotationProcessor("androidx.room:room-compiler:2.4.3")
 
     // https://github.com/material-components/material-components-android/releases
-    implementation 'com.google.android.material:material:1.8.0-alpha01'
+    implementation("com.google.android.material:material:1.8.0-alpha01")
 
 
     // local tests use JUnit5
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
 
     // device tests use JUnit4
-    androidTestImplementation 'androidx.test:core:1.4.0'
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation("androidx.test:core:1.4.0")
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.test:rules:1.4.0")
 }
