@@ -45,8 +45,8 @@ public class ChannelAgentForwarding
 
     private static final byte SSH_AGENT_FAILURE = 5;
     /**
-     * Extended failure messages.
-     * Defined by "https://github.com/openssh/openssh-portable/blob/master/authfd.h"
+     * @see <a href="https://github.com/openssh/openssh-portable/blob/master/authfd.h">
+     * Extended failure messages</a>
      */
     private static final byte SSH2_AGENT_FAILURE = 30;
 

@@ -1,7 +1,8 @@
 package com.hardbackcollector.sshclient.utils;
 
 /**
- * http://ietf.org/internet-drafts/draft-ietf-secsh-assignednumbers-01.txt
+ * <a href="http://ietf.org/internet-drafts/draft-ietf-secsh-assignednumbers-01.txt">
+ *     http://ietf.org/internet-drafts/draft-ietf-secsh-assignednumbers-01.txt</a>
  * <p>
  * Value 	Message ID 	Reference
  * 0	    Reserved

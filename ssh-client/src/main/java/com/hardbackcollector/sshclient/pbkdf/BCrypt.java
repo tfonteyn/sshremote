@@ -731,8 +731,9 @@ class BCrypt {
 
     /**
      * Perform the "enhanced key schedule" step described by
-     * Provos and Mazieres in "A Future-Adaptable Password Scheme"
-     * http://www.openbsd.org/papers/bcrypt-paper.ps
+     * Provos and Mazieres in
+     * <a href="http://www.openbsd.org/papers/bcrypt-paper.ps">
+     * A Future-Adaptable Password Scheme</a>
      *
      * @param data salt information
      * @param key  password information

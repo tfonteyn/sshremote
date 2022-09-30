@@ -23,12 +23,13 @@ abstract class KeyExchangeDHGroup_n
         extends KeyExchangeBase {
 
     /**
-     * https://datatracker.ietf.org/doc/html/rfc4253
      * <p>
      * The client sends:
      * <p>
      * byte      SSH_MSG_KEXDH_INIT
      * mpint     e
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253">RFC 4253</a>
      */
     private static final byte SSH_MSG_KEXDH_INIT = 30;
 

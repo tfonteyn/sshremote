@@ -82,7 +82,7 @@ import java.util.StringJoiner;
  * One session can contain multiple {@link Channel}s of various types,
  * created with {@link #openChannel} and closed with {@link Channel#disconnect()}
  */
-public class SessionImpl
+public final class SessionImpl
         implements Session, PacketIO {
 
     /** All channels opened by this session. */
