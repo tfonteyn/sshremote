@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.hardbackcollector.sshremote.MainFragment"
+        android:name="com.hardbacknutter.sshremote.MainFragment"
         android:label="@string/lbl_fragment_main"
         tools:layout="@layout/fragment_main">
 
@@ -24,7 +24,7 @@
 
     <fragment
         android:id="@+id/editButtonFragment"
-        android:name="com.hardbackcollector.sshremote.EditConfigFragment"
+        android:name="com.hardbacknutter.sshremote.EditConfigFragment"
         android:label="@string/lbl_fragment_edit_button"
         tools:layout="@layout/fragment_edit_button">
         <action
@@ -37,19 +37,19 @@
 
     <fragment
         android:id="@+id/editHostFragment"
-        android:name="com.hardbackcollector.sshremote.EditHostFragment"
+        android:name="com.hardbacknutter.sshremote.EditHostFragment"
         android:label="@string/lbl_fragment_edit_host"></fragment>
 
     <fragment
         android:id="@+id/editCommandFragment"
-        android:name="com.hardbackcollector.sshremote.EditCommandFragment"
+        android:name="com.hardbacknutter.sshremote.EditCommandFragment"
         android:label="@string/lbl_fragment_edit_command"></fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.hardbackcollector.sshremote.SettingsFragment"
+        android:name="com.hardbacknutter.sshremote.SettingsFragment"
         android:label="@string/menu_settings" />
     <fragment
         android:id="@+id/keyManagementFragment"
-        android:name="com.hardbackcollector.sshremote.KeyManagementFragment"
+        android:name="com.hardbacknutter.sshremote.KeyManagementFragment"
         android:label="@string/menu_key_management" />
 </navigation>
