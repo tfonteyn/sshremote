@@ -26,16 +26,6 @@ android {
 
     namespace 'com.hardbackcollector.sshremote'
 
-    defaultConfig {
-        applicationId "com.hardbacknutter.sshremote"
-        minSdkVersion 26
-        targetSdkVersion 33
-        versionCode 3
-        versionName "1.1"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
     signingConfigs {
         release {
             storeFile file(props['sign.storeFile'])
@@ -45,11 +35,21 @@ android {
         }
     }
 
+    defaultConfig {
+        applicationId "com.hardbacknutter.sshremote"
+        minSdkVersion 26
+        targetSdkVersion 33
+        versionCode 3
+        versionName "1.1"
+        signingConfig signingConfigs.release
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
-            signingConfig signingConfigs.release
 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
@@ -57,8 +57,8 @@ android {
 
         debug {
             debuggable true
-            minifyEnabled false
-            signingConfig signingConfigs.release
+            versionNameSuffix "-debug"
+            applicationIdSuffix ".debug"
         }
     }
 
