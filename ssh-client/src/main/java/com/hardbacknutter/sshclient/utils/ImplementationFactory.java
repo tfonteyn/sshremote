@@ -85,13 +85,20 @@ public final class ImplementationFactory {
      * This method is used for loading generic security classes, where the config keys
      * are potentially not known at compile time.
      *
+     * @param configKey  the configuration key to lookup the class name
+     * @param asSubclass the (interface) class type which must be returned
+     *                   (to ensure the configured class is the right type)
+     *
      * @return a new instance of the desired class
      *
      * @throws NoSuchAlgorithmException when the key was invalid or the class failed to load
+     * @throws ClassCastException       if the class instantiated does not implement the
+     *                                  desired interface
      */
     @NonNull
-    public static Object loadClassOrThrow(@NonNull final SshClientConfig config,
-                                          @Nullable final String configKey)
+    public static <T> T loadClassOrThrow(@NonNull final SshClientConfig config,
+                                         @Nullable final String configKey,
+                                         @NonNull final Class<? extends T> asSubclass)
             throws NoSuchAlgorithmException {
         if (configKey == null || configKey.isBlank()) {
             throw new NoSuchAlgorithmException("No algorithm name given");
@@ -103,7 +110,7 @@ public final class ImplementationFactory {
         }
 
         try {
-            final Class<?> c = Class.forName(className);
+            final Class<? extends T> c = Class.forName(className).asSubclass(asSubclass);
             return c.getDeclaredConstructor().newInstance();
         } catch (final Exception e) {
             throw new NoSuchAlgorithmException("Failed to instantiate "
@@ -117,23 +124,28 @@ public final class ImplementationFactory {
      * If the config key is not found, the given {@code defClassName} is used.
      * If the class fails to load, an exception is thrown.
      *
-     * @param configKey the configuration key to lookup the class name
-     * @param defClass  the class to use if the lookup fails
+     * @param configKey  the configuration key to lookup the class name
+     * @param defClass   the class to use if the lookup fails
+     * @param asSubclass the (interface) class type which must be returned
+     *                   (to ensure the configured class is the right type)
      *
      * @return a new instance of the desired class
      *
      * @throws NoSuchAlgorithmException when the key was invalid or when its value
      *                                  was identical to the default and the class failed to load
      * @throws IllegalStateException    this is a FATAL issue... even the default class did not load
+     * @throws ClassCastException       if the class instantiated does not implement the
+     *                                  desired interface
      */
     @NonNull
-    public static Object loadClassOrDefault(@NonNull final SshClientConfig config,
-                                            @NonNull final String configKey,
-                                            @NonNull final Class<?> defClass)
+    public static <T> T loadClassOrDefault(@NonNull final SshClientConfig config,
+                                           @NonNull final String configKey,
+                                           @NonNull final Class<? extends T> defClass,
+                                           @NonNull final Class<? extends T> asSubclass)
             throws NoSuchAlgorithmException {
 
         try {
-            return loadClassOrThrow(config, configKey);
+            return loadClassOrThrow(config, configKey, asSubclass);
 
         } catch (final NoSuchAlgorithmException e) {
             // Either the configKey was invalid, it the class assigned to it failed to load.
@@ -164,25 +176,29 @@ public final class ImplementationFactory {
     @NonNull
     public static Random getRandom(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (Random) loadClassOrDefault(config, Random.RANDOM, RandomImpl.class);
+        return (Random) loadClassOrDefault(config, Random.RANDOM,
+                                           RandomImpl.class, Random.class);
     }
 
     @NonNull
     public static DH getDHKeyAgreement(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (DH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_DH, DHImpl.class);
+        return (DH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_DH,
+                                       DHImpl.class, DH.class);
     }
 
     @NonNull
     public static ECDH getECDHKeyAgreement(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (ECDH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_ECDH, ECDHImpl.class);
+        return (ECDH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_ECDH,
+                                         ECDHImpl.class, ECDH.class);
     }
 
     @NonNull
     public static XDH getXDHKeyAgreement(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (XDH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_XDH, XDHImpl.class);
+        return (XDH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_XDH,
+                                        XDHImpl.class, XDH.class);
     }
 
     /**
@@ -197,7 +213,7 @@ public final class ImplementationFactory {
             throw new NoSuchAlgorithmException("No algorithm name given");
         }
         if (config.contains(algorithm)) {
-            return (KeyExchange) loadClassOrThrow(config, algorithm);
+            return loadClassOrThrow(config, algorithm, KeyExchange.class);
         }
 
         try {
@@ -273,7 +289,7 @@ public final class ImplementationFactory {
     public static UserAuth getUserAuth(@NonNull final SshClientConfig config,
                                        @NonNull final String method)
             throws NoSuchAlgorithmException {
-        return (UserAuth) loadClassOrThrow(config, USERAUTH_CONFIG_PREFIX + method);
+        return loadClassOrThrow(config, USERAUTH_CONFIG_PREFIX + method, UserAuth.class);
     }
 
     @NonNull
@@ -285,7 +301,7 @@ public final class ImplementationFactory {
             throw new NoSuchAlgorithmException("No algorithm name given");
         }
         if (config.contains(algorithm)) {
-            return (SshSignature) loadClassOrThrow(config, algorithm);
+            return loadClassOrThrow(config, algorithm, SshSignature.class);
         }
 
         try {
@@ -423,8 +439,9 @@ public final class ImplementationFactory {
                 throw new NoSuchAlgorithmException("No class configured for " + algorithm);
             }
 
-            final Class<?> c = Class.forName(classname);
-            final SshCipher cipher = (SshCipher) c.getDeclaredConstructor().newInstance();
+            final Class<? extends SshCipher> c =
+                    Class.forName(classname).asSubclass(SshCipher.class);
+            final SshCipher cipher = c.getDeclaredConstructor().newInstance();
             // Check if the Cipher CAN be initialized using it's own defaults.
             cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
                         new byte[cipher.getKeySize()],
@@ -447,7 +464,7 @@ public final class ImplementationFactory {
             throw new NoSuchAlgorithmException("No algorithm name given");
         }
         if (config.contains(algorithm)) {
-            return (SshMac) loadClassOrThrow(config, algorithm);
+            return loadClassOrThrow(config, algorithm, SshMac.class);
         }
 
         try {
@@ -530,7 +547,8 @@ public final class ImplementationFactory {
         if (KexProposal.COMPRESSION_ZLIB.equals(method) ||
                 authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
             final SshDeflater instance = (SshDeflater) loadClassOrDefault(
-                    config, DEFLATER_CONFIG_PREFIX + method, SshDeflaterImpl.class);
+                    config, DEFLATER_CONFIG_PREFIX + method,
+                    SshDeflaterImpl.class, SshDeflater.class);
 
             final int level = config.getIntValue(KexProposal.COMPRESSION_LEVEL,
                                                  SshDeflater.DEFAULT_LEVEL);
@@ -562,7 +580,8 @@ public final class ImplementationFactory {
                 authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
 
             final SshInflater instance = (SshInflater) loadClassOrDefault(
-                    config, INFLATER_CONFIG_PREFIX + method, SshInflaterImpl.class);
+                    config, INFLATER_CONFIG_PREFIX + method,
+                    SshInflaterImpl.class, SshInflater.class);
             instance.init();
             return instance;
 

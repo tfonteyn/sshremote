@@ -153,8 +153,9 @@ public class UserAuthGSSAPIWithMIC
 
         final UserAuthGSSContext context;
         try {
-            context = (UserAuthGSSContext) ImplementationFactory.loadClassOrThrow(
-                    config, ImplementationFactory.USERAUTH_CONFIG_PREFIX + method);
+            context = ImplementationFactory.loadClassOrThrow(
+                    config, ImplementationFactory.USERAUTH_CONFIG_PREFIX + method,
+                    UserAuthGSSContext.class);
         } catch (final Exception e) {
             return false;
         }

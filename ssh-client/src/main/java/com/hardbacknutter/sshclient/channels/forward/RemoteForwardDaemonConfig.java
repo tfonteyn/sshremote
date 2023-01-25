@@ -33,14 +33,14 @@ public class RemoteForwardDaemonConfig
     ForwardedTCPIPDaemon createDaemon()
             throws SshChannelException {
         try {
-            final Class<?> c = Class.forName(className);
-            final ForwardedTCPIPDaemon daemon = (ForwardedTCPIPDaemon) c
-                    .getDeclaredConstructor().newInstance();
+            final Class<? extends ForwardedTCPIPDaemon> c =
+                    Class.forName(className).asSubclass(ForwardedTCPIPDaemon.class);
+            final ForwardedTCPIPDaemon daemon = c.getDeclaredConstructor().newInstance();
             daemon.setArgs(args);
             return daemon;
 
         } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
-                InvocationTargetException | InstantiationException e) {
+                       InvocationTargetException | InstantiationException e) {
             throw new SshChannelException("Failed to create daemon", e);
         }
     }
