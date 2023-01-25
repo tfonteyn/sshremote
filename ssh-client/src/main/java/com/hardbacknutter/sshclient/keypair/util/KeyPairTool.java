@@ -304,7 +304,7 @@ public class KeyPairTool {
                     // part 0 is the type; don't need it - we get the type from the private key
                     // part 1 is the base64 key
                     try {
-                        keyPair.setSshPublicKeyBlob(Base64.getDecoder().decode(parts[1].strip()));
+                        keyPair.setSshPublicKeyBlob(Base64.getDecoder().decode(parts[1].trim()));
 
                     } catch (final IllegalArgumentException e) {
                         throw new InvalidKeyException("Invalid base64 data for public key", e);

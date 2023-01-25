@@ -144,7 +144,7 @@ public final class OpenSSHHostConfigRepository
         final BufferedReader br = new BufferedReader(reader);
         String line;
         while ((line = br.readLine()) != null) {
-            line = line.strip();
+            line = line.trim();
             if (!line.isEmpty() && !line.startsWith("#")) {
 
                 final String[] keyValuePair = SPLIT_PATTERN.split(line, 2);
@@ -153,13 +153,13 @@ public final class OpenSSHHostConfigRepository
                 if (keyValuePair.length > 1) {
 
                     // start of a new "Host" entry
-                    if (HostConfig.HOST.equalsIgnoreCase(keyValuePair[0].strip())) {
+                    if (HostConfig.HOST.equalsIgnoreCase(keyValuePair[0].trim())) {
                         // store the previously parsed section
                         hosts.put(host, kv);
 
                         // and start a new "Host" section
                         // "host" is a glob expression. See OpenSSH ssh_config docs.
-                        host = keyValuePair[1].strip();
+                        host = keyValuePair[1].trim();
                         kv = new ArrayList<>();
 
                     } else {

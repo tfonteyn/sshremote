@@ -93,7 +93,7 @@ public class KnownHosts
 
             String line;
             while ((line = fis.readLine()) != null) {
-                line = line.strip();
+                line = line.trim();
                 if (line.startsWith("#")) {
                     pool.add(HostKey.createUnknown(line));
                     continue;

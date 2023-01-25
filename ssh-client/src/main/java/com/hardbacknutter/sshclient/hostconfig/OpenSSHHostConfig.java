@@ -80,12 +80,12 @@ final class OpenSSHHostConfig
                 if (!hostKey.isBlank()) {
                     // Now for each matching "Host" pattern, add the options in-order.
                     Arrays.stream(WHITESPACE_PATTERN.split(hostKey))
-                          .map(String::strip)
+                          .map(String::trim)
                           .forEach(hostnamePattern -> {
                               // Patterns within pattern-lists may be negated by preceding
                               // them with an exclamation mark (‘!’)
                               if (hostnamePattern.startsWith("!")) {
-                                  if (Globber.globLocalPath(hostnamePattern.substring(1).strip(),
+                                  if (Globber.globLocalPath(hostnamePattern.substring(1).trim(),
                                                             hostOrAlias)) {
                                       this.config.remove(hostOptions);
                                   } else {
@@ -218,7 +218,7 @@ final class OpenSSHHostConfig
              .filter(kv -> kv[0].equalsIgnoreCase(key))
              .map(kv -> kv[1])
              .filter(Objects::nonNull)
-             .map(String::strip)
+             .map(String::trim)
              .filter(value -> !value.isBlank())
              .forEach(value -> {
                  if (value.startsWith("^")) {
@@ -242,7 +242,7 @@ final class OpenSSHHostConfig
         final String[] theList = String.join(",", list).split(",");
         // lastly we clean up any duplicates/blanks and return the final CSV string
         return Arrays.stream(theList)
-                     .map(String::strip)
+                     .map(String::trim)
                      .filter(s -> !s.isBlank())
                      .distinct()
                      .collect(Collectors.joining(","));

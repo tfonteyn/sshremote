@@ -80,11 +80,11 @@ class PuttyReader {
                     encryption = null;
                 } else {
                     // "aes256-cbc"
-                    encryption = line.substring(line.indexOf(':') + 2).strip();
+                    encryption = line.substring(line.indexOf(':') + 2).trim();
                 }
 
             } else if (line.startsWith("Comment: ")) {
-                publicKeyComment = line.substring(line.indexOf(':') + 2).strip();
+                publicKeyComment = line.substring(line.indexOf(':') + 2).trim();
 
             } else if (line.startsWith("Public-Lines: ")) {
                 pubKey = parseBase64(reader, line);
@@ -180,7 +180,7 @@ class PuttyReader {
     private byte[] parseBase64(@NonNull final BufferedReader br,
                                @NonNull String line)
             throws IOException, InvalidKeyException {
-        final int lines = Integer.parseInt(line.substring(line.indexOf(':') + 2).strip());
+        final int lines = Integer.parseInt(line.substring(line.indexOf(':') + 2).trim());
         final StringBuilder bs = new StringBuilder();
         for (int i = 0; i < lines; i++) {
             line = br.readLine();
