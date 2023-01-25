@@ -10,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -119,7 +118,11 @@ public final class OpenSSHHostConfigRepository
     @NonNull
     public static OpenSSHHostConfigRepository parseFile(@NonNull final String filename)
             throws IOException {
-        try (final Reader r = new FileReader(Util.checkTilde(filename), StandardCharsets.UTF_8)) {
+        //TODO: Android API 26 limitation
+        // try (final Reader r = new FileReader(Util.checkTilde(filename),
+        //                                      StandardCharsets.UTF_8)) {
+        //noinspection ImplicitDefaultCharsetUsage
+        try (final Reader r = new FileReader(Util.checkTilde(filename))) {
             return new OpenSSHHostConfigRepository(r);
         }
     }

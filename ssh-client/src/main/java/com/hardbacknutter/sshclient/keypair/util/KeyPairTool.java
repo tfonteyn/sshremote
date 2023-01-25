@@ -154,13 +154,19 @@ public class KeyPairTool {
                            @Nullable final String publicKeyFilename)
             throws IOException, GeneralSecurityException {
 
+        //TODO: Android API 26 limitation
+        //noinspection ImplicitDefaultCharsetUsage
         final BufferedReader prvKeyReader = new BufferedReader(
-                new FileReader(privateKeyFilename, StandardCharsets.UTF_8));
+                // new FileReader(privateKeyFilename, StandardCharsets.UTF_8));
+                new FileReader(privateKeyFilename));
 
         final BufferedReader pubKeyReader;
         if (publicKeyFilename != null) {
+            //TODO: Android API 26 limitation
+            //noinspection ImplicitDefaultCharsetUsage
             pubKeyReader = new BufferedReader(
-                    new FileReader(publicKeyFilename, StandardCharsets.UTF_8));
+                    // new FileReader(publicKeyFilename, StandardCharsets.UTF_8));
+                    new FileReader(publicKeyFilename));
         } else {
             pubKeyReader = null;
         }

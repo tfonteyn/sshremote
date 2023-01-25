@@ -116,8 +116,11 @@ public final class SftpATTRS {
     private int gid;
     private int flags;
     private long size;
+    @SuppressWarnings("FieldNotUsedInToString")
     private int permissions;
+    @SuppressWarnings("FieldNotUsedInToString")
     private int atime;
+    @SuppressWarnings("FieldNotUsedInToString")
     private int mtime;
     private String[] extended;
 

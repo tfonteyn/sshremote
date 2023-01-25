@@ -27,12 +27,15 @@ public class KeyPairWriter {
      * @param filename file name
      * @param comment  comment
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "OverlyBroadThrowsClause"})
     public void writePublicKey(@NonNull final SshKeyPair keyPair,
                                @NonNull final String filename,
                                @NonNull final String comment)
             throws IOException, GeneralSecurityException {
-        try (final PrintWriter pw = new PrintWriter(filename, StandardCharsets.UTF_8)) {
+        //TODO: Android API 26 limitation
+        // try (final PrintWriter pw = new PrintWriter(filename, StandardCharsets.UTF_8)) {
+        //noinspection ImplicitDefaultCharsetUsage
+        try (final PrintWriter pw = new PrintWriter(filename)) {
             writePublicKey(keyPair, pw, comment);
         }
     }
@@ -65,12 +68,15 @@ public class KeyPairWriter {
      * @param filename file name
      * @param comment  comment
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "OverlyBroadThrowsClause"})
     public void writeSECSHPublicKey(@NonNull final SshKeyPair keyPair,
                                     @NonNull final String filename,
                                     @NonNull final String comment)
             throws IOException, GeneralSecurityException {
-        try (final PrintWriter pw = new PrintWriter(filename, StandardCharsets.UTF_8)) {
+        //TODO: Android API 26 limitation
+        // try (final PrintWriter pw = new PrintWriter(filename, StandardCharsets.UTF_8)) {
+        //noinspection ImplicitDefaultCharsetUsage
+        try (final PrintWriter pw = new PrintWriter(filename)) {
             writeSECSHPublicKey(keyPair, pw, comment);
         }
     }

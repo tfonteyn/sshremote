@@ -341,8 +341,11 @@ public class KnownHosts
             throws IOException {
         if (knownHostsFilename != null) {
             synchronized (pool) {
-                try (final Writer os = new FileWriter(Util.checkTilde(knownHostsFilename),
-                                                      StandardCharsets.UTF_8)) {
+                //TODO: Android API 26 limitation
+                // try (final Writer os = new FileWriter(Util.checkTilde(knownHostsFilename),
+                //                                       StandardCharsets.UTF_8)) {
+                //noinspection ImplicitDefaultCharsetUsage
+                try (final Writer os = new FileWriter(Util.checkTilde(knownHostsFilename))) {
                     for (final HostKey hostKey : pool) {
                         if (hostKey.getKey() != null) {
                             final String marker = hostKey.getMarker();
