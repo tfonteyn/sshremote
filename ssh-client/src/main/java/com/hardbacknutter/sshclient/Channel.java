@@ -170,11 +170,11 @@ public interface Channel {
      * Sets the OutputStream for extended data for this channel.
      * All data arriving in SSH_MSG_CHANNEL_EXTENDED_DATA messages
      * from the remote side will be written to this OutputStream.
-     *
+     * <p>
      * <em>Note:</em> This implementation does not differentiate between
      * different 'data_type_code' values, as RFC 4254 only defines one type,
      * namely SSH_EXTENDED_DATA_STDERR.
-     * </p>
+     * <p>
      * This method should be called before {@link #connect}.
      *
      * @param do_not_close if {@code true}, we do not close the stream

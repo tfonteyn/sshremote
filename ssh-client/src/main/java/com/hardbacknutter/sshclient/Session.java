@@ -352,7 +352,7 @@ public interface Session {
      * Set the host for the local X11 server.
      * <p>
      * The default value is {code "127.0.0.1"}, i.e. the localhost
-     *
+     * <p>
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
      *
@@ -366,7 +366,7 @@ public interface Session {
      * Set the port for the local X11 server.
      * <p>
      * The default value is 6000, the default port for a X11 server on display 0.
-     *
+     * <p>
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
      *
@@ -380,7 +380,7 @@ public interface Session {
      * Sets the X11 cookie necessary to access the local X11 server.
      * <p>
      * This implementation assumes the MIT-MAGIC_COOKIE-1 authentication protocol.
-     *
+     * <p>
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
      *

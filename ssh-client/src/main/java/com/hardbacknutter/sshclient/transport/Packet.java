@@ -105,7 +105,7 @@ public class Packet
 
     /**
      * Constructor.
-     *
+     * <p>
      * Create a packet with a FIXED size.
      *
      * @see #SAFE_MARGIN
@@ -116,7 +116,7 @@ public class Packet
 
     /**
      * Constructor.
-     *
+     * <p>
      * Create a Packet with a default size. The buffer MAY expand when needed.
      * Put the given command byte in the buffer,
      * and set the buffer's WRITE-position to the start of the payload.
@@ -213,7 +213,7 @@ public class Packet
     /**
      * Read the command, i.e. the byte identifying the type of an SSH packet.
      * This is the first byte of the payload, i.e. the byte with index 5.
-     *
+     * <p>
      * <strong>The read/write offsets are NOT modified</strong>
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6">

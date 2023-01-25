@@ -15,16 +15,12 @@ package com.hardbacknutter.sshclient.utils;
  * 7	    SSH_MSG_EXT_INFO	[RFC8308]
  * 8	    SSH_MSG_NEWCOMPRESS	[RFC8308]
  * 9-19 	Unassigned (Transport layer generic)
- *
- *
  * <p>
  * 20	    SSH_MSG_KEXINIT	[RFC4253]
  * 21	    SSH_MSG_NEWKEYS	[RFC4253]
  * 22-29	Unassigned (Algorithm negotiation)
  * <p>
  * 30-49	Reserved (key exchange method specific)	[RFC4251]
- *
- *
  * <p>
  * 50	    SSH_MSG_USERAUTH_REQUEST	[RFC4252]
  * 51	    SSH_MSG_USERAUTH_FAILURE	[RFC4252]
@@ -35,15 +31,11 @@ package com.hardbacknutter.sshclient.utils;
  * 60	    SSH_MSG_USERAUTH_INFO_REQUEST	[RFC4256]
  * 61	    SSH_MSG_USERAUTH_INFO_RESPONSE	[RFC4256]
  * 62-79	Reserved (User authentication method specific)	[RFC4251]
- *
- *
  * <p>
  * 80	    SSH_MSG_GLOBAL_REQUEST	[RFC4254]
  * 81	    SSH_MSG_REQUEST_SUCCESS	[RFC4254]
  * 82	    SSH_MSG_REQUEST_FAILURE	[RFC4254]
  * 83-89	Unassigned (Connection protocol generic)
- *
- *
  * <p>
  * 90	    SSH_MSG_CHANNEL_OPEN	[RFC4254]
  * 91	    SSH_MSG_CHANNEL_OPEN_CONFIRMATION	[RFC4254]

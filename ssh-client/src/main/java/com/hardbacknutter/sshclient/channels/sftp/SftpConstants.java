@@ -291,7 +291,7 @@ final class SftpConstants {
      * target of the symlink.
      * <p>
      * <strong>HOWEVER:</strong>
-     *
+     * <p>
      * 4. SFTP protocol changes
      * <p>
      * 4.1. sftp: Reversal of arguments to SSH_FXP_SYMLINK

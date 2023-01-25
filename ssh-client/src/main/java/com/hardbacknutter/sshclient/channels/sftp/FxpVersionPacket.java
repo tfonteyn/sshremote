@@ -8,9 +8,8 @@ import java.util.HashMap;
 
 /**
  * Handle the response to a {@link SftpConstants#SSH_FXP_INIT} request.
- *
+ * <p>
  * The response is a {@link SftpConstants#SSH_FXP_VERSION} packet.
- *
  * <p>
  * 10. Changes from previous protocol versions
  * The SSH File Transfer Protocol has changed over time, before it's

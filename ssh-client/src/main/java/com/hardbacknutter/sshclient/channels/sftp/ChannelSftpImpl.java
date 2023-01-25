@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * This class supports the client side of the sftp protocol,
  * version 3, and implements an interface similar to the
  * usual {@code sftp} command line client.
- *
+ * <p>
  * <h3 id="current-directory">Current directory</h3>
  * <p>
  * This sftp client has the concept of a <em>current local directory</em>
