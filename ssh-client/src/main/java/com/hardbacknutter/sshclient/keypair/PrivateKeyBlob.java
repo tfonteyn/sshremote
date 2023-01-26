@@ -27,6 +27,7 @@ import java.security.KeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.crypto.Cipher;
 
@@ -48,9 +49,9 @@ class PrivateKeyBlob {
     private SshCipher cipher;
     /** key is encrypted - the IV for the cipher. */
     @Nullable
-    protected byte[] cipherIV;
+    private byte[] cipherIV;
     @Nullable
-    protected PBKDF pbkdf;
+    private PBKDF pbkdf;
 
     /**
      * Constructor.

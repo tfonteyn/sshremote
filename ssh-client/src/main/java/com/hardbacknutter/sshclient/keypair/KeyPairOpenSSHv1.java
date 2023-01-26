@@ -274,28 +274,28 @@ class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.__PKCS8__:
                     // not encrypted, but in a PKCS8 wrapper
                     // (does this case actually exists in the real world?)
-                    keyPair = new KeyPairPKCS8(config, privateKeyBlob);
+                    keyPair = new KeyPairPKCS8(config, getPrivateKeyBlob());
                     break;
 
                 // all other cases are not encrypted
                 case HostKeyAlgorithm.SSH_RSA:
-                    keyPair = new KeyPairRSA(config, privateKeyBlob);
+                    keyPair = new KeyPairRSA(config, getPrivateKeyBlob());
                     break;
 
                 case HostKeyAlgorithm.SSH_DSS:
-                    keyPair = new KeyPairDSA(config, privateKeyBlob);
+                    keyPair = new KeyPairDSA(config, getPrivateKeyBlob());
                     break;
 
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                    keyPair = new KeyPairECDSA(config, privateKeyBlob,
+                    keyPair = new KeyPairECDSA(config, getPrivateKeyBlob(),
                                                ECKeyType.getByHostKeyAlgorithm(hostKeyType));
                     break;
 
                 case HostKeyAlgorithm.SSH_ED25519:
                 case HostKeyAlgorithm.SSH_ED448:
-                    keyPair = new KeyPairEdDSA(config, privateKeyBlob,
+                    keyPair = new KeyPairEdDSA(config, getPrivateKeyBlob(),
                                                EdKeyType.getByHostKeyAlgorithm(hostKeyType));
                     break;
 

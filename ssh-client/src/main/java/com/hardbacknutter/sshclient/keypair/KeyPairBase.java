@@ -14,6 +14,7 @@ import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Objects;
 
 /**
  * Base class for a pair of public and private key.
@@ -273,7 +274,7 @@ public abstract class KeyPairBase
         @NonNull
         final SshClientConfig config;
         @NonNull
-        final PrivateKeyBlob privateKeyBlob;
+        private PrivateKeyBlob privateKeyBlob;
 
         BaseKeyPairBuilder(@NonNull final SshClientConfig config) {
             this.config = config;
@@ -284,6 +285,16 @@ public abstract class KeyPairBase
         abstract SshKeyPair build()
                 throws GeneralSecurityException;
 
+        @NonNull
+        public PrivateKeyBlob getPrivateKeyBlob() {
+            return Objects.requireNonNull(privateKeyBlob, "privateKeyBlob");
+        }
+
+        /**
+         * @param blob   the byte[] with the private key
+         * @param format the vendor specific format of the private key
+         * @param pbkdf  (optional) the vendor specific password-based-key-derivation-function
+         */
         public void setPrivateKeyBlob(@NonNull final byte[] blob,
                                       @NonNull final Vendor format,
                                       @Nullable final PBKDF pbkdf) {
