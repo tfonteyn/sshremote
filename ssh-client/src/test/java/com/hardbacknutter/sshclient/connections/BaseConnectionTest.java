@@ -11,14 +11,36 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 
+/**
+ * Test server:
+ * <p>
+ * WLS2 Ubuntu with OpenSSH installed.
+ * Edit "/etc/ssh/sshd_config" with:
+ * <pre>
+ *      PubkeyAuthentication yes
+ *      PasswordAuthentication yes
+ * </pre>
+ * <p>
+ * Add a "test" user with password "test" and login as this user
+ * <pre>
+ * mkdir ~/.ssh
+ * cd ~/.ssh
+ * touch authorized_keys
+ * chmod 600 authorized_keys
+ * </pre>
+ * Edit "~/.ssh/authorized_keys" and add one or more
+ * public keys from the clients ~/.ssh/*.pub file(s)
+ * <p>
+ * Create "~/long.txt" with more than 4k of text. e.g. "help >long.txt" should do
+ */
 public class BaseConnectionTest {
 
     protected static final SecureRandom RANDOM = new SecureRandom();
     private static final Logger LOGGER = new DbgJLogger();
 
-    protected static final String HOST = "192.168.0.15";
-    protected static final String USERNAME = "tom";
-    protected static final String PASSWORD = "tom";
+    protected static final String HOST = "172.18.15.121";
+    protected static final String USERNAME = "test";
+    protected static final String PASSWORD = "test";
 
     protected static final int PORT = 22;
     protected static final String TEST_RESOURCES = "src/test/resources/";
@@ -46,7 +68,9 @@ public class BaseConnectionTest {
             // "ecdsa-sha2-nistp521",
             // "ssh-ed448"
     };
+
     private static final String KNOWN_HOSTS = "C:/tmp/ssh/known_hosts";
+
     protected SshClient sshClient;
 
     /**
