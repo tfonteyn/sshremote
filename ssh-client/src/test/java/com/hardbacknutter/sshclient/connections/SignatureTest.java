@@ -13,13 +13,18 @@ import java.security.GeneralSecurityException;
 /**
  * Uses a fixed KEX algorithm, and variable signature algorithms.
  * <p>
- * 2021-08-01: current test server supports these sig algorithms:
- * <p>
- * rsa-sha2-512,
- * rsa-sha2-256,
- * ssh-rsa,
- * ecdsa-sha2-nistp256,
- * ssh-ed25519
+ * 2022-01-26: current test server supports these sig algorithms:
+ * <pre>
+ * curve25519-sha256,
+ * curve25519-sha256@libssh.org,
+ * ecdh-sha2-nistp256,
+ * ecdh-sha2-nistp384,
+ * ecdh-sha2-nistp521,
+ * diffie-hellman-group-exchange-sha256,
+ * diffie-hellman-group16-sha512,
+ * diffie-hellman-group18-sha512,
+ * diffie-hellman-group14-sha256
+ * </pre>
  */
 class SignatureTest
         extends BaseConnectionTest {
@@ -139,18 +144,6 @@ class SignatureTest
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
         session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group14-sha256");
-
-        session.connect();
-        session.disconnect();
-    }
-
-    @Test
-    void dhGroup14s256()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.KEX_ALGS, "diffie-hellman-group14-sha1");
 
         session.connect();
         session.disconnect();
