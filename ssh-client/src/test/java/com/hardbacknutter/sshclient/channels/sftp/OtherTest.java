@@ -38,7 +38,7 @@ class OtherTest
 
         System.out.println("pwd=" + channel.pwd());
 
-        channel.cd(".config");
+        channel.cd(".ssh");
 
         System.out.println("pwd=" + channel.pwd());
 
