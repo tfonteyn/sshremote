@@ -19,8 +19,8 @@ import javax.crypto.spec.PBEKeySpec;
  * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#secretkeyfactory-algorithms">
  * Standard algorithm names</a>
  */
-public class PBKDF2JCE
-        implements PBKDF2 {
+public class PBKDFJCE
+        implements PBKDF {
 
     @NonNull
     private final String algorithm;
@@ -37,9 +37,9 @@ public class PBKDF2JCE
      * @param algorithm standard JDK name (e.g. "PBKDF2WithHmacSHA1")
      */
     @SuppressWarnings("WeakerAccess")
-    public PBKDF2JCE(@NonNull final String algorithm,
-                     @NonNull final byte[] salt,
-                     final int iterations)
+    public PBKDFJCE(@NonNull final String algorithm,
+                    @NonNull final byte[] salt,
+                    final int iterations)
             throws NoSuchAlgorithmException {
         this.algorithm = algorithm;
         this.salt = salt;
@@ -48,9 +48,9 @@ public class PBKDF2JCE
         skf = SecretKeyFactory.getInstance(algorithm);
     }
 
-    public PBKDF2JCE(@NonNull final ASN1ObjectIdentifier oid,
-                     @NonNull final byte[] salt,
-                     final int iterations)
+    public PBKDFJCE(@NonNull final ASN1ObjectIdentifier oid,
+                    @NonNull final byte[] salt,
+                    final int iterations)
             throws NoSuchAlgorithmException {
         this(getPBEAlgorithm(oid), salt, iterations);
     }
@@ -95,7 +95,7 @@ public class PBKDF2JCE
 
     @Override
     public String toString() {
-        return "PBKDF2JCE{"
+        return "PBKDFJCE{"
                 + "algorithm='" + algorithm + '\''
                 + ", salt=" + Arrays.toString(salt)
                 + ", iterations=" + iterations

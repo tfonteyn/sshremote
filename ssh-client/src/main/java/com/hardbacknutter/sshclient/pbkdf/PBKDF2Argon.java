@@ -9,8 +9,8 @@ import java.security.KeyException;
 import java.util.Arrays;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class PBKDFArgon2
-        implements PBKDF2 {
+public class PBKDF2Argon
+        implements PBKDF {
 
     private final int flavour;
     private final int memory;
@@ -22,7 +22,7 @@ public class PBKDFArgon2
     @NonNull
     private final Argon2BytesGenerator generator;
 
-    public PBKDFArgon2(@NonNull final String keyDerivation,
+    public PBKDF2Argon(@NonNull final String keyDerivation,
                        @NonNull final String memoryAsKB,
                        @NonNull final String iterations,
                        @NonNull final String parallelism,
@@ -81,7 +81,7 @@ public class PBKDFArgon2
 
     @Override
     public String toString() {
-        return "PBKDFArgon2{"
+        return "PBKDF2Argon{"
                 + "flavour=" + flavour
                 + ", memory=" + memory
                 + ", iterations=" + iterations

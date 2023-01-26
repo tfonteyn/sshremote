@@ -8,6 +8,9 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.pbkdf.PBKDF2Argon;
+import com.hardbacknutter.sshclient.pbkdf.PBKDFPutty2;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 

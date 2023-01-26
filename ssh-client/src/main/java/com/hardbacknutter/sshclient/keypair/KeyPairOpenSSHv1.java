@@ -7,7 +7,7 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.util.OpenSSHv1Reader;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
-import com.hardbacknutter.sshclient.pbkdf.PBEKDF2BCrypt;
+import com.hardbacknutter.sshclient.pbkdf.PBKDFBCrypt;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
@@ -173,7 +173,7 @@ class KeyPairOpenSSHv1
 
             byte[] pbeKey = null;
             try {
-                pbeKey = new PBEKDF2BCrypt(salt, rounds)
+                pbeKey = new PBKDFBCrypt(salt, rounds)
                         .generateSecretKey(passphrase, 48);
 
                 final byte[] key = Arrays.copyOfRange(pbeKey, 0, 32);

@@ -7,7 +7,8 @@ import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
-import com.hardbacknutter.sshclient.pbkdf.PBKDF2JCE;
+import com.hardbacknutter.sshclient.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.pbkdf.PBKDFJCE;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -136,7 +137,7 @@ class PrivateKeyBlob {
         byte[] pbeKey = null;
         try {
             if (format == Vendor.PKCS8) {
-                // The Cipher/iv can/will be embedded inside the blob
+                // The Cipher/iv and PBKDF parameters are all embedded inside the blob
                 return decryptPKCS8(passphrase);
 
             } else {
@@ -311,7 +312,7 @@ class PrivateKeyBlob {
             final byte[] plainKey = new byte[encryptedPrivateKey.length];
             byte[] pbeKey = null;
             try {
-                pbeKey = new PBKDF2JCE(pbeOID, salt, iterations)
+                pbeKey = new PBKDFJCE(pbeOID, salt, iterations)
                         .generateSecretKey(passphrase, cipher.getKeySize());
 
                 cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);

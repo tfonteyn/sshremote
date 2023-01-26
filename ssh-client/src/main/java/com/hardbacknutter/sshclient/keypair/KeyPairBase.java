@@ -9,6 +9,7 @@ import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityImpl;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
+import com.hardbacknutter.sshclient.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;

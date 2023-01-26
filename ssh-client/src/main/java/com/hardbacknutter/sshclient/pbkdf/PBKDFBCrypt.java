@@ -26,9 +26,9 @@ import java.util.Arrays;
  * @see <a href="https://github.com/openssh/openssh-portable/blob/master/openbsd-compat/bcrypt_pbkdf.c">
  * pkcs #5 pbkdf2 implementation using the "bcrypt" hash</a>
  */
-public class PBEKDF2BCrypt
+public class PBKDFBCrypt
         extends BCrypt
-        implements PBKDF2 {
+        implements PBKDF {
 
     /** OpenBSD IV: "OxychromaticBlowfishSwatDynamite" in big endian. */
     private static final int[] openbsd_iv = {
@@ -43,8 +43,8 @@ public class PBEKDF2BCrypt
     @NonNull
     private final MessageDigest md;
 
-    public PBEKDF2BCrypt(@NonNull final byte[] salt,
-                         final int iterations)
+    public PBKDFBCrypt(@NonNull final byte[] salt,
+                       final int iterations)
             throws NoSuchAlgorithmException {
         this.salt = salt;
         this.iterations = iterations;
@@ -144,7 +144,7 @@ public class PBEKDF2BCrypt
 
     @Override
     public String toString() {
-        return "PBEKDF2BCrypt{"
+        return "PBKDFBCrypt{"
                 + "salt=" + Arrays.toString(salt)
                 + ", iterations=" + iterations
                 + '}';
