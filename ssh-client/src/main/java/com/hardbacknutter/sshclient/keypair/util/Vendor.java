@@ -5,7 +5,7 @@ package com.hardbacknutter.sshclient.keypair.util;
  */
 public enum Vendor {
 
-    /** Unencrypted standard PKCS#8 format. */
+    /** PKCS#8 format. */
     PKCS8,
     /** PKCS#8 encrypted format using PKCS#5 for the key encryption. */
     PKCS5,
