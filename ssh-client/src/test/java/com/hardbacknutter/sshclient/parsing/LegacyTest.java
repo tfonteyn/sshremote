@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 
-class Legacy
+class LegacyTest
         extends BaseLoadTest {
 
     @Test

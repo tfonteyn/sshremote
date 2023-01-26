@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
 
-class PKCS8
+class PKCS8Test
         extends BaseLoadTest {
 
     @Test

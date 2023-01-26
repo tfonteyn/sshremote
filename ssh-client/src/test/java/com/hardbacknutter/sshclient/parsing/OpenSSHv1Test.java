@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-class OpenSSHv1
+class OpenSSHv1Test
         extends BaseLoadTest {
 
     @Test
