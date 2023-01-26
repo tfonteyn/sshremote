@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
@@ -19,7 +20,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.KeyException;
 import java.util.Base64;
 
 
@@ -30,6 +30,8 @@ import java.util.Base64;
  * PPK version 2 file format</a>
  */
 class PuttyReader {
+
+    private static final byte[] Z_BYTE_ARRAY = new byte[0];
 
     @NonNull
     private final SshClientConfig config;
@@ -71,6 +73,11 @@ class PuttyReader {
         }
 
         String encryption = null;
+        String argonKeyDerivation = null;
+        String argonMemory = null;
+        String argonPasses = null;
+        String argonParallelism = null;
+        String argonSalt = null;
 
         String publicKeyComment = "";
 
@@ -78,22 +85,34 @@ class PuttyReader {
         byte[] pubKey = null;
 
         while ((line = reader.readLine()) != null) {
+            final String value = line.substring(line.indexOf(':') + 2).trim();
+
             if (line.startsWith("Encryption: ")) {
-                if (line.endsWith("none")) {
+                if ("none".equals(value)) {
                     encryption = null;
-                } else {
-                    // "aes256-cbc"
-                    encryption = line.substring(line.indexOf(':') + 2).trim();
+                } else if ("aes256-cbc".equals(value)) {
+                    encryption = value;
                 }
 
             } else if (line.startsWith("Comment: ")) {
-                publicKeyComment = line.substring(line.indexOf(':') + 2).trim();
+                publicKeyComment = value;
 
             } else if (line.startsWith("Public-Lines: ")) {
                 pubKey = parseBase64(reader, line);
 
             } else if (line.startsWith("Private-Lines: ")) {
                 prvKey = parseBase64(reader, line);
+
+            } else if (line.startsWith("Key-Derivation: ")) {
+                argonKeyDerivation = value;
+            } else if (line.startsWith("Argon2-Memory: ")) {
+                argonMemory = value;
+            } else if (line.startsWith("Argon2-Passes: ")) {
+                argonPasses = value;
+            } else if (line.startsWith("Argon2-Parallelism: ")) {
+                argonParallelism = value;
+            } else if (line.startsWith("Argon2-Salt: ")) {
+                argonSalt = value;
             }
         }
 
@@ -101,8 +120,22 @@ class PuttyReader {
             return null;
         }
 
-        if (encryption != null && privateKeyFormat == Vendor.PUTTY3) {
-            throw new KeyException("No support for PuTTY v3 Argon2 encrypted keys yet");
+        SshCipher cipher = null;
+        PBKDF pbkdf = null;
+        if (encryption != null) {
+            if (privateKeyFormat == Vendor.PUTTY3) {
+                pbkdf = new PBKDF2Argon(argonKeyDerivation,
+                                        argonMemory, argonPasses, argonParallelism,
+                                        argonSalt,
+                                        //  a secret key, and some ‘associated data’.
+                                        //  In PPK's use of Argon2, these are both set
+                                        //  to the empty string.
+                                        Z_BYTE_ARRAY, Z_BYTE_ARRAY);
+            } else {
+                pbkdf = new PBKDFPutty2();
+            }
+
+            cipher = ImplementationFactory.getCipher(config, encryption);
         }
 
         final Buffer buffer = new Buffer(pubKey);
@@ -116,10 +149,11 @@ class PuttyReader {
                         new KeyPairRSA.Builder(config)
                                 .setPublicExponent(publicExponent)
                                 .setModulus(modulus);
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat);
 
-                if (encryption != null) {
-                    builder.setPkeCipher(ImplementationFactory.getCipher(config, encryption));
+                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, pbkdf);
+
+                if (cipher != null) {
+                    builder.setPkeCipher(cipher);
                 }
 
                 final SshKeyPair keyPair = builder.build();
@@ -137,10 +171,10 @@ class PuttyReader {
                                 .setPQG(p, q, g)
                                 .setY(y);
 
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat);
+                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, pbkdf);
 
-                if (encryption != null) {
-                    builder.setPkeCipher(ImplementationFactory.getCipher(config, encryption));
+                if (cipher != null) {
+                    builder.setPkeCipher(cipher);
                 }
 
                 final SshKeyPair keyPair = builder.build();
