@@ -118,7 +118,7 @@ public class KeyPairRSA
     private KeyPairRSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder);
 
         modulus = builder.modulus;
         publicExponent = builder.publicExponent;

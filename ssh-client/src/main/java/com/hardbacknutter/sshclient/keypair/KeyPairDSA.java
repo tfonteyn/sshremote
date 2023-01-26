@@ -81,7 +81,7 @@ public class KeyPairDSA
     private KeyPairDSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder);
 
         p = builder.p;
         q = builder.q;

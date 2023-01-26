@@ -49,7 +49,7 @@ class KeyPairOpenSSHv1
      */
     private KeyPairOpenSSHv1(@NonNull final SshClientConfig config,
                              @NonNull final Builder builder) {
-        super(config, builder.privateKeyBlob);
+        super(config, builder);
         this.kdfName = Objects.requireNonNull(builder.kdfName, "kdfName is null");
         this.kdfOptions = Objects.requireNonNull(builder.kdfOptions, "kdfOptions is null");
 

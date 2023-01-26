@@ -105,7 +105,7 @@ public class KeyPairECDSA
     private KeyPairECDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder);
 
         this.ecType = builder.ecType;
         this.s = builder.s;

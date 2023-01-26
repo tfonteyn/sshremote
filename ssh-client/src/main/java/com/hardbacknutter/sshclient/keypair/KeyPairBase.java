@@ -55,6 +55,14 @@ public abstract class KeyPairBase
         this.privateKeyBlob = privateKeyBlob;
     }
 
+    /**
+     * Constructor.
+     */
+    KeyPairBase(@NonNull final SshClientConfig config,
+                @NonNull final BaseKeyPairBuilder builder) {
+        this.config = config;
+        this.privateKeyBlob = Objects.requireNonNull(builder.privateKeyBlob);
+    }
 
     /**
      * Create the publicKey blob using the key algorithm,

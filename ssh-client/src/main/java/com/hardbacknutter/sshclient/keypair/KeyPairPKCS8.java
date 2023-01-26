@@ -72,7 +72,7 @@ public class KeyPairPKCS8
     private KeyPairPKCS8(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder);
 
         parse();
     }

@@ -76,7 +76,7 @@ public class KeyPairEdDSA
     private KeyPairEdDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder);
         this.edType = builder.edType;
         this.prv_array = builder.prv_array;
         this.pub_array = builder.pub_array;
