@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.util.OpenSSHv1Reader;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
@@ -175,13 +176,14 @@ class KeyPairOpenSSHv1
             try {
                 pbeKey = new PBKDFBCrypt(salt, rounds)
                         .generateSecretKey(passphrase, 48);
-
+                // split into key and IV
                 final byte[] key = Arrays.copyOfRange(pbeKey, 0, 32);
-                final byte[] pbeIV = Arrays.copyOfRange(pbeKey, 32, 48);
-                privateKeyBlob.getCipher().init(Cipher.DECRYPT_MODE, key, pbeIV);
-                privateKeyBlob.getCipher().doFinal(privateKeyBlob.getBlob(),
-                                                   0, privateKeyBlob.getBlob().length,
-                                                   plainKey, 0);
+                final byte[] iv = Arrays.copyOfRange(pbeKey, 32, 48);
+                final SshCipher cipher = privateKeyBlob.getCipher();
+                // and decrypt the blob
+                cipher.init(Cipher.DECRYPT_MODE, key, iv);
+                cipher.doFinal(privateKeyBlob.getBlob(), 0, privateKeyBlob.getBlob().length,
+                               plainKey, 0);
             } finally {
                 if (pbeKey != null) {
                     Arrays.fill(pbeKey, (byte) 0);
