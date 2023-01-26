@@ -48,7 +48,9 @@ class PrivateKeyBlob {
     private SshCipher cipher;
     /** key is encrypted - the IV for the cipher. */
     @Nullable
-    private byte[] cipherIV;
+    protected byte[] cipherIV;
+    @Nullable
+    protected PBKDF pbkdf;
 
     /**
      * Constructor.
@@ -80,6 +82,9 @@ class PrivateKeyBlob {
         this.format = format;
     }
 
+    public void setPBKDF(@Nullable final PBKDF pbkdf) {
+        this.pbkdf = pbkdf;
+    }
 
     public boolean isEncrypted() {
         return encrypted;
@@ -94,7 +99,7 @@ class PrivateKeyBlob {
         return cipher;
     }
 
-    public void setCipher(@Nullable final SshCipher cipher) {
+    public void setCipher(@NonNull final SshCipher cipher) {
         this.cipher = cipher;
     }
 
@@ -177,37 +182,20 @@ class PrivateKeyBlob {
                         break;
                     }
                     case PUTTY3: {
-                        // https://en.wikipedia.org/wiki/Argon2
-                        throw new KeyException("No support for PuTTY Argon2 encrypted keys yet");
+                        //TODO: is this length correct?
+                        byte[] tmp = new byte[cipher.getBlockSize() + cipher.getIVSize() + 32];
+                        Objects.requireNonNull(pbkdf, "PUTTY3 encrypted but no pbkdf?");
+                        tmp = pbkdf.generateSecretKey(passphrase, tmp.length);
+
+                        pbeKey = new byte[cipher.getKeySize()];
+                        System.arraycopy(tmp, 0, pbeKey, 0, pbeKey.length);
+                        System.arraycopy(tmp, pbeKey.length, cipherIV, 0, cipherIV.length);
+                        break;
                     }
                     case PUTTY2: {
-                        // SHA-1 is hardcoded in PuTTY PPK-2 files.
-                        // https://github.com/github/putty/blob/7003b43963aef6cdf2841c2a882a684025f1d806/sshpubk.c#L662
-                        // static void ssh2_ppk_derivekey(ptrlen passphrase, uint8_t *key)
-                        // {
-                        //     ssh_hash *h;
-                        //     h = ssh_hash_new(&ssh_sha1);
-                        //     put_uint32(h, 0);
-                        //     put_datapl(h, passphrase);
-                        //     ssh_hash_digest(h, key + 0);
-                        //     ssh_hash_reset(h);
-                        //     put_uint32(h, 1);
-                        //     put_datapl(h, passphrase);
-                        //     ssh_hash_final(h, key + 20);
-                        // }
-
-                        final MessageDigest digest = MessageDigest.getInstance("SHA-1");
-                        digest.update(new byte[]{0, 0, 0, 0});
-                        digest.update(passphrase);
-                        final byte[] key1 = digest.digest();
-
-                        digest.update(new byte[]{0, 0, 0, 1});
-                        digest.update(passphrase);
-                        final byte[] key2 = digest.digest();
-
-                        pbeKey = new byte[32];
-                        System.arraycopy(key1, 0, pbeKey, 0, 20);
-                        System.arraycopy(key2, 0, pbeKey, 20, 12);
+                        // PuTTY PPK-2 files uses a hardcoded MessageDigest
+                        Objects.requireNonNull(pbkdf, "PUTTY2 encrypted but no pbkdf?");
+                        pbeKey = pbkdf.generateSecretKey(passphrase, 32);
                         break;
                     }
 

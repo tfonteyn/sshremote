@@ -195,10 +195,10 @@ class KeyPairOpenSSHv1
         // now we have the decrypted key and can thus determine the real type
         final String hostKeyType = OpenSSHv1Reader.getHostKeyType(plainKey);
 
-        // We can re-use the original builder, this time with an unencrypted key.
+        // Use the builder again, this time with an unencrypted key.
         final Builder builder = new Builder(config);
         builder.setHostKeyType(hostKeyType);
-        builder.setPrivateKeyBlob(plainKey, Vendor.OPENSSH_V1);
+        builder.setPrivateKeyBlob(plainKey, Vendor.OPENSSH_V1, null);
 
         delegate = (KeyPairBase) builder.build();
         delegate.setSshPublicKeyBlob(publicKeyBlob);

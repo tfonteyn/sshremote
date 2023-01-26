@@ -285,17 +285,30 @@ public abstract class KeyPairBase
                 throws GeneralSecurityException;
 
         public void setPrivateKeyBlob(@NonNull final byte[] blob,
-                                      @NonNull final Vendor format) {
+                                      @NonNull final Vendor format,
+                                      @Nullable final PBKDF pbkdf) {
             this.privateKeyBlob.setBlob(blob);
             this.privateKeyBlob.setFormat(format);
+            this.privateKeyBlob.setPBKDF(pbkdf);
         }
 
+        /**
+         * Set the Cipher and an empty IV of the (by the Cipher) expected size.
+         *
+         * @param cipher to use
+         */
         public void setPkeCipher(@NonNull final SshCipher cipher) {
             this.privateKeyBlob.setEncrypted(true);
             this.privateKeyBlob.setCipher(cipher);
             this.privateKeyBlob.setCipherIV(new byte[cipher.getIVSize()]);
         }
 
+        /**
+         * Set the Cipher and the precalculated IV.
+         *
+         * @param cipher to use
+         * @param iv     the precalculated IV
+         */
         public void setPkeCipher(@NonNull final SshCipher cipher,
                                  @NonNull final byte[] iv) {
             this.privateKeyBlob.setEncrypted(true);

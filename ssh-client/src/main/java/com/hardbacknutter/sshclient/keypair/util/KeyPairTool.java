@@ -241,7 +241,7 @@ public class KeyPairTool {
                     final KeyPairRSA.Builder builder = new KeyPairRSA.Builder(config);
                     //noinspection unchecked
                     parsePemEncryptionHeaders(builder, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5);
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, null);
                     keyPair = builder.build();
                     break;
                 }
@@ -250,7 +250,7 @@ public class KeyPairTool {
                     final KeyPairDSA.Builder builder = new KeyPairDSA.Builder(config);
                     //noinspection unchecked
                     parsePemEncryptionHeaders(builder, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5);
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, null);
                     keyPair = builder.build();
                     break;
                 }
@@ -261,7 +261,7 @@ public class KeyPairTool {
                     final KeyPairECDSA.Builder builder = new KeyPairECDSA.Builder(config);
                     //noinspection unchecked
                     parsePemEncryptionHeaders(builder, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5);
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, null);
                     keyPair = builder.build();
                     break;
                 }
@@ -269,7 +269,7 @@ public class KeyPairTool {
                 case "PRIVATE KEY": {
                     // SSL style PKCS8 wrapper
                     final KeyPairPKCS8.Builder builder = new KeyPairPKCS8.Builder(config);
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8);
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8, null);
                     keyPair = builder.build();
                     break;
                 }

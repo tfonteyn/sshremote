@@ -214,7 +214,7 @@ public class KeyPairPKCS8
                 return;
             }
 
-            builder.setPrivateKeyBlob(privateKey, keyFormat);
+            builder.setPrivateKeyBlob(privateKey, keyFormat, null);
 
             if (privateKeyBlob.getCipher() != null && privateKeyBlob.getCipherIV() != null) {
                 builder.setPkeCipher(privateKeyBlob.getCipher(),
