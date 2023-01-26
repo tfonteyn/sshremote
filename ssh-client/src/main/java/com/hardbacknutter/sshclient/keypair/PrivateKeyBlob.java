@@ -311,8 +311,8 @@ class PrivateKeyBlob {
             final byte[] plainKey = new byte[encryptedPrivateKey.length];
             byte[] pbeKey = null;
             try {
-                pbeKey = new PBKDF2JCE(pbeOID)
-                        .generateSecretKey(passphrase, salt, iterations, cipher.getKeySize());
+                pbeKey = new PBKDF2JCE(pbeOID, salt, iterations)
+                        .generateSecretKey(passphrase, cipher.getKeySize());
 
                 cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
                 cipher.doFinal(encryptedPrivateKey, 0, encryptedPrivateKey.length, plainKey, 0);

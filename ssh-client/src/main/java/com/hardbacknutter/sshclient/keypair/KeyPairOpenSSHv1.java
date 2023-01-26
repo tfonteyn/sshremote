@@ -173,8 +173,8 @@ class KeyPairOpenSSHv1
 
             byte[] pbeKey = null;
             try {
-                pbeKey = new PBEKDF2BCrypt()
-                        .generateSecretKey(passphrase, salt, rounds, 48);
+                pbeKey = new PBEKDF2BCrypt(salt, rounds)
+                        .generateSecretKey(passphrase, 48);
 
                 final byte[] key = Arrays.copyOfRange(pbeKey, 0, 32);
                 final byte[] pbeIV = Arrays.copyOfRange(pbeKey, 32, 48);
