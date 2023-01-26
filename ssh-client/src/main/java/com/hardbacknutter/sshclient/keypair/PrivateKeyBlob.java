@@ -183,19 +183,27 @@ class PrivateKeyBlob {
                         break;
                     }
                     case PUTTY3: {
-                        //TODO: is this length correct?
-                        byte[] tmp = new byte[cipher.getBlockSize() + cipher.getIVSize() + 32];
                         Objects.requireNonNull(pbkdf, "PUTTY3 encrypted but no pbkdf?");
+
+                        // from the Putty docs:
+                        // encryption-type is ‘aes256-cbc’, then the symmetric cipher key
+                        // is 32 bytes long, and the initialisation vector is 16 bytes
+                        // (one cipher block).
+                        // The length of the MAC key is also chosen to be 32 bytes.
+                        final int macLen = 32;
+                        byte[] tmp = new byte[cipher.getKeySize() + cipher.getIVSize() + macLen];
+                        // The output data is interpreted as the concatenation of the cipher key,
+                        // the IV and the MAC key, in that order.
                         tmp = pbkdf.generateSecretKey(passphrase, tmp.length);
 
                         pbeKey = new byte[cipher.getKeySize()];
-                        System.arraycopy(tmp, 0, pbeKey, 0, pbeKey.length);
-                        System.arraycopy(tmp, pbeKey.length, cipherIV, 0, cipherIV.length);
+                        System.arraycopy(tmp, 0, pbeKey, 0, cipher.getKeySize());
+                        System.arraycopy(tmp, cipher.getKeySize(), cipherIV, 0, cipherIV.length);
                         break;
                     }
                     case PUTTY2: {
-                        // PuTTY PPK-2 files uses a hardcoded MessageDigest
                         Objects.requireNonNull(pbkdf, "PUTTY2 encrypted but no pbkdf?");
+
                         pbeKey = pbkdf.generateSecretKey(passphrase, 32);
                         break;
                     }
@@ -207,7 +215,6 @@ class PrivateKeyBlob {
                 }
 
                 final byte[] plainKey = new byte[blob.length];
-
                 cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
                 cipher.doFinal(blob, 0, blob.length, plainKey, 0);
                 return plainKey;
