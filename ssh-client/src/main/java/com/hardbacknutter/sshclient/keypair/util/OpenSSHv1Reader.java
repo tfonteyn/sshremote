@@ -1,18 +1,20 @@
 package com.hardbacknutter.sshclient.keypair.util;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
+import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class OpenSSHv1Reader {
@@ -27,12 +29,12 @@ public class OpenSSHv1Reader {
     /**
      * Constructor.
      */
-    OpenSSHv1Reader(@NonNull final SshClientConfig config,
-                    @NonNull final KeyPairOpenSSHv1.Builder keyPairBuilder) {
+    OpenSSHv1Reader(@NonNull final SshClientConfig config) {
         this.config = config;
-        this.keyPairBuilder = keyPairBuilder;
+        this.keyPairBuilder = new KeyPairOpenSSHv1.Builder(config);
     }
 
+    @SuppressWarnings("WeakerAccess")
     static boolean isOpenSSHv1(@NonNull final byte[] blob) {
         return Arrays.equals(AUTH_MAGIC, Arrays.copyOfRange(blob, 0, AUTH_MAGIC.length));
     }
@@ -70,8 +72,13 @@ public class OpenSSHv1Reader {
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL.key?rev=HEAD">
      * openbsd PROTOCOL</a>
      */
-    void parse(@NonNull final byte[] blob)
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+    @Nullable
+    SshKeyPair parse(@NonNull final byte[] blob)
+            throws IOException, GeneralSecurityException {
+
+        if (!isOpenSSHv1(blob)) {
+            return null;
+        }
 
         final Buffer buffer = new Buffer(blob);
         // Skip "openssh-key-v1"0x00    # NULL-terminated "Auth Magic" string
@@ -97,7 +104,7 @@ public class OpenSSHv1Reader {
 
         // private key is encoded using the same rules as used for SSH agent
         final byte[] privateKeyBlob = buffer.getString();
-        keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1);
+        keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
 
         if (SshCipherConstants.NONE.equals(cipherName)) {
             // not encrypted, we'll bypass the DEFERRED state and
@@ -110,5 +117,7 @@ public class OpenSSHv1Reader {
             keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
                           .setPkeCipher(ImplementationFactory.getCipher(config, cipherName));
         }
+
+        return keyPairBuilder.build();
     }
 }

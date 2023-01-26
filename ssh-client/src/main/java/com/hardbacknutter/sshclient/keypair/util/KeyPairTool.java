@@ -10,7 +10,6 @@ import com.hardbacknutter.sshclient.keypair.KeyPairBase;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
 import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
@@ -227,12 +226,15 @@ public class KeyPairTool {
             switch (pem.getType()) {
                 case "OPENSSH PRIVATE KEY": {
                     // current openssh v1 default
-                    final KeyPairOpenSSHv1.Builder builder = new KeyPairOpenSSHv1.Builder(config);
-                    final OpenSSHv1Reader parser = new OpenSSHv1Reader(config, builder);
-                    parser.parse(pem.getContent());
-                    // all done, the public key was embedded in the privateKeyBlob
-                    // We silently ignore the 'pubKey' which might have a 'comment' ...
-                    return builder.build();
+                    final OpenSSHv1Reader parser = new OpenSSHv1Reader(config);
+                    keyPair = parser.parse(pem.getContent());
+                    if (keyPair != null) {
+                        // all done, the public key was embedded in the privateKeyBlob
+                        // We silently ignore the 'pubKey' which might have a 'comment' ...
+                        return keyPair;
+                    } else {
+                        throw new InvalidKeyException("Invalid OpenSSHv1 format");
+                    }
                 }
                 case "RSA PRIVATE KEY": {
                     // legacy openssh rsa pem
