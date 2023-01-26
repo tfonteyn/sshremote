@@ -8,6 +8,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -23,20 +24,39 @@ public class PBKDF2JCE
 
     @NonNull
     private final String algorithm;
+    @NonNull
+    private final byte[] salt;
+    private final int iterations;
+
+    @SuppressWarnings("FieldNotUsedInToString")
+    @NonNull
+    private final SecretKeyFactory skf;
+
 
     /**
      * @param algorithm standard JDK name (e.g. "PBKDF2WithHmacSHA1")
      */
-    public PBKDF2JCE(@NonNull final String algorithm) {
+    @SuppressWarnings("WeakerAccess")
+    public PBKDF2JCE(@NonNull final String algorithm,
+                     @NonNull final byte[] salt,
+                     final int iterations)
+            throws NoSuchAlgorithmException {
         this.algorithm = algorithm;
+        this.salt = salt;
+        this.iterations = iterations;
+
+        skf = SecretKeyFactory.getInstance(algorithm);
     }
 
-    public PBKDF2JCE(@NonNull final ASN1ObjectIdentifier oid) {
-        this.algorithm = getPBEAlgorithm(oid);
+    public PBKDF2JCE(@NonNull final ASN1ObjectIdentifier oid,
+                     @NonNull final byte[] salt,
+                     final int iterations)
+            throws NoSuchAlgorithmException {
+        this(getPBEAlgorithm(oid), salt, iterations);
     }
 
     @NonNull
-    private String getPBEAlgorithm(@NonNull final ASN1ObjectIdentifier oid) {
+    private static String getPBEAlgorithm(@NonNull final ASN1ObjectIdentifier oid) {
 
         //not exhaustive, but should hopefully do for now.
         // PBKDF2With<prf>
@@ -61,10 +81,8 @@ public class PBKDF2JCE
     @Override
     @NonNull
     public byte[] generateSecretKey(@NonNull final byte[] passphrase,
-                                    @NonNull final byte[] salt,
-                                    final int iterations,
                                     final int keyLength)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
+            throws InvalidKeySpecException {
 
         final char[] pass = new char[passphrase.length];
         for (int i = 0; i < passphrase.length; i++) {
@@ -72,9 +90,15 @@ public class PBKDF2JCE
         }
 
         final KeySpec keySpec = new PBEKeySpec(pass, salt, iterations, keyLength * 8);
+        return skf.generateSecret(keySpec).getEncoded();
+    }
 
-        final SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
-        return skf.generateSecret(keySpec)
-                  .getEncoded();
+    @Override
+    public String toString() {
+        return "PBKDF2JCE{"
+                + "algorithm='" + algorithm + '\''
+                + ", salt=" + Arrays.toString(salt)
+                + ", iterations=" + iterations
+                + '}';
     }
 }

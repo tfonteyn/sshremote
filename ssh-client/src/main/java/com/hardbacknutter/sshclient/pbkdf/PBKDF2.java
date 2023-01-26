@@ -8,8 +8,6 @@ public interface PBKDF2 {
 
     @NonNull
     byte[] generateSecretKey(@NonNull byte[] passphrase,
-                             @NonNull byte[] salt,
-                             int iterations,
                              int keyLength)
             throws GeneralSecurityException;
 }
