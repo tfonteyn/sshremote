@@ -30,8 +30,8 @@ import java.util.Arrays;
  */
 public abstract class ABuffer<T extends ABuffer<T>> {
 
-    private static final String ERROR_PACKET_SIZE_EXCEEDED_INT_MAX =
-            "Packet size exceeded Integer.MAX_VALUE";
+    private static final String ERROR_SIZE_WAS_NEGATIVE =
+            "A uint32 representing a size was negative / exceeded Integer.MAX_VALUE";
 
     /** The default size for the buffer. */
     private static final int DEFAULT_SIZE = 256;
@@ -462,7 +462,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
         // uint32 but we can't have out-of-memory
         final int len = getInt();
         if (len < 0) {
-            throw new IOException(ERROR_PACKET_SIZE_EXCEEDED_INT_MAX);
+            throw new IOException(ERROR_SIZE_WAS_NEGATIVE);
         } else if (len > Packet.MAX_SIZE) {
             // avoid out-of-memory...
             throw new IOException("Packet size exceeded len=" + len);
@@ -505,7 +505,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
         // uint32 but we can't have out-of-memory
         final int len = getInt();
         if (len < 0) {
-            throw new IOException(ERROR_PACKET_SIZE_EXCEEDED_INT_MAX);
+            throw new IOException(ERROR_SIZE_WAS_NEGATIVE);
         } else if (len > Packet.MAX_SIZE) {
             // avoid out-of-memory...
             throw new IOException("Packet size exceeded len=" + len);
