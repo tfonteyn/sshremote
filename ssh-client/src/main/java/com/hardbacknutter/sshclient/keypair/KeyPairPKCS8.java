@@ -128,10 +128,6 @@ public class KeyPairPKCS8
                @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
-        if (privateKeyBlob.isEncrypted()) {
-            return;
-        }
-
         try {
             final ASN1InputStream stream = new ASN1InputStream(encodedKey);
             final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());

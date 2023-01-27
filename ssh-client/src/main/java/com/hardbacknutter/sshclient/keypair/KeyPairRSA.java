@@ -286,10 +286,6 @@ public class KeyPairRSA
                @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
-        if (privateKeyBlob.isEncrypted()) {
-            return;
-        }
-
         try {
             switch (keyFormat) {
                 case PUTTY3:
