@@ -96,7 +96,10 @@ class PrivateKeyBlob {
             throw new KeyException("PKDecryptor not set");
         }
 
-        return decryptor.decrypt(passphrase, blob);
+        final byte[] plainKey = decryptor.decrypt(passphrase, blob);
+        // be optimistic, assume all went well. If not, a subsequent parse() will reset this flag
+        encrypted = false;
+        return plainKey;
     }
 
     public void dispose() {
