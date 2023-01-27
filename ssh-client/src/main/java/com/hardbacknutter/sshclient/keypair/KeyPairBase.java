@@ -193,8 +193,10 @@ public abstract class KeyPairBase
      * <p>
      * The data must be in some format that the implementation can parse.
      * <p>
-     * IMPORTANT: implementations MUST NOT assume that the 'encodedKey' and 'keyFormat'
+     * <strong>IMPORTANT: implementations MUST NOT assume that the 'encodedKey' and 'keyFormat'
      * are from the internal privateKeyBlob.
+     * They MUST ONLY call {@code privateKeyBlob.setEncrypted(success)} with the outcome
+     * </strong>
      *
      * @param encodedKey the unencrypted (plain) key data.
      * @param keyFormat  the encoding format
