@@ -6,13 +6,15 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.EdKeyType;
-import com.hardbacknutter.sshclient.keypair.KeyPairBase;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS5;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS8;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.util.io.pem.PemHeader;
@@ -239,18 +241,20 @@ public class KeyPairTool {
                 case "RSA PRIVATE KEY": {
                     // legacy openssh rsa pem
                     final KeyPairRSA.Builder builder = new KeyPairRSA.Builder(config);
+                    final PKDecryptor decryptor = new DecryptPKCS5();
                     //noinspection unchecked
-                    parsePemEncryptionHeaders(builder, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, null);
+                    parsePemEncryptionHeaders(decryptor, pem.getHeaders());
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
                     keyPair = builder.build();
                     break;
                 }
                 case "DSA PRIVATE KEY": {
                     // legacy openssh dsa pem
                     final KeyPairDSA.Builder builder = new KeyPairDSA.Builder(config);
+                    final PKDecryptor decryptor = new DecryptPKCS5();
                     //noinspection unchecked
-                    parsePemEncryptionHeaders(builder, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, null);
+                    parsePemEncryptionHeaders(decryptor, pem.getHeaders());
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
                     keyPair = builder.build();
                     break;
                 }
@@ -259,9 +263,10 @@ public class KeyPairTool {
                     // The type will be one of (currently) 3: ECDSA 256/384/521
                     // We'll find out at a later stage in parsing.
                     final KeyPairECDSA.Builder builder = new KeyPairECDSA.Builder(config);
+                    final PKDecryptor decryptor = new DecryptPKCS5();
                     //noinspection unchecked
-                    parsePemEncryptionHeaders(builder, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, null);
+                    parsePemEncryptionHeaders(decryptor, pem.getHeaders());
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
                     keyPair = builder.build();
                     break;
                 }
@@ -269,7 +274,8 @@ public class KeyPairTool {
                 case "PRIVATE KEY": {
                     // SSL style PKCS8 wrapper
                     final KeyPairPKCS8.Builder builder = new KeyPairPKCS8.Builder(config);
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8, null);
+                    final PKDecryptor decryptor = new DecryptPKCS8(config);
+                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8, decryptor);
                     keyPair = builder.build();
                     break;
                 }
@@ -331,7 +337,7 @@ public class KeyPairTool {
         return keyPair;
     }
 
-    private void parsePemEncryptionHeaders(@NonNull final KeyPairBase.BaseKeyPairBuilder builder,
+    private void parsePemEncryptionHeaders(@NonNull final PKDecryptor decryptor,
                                            @NonNull final List<PemHeader> headers)
             throws InvalidKeyException, NoSuchAlgorithmException {
         for (final PemHeader header : headers) {
@@ -375,7 +381,7 @@ public class KeyPairTool {
                         throw new InvalidKeyException("Invalid IV");
                     }
 
-                    builder.setPkeCipher(cipher, iv);
+                    decryptor.setCipher(cipher, iv);
                 }
             }
         }

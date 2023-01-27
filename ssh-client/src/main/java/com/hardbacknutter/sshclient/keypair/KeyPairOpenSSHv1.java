@@ -4,22 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptBCrypt;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
 import com.hardbacknutter.sshclient.keypair.util.OpenSSHv1Reader;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
-import com.hardbacknutter.sshclient.pbkdf.PBKDFBCrypt;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.KeyException;
-import java.util.Arrays;
 import java.util.Objects;
-
-import javax.crypto.Cipher;
 
 /**
  * An OpenSSHv1 KeyPair is a wrapper containing a generic encrypted KeyPair.
@@ -147,17 +143,8 @@ class KeyPairOpenSSHv1
         if (!privateKeyBlob.isEncrypted()) {
             return true;
         }
-        if (passphrase == null) {
-            return false;
-        }
-        if (privateKeyBlob.getBlob() == null) {
-            throw new InvalidKeyException("Invalid private key");
-        }
-        if (privateKeyBlob.getCipher() == null) {
-            throw new KeyException("Cipher not set");
-        }
 
-        final byte[] plainKey = new byte[privateKeyBlob.getBlob().length];
+        final byte[] plainKey;
 
         if ("none".equals(kdfName)) {
             // sanity check, if we had an unencrypted key, then we would never get here
@@ -172,24 +159,12 @@ class KeyPairOpenSSHv1
             final byte[] salt = opts.getString();
             final int rounds = opts.getInt();
 
-            byte[] pbeKey = null;
-            try {
-                pbeKey = new PBKDFBCrypt(salt, rounds)
-                        .generateSecretKey(passphrase, 48);
-                // split into key and IV
-                final byte[] key = Arrays.copyOfRange(pbeKey, 0, 32);
-                final byte[] iv = Arrays.copyOfRange(pbeKey, 32, 48);
-                final SshCipher cipher = privateKeyBlob.getCipher();
-                // and decrypt the blob
-                cipher.init(Cipher.DECRYPT_MODE, key, iv);
-                cipher.doFinal(privateKeyBlob.getBlob(), 0, privateKeyBlob.getBlob().length,
-                               plainKey, 0);
-            } finally {
-                if (pbeKey != null) {
-                    Arrays.fill(pbeKey, (byte) 0);
-                }
-                Arrays.fill(passphrase, (byte) 0);
-            }
+            //noinspection ConstantConditions
+            ((DecryptDeferred) privateKeyBlob.getDecryptor())
+                    .setDelegate(new DecryptBCrypt(salt, rounds));
+
+            plainKey = privateKeyBlob.decrypt(passphrase);
+
         } else {
             throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
         }

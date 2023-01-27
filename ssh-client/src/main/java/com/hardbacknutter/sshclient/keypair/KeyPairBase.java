@@ -4,12 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityImpl;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
-import com.hardbacknutter.sshclient.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public abstract class KeyPairBase
      */
     KeyPairBase(@NonNull final SshClientConfig config) {
         this.config = config;
-        privateKeyBlob = new PrivateKeyBlob(config);
+        privateKeyBlob = new PrivateKeyBlob();
     }
 
     /**
@@ -230,11 +229,11 @@ public abstract class KeyPairBase
 
         // decrypted key, or garbage!
         final byte[] plainKey = privateKeyBlob.decrypt(passphrase);
-        // We MUST try parsing first!
+        // We MUST try parsing first to determine if it decrypted ok, or not!
         parse(plainKey, format);
 
         if (privateKeyBlob.isEncrypted()) {
-            // still encrypted
+            // still encrypted or perhaps garbage
             return false;
         }
 
@@ -274,11 +273,11 @@ public abstract class KeyPairBase
         @NonNull
         final SshClientConfig config;
         @NonNull
-        private PrivateKeyBlob privateKeyBlob;
+        private final PrivateKeyBlob privateKeyBlob;
 
         BaseKeyPairBuilder(@NonNull final SshClientConfig config) {
             this.config = config;
-            privateKeyBlob = new PrivateKeyBlob(config);
+            privateKeyBlob = new PrivateKeyBlob();
         }
 
         @NonNull
@@ -286,45 +285,24 @@ public abstract class KeyPairBase
                 throws GeneralSecurityException;
 
         @NonNull
-        public PrivateKeyBlob getPrivateKeyBlob() {
+        PrivateKeyBlob getPrivateKeyBlob() {
             return Objects.requireNonNull(privateKeyBlob, "privateKeyBlob");
         }
 
         /**
-         * @param blob   the byte[] with the private key
-         * @param format the vendor specific format of the private key
-         * @param pbkdf  (optional) the vendor specific password-based-key-derivation-function
+         * @param blob      the byte[] with the private key
+         * @param format    the vendor specific format of the private key
+         * @param decryptor (optional) the vendor specific decryptor
          */
         public void setPrivateKeyBlob(@NonNull final byte[] blob,
                                       @NonNull final Vendor format,
-                                      @Nullable final PBKDF pbkdf) {
+                                      @Nullable final PKDecryptor decryptor) {
             this.privateKeyBlob.setBlob(blob);
             this.privateKeyBlob.setFormat(format);
-            this.privateKeyBlob.setPBKDF(pbkdf);
-        }
-
-        /**
-         * Set the Cipher and an empty IV of the (by the Cipher) expected size.
-         *
-         * @param cipher to use
-         */
-        public void setPkeCipher(@NonNull final SshCipher cipher) {
-            this.privateKeyBlob.setEncrypted(true);
-            this.privateKeyBlob.setCipher(cipher);
-            this.privateKeyBlob.setCipherIV(new byte[cipher.getIVSize()]);
-        }
-
-        /**
-         * Set the Cipher and the precalculated IV.
-         *
-         * @param cipher to use
-         * @param iv     the precalculated IV
-         */
-        public void setPkeCipher(@NonNull final SshCipher cipher,
-                                 @NonNull final byte[] iv) {
-            this.privateKeyBlob.setEncrypted(true);
-            this.privateKeyBlob.setCipher(cipher);
-            this.privateKeyBlob.setCipherIV(iv);
+            this.privateKeyBlob.setPKDecryptor(decryptor);
+            if (decryptor != null) {
+                this.privateKeyBlob.setEncrypted(true);
+            }
         }
     }
 }

@@ -214,12 +214,7 @@ public class KeyPairPKCS8
                 return;
             }
 
-            builder.setPrivateKeyBlob(privateKey, keyFormat, null);
-
-            if (privateKeyBlob.getCipher() != null && privateKeyBlob.getCipherIV() != null) {
-                builder.setPkeCipher(privateKeyBlob.getCipher(),
-                                     privateKeyBlob.getCipherIV());
-            }
+            builder.setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor());
 
             delegate = (KeyPairBase) builder.build();
             delegate.setSshPublicKeyBlob(publicKeyBlob);

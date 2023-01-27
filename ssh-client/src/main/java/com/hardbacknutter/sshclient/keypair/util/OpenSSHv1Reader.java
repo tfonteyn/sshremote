@@ -8,6 +8,8 @@ import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
@@ -83,14 +85,14 @@ public class OpenSSHv1Reader {
         final Buffer buffer = new Buffer(blob);
         // Skip "openssh-key-v1"0x00    # NULL-terminated "Auth Magic" string
         buffer.setReadOffSet(AUTH_MAGIC.length);
-        //32-bit length, "none"   # cipher name length and string
+        //32-bit length, "name"   # cipher name length and string
         final String cipherName = buffer.getJString();
 
-        //32-bit length, "none"   # kdfname length and string
-        //32-bit length, nil      # kdf (0 length, no kdf)
+        //32-bit length, "name"   # kdfname length and string
+        //32-bit length, byte[]   # kdfoptions (can be 0 length depending on kdfname)
         keyPairBuilder.setKDF(buffer.getJString(), buffer.getString());
 
-        //32-bit 0x01             # number of keys, hard-coded to 1 (no length)
+        //32-bit 0x01             # number of keys, for now always hard-coded to 1
         final int nrKeys = buffer.getInt();
         if (nrKeys != 1) {
             throw new IOException("We don't support having more than 1 key in the file (yet).");
@@ -104,18 +106,20 @@ public class OpenSSHv1Reader {
 
         // private key is encoded using the same rules as used for SSH agent
         final byte[] privateKeyBlob = buffer.getString();
-        keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
 
         if (SshCipherConstants.NONE.equals(cipherName)) {
             // not encrypted, we'll bypass the DEFERRED state and
             // create the real KeyPair directly.
             keyPairBuilder.setHostKeyType(getHostKeyType(privateKeyBlob));
+            keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
 
         } else {
             // the type can only be determined after decryption,
             // so we take this intermediate here:
-            keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
-                          .setPkeCipher(ImplementationFactory.getCipher(config, cipherName));
+            keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__);
+            final PKDecryptor decryptor = new DecryptDeferred();
+            decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
+            keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
         }
 
         return keyPairBuilder.build();

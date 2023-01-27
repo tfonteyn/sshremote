@@ -9,9 +9,9 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.pbkdf.PBKDF2Argon;
-import com.hardbacknutter.sshclient.pbkdf.PBKDFPutty2;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty3;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
@@ -31,8 +31,7 @@ import java.util.Base64;
  */
 class PuttyReader {
 
-    private static final byte[] Z_BYTE_ARRAY = new byte[0];
-
+    public static final String AES_256_CBC = "aes256-cbc";
     @NonNull
     private final SshClientConfig config;
 
@@ -90,7 +89,7 @@ class PuttyReader {
             if (line.startsWith("Encryption: ")) {
                 if ("none".equals(value)) {
                     encryption = null;
-                } else if ("aes256-cbc".equals(value)) {
+                } else if (AES_256_CBC.equals(value)) {
                     encryption = value;
                 }
 
@@ -120,22 +119,24 @@ class PuttyReader {
             return null;
         }
 
-        SshCipher cipher = null;
-        PBKDF pbkdf = null;
-        if (encryption != null) {
+        final PKDecryptor decryptor;
+        if (AES_256_CBC.equals(encryption)) {
             if (privateKeyFormat == Vendor.PUTTY3) {
-                pbkdf = new PBKDF2Argon(argonKeyDerivation,
-                                        argonMemory, argonPasses, argonParallelism,
-                                        argonSalt,
-                                        //  a secret key, and some ‘associated data’.
-                                        //  In PPK's use of Argon2, these are both set
-                                        //  to the empty string.
-                                        Z_BYTE_ARRAY, Z_BYTE_ARRAY);
+                // from the Putty docs:
+                // encryption-type is ‘aes256-cbc’,
+                // ... The length of the MAC key is also chosen to be 32 bytes.
+                decryptor = new DecryptPutty3(argonKeyDerivation,
+                                              argonMemory, argonPasses, argonParallelism,
+                                              argonSalt,
+                                              32);
             } else {
-                pbkdf = new PBKDFPutty2();
+                decryptor = new DecryptPutty2();
             }
+            final SshCipher cipher = ImplementationFactory.getCipher(config, encryption);
+            decryptor.setCipher(cipher);
 
-            cipher = ImplementationFactory.getCipher(config, encryption);
+        } else {
+            decryptor = null;
         }
 
         final Buffer buffer = new Buffer(pubKey);
@@ -150,11 +151,7 @@ class PuttyReader {
                                 .setPublicExponent(publicExponent)
                                 .setModulus(modulus);
 
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, pbkdf);
-
-                if (cipher != null) {
-                    builder.setPkeCipher(cipher);
-                }
+                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
 
                 final SshKeyPair keyPair = builder.build();
                 keyPair.setPublicKeyComment(publicKeyComment);
@@ -171,11 +168,7 @@ class PuttyReader {
                                 .setPQG(p, q, g)
                                 .setY(y);
 
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, pbkdf);
-
-                if (cipher != null) {
-                    builder.setPkeCipher(cipher);
-                }
+                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
 
                 final SshKeyPair keyPair = builder.build();
                 keyPair.setPublicKeyComment(publicKeyComment);
