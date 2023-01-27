@@ -161,6 +161,8 @@ class KeyPairOpenSSHv1
                     .setDelegate(new DecryptBCrypt(salt, rounds));
 
             plainKey = privateKeyBlob.decrypt(passphrase);
+            // We MUST try parsing first to determine if it decrypted ok, or not!
+            parse(plainKey, Vendor.OPENSSH_V1);
 
         } else {
             throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
