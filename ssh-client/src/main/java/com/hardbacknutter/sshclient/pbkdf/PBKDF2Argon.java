@@ -8,44 +8,53 @@ import org.bouncycastle.crypto.params.Argon2Parameters;
 import java.security.KeyException;
 import java.util.Arrays;
 
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings({"FieldCanBeLocal", "NotNullFieldNotInitialized"})
 public class PBKDF2Argon
         implements PBKDF {
 
-    private final int flavour;
-    private final int memory;
-    private final int iterations;
-    private final int parallelism;
-    private final byte[] salt;
+    private int type;
+    private int memory;
+    private int iterationCount;
+    private int parallelism;
+    @NonNull
+    private byte[] salt;
 
     @SuppressWarnings("FieldNotUsedInToString")
     @NonNull
-    private final Argon2BytesGenerator generator;
+    private Argon2BytesGenerator generator;
 
-    public PBKDF2Argon(@NonNull final String keyDerivation,
-                       @NonNull final String memoryAsKB,
-                       @NonNull final String iterations,
-                       @NonNull final String parallelism,
-                       @NonNull final String salt,
-                       @NonNull final byte[] secret,
-                       @NonNull final byte[] Additional)
+    /**
+     * Init.
+     *
+     * @param type           String for the Argon2 key derivation type.
+     *                       One of "Argon2d", "Argon2i" or "Argon2id".
+     * @param salt           the salt.
+     * @param iterationCount the iteration count.
+     */
+    public PBKDF2Argon init(@NonNull final String type,
+                            @NonNull final String salt,
+                            @NonNull final String iterationCount,
+                            @NonNull final String memoryAsKB,
+                            @NonNull final String parallelism,
+                            @NonNull final byte[] secret,
+                            @NonNull final byte[] Additional)
             throws KeyException {
-        switch (keyDerivation) {
+        switch (type) {
             case "Argon2d":
-                flavour = Argon2Parameters.ARGON2_d;
+                this.type = Argon2Parameters.ARGON2_d;
                 break;
             case "Argon2i":
-                flavour = Argon2Parameters.ARGON2_i;
+                this.type = Argon2Parameters.ARGON2_i;
                 break;
             case "Argon2id":
-                flavour = Argon2Parameters.ARGON2_id;
+                this.type = Argon2Parameters.ARGON2_id;
                 break;
             default:
-                throw new KeyException("Invalid Key-Derivation: " + keyDerivation);
+                throw new KeyException("Invalid Key-Derivation: " + type);
         }
         try {
             this.memory = Integer.parseInt(memoryAsKB);
-            this.iterations = Integer.parseInt(iterations);
+            this.iterationCount = Integer.parseInt(iterationCount);
             this.parallelism = Integer.parseInt(parallelism);
             this.salt = new byte[salt.length() / 2];
             for (int i = 0; i < this.salt.length; i++) {
@@ -56,9 +65,9 @@ public class PBKDF2Argon
             throw new KeyException(e);
         }
 
-        final Argon2Parameters parameters = new Argon2Parameters.Builder(flavour)
+        final Argon2Parameters parameters = new Argon2Parameters.Builder(this.type)
                 .withMemoryAsKB(this.memory)
-                .withIterations(this.iterations)
+                .withIterations(this.iterationCount)
                 .withParallelism(this.parallelism)
                 .withSalt(this.salt)
                 .withSecret(secret)
@@ -67,6 +76,8 @@ public class PBKDF2Argon
 
         generator = new Argon2BytesGenerator();
         generator.init(parameters);
+
+        return this;
     }
 
     @NonNull
@@ -82,9 +93,9 @@ public class PBKDF2Argon
     @Override
     public String toString() {
         return "PBKDF2Argon{"
-                + "flavour=" + flavour
+                + "type=" + type
                 + ", memory=" + memory
-                + ", iterations=" + iterations
+                + ", iterations=" + iterationCount
                 + ", parallelism=" + parallelism
                 + ", salt=" + Arrays.toString(salt)
                 + '}';

@@ -25,7 +25,7 @@ public class DecryptPutty2 implements PKDecryptor {
 
     public DecryptPutty2()
             throws NoSuchAlgorithmException {
-        pbkdf = new PBKDFPutty2();
+        pbkdf = new PBKDFPutty2().init();
     }
 
     @Override

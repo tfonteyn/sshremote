@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * SHA-1 is hardcoded in PuTTY PPK-2 files.
@@ -26,24 +27,31 @@ import java.security.NoSuchAlgorithmException;
  *  }
  * }</pre>
  */
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class PBKDFPutty2
         implements PBKDF {
 
     @NonNull
-    private final MessageDigest md;
+    private MessageDigest md;
 
-    public PBKDFPutty2()
+    public PBKDFPutty2 init()
             throws NoSuchAlgorithmException {
         md = MessageDigest.getInstance("SHA-1");
+        return this;
     }
 
     /**
-     * @param always32 hardcoded to 32; always pass in 32 for future compatibility
+     * @param keyLength MUST be set to 32 for compatibility
      */
     @NonNull
     @Override
     public byte[] generateSecretKey(@NonNull final byte[] passphrase,
-                                    final int always32) {
+                                    final int keyLength) {
+        if (keyLength != 32) {
+            throw new IllegalArgumentException("keyLength must be 32");
+        }
+        Objects.requireNonNull(md, "init must be called before use");
+
         md.reset();
         md.update(new byte[]{0, 0, 0, 0});
         md.update(passphrase);

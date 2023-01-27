@@ -25,7 +25,7 @@ public class DecryptBCrypt
     public DecryptBCrypt(@NonNull final byte[] salt,
                          final int rounds)
             throws NoSuchAlgorithmException {
-        pbkdf = new PBKDFBCrypt(salt, rounds);
+        pbkdf = new PBKDFBCrypt().init(salt, rounds);
     }
 
     @Override

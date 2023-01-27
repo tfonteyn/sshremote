@@ -176,8 +176,8 @@ class KeyPairOpenSSHv1
         final Builder builder = new Builder(config);
         builder.setHostKeyType(hostKeyType);
         builder.setPrivateKeyBlob(plainKey, Vendor.OPENSSH_V1, null);
-
         delegate = (KeyPairBase) builder.build();
+
         delegate.setSshPublicKeyBlob(publicKeyBlob);
         delegate.setPublicKeyComment(publicKeyComment);
 

@@ -2,9 +2,6 @@ package com.hardbacknutter.sshclient.pbkdf;
 
 import androidx.annotation.NonNull;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -19,63 +16,38 @@ import javax.crypto.spec.PBEKeySpec;
  * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#secretkeyfactory-algorithms">
  * Standard algorithm names</a>
  */
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class PBKDFJCE
         implements PBKDF {
 
     @NonNull
-    private final String algorithm;
+    private String algorithm;
     @NonNull
-    private final byte[] salt;
-    private final int iterations;
+    private byte[] salt;
+    private int iterationCount;
 
     @SuppressWarnings("FieldNotUsedInToString")
     @NonNull
-    private final SecretKeyFactory skf;
-
+    private SecretKeyFactory skf;
 
     /**
-     * @param algorithm standard JDK name (e.g. "PBKDF2WithHmacSHA1")
+     * Init.
+     *
+     * @param algorithm      standard JDK name (e.g. "PBKDF2WithHmacSHA1")
+     * @param salt           the salt.
+     * @param iterationCount the iteration count.
      */
-    @SuppressWarnings("WeakerAccess")
-    public PBKDFJCE(@NonNull final String algorithm,
-                    @NonNull final byte[] salt,
-                    final int iterations)
+    public PBKDFJCE init(@NonNull final String algorithm,
+                         @NonNull final byte[] salt,
+                         final int iterationCount)
             throws NoSuchAlgorithmException {
         this.algorithm = algorithm;
         this.salt = salt;
-        this.iterations = iterations;
+        this.iterationCount = iterationCount;
 
         skf = SecretKeyFactory.getInstance(algorithm);
-    }
 
-    public PBKDFJCE(@NonNull final ASN1ObjectIdentifier oid,
-                    @NonNull final byte[] salt,
-                    final int iterations)
-            throws NoSuchAlgorithmException {
-        this(getPBEAlgorithm(oid), salt, iterations);
-    }
-
-    @NonNull
-    private static String getPBEAlgorithm(@NonNull final ASN1ObjectIdentifier oid) {
-
-        //not exhaustive, but should hopefully do for now.
-        // PBKDF2With<prf>
-
-        if (PKCSObjectIdentifiers.id_hmacWithSHA512.equals(oid)) {
-            return "PBKDF2WithHmacSHA512";
-
-        } else if (PKCSObjectIdentifiers.id_hmacWithSHA384.equals(oid)) {
-            return "PBKDF2WithHmacSHA384";
-
-        } else if (PKCSObjectIdentifiers.id_hmacWithSHA256.equals(oid)) {
-            return "PBKDF2WithHmacSHA256";
-
-        } else if (PKCSObjectIdentifiers.id_hmacWithSHA224.equals(oid)) {
-            return "PBKDF2WithHmacSHA224";
-
-        } else {
-            return "PBKDF2WithHmacSHA1";
-        }
+        return this;
     }
 
     @Override
@@ -89,7 +61,7 @@ public class PBKDFJCE
             pass[i] = (char) (passphrase[i] & 0xff);
         }
 
-        final KeySpec keySpec = new PBEKeySpec(pass, salt, iterations, keyLength * 8);
+        final KeySpec keySpec = new PBEKeySpec(pass, salt, iterationCount, keyLength * 8);
         return skf.generateSecret(keySpec).getEncoded();
     }
 
@@ -98,7 +70,7 @@ public class PBKDFJCE
         return "PBKDFJCE{"
                 + "algorithm='" + algorithm + '\''
                 + ", salt=" + Arrays.toString(salt)
-                + ", iterations=" + iterations
+                + ", iterations=" + iterationCount
                 + '}';
     }
 }

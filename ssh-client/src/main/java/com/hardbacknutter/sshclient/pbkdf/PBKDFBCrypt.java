@@ -26,6 +26,7 @@ import java.util.Arrays;
  * @see <a href="https://github.com/openssh/openssh-portable/blob/master/openbsd-compat/bcrypt_pbkdf.c">
  * pkcs #5 pbkdf2 implementation using the "bcrypt" hash</a>
  */
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class PBKDFBCrypt
         extends BCrypt
         implements PBKDF {
@@ -36,20 +37,27 @@ public class PBKDFBCrypt
             0x66697368, 0x53776174, 0x44796e61, 0x6d697465,
     };
     @NonNull
-    private final byte[] salt;
-    private final int iterations;
+    private byte[] salt;
+    private int iterationCount;
 
     @SuppressWarnings("FieldNotUsedInToString")
     @NonNull
-    private final MessageDigest md;
+    private MessageDigest md;
 
-    public PBKDFBCrypt(@NonNull final byte[] salt,
-                       final int iterations)
+    /**
+     * Init..
+     *
+     * @param salt           the salt.
+     * @param iterationCount the iteration count.
+     */
+    public PBKDFBCrypt init(@NonNull final byte[] salt,
+                            final int iterationCount)
             throws NoSuchAlgorithmException {
         this.salt = salt;
-        this.iterations = iterations;
+        this.iterationCount = iterationCount;
 
         md = MessageDigest.getInstance("SHA-512");
+        return this;
     }
 
     @Override
@@ -62,9 +70,6 @@ public class PBKDFBCrypt
         return key;
     }
 
-    /**
-     * Compatibility with new OpenBSD function.
-     */
     private void pbkdf(@NonNull final byte[] passphrase,
                        @NonNull final byte[] output)
             throws DigestException {
@@ -92,7 +97,7 @@ public class PBKDFBCrypt
             hash(hpass, hsalt, out);
             System.arraycopy(out, 0, tmp, 0, out.length);
 
-            for (int round = 1; round < iterations; round++) {
+            for (int round = 1; round < iterationCount; round++) {
                 md.reset();
                 md.update(tmp);
                 md.digest(hsalt, 0, hsalt.length);
@@ -112,9 +117,6 @@ public class PBKDFBCrypt
         }
     }
 
-    /**
-     * Compatibility with new OpenBSD function.
-     */
     private void hash(@NonNull final byte[] hpass,
                       @NonNull final byte[] hsalt,
                       @NonNull final byte[] output) {
@@ -146,7 +148,7 @@ public class PBKDFBCrypt
     public String toString() {
         return "PBKDFBCrypt{"
                 + "salt=" + Arrays.toString(salt)
-                + ", iterations=" + iterations
+                + ", iterations=" + iterationCount
                 + '}';
     }
 }

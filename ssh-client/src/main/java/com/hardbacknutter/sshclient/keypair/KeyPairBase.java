@@ -237,8 +237,7 @@ public abstract class KeyPairBase
             return false;
         }
 
-        // success
-        privateKeyBlob.setEncrypted(false);
+        // success, replace the encrypted key with the now plain key
         privateKeyBlob.setBlob(plainKey);
         return true;
     }
@@ -290,9 +289,10 @@ public abstract class KeyPairBase
         }
 
         /**
-         * @param blob      the byte[] with the private key
-         * @param format    the vendor specific format of the private key
-         * @param decryptor (optional) the vendor specific decryptor
+         * @param blob      The byte[] with the private key
+         * @param format    The vendor specific format of the private key
+         *                  This is independent from the encryption state.
+         * @param decryptor (optional) The vendor specific decryptor
          */
         public void setPrivateKeyBlob(@NonNull final byte[] blob,
                                       @NonNull final Vendor format,

@@ -57,7 +57,7 @@ class PrivateKeyBlob {
     }
 
     @Nullable
-    public PKDecryptor getDecryptor() {
+    PKDecryptor getDecryptor() {
         return decryptor;
     }
 

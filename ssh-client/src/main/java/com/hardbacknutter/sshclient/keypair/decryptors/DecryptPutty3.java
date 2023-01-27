@@ -36,13 +36,13 @@ public class DecryptPutty3 implements PKDecryptor {
 
         this.macLength = macLength;
 
-        pbkdf = new PBKDF2Argon(keyDerivation,
-                                memoryAsKB, iterations, parallelism,
-                                salt,
-                                //  a secret key, and some ‘associated data’.
-                                //  In PPK's use of Argon2, these are both set
-                                //  to the empty string.
-                                Z_BYTE_ARRAY, Z_BYTE_ARRAY);
+        pbkdf = new PBKDF2Argon()
+                .init(keyDerivation, salt, iterations,
+                      memoryAsKB, parallelism,
+                      //  a secret key, and some ‘associated data’.
+                      //  In PPK's use of Argon2, these are both set
+                      //  to the empty string.
+                      Z_BYTE_ARRAY, Z_BYTE_ARRAY);
     }
 
     @Override

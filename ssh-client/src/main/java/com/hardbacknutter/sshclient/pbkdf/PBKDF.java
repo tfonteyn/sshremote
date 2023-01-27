@@ -11,6 +11,17 @@ import java.security.GeneralSecurityException;
  */
 public interface PBKDF {
 
+    /**
+     * Generates an encoded SecretKey using the given passphrase and length using
+     * the algorithm of the specific implementation.
+     *
+     * @param passphrase to use
+     * @param keyLength  desired key length to generate
+     *
+     * @return encoded SecretKey
+     *
+     * @throws GeneralSecurityException on any failure
+     */
     @NonNull
     byte[] generateSecretKey(@NonNull byte[] passphrase,
                              int keyLength)

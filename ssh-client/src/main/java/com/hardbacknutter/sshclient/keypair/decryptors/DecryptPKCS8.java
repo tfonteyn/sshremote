@@ -124,7 +124,8 @@ public class DecryptPKCS8 implements PKDecryptor {
 
                 final byte[] plainKey = new byte[encryptedPrivateKey.length];
                 try {
-                    pbeKey = new PBKDFJCE(pbeOID, salt, iterations)
+                    pbeKey = new PBKDFJCE()
+                            .init(getPBEAlgorithm(pbeOID), salt, iterations)
                             .generateSecretKey(passphrase, cipher.getKeySize());
 
                     cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
@@ -163,5 +164,28 @@ public class DecryptPKCS8 implements PKDecryptor {
             throw new NoSuchAlgorithmException("Not supported: " + id);
         }
         return ImplementationFactory.getCipher(config, sshName);
+    }
+
+    @NonNull
+    private String getPBEAlgorithm(@NonNull final ASN1ObjectIdentifier oid) {
+
+        //not exhaustive, but should hopefully do for now.
+        // PBKDF2With<prf>
+
+        if (PKCSObjectIdentifiers.id_hmacWithSHA512.equals(oid)) {
+            return "PBKDF2WithHmacSHA512";
+
+        } else if (PKCSObjectIdentifiers.id_hmacWithSHA384.equals(oid)) {
+            return "PBKDF2WithHmacSHA384";
+
+        } else if (PKCSObjectIdentifiers.id_hmacWithSHA256.equals(oid)) {
+            return "PBKDF2WithHmacSHA256";
+
+        } else if (PKCSObjectIdentifiers.id_hmacWithSHA224.equals(oid)) {
+            return "PBKDF2WithHmacSHA224";
+
+        } else {
+            return "PBKDF2WithHmacSHA1";
+        }
     }
 }
