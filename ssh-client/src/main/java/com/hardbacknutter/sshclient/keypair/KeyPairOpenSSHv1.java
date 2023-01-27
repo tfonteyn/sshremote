@@ -22,9 +22,6 @@ import java.util.Objects;
  * <p>
  * They can be unencrypted, but the {@link OpenSSHv1Reader} and {@link Builder}
  * will detect the actual type and create the actual KeyPair directly.
- * <p>
- * {@link #parse} in the constructor will always fail.
- * The {@link #delegate} will be available after {@link #decryptPrivateKey(byte[])}.
  */
 @SuppressWarnings("ClassWithOnlyPrivateConstructors")
 public
