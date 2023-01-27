@@ -291,6 +291,8 @@ public abstract class KeyPairBase
         }
 
         /**
+         * Set the private key blob and its format.
+         *
          * @param blob      The byte[] with the private key
          * @param format    The vendor specific format of the private key
          *                  This is independent from the encryption state.
