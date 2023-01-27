@@ -1,5 +1,7 @@
-package com.hardbacknutter.sshclient;
+package com.hardbacknutter.sshclient.channels.exec;
 
+import com.hardbacknutter.sshclient.ChannelExec;
+import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.utils.SshException;
 
