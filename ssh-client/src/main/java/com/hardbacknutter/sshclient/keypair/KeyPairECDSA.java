@@ -11,7 +11,6 @@ import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.sec.ECPrivateKey;
 
@@ -350,23 +349,14 @@ public class KeyPairECDSA
         }
 
         @NonNull
-        public Builder setHostKeyAlgorithm(@NonNull final String hostKeyAlgorithm)
-                throws NoSuchAlgorithmException {
-            this.ecType = ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
+        public Builder setType(@NonNull final ECKeyType ecType) {
+            this.ecType = ecType;
             return this;
         }
 
         @NonNull
-        Builder setOID(@NonNull final ASN1ObjectIdentifier oid)
-                throws NoSuchAlgorithmException {
-            this.ecType = ECKeyType.getByOid(oid);
-            return this;
-        }
-
-        @NonNull
-        public Builder setPoint(@NonNull final byte[] data)
-                throws IOException {
-            w = ECKeyType.decodePoint(data);
+        public Builder setPoint(@NonNull final ECPoint w) {
+            this.w = w;
             return this;
         }
 

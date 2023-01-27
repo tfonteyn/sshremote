@@ -204,9 +204,9 @@ public class KeyPairPKCS8
                         .getInstance(subSeq.getObjectAt(1));
 
                 builder = new KeyPairECDSA.Builder(config)
+                        .setType(ECKeyType.getByOid(primeOid))
                         // the octet string is the 's' value
-                        .setS(new BigInteger(1, privateKey))
-                        .setOID(primeOid);
+                        .setS(new BigInteger(1, privateKey));
 
             } else {
                 delegate = null;

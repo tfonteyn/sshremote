@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.ECKeyType;
 import com.hardbacknutter.sshclient.keypair.EdKeyType;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.spec.ECPoint;
 import java.util.Arrays;
 
 class SshAgentReader {
@@ -98,13 +100,13 @@ class SshAgentReader {
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521: {
                 buffer.skipString(/* nistName */);
-                final byte[] encodedPoint = buffer.getString();
+                final ECPoint w = ECKeyType.decodePoint(buffer.getString());
                 final BigInteger s = buffer.getBigInteger();
                 final String comment = buffer.getJString();
 
                 keyPair = new KeyPairECDSA.Builder(config)
-                        .setHostKeyAlgorithm(hostKeyAlgorithm)
-                        .setPoint(encodedPoint)
+                        .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                        .setPoint(w)
                         .setS(s)
                         .build();
                 keyPair.setPublicKeyComment(comment);
