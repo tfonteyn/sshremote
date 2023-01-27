@@ -23,7 +23,6 @@ public class MyUserInfo
     public boolean promptPassword(@NonNull final String message,
                                   @NonNull final String destination) {
         System.out.println("USER INFO promptPassword: " + String.format(message, destination));
-        response = !response;
         System.out.println(response);
         return response;
     }
@@ -38,7 +37,6 @@ public class MyUserInfo
     public boolean promptPassphrase(@NonNull final String message,
                                     @NonNull final String destination) {
         System.out.println("USER INFO promptPassphrase: " + String.format(message, destination));
-        response = !response;
         System.out.println(response);
         return response;
     }
@@ -58,7 +56,6 @@ public class MyUserInfo
         //     int RC_REPLACE_KEY = 3;
         //     int RC_ACCEPT_NON_MATCHING_KEY = 4;
         System.out.println("USER INFO promptYesNo: " + reasonCode + ": " + message);
-        response = !response;
         System.out.println(response);
         return response;
     }
