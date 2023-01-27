@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.EdKeyType;
+import com.hardbacknutter.sshclient.keypair.KeyPairBase;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
@@ -30,7 +31,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.List;
@@ -47,24 +47,6 @@ public class KeyPairTool {
      */
     public KeyPairTool(@NonNull final SshClientConfig config) {
         this.config = config;
-    }
-
-    /**
-     * Decode a upper or lowercase hex char to a nibble.
-     *
-     * @param c character to decode
-     *
-     * @return 0..15
-     */
-    private static byte a2b(final byte c) {
-        if ('0' <= c && c <= '9') {
-            return (byte) (c - '0');
-        } else if ('a' <= c && c <= 'f') {
-            return (byte) (c - 'a' + 10);
-        } else if ('A' <= c && c <= 'F') {
-            return (byte) (c - 'A' + 10);
-        }
-        throw new IllegalArgumentException("not a hex char");
     }
 
     /**
@@ -241,21 +223,13 @@ public class KeyPairTool {
                 case "RSA PRIVATE KEY": {
                     // legacy openssh rsa pem
                     final KeyPairRSA.Builder builder = new KeyPairRSA.Builder(config);
-                    final PKDecryptor decryptor = new DecryptPKCS5();
-                    //noinspection unchecked
-                    parsePemEncryptionHeaders(decryptor, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
-                    keyPair = builder.build();
+                    keyPair = buildLegacyOpenSSH(pem, builder);
                     break;
                 }
                 case "DSA PRIVATE KEY": {
                     // legacy openssh dsa pem
                     final KeyPairDSA.Builder builder = new KeyPairDSA.Builder(config);
-                    final PKDecryptor decryptor = new DecryptPKCS5();
-                    //noinspection unchecked
-                    parsePemEncryptionHeaders(decryptor, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
-                    keyPair = builder.build();
+                    keyPair = buildLegacyOpenSSH(pem, builder);
                     break;
                 }
                 case "EC PRIVATE KEY": {
@@ -263,11 +237,7 @@ public class KeyPairTool {
                     // The type will be one of (currently) 3: ECDSA 256/384/521
                     // We'll find out at a later stage in parsing.
                     final KeyPairECDSA.Builder builder = new KeyPairECDSA.Builder(config);
-                    final PKDecryptor decryptor = new DecryptPKCS5();
-                    //noinspection unchecked
-                    parsePemEncryptionHeaders(decryptor, pem.getHeaders());
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
-                    keyPair = builder.build();
+                    keyPair = buildLegacyOpenSSH(pem, builder);
                     break;
                 }
                 case "ENCRYPTED PRIVATE KEY":
@@ -337,53 +307,89 @@ public class KeyPairTool {
         return keyPair;
     }
 
-    private void parsePemEncryptionHeaders(@NonNull final PKDecryptor decryptor,
-                                           @NonNull final List<PemHeader> headers)
-            throws InvalidKeyException, NoSuchAlgorithmException {
-        for (final PemHeader header : headers) {
+    @NonNull
+    private SshKeyPair buildLegacyOpenSSH(@NonNull final PemObject pem,
+                                          @NonNull final KeyPairBase.BaseKeyPairBuilder builder)
+            throws GeneralSecurityException {
+        PKDecryptor decryptor = null;
+        //noinspection unchecked
+        for (final PemHeader header : (List<PemHeader>) pem.getHeaders()) {
             if ("DEK-Info".equals(header.getName())) {
                 // DEK-Info: AES-128-CBC,D54228DB5838E32589695E83A22595C7
                 // The cipher names are (of course) different from what we need.
                 // The encryption algorithm name is as used by OpenSSL EVP_get_cipherbyname()
                 // As this header type is (August 2021) ancient, we're not doing much effort here...
-                final String sshName;
                 final String[] values = header.getValue().split(",");
                 if (values.length == 2) {
-                    switch (values[0]) {
-                        case "AES-128-CBC":
-                            sshName = "aes128-cbc";
-                            break;
-                        case "AES-192-CBC":
-                            sshName = "aes192-cbc";
-                            break;
-                        case "AES-256-CBC":
-                            sshName = "aes256-cbc";
-                            break;
-                        case "DES-EDE3-CBC":
-                            sshName = "3des-cbc";
-                            break;
-                        default:
-                            throw new InvalidKeyException("Invalid cipher");
-                    }
+                    final SshCipher cipher = ImplementationFactory
+                            .getCipher(config, getSshCipherName(values[0]));
+                    final byte[] iv = createIV(values[1], cipher.getIVSize());
 
-                    final SshCipher cipher = ImplementationFactory.getCipher(config, sshName);
-
-                    // next is the IV for the cipher.
-                    final byte[] iv = new byte[cipher.getIVSize()];
-                    try {
-                        final byte[] bytes = values[1].getBytes(StandardCharsets.UTF_8);
-                        int b = 0;
-                        for (int i = 0; i < iv.length; i++) {
-                            iv[i] = (byte)
-                                    (((a2b(bytes[b++]) << 4) & 0xf0) | (a2b(bytes[b++]) & 0x0f));
-                        }
-                    } catch (final IllegalArgumentException e) {
-                        throw new InvalidKeyException("Invalid IV");
-                    }
-
+                    decryptor = new DecryptPKCS5();
                     decryptor.setCipher(cipher, iv);
+                    break;
                 }
             }
         }
+        builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
+        return builder.build();
+    }
+
+    @NonNull
+    private String getSshCipherName(@NonNull final String headerValue)
+            throws InvalidKeyException {
+        final String sshName;
+        switch (headerValue) {
+            case "AES-128-CBC":
+                sshName = "aes128-cbc";
+                break;
+            case "AES-192-CBC":
+                sshName = "aes192-cbc";
+                break;
+            case "AES-256-CBC":
+                sshName = "aes256-cbc";
+                break;
+            case "DES-EDE3-CBC":
+                sshName = "3des-cbc";
+                break;
+            default:
+                throw new InvalidKeyException("Invalid cipher");
+        }
+        return sshName;
+    }
+
+    @NonNull
+    private byte[] createIV(@NonNull final String headerValue,
+                            final int ivSize) throws InvalidKeyException {
+        final byte[] iv = new byte[ivSize];
+        try {
+            final byte[] bytes = headerValue.getBytes(StandardCharsets.UTF_8);
+            int b = 0;
+            for (int i = 0; i < iv.length; i++) {
+                iv[i] = (byte)
+                        (((a2b(bytes[b++]) << 4) & 0xf0) | (a2b(bytes[b++]) & 0x0f));
+            }
+        } catch (final IllegalArgumentException e) {
+            throw new InvalidKeyException("Invalid IV");
+        }
+        return iv;
+    }
+
+    /**
+     * Decode a upper or lowercase hex char to a nibble.
+     *
+     * @param c character to decode
+     *
+     * @return 0..15
+     */
+    private byte a2b(final byte c) {
+        if ('0' <= c && c <= '9') {
+            return (byte) (c - '0');
+        } else if ('a' <= c && c <= 'f') {
+            return (byte) (c - 'a' + 10);
+        } else if ('A' <= c && c <= 'F') {
+            return (byte) (c - 'A' + 10);
+        }
+        throw new IllegalArgumentException("not a hex char");
     }
 }
