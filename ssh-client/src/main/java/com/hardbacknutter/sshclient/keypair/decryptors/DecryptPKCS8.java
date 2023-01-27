@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
-import com.hardbacknutter.sshclient.pbkdf.PBKDFJCE;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFJCE;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.asn1.ASN1InputStream;

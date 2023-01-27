@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
-import com.hardbacknutter.sshclient.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.pbkdf.PBKDF2Argon;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF2Argon;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyException;

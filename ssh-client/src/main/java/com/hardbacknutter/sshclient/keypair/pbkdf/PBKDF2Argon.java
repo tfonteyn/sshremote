@@ -1,4 +1,4 @@
-package com.hardbacknutter.sshclient.pbkdf;
+package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import androidx.annotation.NonNull;
 

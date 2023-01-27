@@ -1,5 +1,5 @@
 
-package com.hardbacknutter.sshclient.pbkdf;
+package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
