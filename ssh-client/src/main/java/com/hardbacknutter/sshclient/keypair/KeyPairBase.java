@@ -282,7 +282,7 @@ public abstract class KeyPairBase
         }
 
         @NonNull
-        abstract SshKeyPair build()
+        public abstract SshKeyPair build()
                 throws GeneralSecurityException;
 
         @NonNull
