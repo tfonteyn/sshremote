@@ -57,4 +57,20 @@ class Putty3Test
                                                 + "putty3/ecdsa256_qwerty.ppk", "qwerty");
         signAndVerify(kp);
     }
+
+    @Test
+    void ed25519()
+            throws IOException, GeneralSecurityException {
+        final SshKeyPair kp = parseFile(TEST_RESOURCES
+                                                + "putty3/ed25519.ppk", null);
+        signAndVerify(kp);
+    }
+
+    @Test
+    void ed25519_enc()
+            throws IOException, GeneralSecurityException {
+        final SshKeyPair kp = parseFile(TEST_RESOURCES
+                                                + "putty3/ed25519_qwerty.ppk", "qwerty");
+        signAndVerify(kp);
+    }
 }
