@@ -8,7 +8,7 @@ import org.bouncycastle.crypto.params.Argon2Parameters;
 import java.security.KeyException;
 import java.util.Arrays;
 
-@SuppressWarnings({"NotNullFieldNotInitialized"})
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class PBKDF2Argon
         implements PBKDF {
 
