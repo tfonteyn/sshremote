@@ -176,29 +176,29 @@ public final class ImplementationFactory {
     @NonNull
     public static Random getRandom(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (Random) loadClassOrDefault(config, Random.RANDOM,
-                                           RandomImpl.class, Random.class);
+        return loadClassOrDefault(config, Random.RANDOM,
+                                  RandomImpl.class, Random.class);
     }
 
     @NonNull
     public static DH getDHKeyAgreement(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (DH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_DH,
-                                       DHImpl.class, DH.class);
+        return loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_DH,
+                                  DHImpl.class, DH.class);
     }
 
     @NonNull
     public static ECDH getECDHKeyAgreement(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (ECDH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_ECDH,
-                                         ECDHImpl.class, ECDH.class);
+        return loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_ECDH,
+                                  ECDHImpl.class, ECDH.class);
     }
 
     @NonNull
     public static XDH getXDHKeyAgreement(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
-        return (XDH) loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_XDH,
-                                        XDHImpl.class, XDH.class);
+        return loadClassOrDefault(config, KexProposal.KEY_AGREEMENT_XDH,
+                                  XDHImpl.class, XDH.class);
     }
 
     /**
@@ -448,7 +448,7 @@ public final class ImplementationFactory {
                         new byte[cipher.getIVSize()]);
 
             // but always return a NEW instance (or is this overkill?)
-            return (SshCipher) c.getDeclaredConstructor().newInstance();
+            return c.getDeclaredConstructor().newInstance();
 
         } catch (final Exception e) {
             throw new NoSuchAlgorithmException(ERROR_ALGORITHM_NOT_FOUND + algorithm, e);
@@ -546,7 +546,7 @@ public final class ImplementationFactory {
 
         if (KexProposal.COMPRESSION_ZLIB.equals(method) ||
                 authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
-            final SshDeflater instance = (SshDeflater) loadClassOrDefault(
+            final SshDeflater instance = loadClassOrDefault(
                     config, DEFLATER_CONFIG_PREFIX + method,
                     SshDeflaterImpl.class, SshDeflater.class);
 
@@ -579,7 +579,7 @@ public final class ImplementationFactory {
         if (KexProposal.COMPRESSION_ZLIB.equals(method) ||
                 authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
 
-            final SshInflater instance = (SshInflater) loadClassOrDefault(
+            final SshInflater instance = loadClassOrDefault(
                     config, INFLATER_CONFIG_PREFIX + method,
                     SshInflaterImpl.class, SshInflater.class);
             instance.init();
