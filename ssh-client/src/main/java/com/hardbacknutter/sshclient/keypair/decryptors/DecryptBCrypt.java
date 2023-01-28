@@ -14,18 +14,20 @@ import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class DecryptBCrypt
         implements PKDecryptor {
 
     @NonNull
-    private final PBKDFBCrypt pbkdf;
+    private PBKDFBCrypt pbkdf;
     @Nullable
     private SshCipher cipher;
 
-    public DecryptBCrypt(@NonNull final byte[] salt,
-                         final int rounds)
+    public DecryptBCrypt init(@NonNull final byte[] salt,
+                              final int iterationCount)
             throws NoSuchAlgorithmException {
-        pbkdf = new PBKDFBCrypt().init(salt, rounds);
+        pbkdf = new PBKDFBCrypt().init(salt, iterationCount);
+        return this;
     }
 
     @Override

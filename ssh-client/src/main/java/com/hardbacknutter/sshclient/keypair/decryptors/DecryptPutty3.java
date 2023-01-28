@@ -10,39 +10,42 @@ import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF2Argon;
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
 import java.util.Arrays;
-import java.util.Objects;
 
 import javax.crypto.Cipher;
 
+
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class DecryptPutty3 implements PKDecryptor {
 
     private static final byte[] Z_BYTE_ARRAY = new byte[0];
 
-    private final int macLength;
-    @Nullable
-    private final PBKDF pbkdf;
+    private int macLength;
+    @NonNull
+    private PBKDF pbkdf;
     @Nullable
     private SshCipher cipher;
     @Nullable
     private byte[] cipherIV;
 
-    public DecryptPutty3(@NonNull final String keyDerivation,
-                         @NonNull final String memoryAsKB,
-                         @NonNull final String iterations,
-                         @NonNull final String parallelism,
-                         @NonNull final String salt,
-                         final int macLength)
+    public DecryptPutty3 init(@NonNull final String keyDerivation,
+                              @NonNull final String memoryAsKB,
+                              @NonNull final String iterationCount,
+                              @NonNull final String parallelism,
+                              @NonNull final String salt,
+                              final int macLength)
             throws KeyException {
 
         this.macLength = macLength;
 
         pbkdf = new PBKDF2Argon()
-                .init(keyDerivation, salt, iterations,
+                .init(keyDerivation, salt, iterationCount,
                       memoryAsKB, parallelism,
                       //  a secret key, and some ‘associated data’.
                       //  In PPK's use of Argon2, these are both set
                       //  to the empty string.
                       Z_BYTE_ARRAY, Z_BYTE_ARRAY);
+
+        return this;
     }
 
     @Override
@@ -59,7 +62,6 @@ public class DecryptPutty3 implements PKDecryptor {
         if (cipher == null || cipherIV == null) {
             throw new KeyException("Cipher/iv not set");
         }
-        Objects.requireNonNull(pbkdf, "PUTTY3 encrypted but no pbkdf?");
 
         byte[] pbeKey = null;
         try {

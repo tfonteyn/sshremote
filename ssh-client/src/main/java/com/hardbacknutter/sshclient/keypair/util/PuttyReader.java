@@ -129,12 +129,12 @@ class PuttyReader {
                 // from the Putty docs:
                 // encryption-type is ‘aes256-cbc’,
                 // ... The length of the MAC key is also chosen to be 32 bytes.
-                decryptor = new DecryptPutty3(argonKeyDerivation,
-                                              argonMemory, argonPasses, argonParallelism,
-                                              argonSalt,
-                                              32);
+                decryptor = new DecryptPutty3().init(argonKeyDerivation,
+                                                     argonMemory, argonPasses, argonParallelism,
+                                                     argonSalt,
+                                                     32);
             } else {
-                decryptor = new DecryptPutty2();
+                decryptor = new DecryptPutty2().init();
             }
             final SshCipher cipher = ImplementationFactory.getCipher(config, encryption);
             decryptor.setCipher(cipher);

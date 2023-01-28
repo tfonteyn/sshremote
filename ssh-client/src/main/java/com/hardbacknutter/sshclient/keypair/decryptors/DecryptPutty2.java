@@ -14,18 +14,21 @@ import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class DecryptPutty2 implements PKDecryptor {
 
     @NonNull
-    private final PBKDF pbkdf;
+    private PBKDF pbkdf;
     @Nullable
     private SshCipher cipher;
     @Nullable
     private byte[] cipherIV;
 
-    public DecryptPutty2()
+    @NonNull
+    public DecryptPutty2 init()
             throws NoSuchAlgorithmException {
         pbkdf = new PBKDFPutty2().init();
+        return this;
     }
 
     @Override

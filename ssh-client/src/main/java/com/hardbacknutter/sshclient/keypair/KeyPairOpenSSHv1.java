@@ -158,7 +158,7 @@ class KeyPairOpenSSHv1
 
             //noinspection ConstantConditions
             ((DecryptDeferred) privateKeyBlob.getDecryptor())
-                    .setDelegate(new DecryptBCrypt(salt, rounds));
+                    .setDelegate(new DecryptBCrypt().init(salt, rounds));
 
             plainKey = privateKeyBlob.decrypt(passphrase);
             // We MUST try parsing first to determine if it decrypted ok, or not!
