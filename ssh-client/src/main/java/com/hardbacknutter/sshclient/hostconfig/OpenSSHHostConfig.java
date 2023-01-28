@@ -8,6 +8,7 @@ import com.hardbacknutter.sshclient.utils.Globber;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -155,7 +156,8 @@ final class OpenSSHHostConfig
     }
 
     /**
-     * Get a single-value key. We ALWAYS return the first occurrence found.
+     * Get a single-value key.
+     * As per the client "ssh_config" specification, ALWAYS returns the first occurrence found.
      *
      * @param key to get
      *
@@ -165,21 +167,23 @@ final class OpenSSHHostConfig
     private String getSingleOption(@NonNull final String key,
                                    @Nullable final String defValue) {
 
-        // find the first occurrence
-        String value;
-        for (final List<String[]> v : config) {
-            value = v.stream()
+        return config.stream()
+                     .flatMap(Collection::stream)
                      .filter(kv -> kv[0].equalsIgnoreCase(key))
-                     .findFirst()
                      .map(kv -> kv[1])
-                     .orElse(null);
-
-            if (value != null) {
-                return value;
-            }
-        }
-
-        return defValue;
+                     .filter(Objects::nonNull)
+                     .map(String::trim)
+                     .map(v -> {
+                              if (v.startsWith("\"") && v.endsWith("\"")) {
+                                  return v.substring(1, v.length() - 1).trim();
+                              }
+                              return v;
+                          }
+                     )
+                     .filter(value -> !value.isBlank())
+                     // take the first found
+                     .findFirst()
+                     .orElse(defValue);
     }
 
     /**
@@ -205,37 +209,55 @@ final class OpenSSHHostConfig
     private String getListOption(@NonNull final String key,
                                  @Nullable final String defValue) {
 
-        final List<String> list;
-
-        if (defValue == null || !defValue.contains(",")) {
-            list = new ArrayList<>();
-        } else {
-            list = new ArrayList<>(Arrays.asList(defValue.split(",")));
+        // Start with the defaults
+        final List<String> list = new ArrayList<>();
+        if (defValue != null) {
+            if (defValue.contains(",")) {
+                list.addAll(Arrays.asList(defValue.split(",")));
+            } else {
+                list.add(defValue);
+            }
         }
 
-        for (final List<String[]> v : config) {
-            v.stream()
-             .filter(kv -> kv[0].equalsIgnoreCase(key))
-             .map(kv -> kv[1])
-             .filter(Objects::nonNull)
-             .map(String::trim)
-             .filter(value -> !value.isBlank())
-             .forEach(value -> {
-                 if (value.startsWith("^")) {
-                     list.add(0, value.substring(1));
-                 } else if (value.startsWith("-")) {
-                     for (final String s : value.substring(1).split(",")) {
-                         // remove all occurrences.
-                         //noinspection StatementWithEmptyBody
-                         while (list.remove(s)) ;
-                     }
-                 } else if (value.startsWith("+")) {
-                     list.add(value.substring(1));
-                 } else {
-                     list.add(value);
-                 }
-             });
-        }
+        config.stream()
+              .flatMap(Collection::stream)
+              .filter(kv -> kv[0].equalsIgnoreCase(key))
+              .map(kv -> kv[1])
+              .filter(Objects::nonNull)
+              .map(String::trim)
+              .map(v -> {
+                       if (v.startsWith("\"") && v.endsWith("\"")) {
+                           return v.substring(1, v.length() - 1).trim();
+                       }
+                       return v;
+                   }
+              )
+              .filter(value -> !value.isBlank())
+              // process the ^-+ prefixes if any
+              .forEach(value -> {
+                  if (value.startsWith("^")) {
+                      // add at the start
+                      list.add(0, value.substring(1));
+
+                  } else if (value.startsWith("-")) {
+                      // the line itself is a CSV, split it first
+                      for (final String s : value.substring(1).split(",")) {
+                          // The list might have multiple occurrences of the same value,
+                          // so loop until all gone.
+                          //noinspection StatementWithEmptyBody
+                          while (list.remove(s)) ;
+                      }
+                  } else if (value.startsWith("+")) {
+                      // add at the end
+                      list.add(value.substring(1));
+
+                  } else {
+                      // Overwrite!
+                      list.clear();
+                      list.add(value);
+                  }
+              });
+
 
         // Each element in 'list' can be a csv string on its own.
         // So we join all of them, and split them again.
