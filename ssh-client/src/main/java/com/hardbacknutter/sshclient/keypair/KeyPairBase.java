@@ -18,7 +18,8 @@ import java.util.Objects;
 /**
  * Base class for a pair of public and private key.
  * <p>
- * Copied from https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6263419
+ * Copied from <a href="https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6263419">
+ * java bug 6263419</a>
  * We agree with this assessment.
  * We DO clear arrays as an extra effort but make no effort otherwise.
  */
