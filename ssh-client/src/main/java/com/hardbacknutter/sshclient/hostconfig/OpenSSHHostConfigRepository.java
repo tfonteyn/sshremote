@@ -76,7 +76,7 @@ import java.util.regex.Pattern;
 public final class OpenSSHHostConfigRepository
         implements HostConfigRepository {
 
-    private static final Pattern SPLIT_PATTERN = Pattern.compile("[= \t]");
+    private static final Pattern SPLIT_PATTERN = Pattern.compile("[= \t]+");
 
     /**
      * key: host(or alias); value: the name-value pairs.
