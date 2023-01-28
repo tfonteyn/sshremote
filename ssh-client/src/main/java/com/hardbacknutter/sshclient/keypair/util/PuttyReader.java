@@ -35,7 +35,7 @@ import java.util.Base64;
  */
 class PuttyReader {
 
-    public static final String AES_256_CBC = "aes256-cbc";
+    private static final String AES_256_CBC = "aes256-cbc";
     @NonNull
     private final SshClientConfig config;
 
