@@ -316,7 +316,6 @@ public class KeyPairTool {
     @Nullable
     private PKDecryptor createPKDecryptor(@NonNull final PemObject pem)
             throws InvalidKeyException, NoSuchAlgorithmException {
-        PKDecryptor decryptor = null;
         //noinspection unchecked
         for (final PemHeader header : (List<PemHeader>) pem.getHeaders()) {
             if ("DEK-Info".equals(header.getName())) {
@@ -330,7 +329,7 @@ public class KeyPairTool {
                             .getCipher(config, getSshCipherName(values[0]));
                     final byte[] iv = createIV(values[1], cipher.getIVSize());
 
-                    decryptor = new DecryptPKCS5();
+                    final PKDecryptor decryptor = new DecryptPKCS5();
                     decryptor.setCipher(cipher, iv);
                     return decryptor;
                 }
