@@ -29,24 +29,32 @@ class Putty3Test
     @Test
     void rsa()
             throws IOException, GeneralSecurityException {
-        final SshKeyPair kp = parseFile(TEST_RESOURCES + "putty3/rsa.ppk", null);
+        final SshKeyPair kp = parseFile(TEST_RESOURCES
+                                                + "putty3/rsa.ppk", null);
         signAndVerify(kp);
     }
 
     @Test
     void rsa_enc()
             throws IOException, GeneralSecurityException {
-        final SshKeyPair kp = parseFile(TEST_RESOURCES + "putty3/rsa_qwerty.ppk", "qwerty");
+        final SshKeyPair kp = parseFile(TEST_RESOURCES
+                                                + "putty3/rsa_qwerty.ppk", "qwerty");
         signAndVerify(kp);
     }
 
-    // This test will fail... we don't have support for ECDSA keys from PuTTY yet
-    // @Test
+    @Test
     void ecdsa()
             throws IOException, GeneralSecurityException {
-
         final SshKeyPair kp = parseFile(TEST_RESOURCES
                                                 + "putty3/ecdsa256.ppk", null);
+        signAndVerify(kp);
+    }
+
+    @Test
+    void ecdsa_enc()
+            throws IOException, GeneralSecurityException {
+        final SshKeyPair kp = parseFile(TEST_RESOURCES
+                                                + "putty3/ecdsa256_qwerty.ppk", "qwerty");
         signAndVerify(kp);
     }
 }

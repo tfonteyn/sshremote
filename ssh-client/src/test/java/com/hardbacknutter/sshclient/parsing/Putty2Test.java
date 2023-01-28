@@ -12,25 +12,21 @@ class Putty2Test
     @Test
     void dsa_enc()
             throws IOException, GeneralSecurityException {
-        final SshKeyPair kp = parseFile(TEST_RESOURCES
-                                                + "putty2/dsa_qwerty.ppk", "qwerty");
+        final SshKeyPair kp = parseFile(TEST_RESOURCES + "putty2/dsa_qwerty.ppk", "qwerty");
         signAndVerify(kp);
     }
 
     @Test
     void rsa_enc()
             throws IOException, GeneralSecurityException {
-        final SshKeyPair kp = parseFile(TEST_RESOURCES
-                                                + "putty2/rsa_qwerty.ppk", "qwerty");
+        final SshKeyPair kp = parseFile(TEST_RESOURCES + "putty2/rsa_qwerty.ppk", "qwerty");
         signAndVerify(kp);
     }
 
-    // This test will fail... we don't have support for ECDSA keys from PuTTY yet
-    // @Test
+    @Test
     void ecdsa256_enc()
             throws IOException, GeneralSecurityException {
-        final SshKeyPair kp = parseFile(TEST_RESOURCES
-                                                + "putty2/ecdsa256_qwerty.ppk", "qwerty");
+        final SshKeyPair kp = parseFile(TEST_RESOURCES + "putty2/ecdsa256_qwerty.ppk", "qwerty");
         signAndVerify(kp);
     }
 }
