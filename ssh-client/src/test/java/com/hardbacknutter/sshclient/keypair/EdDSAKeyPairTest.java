@@ -5,17 +5,14 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-class RSA
+class EdDSAKeyPairTest
         extends BaseKeyPairTest {
 
     @Test
-    void rsaKeyPairTest()
+    void edKeyPairTest()
             throws GeneralSecurityException, IOException {
 
-        keyPairTest("rsa", 1024);
-        // keyPairTest("rsa", 2048);
-        // keyPairTest("rsa", 4096);
-        // 8192 is SLOW...
-        //keyPairTest("rsa", 8192);
+        keyPairTest("ed25519");
+        keyPairTest("ed448");
     }
 }

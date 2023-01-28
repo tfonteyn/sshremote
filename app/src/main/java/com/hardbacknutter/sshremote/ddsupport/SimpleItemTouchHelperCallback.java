@@ -131,6 +131,7 @@ public class SimpleItemTouchHelperCallback
                                   final int actionState) {
         // We only want the active item to change
         if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
+            //noinspection InstanceofIncompatibleInterface
             if (viewHolder instanceof ItemTouchHelperViewHolder) {
                 // Let the view holder know that this item is being moved or dragged
                 ((ItemTouchHelperViewHolder) viewHolder).onItemDragStarted();
@@ -147,6 +148,7 @@ public class SimpleItemTouchHelperCallback
 
         viewHolder.itemView.setAlpha(ALPHA_FULL);
 
+        //noinspection InstanceofIncompatibleInterface
         if (viewHolder instanceof ItemTouchHelperViewHolder) {
             // Tell the view holder it's time to restore the idle state
             ((ItemTouchHelperViewHolder) viewHolder).onItemDragFinished();

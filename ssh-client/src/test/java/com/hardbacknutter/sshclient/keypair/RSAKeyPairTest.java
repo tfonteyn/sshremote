@@ -5,15 +5,17 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-class ECDSA
+class RSAKeyPairTest
         extends BaseKeyPairTest {
 
     @Test
-    void ecdsaKeyPairTest()
+    void rsaKeyPairTest()
             throws GeneralSecurityException, IOException {
 
-        keyPairTest("ecdsa", 256);
-        keyPairTest("ecdsa", 384);
-        keyPairTest("ecdsa", 521);
+        keyPairTest("rsa", 1024);
+        // keyPairTest("rsa", 2048);
+        // keyPairTest("rsa", 4096);
+        // 8192 is SLOW...
+        //keyPairTest("rsa", 8192);
     }
 }

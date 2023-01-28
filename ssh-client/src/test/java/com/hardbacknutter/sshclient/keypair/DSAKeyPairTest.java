@@ -5,14 +5,15 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-class EdDSA
+class DSAKeyPairTest
         extends BaseKeyPairTest {
 
     @Test
-    void edKeyPairTest()
+    void dsaKeyPairTest()
             throws GeneralSecurityException, IOException {
 
-        keyPairTest("ed25519");
-        keyPairTest("ed448");
+        keyPairTest("dsa", 1024);
+        keyPairTest("dsa", 2048);
     }
+
 }
