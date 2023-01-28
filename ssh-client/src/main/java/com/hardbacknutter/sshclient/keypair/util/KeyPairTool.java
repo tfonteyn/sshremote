@@ -369,30 +369,12 @@ public class KeyPairTool {
             final byte[] bytes = headerValue.getBytes(StandardCharsets.UTF_8);
             int b = 0;
             for (int i = 0; i < iv.length; i++) {
-                iv[i] = (byte)
-                        (((a2b(bytes[b++]) << 4) & 0xf0) | (a2b(bytes[b++]) & 0x0f));
+                iv[i] = (byte) (((Character.digit(bytes[b++], 16) << 4) & 0xf0)
+                        | Character.digit(bytes[b++], 16) & 0x0f);
             }
         } catch (final IllegalArgumentException e) {
             throw new InvalidKeyException("Invalid IV");
         }
         return iv;
-    }
-
-    /**
-     * Decode a upper or lowercase hex char to a nibble.
-     *
-     * @param c character to decode
-     *
-     * @return 0..15
-     */
-    private byte a2b(final byte c) {
-        if ('0' <= c && c <= '9') {
-            return (byte) (c - '0');
-        } else if ('a' <= c && c <= 'f') {
-            return (byte) (c - 'a' + 10);
-        } else if ('A' <= c && c <= 'F') {
-            return (byte) (c - 'A' + 10);
-        }
-        throw new IllegalArgumentException("not a hex char");
     }
 }

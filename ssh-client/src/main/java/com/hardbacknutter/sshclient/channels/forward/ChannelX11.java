@@ -108,28 +108,10 @@ public class ChannelX11
     private static byte[] hexDecode(@NonNull final byte[] hexBytes) {
         final byte[] bytes = new byte[16];
         for (int i = 0; i < 16; i++) {
-            bytes[i] = (byte) (((a2b(hexBytes[i * 2]) << 4) & 0xf0) |
-                    ((a2b(hexBytes[i * 2 + 1])) & 0xf));
+            bytes[i] = (byte) (((Character.digit(hexBytes[i * 2], 16) << 4) & 0xf0) |
+                    ((Character.digit(hexBytes[i * 2 + 1], 16)) & 0xf));
         }
         return bytes;
-    }
-
-    /**
-     * Decode a upper or lowercase hex char to a nibble.
-     *
-     * @param c character to decode
-     *
-     * @return 0..15
-     */
-    private static byte a2b(final byte c) {
-        if ('0' <= c && c <= '9') {
-            return (byte) (c - '0');
-        } else if ('a' <= c && c <= 'f') {
-            return (byte) (c - 'a' + 10);
-        } else if ('A' <= c && c <= 'F') {
-            return (byte) (c - 'A' + 10);
-        }
-        throw new IllegalArgumentException("not a hex char");
     }
 
     /**
