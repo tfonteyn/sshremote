@@ -44,6 +44,11 @@ public interface HostConfig
     String USER = "User";
 
     /**
+     * String.
+     */
+    String BIND_ADDRESS = "BindAddress";
+
+    /**
      * int
      */
     String CONNECT_TIMEOUT = "ConnectTimeout";
