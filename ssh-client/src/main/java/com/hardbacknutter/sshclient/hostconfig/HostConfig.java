@@ -174,6 +174,11 @@ public interface HostConfig
     String REQUEST_TTY = "RequestTTY";
 
     /**
+     * string
+     */
+    String LOG_LEVEL = "LogLevel";
+
+    /**
      * The user name to use for connecting.
      *
      * @return the string value, or {@code null} if not set.
