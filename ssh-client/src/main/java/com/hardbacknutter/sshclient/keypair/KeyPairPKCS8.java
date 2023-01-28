@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 
@@ -72,7 +73,7 @@ public class KeyPairPKCS8
     private KeyPairPKCS8(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder);
+        super(config, builder.privateKeyBlob);
 
         parse();
     }
@@ -178,11 +179,11 @@ public class KeyPairPKCS8
             final byte[] privateKey = ASN1OctetString.getInstance(root.getObjectAt(2))
                                                      .getOctets();
 
-            final BaseKeyPairBuilder builder;
-
             if (PKCSObjectIdentifiers.rsaEncryption.equals(prvKeyAlgOID)) {
                 // RSA has no extra attributes
-                builder = new KeyPairRSA.Builder(config);
+                delegate = (KeyPairBase) new KeyPairRSA.Builder(config)
+                        .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
+                        .build();
 
             } else if (X9ObjectIdentifiers.id_dsa.equals(prvKeyAlgOID)) {
                 // DSA attributes
@@ -194,19 +195,23 @@ public class KeyPairPKCS8
                 final BigInteger g = ASN1Integer.getInstance(attr.getObjectAt(2))
                                                 .getPositiveValue();
 
-                builder = new KeyPairDSA.Builder(config)
+                delegate = (KeyPairBase) new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
                         // the octet string is the 'x' value
-                        .setXCalculateY(new BigInteger(1, privateKey));
+                        .setXCalculateY(new BigInteger(1, privateKey))
+                        .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
+                        .build();
 
             } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(prvKeyAlgOID)) {
                 final ASN1ObjectIdentifier primeOid = ASN1ObjectIdentifier
                         .getInstance(subSeq.getObjectAt(1));
 
-                builder = new KeyPairECDSA.Builder(config)
+                delegate = (KeyPairBase) new KeyPairECDSA.Builder(config)
                         .setType(ECKeyType.getByOid(primeOid))
                         // the octet string is the 's' value
-                        .setS(new BigInteger(1, privateKey));
+                        .setS(new BigInteger(1, privateKey))
+                        .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
+                        .build();
 
             } else {
                 delegate = null;
@@ -214,9 +219,6 @@ public class KeyPairPKCS8
                 return;
             }
 
-            builder.setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor());
-
-            delegate = (KeyPairBase) builder.build();
             delegate.setSshPublicKeyBlob(publicKeyBlob);
             delegate.setPublicKeyComment(publicKeyComment);
 
@@ -265,15 +267,33 @@ public class KeyPairPKCS8
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint(algorithm);
     }
 
-    public static class Builder
-            extends BaseKeyPairBuilder {
+    public static class Builder {
+
+        @NonNull
+        final SshClientConfig config;
+        private PrivateKeyBlob privateKeyBlob;
 
         public Builder(@NonNull final SshClientConfig config) {
-            super(config);
+            this.config = config;
+        }
+
+        /**
+         * Set the private key blob and its format.
+         *
+         * @param blob      The byte[] with the private key
+         * @param format    The vendor specific format of the private key
+         *                  This is independent from the encryption state.
+         * @param decryptor (optional) The vendor specific decryptor
+         */
+        @NonNull
+        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
+                                         @NonNull final Vendor format,
+                                         @Nullable final PKDecryptor decryptor) {
+            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+            return this;
         }
 
         @NonNull
-        @Override
         public SshKeyPair build()
                 throws GeneralSecurityException {
             return new KeyPairPKCS8(config, this);

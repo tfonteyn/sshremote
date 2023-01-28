@@ -29,6 +29,27 @@ class PrivateKeyBlob {
     @Nullable
     private PKDecryptor decryptor;
 
+    PrivateKeyBlob() {
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param blob      The byte[] with the private key
+     * @param format    The vendor specific format of the private key
+     *                  This is independent from the encryption state.
+     * @param decryptor (optional) The vendor specific decryptor
+     *                  When not set, the blob is considered unencrypted.
+     */
+    PrivateKeyBlob(@NonNull final byte[] blob,
+                   @NonNull final Vendor format,
+                   @Nullable final PKDecryptor decryptor) {
+        this.blob = blob;
+        this.format = format;
+        this.decryptor = decryptor;
+        this.encrypted = decryptor != null;
+    }
+
     /**
      * Get the key blob in the current format (encrypted or not)
      *

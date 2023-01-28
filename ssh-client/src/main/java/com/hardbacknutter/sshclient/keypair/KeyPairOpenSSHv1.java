@@ -7,6 +7,7 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptBCrypt;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.keypair.util.OpenSSHv1Reader;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
 import com.hardbacknutter.sshclient.signature.SshSignature;
@@ -43,7 +44,8 @@ class KeyPairOpenSSHv1
      */
     private KeyPairOpenSSHv1(@NonNull final SshClientConfig config,
                              @NonNull final Builder builder) {
-        super(config, builder);
+        super(config, builder.privateKeyBlob);
+
         this.kdfName = Objects.requireNonNull(builder.kdfName, "kdfName is null");
         this.kdfOptions = Objects.requireNonNull(builder.kdfOptions, "kdfOptions is null");
 
@@ -172,10 +174,10 @@ class KeyPairOpenSSHv1
         final String hostKeyType = OpenSSHv1Reader.getHostKeyType(plainKey);
 
         // Use the builder again, this time with an unencrypted key.
-        final Builder builder = new Builder(config);
-        builder.setHostKeyType(hostKeyType);
-        builder.setPrivateKeyBlob(plainKey, Vendor.OPENSSH_V1, null);
-        delegate = (KeyPairBase) builder.build();
+        delegate = (KeyPairBase) new Builder(config)
+                .setHostKeyType(hostKeyType)
+                .setPrivateKeyBlob(plainKey, Vendor.OPENSSH_V1, null)
+                .build();
 
         delegate.setSshPublicKeyBlob(publicKeyBlob);
         delegate.setPublicKeyComment(publicKeyComment);
@@ -186,9 +188,10 @@ class KeyPairOpenSSHv1
         return !delegate.isPrivateKeyEncrypted();
     }
 
-    public static class Builder
-            extends BaseKeyPairBuilder {
+    public static class Builder {
 
+        @NonNull
+        final SshClientConfig config;
         @NonNull
         private String hostKeyType = HostKeyAlgorithm.__DEFERRED__;
 
@@ -199,9 +202,10 @@ class KeyPairOpenSSHv1
 
         @Nullable
         private byte[] publicKeyBlob;
+        private PrivateKeyBlob privateKeyBlob;
 
         public Builder(@NonNull final SshClientConfig config) {
-            super(config);
+            this.config = config;
         }
 
         @NonNull
@@ -211,13 +215,18 @@ class KeyPairOpenSSHv1
             return this;
         }
 
-        public void setKDF(@NonNull final String kdfName,
-                           @NonNull final byte[] kdfOptions) {
+        @SuppressWarnings("UnusedReturnValue")
+        @NonNull
+        public Builder setKDF(@NonNull final String kdfName,
+                              @NonNull final byte[] kdfOptions) {
             this.kdfName = kdfName;
             this.kdfOptions = kdfOptions;
+            return this;
         }
 
-        public void setPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
+        @SuppressWarnings("UnusedReturnValue")
+        @NonNull
+        public Builder setPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
             this.publicKeyBlob = publicKeyBlob;
 
             // if possible, use the type derived from the public key
@@ -229,10 +238,26 @@ class KeyPairOpenSSHv1
 
                 }
             }
+            return this;
+        }
+
+        /**
+         * Set the private key blob and its format.
+         *
+         * @param blob      The byte[] with the private key
+         * @param format    The vendor specific format of the private key
+         *                  This is independent from the encryption state.
+         * @param decryptor (optional) The vendor specific decryptor
+         */
+        @NonNull
+        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
+                                         @NonNull final Vendor format,
+                                         @Nullable final PKDecryptor decryptor) {
+            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+            return this;
         }
 
         @NonNull
-        @Override
         public SshKeyPair build()
                 throws GeneralSecurityException {
 
@@ -250,28 +275,28 @@ class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.__PKCS8__:
                     // not encrypted, but in a PKCS8 wrapper
                     // (does this case actually exists in the real world?)
-                    keyPair = new KeyPairPKCS8(config, getPrivateKeyBlob());
+                    keyPair = new KeyPairPKCS8(config, privateKeyBlob);
                     break;
 
                 // all other cases are not encrypted
                 case HostKeyAlgorithm.SSH_RSA:
-                    keyPair = new KeyPairRSA(config, getPrivateKeyBlob());
+                    keyPair = new KeyPairRSA(config, privateKeyBlob);
                     break;
 
                 case HostKeyAlgorithm.SSH_DSS:
-                    keyPair = new KeyPairDSA(config, getPrivateKeyBlob());
+                    keyPair = new KeyPairDSA(config, privateKeyBlob);
                     break;
 
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                    keyPair = new KeyPairECDSA(config, getPrivateKeyBlob(),
+                    keyPair = new KeyPairECDSA(config, privateKeyBlob,
                                                ECKeyType.getByHostKeyAlgorithm(hostKeyType));
                     break;
 
                 case HostKeyAlgorithm.SSH_ED25519:
                 case HostKeyAlgorithm.SSH_ED448:
-                    keyPair = new KeyPairEdDSA(config, getPrivateKeyBlob(),
+                    keyPair = new KeyPairEdDSA(config, privateKeyBlob,
                                                EdKeyType.getByHostKeyAlgorithm(hostKeyType));
                     break;
 

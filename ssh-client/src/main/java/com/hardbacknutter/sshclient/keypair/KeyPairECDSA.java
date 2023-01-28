@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
@@ -104,7 +105,7 @@ public class KeyPairECDSA
     private KeyPairECDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder);
+        super(config, builder.privateKeyBlob);
 
         this.ecType = builder.ecType;
         this.s = builder.s;
@@ -120,6 +121,7 @@ public class KeyPairECDSA
                         final int keySize)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
         super(config);
+
         this.ecType = ECKeyType.getByKeySize(keySize);
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
@@ -292,8 +294,10 @@ public class KeyPairECDSA
                 case PKCS8:
                 case PKCS5:
                 default: {
-                    final ASN1InputStream stream = new ASN1InputStream(encodedKey);
-                    final ECPrivateKey key = ECPrivateKey.getInstance(stream.readObject());
+                    final ECPrivateKey key;
+                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        key = ECPrivateKey.getInstance(stream.readObject());
+                    }
                     w = ECKeyType.decodePoint(key.getPublicKey().getBytes());
                     s = key.getKey();
 
@@ -335,9 +339,10 @@ public class KeyPairECDSA
         }
     }
 
-    public static class Builder
-            extends BaseKeyPairBuilder {
+    public static class Builder {
 
+        @NonNull
+        final SshClientConfig config;
         @Nullable
         private ECKeyType ecType;
 
@@ -346,9 +351,10 @@ public class KeyPairECDSA
 
         @Nullable
         private BigInteger s;
+        private PrivateKeyBlob privateKeyBlob;
 
         public Builder(@NonNull final SshClientConfig config) {
-            super(config);
+            this.config = config;
         }
 
         @NonNull
@@ -369,8 +375,23 @@ public class KeyPairECDSA
             return this;
         }
 
+        /**
+         * Set the private key blob and its format.
+         *
+         * @param blob      The byte[] with the private key
+         * @param format    The vendor specific format of the private key
+         *                  This is independent from the encryption state.
+         * @param decryptor (optional) The vendor specific decryptor
+         */
         @NonNull
-        @Override
+        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
+                                         @NonNull final Vendor format,
+                                         @Nullable final PKDecryptor decryptor) {
+            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+            return this;
+        }
+
+        @NonNull
         public SshKeyPair build()
                 throws GeneralSecurityException {
             return new KeyPairECDSA(config, this);

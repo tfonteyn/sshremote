@@ -150,14 +150,11 @@ class PuttyReader {
                 final BigInteger publicExponent = buffer.getBigInteger();
                 final BigInteger modulus = buffer.getBigInteger();
 
-                final KeyPairRSA.Builder builder =
-                        new KeyPairRSA.Builder(config)
-                                .setPublicExponent(publicExponent)
-                                .setModulus(modulus);
-
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
-
-                final SshKeyPair keyPair = builder.build();
+                final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
+                        .setPublicExponent(publicExponent)
+                        .setModulus(modulus)
+                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
@@ -167,14 +164,11 @@ class PuttyReader {
                 final BigInteger g = buffer.getBigInteger();
                 final BigInteger y = buffer.getBigInteger();
 
-                final KeyPairDSA.Builder builder =
-                        new KeyPairDSA.Builder(config)
-                                .setPQG(p, q, g)
-                                .setY(y);
-
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
-
-                final SshKeyPair keyPair = builder.build();
+                final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
+                        .setPQG(p, q, g)
+                        .setY(y)
+                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
@@ -185,26 +179,21 @@ class PuttyReader {
 
                 final ECPoint w = ECKeyType.decodePoint(buffer.getString());
 
-                final KeyPairECDSA.Builder builder =
-                        new KeyPairECDSA.Builder(config)
-                                .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
-                                .setPoint(w);
-
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
-
-                final SshKeyPair keyPair = builder.build();
+                final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
+                        .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                        .setPoint(w)
+                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_ED25519: {
                 final byte[] pubArray = buffer.getString();
-                final KeyPairEdDSA.Builder builder =
-                        new KeyPairEdDSA.Builder(config, hostKeyAlgorithm)
-                                .setPubArray(pubArray);
 
-                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
-
-                final SshKeyPair keyPair = builder.build();
+                final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm)
+                        .setPubArray(pubArray)
+                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
 

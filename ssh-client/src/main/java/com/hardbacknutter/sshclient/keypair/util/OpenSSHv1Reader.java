@@ -89,8 +89,10 @@ public class OpenSSHv1Reader {
         final String cipherName = buffer.getJString();
 
         //32-bit length, "name"   # kdfname length and string
+        final String kdfname = buffer.getJString();
         //32-bit length, byte[]   # kdfoptions (can be 0 length depending on kdfname)
-        keyPairBuilder.setKDF(buffer.getJString(), buffer.getString());
+        final byte[] kdfoptions = buffer.getString();
+        keyPairBuilder.setKDF(kdfname, kdfoptions);
 
         //32-bit 0x01             # number of keys, for now always hard-coded to 1
         final int nrKeys = buffer.getInt();
@@ -110,16 +112,15 @@ public class OpenSSHv1Reader {
         if (SshCipherConstants.NONE.equals(cipherName)) {
             // not encrypted, we'll bypass the DEFERRED state and
             // create the real KeyPair directly.
-            keyPairBuilder.setHostKeyType(getHostKeyType(privateKeyBlob));
-            keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
-
+            keyPairBuilder.setHostKeyType(getHostKeyType(privateKeyBlob))
+                          .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
         } else {
             // the type can only be determined after decryption,
             // so we take this intermediate here:
-            keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__);
             final PKDecryptor decryptor = new DecryptDeferred();
             decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
-            keyPairBuilder.setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
+            keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
+                          .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
         }
 
         return keyPairBuilder.build();

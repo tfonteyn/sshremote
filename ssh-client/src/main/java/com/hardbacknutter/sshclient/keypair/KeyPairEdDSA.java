@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.keypair.util.Vendor;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
@@ -76,7 +77,8 @@ public class KeyPairEdDSA
     private KeyPairEdDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder);
+        super(config, builder.privateKeyBlob);
+
         this.edType = builder.edType;
         this.prv_array = builder.prv_array;
         this.pub_array = builder.pub_array;
@@ -93,6 +95,7 @@ public class KeyPairEdDSA
                         @NonNull final EdKeyType edType)
             throws GeneralSecurityException {
         super(config);
+
         this.edType = edType;
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator
@@ -376,20 +379,22 @@ public class KeyPairEdDSA
         }
     }
 
-    public static class Builder
-            extends BaseKeyPairBuilder {
+    public static class Builder {
 
+        @NonNull
+        final SshClientConfig config;
         @NonNull
         private final EdKeyType edType;
         @Nullable
         private byte[] prv_array;
         @Nullable
         private byte[] pub_array;
+        private PrivateKeyBlob privateKeyBlob;
 
         public Builder(@NonNull final SshClientConfig config,
                        @NonNull final String hostKeyAlgorithm)
                 throws NoSuchAlgorithmException {
-            super(config);
+            this.config = config;
             edType = EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
         }
 
@@ -405,7 +410,22 @@ public class KeyPairEdDSA
             return this;
         }
 
-        @Override
+        /**
+         * Set the private key blob and its format.
+         *
+         * @param blob      The byte[] with the private key
+         * @param format    The vendor specific format of the private key
+         *                  This is independent from the encryption state.
+         * @param decryptor (optional) The vendor specific decryptor
+         */
+        @NonNull
+        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
+                                         @NonNull final Vendor format,
+                                         @Nullable final PKDecryptor decryptor) {
+            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+            return this;
+        }
+
         @NonNull
         public SshKeyPair build()
                 throws GeneralSecurityException {

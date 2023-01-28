@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.EdKeyType;
-import com.hardbacknutter.sshclient.keypair.KeyPairBase;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
@@ -31,6 +30,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.List;
@@ -222,31 +222,37 @@ public class KeyPairTool {
                 }
                 case "RSA PRIVATE KEY": {
                     // legacy openssh rsa pem
-                    final KeyPairRSA.Builder builder = new KeyPairRSA.Builder(config);
-                    keyPair = buildLegacyOpenSSH(pem, builder);
+                    final PKDecryptor decryptor = createPKDecryptor(pem);
+                    keyPair = new KeyPairRSA.Builder(config)
+                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor)
+                            .build();
                     break;
                 }
                 case "DSA PRIVATE KEY": {
                     // legacy openssh dsa pem
-                    final KeyPairDSA.Builder builder = new KeyPairDSA.Builder(config);
-                    keyPair = buildLegacyOpenSSH(pem, builder);
+                    final PKDecryptor decryptor = createPKDecryptor(pem);
+                    keyPair = new KeyPairDSA.Builder(config)
+                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor)
+                            .build();
                     break;
                 }
                 case "EC PRIVATE KEY": {
                     // legacy openssh ec pem
                     // The type will be one of (currently) 3: ECDSA 256/384/521
                     // We'll find out at a later stage in parsing.
-                    final KeyPairECDSA.Builder builder = new KeyPairECDSA.Builder(config);
-                    keyPair = buildLegacyOpenSSH(pem, builder);
+                    final PKDecryptor decryptor = createPKDecryptor(pem);
+                    keyPair = new KeyPairECDSA.Builder(config)
+                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor)
+                            .build();
                     break;
                 }
                 case "ENCRYPTED PRIVATE KEY":
                 case "PRIVATE KEY": {
                     // SSL style PKCS8 wrapper
-                    final KeyPairPKCS8.Builder builder = new KeyPairPKCS8.Builder(config);
                     final PKDecryptor decryptor = new DecryptPKCS8(config);
-                    builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8, decryptor);
-                    keyPair = builder.build();
+                    keyPair = new KeyPairPKCS8.Builder(config)
+                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8, decryptor)
+                            .build();
                     break;
                 }
                 default:
@@ -307,10 +313,9 @@ public class KeyPairTool {
         return keyPair;
     }
 
-    @NonNull
-    private SshKeyPair buildLegacyOpenSSH(@NonNull final PemObject pem,
-                                          @NonNull final KeyPairBase.BaseKeyPairBuilder builder)
-            throws GeneralSecurityException {
+    @Nullable
+    private PKDecryptor createPKDecryptor(@NonNull final PemObject pem)
+            throws InvalidKeyException, NoSuchAlgorithmException {
         PKDecryptor decryptor = null;
         //noinspection unchecked
         for (final PemHeader header : (List<PemHeader>) pem.getHeaders()) {
@@ -327,12 +332,11 @@ public class KeyPairTool {
 
                     decryptor = new DecryptPKCS5();
                     decryptor.setCipher(cipher, iv);
-                    break;
+                    return decryptor;
                 }
             }
         }
-        builder.setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor);
-        return builder.build();
+        return null;
     }
 
     @NonNull
