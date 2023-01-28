@@ -6,7 +6,9 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.ECKeyType;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
+import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.spec.ECPoint;
 import java.util.Base64;
 
 
@@ -177,29 +180,20 @@ class PuttyReader {
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521: {
-                buffer.skipString(); // nist name
+                buffer.skipString(/* nistName */);
 
-                throw new InvalidKeyException("Parsing PuTTY ECDSA keys is not supported");
+                final ECPoint w = ECKeyType.decodePoint(buffer.getString());
 
-                // final byte[] s = buffer.getString();
+                final KeyPairECDSA.Builder builder =
+                        new KeyPairECDSA.Builder(config)
+                                .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                                .setPoint(w);
 
-                // // ECPoint (encoded)
-                // final byte[] point = buffer.getString();
-                //
-                //
-                // final KeyPairECDSA.ECDSAKeyPairBuilder builder =
-                //         new KeyPairECDSA.ECDSAKeyPairBuilder(config, ECUtils
-                //                 .hostKeyAlgorithmToCurveName(hostKeyAlgorithm))
-                //         .setPoint(point)
-                //         .setS(s);
-                //
-                // if (encryption != null) {
-                //     builder.setPkeCipher(SshCipher.getInstance(config, encryption));
-                // }
-                //
-                // final SshKeyPair keyPair = builder.build();
-                // keyPair.setPublicKeyComment(publicKeyComment);
-                // return keyPair;
+                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
+
+                final SshKeyPair keyPair = builder.build();
+                keyPair.setPublicKeyComment(publicKeyComment);
+                return keyPair;
             }
             default:
                 return null;

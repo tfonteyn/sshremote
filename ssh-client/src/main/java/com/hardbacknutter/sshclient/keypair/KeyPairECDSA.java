@@ -265,8 +265,11 @@ public class KeyPairECDSA
         try {
             switch (keyFormat) {
                 case PUTTY3:
-                case PUTTY2:
-                    throw new InvalidKeyException("Parsing PuTTY ECDSA keys is not supported");
+                case PUTTY2: {
+                    final Buffer buffer = new Buffer(encodedKey);
+                    s = buffer.getBigInteger();
+                    break;
+                }
 
                 case OPENSSH_V1: {
                     final Buffer buffer = new Buffer(encodedKey);
