@@ -6,6 +6,8 @@ import java.security.GeneralSecurityException;
 
 /**
  * Password based key derivation function.
+ * <p>
+ * If an implementation has an {@code init(...)} method then it MUST be called after instantiation.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2898#section-5">rfc2898#section-5</a>
  */
