@@ -8,9 +8,9 @@ import java.util.Objects;
 
 /**
  * SHA-1 is hardcoded in PuTTY PPK-2 files.
- *
+ * <p>
  * <a href="https://the.earth.li/~sgtatham/putty/0.76/htmldoc/AppendixC.html#ppk-v2">ppk-v2</a>
- *
+ * <p>
  * <a href="https://github.com/github/putty/blob/7003b43963aef6cdf2841c2a882a684025f1d806/sshpubk.c#L662">github</a>
  * <pre>{@code
  *  static void ssh2_ppk_derivekey(ptrlen passphrase, uint8_t *key)
