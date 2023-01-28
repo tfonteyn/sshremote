@@ -349,8 +349,9 @@ public interface ChannelSftp
      *             to the <em>current remote directory</em>.
      *
      * @return an SftpStatVFS object containing the file's attributes.
-     * <p>
-     * http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
+     *
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     * PROTOCOL</a>
      */
     @NonNull
     SftpStatVFS statVFS(@NonNull String path)
