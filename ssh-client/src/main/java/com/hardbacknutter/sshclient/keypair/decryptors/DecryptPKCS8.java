@@ -69,8 +69,10 @@ public class DecryptPKCS8 implements PKDecryptor {
             //     DER Octet String[1232]                                  ==> 'encryptedPrivateKey'
             //         6557ddc888
 
-            final ASN1InputStream stream = new ASN1InputStream(blob);
-            final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
+            final ASN1Sequence root;
+            try (ASN1InputStream stream = new ASN1InputStream(blob)) {
+                root = ASN1Sequence.getInstance(stream.readObject());
+            }
 
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
                 config.getLogger().log(Logger.DEBUG, () -> "~~~ PrivateKeyBlob#decryptPKCS8 ~~~\n" +

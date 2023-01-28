@@ -330,8 +330,10 @@ public class KeyPairEdDSA
 
 
                     //TODO: This is silly... we're parsing the input twice
-                    final ASN1InputStream stream = new ASN1InputStream(encodedKey);
-                    final ASN1Primitive root = stream.readObject();
+                    final ASN1Primitive root;
+                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        root = stream.readObject();
+                    }
 
                     if (config.getLogger().isEnabled(Logger.DEBUG)) {
                         config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairEdDSA#parse ~~~\n" +

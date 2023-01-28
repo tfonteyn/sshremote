@@ -327,8 +327,10 @@ public class KeyPairRSA
                 case PKCS8:
                 case PKCS5:
                 default: {
-                    final ASN1InputStream stream = new ASN1InputStream(encodedKey);
-                    final RSAPrivateKey key = RSAPrivateKey.getInstance(stream.readObject());
+                    final RSAPrivateKey key;
+                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        key = RSAPrivateKey.getInstance(stream.readObject());
+                    }
                     modulus = key.getModulus();
                     publicExponent = key.getPublicExponent();
                     privateExponent = key.getPrivateExponent();

@@ -285,8 +285,10 @@ public class KeyPairDSA
                     //     Integer(57877...     ==> g
                     //     Integer(44240...     ==> y
                     //     Integer(12058...     ==> x
-                    final ASN1InputStream stream = new ASN1InputStream(encodedKey);
-                    final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
+                    final ASN1Sequence root;
+                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        root = ASN1Sequence.getInstance(stream.readObject());
+                    }
 
                     if (config.getLogger().isEnabled(Logger.DEBUG)) {
                         config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairDSA#parse ~~~\n" +

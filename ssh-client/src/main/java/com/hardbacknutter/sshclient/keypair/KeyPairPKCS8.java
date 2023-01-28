@@ -130,8 +130,10 @@ public class KeyPairPKCS8
             throws GeneralSecurityException {
 
         try {
-            final ASN1InputStream stream = new ASN1InputStream(encodedKey);
-            final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
+            final ASN1Sequence root;
+            try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                root = ASN1Sequence.getInstance(stream.readObject());
+            }
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
                 config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairPKCS8#parse ~~~\n" +
                         ASN1Dump.dumpAsString(root, true));

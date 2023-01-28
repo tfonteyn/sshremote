@@ -42,8 +42,10 @@ public class SshSignatureDSA
 
         try {
             // sig is in ASN.1  ::=  SEQUENCE { r INTEGER, s INTEGER  }
-            final ASN1InputStream stream = new ASN1InputStream(sig);
-            final ASN1Sequence root = ASN1Sequence.getInstance(stream.readObject());
+            final ASN1Sequence root;
+            try (ASN1InputStream stream = new ASN1InputStream(sig)) {
+                root = ASN1Sequence.getInstance(stream.readObject());
+            }
 
             r = ASN1Integer.getInstance(root.getObjectAt(0)).getPositiveValue();
             s = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
