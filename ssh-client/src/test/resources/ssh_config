@@ -1,38 +1,41 @@
 # examples mostly taken from https://linuxize.com/post/using-the-ssh-config-file/
 
-# global
-BindAddress 10.0.0.1
-Ciphers ^blowfish-cbc
-
 Host dev
     HostName dev.example.com
     User john
     Port 2322
-    IdentityFile ~/.ssh/keys/dev_key
+    IdentityFile "~/.ssh/keys/dev_key"
 
 Host targaryen
     HostName 192.168.1.10
     User daenerys
     Port 7654
+    Ciphers aes192-cbc
     IdentityFile ~/.ssh/targaryen.key
+    LogLevel FATAL
 
 Host tyrell
     HostName 192.168.10.20
     BindAddress 10.0.0.111
-    Ciphers +3des-cbc, aes192-cbc
-    Ciphers -aes256-ctr
-    Ciphers ^chacha20-poly1305@openssh.com,  aes128-ctr
-
+    Ciphers +3des-cbc,aes192-cbc
+    # this will wipe out all previous ciphers
+    Ciphers aes256-ctr
+    Ciphers ^chacha20-poly1305@openssh.com,aes128-ctr
+    Ciphers +aes256-gcm@openssh.com
 
 Host martell
     HostName 192.168.10.50
+    Compression no
 
 Host *ell
     user oberyn
 
 Host * !martell
-    LogLevel INFO
+    LogLevel ERROR
 
 Host *
     User root
     Compression yes
+
+    BindAddress 10.0.0.1
+    Ciphers ^aes256-ctr,rijndael-cbc@lysator.liu.se
