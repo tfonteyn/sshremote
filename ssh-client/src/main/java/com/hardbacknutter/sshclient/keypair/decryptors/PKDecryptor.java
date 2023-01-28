@@ -7,6 +7,9 @@ import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
+/**
+ * If an implementation has an {@code init(...)} method then it MUST be called after instantiation.
+ */
 public interface PKDecryptor {
 
     default void setCipher(@NonNull final SshCipher cipher) {
