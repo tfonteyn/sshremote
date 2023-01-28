@@ -9,6 +9,7 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.ECKeyType;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
+import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
@@ -194,6 +195,19 @@ class PuttyReader {
                 final SshKeyPair keyPair = builder.build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
+            }
+            case HostKeyAlgorithm.SSH_ED25519: {
+                final byte[] pubArray = buffer.getString();
+                final KeyPairEdDSA.Builder builder =
+                        new KeyPairEdDSA.Builder(config, hostKeyAlgorithm)
+                                .setPubArray(pubArray);
+
+                builder.setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor);
+
+                final SshKeyPair keyPair = builder.build();
+                keyPair.setPublicKeyComment(publicKeyComment);
+                return keyPair;
+
             }
             default:
                 return null;

@@ -271,8 +271,11 @@ public class KeyPairEdDSA
         try {
             switch (keyFormat) {
                 case PUTTY3:
-                case PUTTY2:
-                    throw new InvalidKeyException("Parsing PuTTY EdDSA keys is not supported");
+                case PUTTY2: {
+                    final Buffer buffer = new Buffer(encodedKey);
+                    prv_array = buffer.getString();
+                    break;
+                }
 
                 case OPENSSH_V1: {
                     final Buffer buffer = new Buffer(encodedKey);
