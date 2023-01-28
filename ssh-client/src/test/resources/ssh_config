@@ -1,7 +1,7 @@
 # examples mostly taken from https://linuxize.com/post/using-the-ssh-config-file/
 
 Host dev
-    HostName dev.example.com
+    HostName = dev.example.com
     User john
     Port 2322
     IdentityFile "~/.ssh/keys/dev_key"
@@ -16,7 +16,7 @@ Host targaryen
 
 Host tyrell
     HostName 192.168.10.20
-    BindAddress 10.0.0.111
+    BindAddress = 10.0.0.2
     Ciphers +3des-cbc,aes192-cbc
     # this will wipe out all previous ciphers
     Ciphers aes256-ctr

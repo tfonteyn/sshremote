@@ -53,6 +53,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals(COMPRESS_YES, host.getString(KexProposal.PROPOSAL_COMP_CTOS));
 
         assertEquals("root", host.getUser());
+        assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
         final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
         System.out.println(ciphers);
@@ -74,6 +75,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals("john", host.getUser());
         assertEquals("dev.example.com", host.getHostname());
         assertEquals(2322, host.getPort());
+        assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
         final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
         System.out.println(ciphers);
@@ -97,6 +99,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals("daenerys", host.getUser());
         assertEquals("192.168.1.10", host.getHostname());
         assertEquals(7654, host.getPort());
+        assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
         final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
         System.out.println(ciphers);
@@ -121,6 +124,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals("oberyn", host.getUser());
         assertEquals("192.168.10.50", host.getHostname());
         assertEquals(-1, host.getPort());
+        assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
         final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
         System.out.println(ciphers);
@@ -142,6 +146,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals("oberyn", host.getUser());
         assertEquals("192.168.10.20", host.getHostname());
         assertEquals(-1, host.getPort());
+        assertEquals("10.0.0.2", host.getString(HostConfig.BIND_ADDRESS));
 
         final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
         System.out.println(ciphers);
