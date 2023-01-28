@@ -8,6 +8,7 @@ import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
@@ -25,15 +26,12 @@ public class OpenSSHv1Reader {
 
     @NonNull
     private final SshClientConfig config;
-    @NonNull
-    private final KeyPairOpenSSHv1.Builder keyPairBuilder;
 
     /**
      * Constructor.
      */
     OpenSSHv1Reader(@NonNull final SshClientConfig config) {
         this.config = config;
-        this.keyPairBuilder = new KeyPairOpenSSHv1.Builder(config);
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -82,6 +80,8 @@ public class OpenSSHv1Reader {
             return null;
         }
 
+        final KeyPairOpenSSHv1.Builder builder = new KeyPairOpenSSHv1.Builder(config);
+
         final Buffer buffer = new Buffer(blob);
         // Skip "openssh-key-v1"0x00    # NULL-terminated "Auth Magic" string
         buffer.setReadOffSet(AUTH_MAGIC.length);
@@ -92,7 +92,7 @@ public class OpenSSHv1Reader {
         final String kdfname = buffer.getJString();
         //32-bit length, byte[]   # kdfoptions (can be 0 length depending on kdfname)
         final byte[] kdfoptions = buffer.getString();
-        keyPairBuilder.setKDF(kdfname, kdfoptions);
+        builder.setKDF(kdfname, kdfoptions);
 
         //32-bit 0x01             # number of keys, for now always hard-coded to 1
         final int nrKeys = buffer.getInt();
@@ -104,7 +104,7 @@ public class OpenSSHv1Reader {
         //    32-bit length, keytype
         //    32-bit length, pub0
         final byte[] publicKeyBlob = buffer.getString();
-        keyPairBuilder.setPublicKeyBlob(publicKeyBlob);
+        builder.setPublicKeyBlob(publicKeyBlob);
 
         // private key is encoded using the same rules as used for SSH agent
         final byte[] privateKeyBlob = buffer.getString();
@@ -112,17 +112,17 @@ public class OpenSSHv1Reader {
         if (SshCipherConstants.NONE.equals(cipherName)) {
             // not encrypted, we'll bypass the DEFERRED state and
             // create the real KeyPair directly.
-            keyPairBuilder.setHostKeyType(getHostKeyType(privateKeyBlob))
-                          .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
+            builder.setHostKeyType(getHostKeyType(privateKeyBlob))
+                   .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
         } else {
             // the type can only be determined after decryption,
             // so we take this intermediate here:
             final PKDecryptor decryptor = new DecryptDeferred();
             decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
-            keyPairBuilder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
-                          .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
+            builder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
+                   .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
         }
 
-        return keyPairBuilder.build();
+        return builder.build();
     }
 }

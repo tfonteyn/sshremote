@@ -12,6 +12,7 @@ import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty3;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;

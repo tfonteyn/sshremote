@@ -1,4 +1,4 @@
-package com.hardbacknutter.sshclient.keypair.util;
+package com.hardbacknutter.sshclient.keypair;
 
 /**
  * Used for vendor specific parsing.
