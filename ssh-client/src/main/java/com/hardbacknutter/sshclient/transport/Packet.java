@@ -134,13 +134,6 @@ public class Packet
     }
 
     /**
-     * Set the buffer's READ-position to the start of the payload.
-     */
-    public void startReadingPayload() {
-        setReadOffSet(HEADER_LEN);
-    }
-
-    /**
      * Last step in creating the Packet is calculating and setting the final length,
      * and add padding as needed.
      */
@@ -175,7 +168,14 @@ public class Packet
     }
 
     /**
-     * Read the actual length of the payload from the first 4 bytes of the buffer.
+     * Set the buffer's READ-position to the start of the payload.
+     */
+    public void startReadingPayload() {
+        setReadOffSet(HEADER_LEN);
+    }
+
+    /**
+     * Read the actual length of the <strong>payload</strong> from the first 4 bytes of the buffer.
      *
      * @return The length of the packet in bytes, not including 'mac' or the
      * 'packet_length' field itself.
@@ -212,11 +212,11 @@ public class Packet
     @Override
     @NonNull
     public String toString() {
-        return "Packet{" +
-                super.toString() +
-                ", packet size=" + getPacketLength() +
-                ", command=" + data[HEADER_LEN] +
-                ", padding=" + data[4] +
-                '}';
+        return "Packet{"
+                + super.toString()
+                + ", packet size=" + getPacketLength()
+                + ", command=" + data[HEADER_LEN]
+                + ", padding size=" + data[4]
+                + '}';
     }
 }
