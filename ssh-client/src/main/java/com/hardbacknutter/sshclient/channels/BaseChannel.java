@@ -159,6 +159,10 @@ public abstract class BaseChannel
         this.session = session;
         transportC2s = session.getTransportC2s();
         this.id = channelIdGenerator.getAndIncrement();
+        safePacketMargin = Packet.MAX_PAD_SIZE + Packet.DEFLATER_MARGIN
+                // 20 is the old hardcoded size (64 hardcoded was to eager sometimes)
+                + transportC2s.getMacBlockSize().orElse(20);
+
 
         ioStreams = new IOStreams();
 
@@ -248,7 +252,7 @@ public abstract class BaseChannel
         return eofRemote;
     }
 
-    public void setConnectTimeout(final int connectTimeout) {
+    protected void setConnectTimeout(final int connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
 
@@ -348,7 +352,7 @@ public abstract class BaseChannel
                     throws IOException {
                 // Protect against being called before remoteMaxPacketSize is set.
                 if (remoteMaxPacketSize < (Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN
-                        + Packet.SAFE_MARGIN)) {
+                        + safePacketMargin)) {
                     throw new IOException("Init failed: remoteMaxPacketSize not set");
                 }
                 packet = new Packet(remoteMaxPacketSize);
@@ -383,7 +387,7 @@ public abstract class BaseChannel
                     // start at the next free position
                     final int dstOffset = CHANNEL_PACKET_HEADER_LEN + dataLength + 1;
                     final int _len = Math.min(length,
-                                              packet.data.length - dstOffset - Packet.SAFE_MARGIN);
+                                              packet.data.length - dstOffset - safePacketMargin);
 
                     if (_len <= 0) {
                         flush();
@@ -517,8 +521,7 @@ public abstract class BaseChannel
     protected void runDataTransferLoop() {
         final Packet packet = new Packet(remoteMaxPacketSize);
         final int bytesToRead = remoteMaxPacketSize
-                - (Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 1
-                + Packet.SAFE_MARGIN);
+                - (Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 1 + safePacketMargin);
         int dataLength;
         try {
             while (isConnected() && channelThread != null && ioStreams.hasInputStream()) {

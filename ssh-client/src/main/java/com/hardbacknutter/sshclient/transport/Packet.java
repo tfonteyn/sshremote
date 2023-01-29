@@ -49,31 +49,19 @@ public class Packet
         extends ABuffer<Packet> {
 
     public static final int HEADER_LEN = 5;
-    /**
-     * Maximum block size for the MAC's.
-     * This is an exact value; i.e. SHA-512
-     * Used where fixed-size packets are used.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public static final int MAX_MAC_SIZE = 64;
+
     /**
      * Maximum padding length.
      * Used where fixed-size packets are used.
      */
-    @SuppressWarnings("WeakerAccess")
     public static final int MAX_PAD_SIZE = 32;
+
     /**
      * Margin for deflater; compressing can in rare circumstances actually inflate data.
      * This is an safe estimate only.
      * Used where fixed-size packets are used.
      */
-    @SuppressWarnings("WeakerAccess")
     public static final int DEFLATER_MARGIN = 32;
-
-    /**
-     * Safety margin where fixed-size packets are used.
-     */
-    public static final int SAFE_MARGIN = MAX_MAC_SIZE + MAX_PAD_SIZE + DEFLATER_MARGIN;
 
     /**
      * The absolute maximum packet size we allow: 128kb.
@@ -107,8 +95,6 @@ public class Packet
      * Constructor.
      * <p>
      * Create a packet with a FIXED size.
-     *
-     * @see #SAFE_MARGIN
      */
     public Packet(final int size) {
         super(size, true);

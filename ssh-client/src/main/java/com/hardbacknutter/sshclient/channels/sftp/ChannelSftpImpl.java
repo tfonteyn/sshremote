@@ -1803,7 +1803,7 @@ public class ChannelSftpImpl
             // offset where the next set of file data will be written to the packet buffer
             final int dataOffset = WRITE_PACKET_HEADER_LEN + handle.length;
             // the amount of file data we can upload in this packet
-            int dataLength = remoteMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN);
+            int dataLength = remoteMaxPacketSize - (dataOffset + safePacketMargin);
 
             final int startSeqId = seq;
             int ackCount = 0;
@@ -1870,7 +1870,7 @@ public class ChannelSftpImpl
                     // See #sendWRITE
                     if (!Arrays.equals(data, uploadPacket.data)) {
                         data = uploadPacket.data;
-                        dataLength = remoteMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN);
+                        dataLength = remoteMaxPacketSize - (dataOffset + safePacketMargin);
                     }
                 }
 
@@ -2162,10 +2162,9 @@ public class ChannelSftpImpl
         final int dataOffset = WRITE_PACKET_HEADER_LEN + handle.length;
         // the amount of file data we can upload in this packet
         final int dataLength = Math.min(length,
-                                        remoteMaxPacketSize - (dataOffset + Packet.SAFE_MARGIN));
+                                        remoteMaxPacketSize - (dataOffset + safePacketMargin));
 
         // optimization to avoid copying the array if possible
-        // See #_put
         if (Arrays.equals(uploadPacket.data, data)) {
             uploadPacket.putInt(dataLength)
                         .moveWritePosition(dataLength);
