@@ -75,7 +75,7 @@ public class DecryptPKCS8 implements PKDecryptor {
             }
 
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> "~~~ PrivateKeyBlob#decryptPKCS8 ~~~\n" +
+                config.getLogger().log(Logger.DEBUG, () -> "~~~ DecryptPKCS8#decrypt ~~~\n" +
                         ASN1Dump.dumpAsString(root, true));
             }
 
@@ -90,6 +90,8 @@ public class DecryptPKCS8 implements PKDecryptor {
             final byte[] encryptedPrivateKey = ASN1OctetString
                     .getInstance(root.getObjectAt(1)).getOctets();
 
+
+            // PKCS#5: 1.2.840.113549.1.5.13
             if (PKCSObjectIdentifiers.id_PBES2.equals(prvKeyAlgOID)) {
                 // 2nd step, actual decryption
 
