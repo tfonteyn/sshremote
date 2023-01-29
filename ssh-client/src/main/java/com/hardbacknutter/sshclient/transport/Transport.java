@@ -18,6 +18,7 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Optional;
 
 import javax.crypto.Cipher;
 
@@ -34,13 +35,12 @@ public abstract class Transport {
 
     private final int cipherMode;
     @Nullable
-    public SshCipher cipher;
+    protected SshCipher cipher;
     @Nullable
-    public SshMac mac;
+    protected SshMac mac;
 
-    private boolean isChaCha;
-    private boolean isAEAD;
-    private boolean isEtM;
+    /** Sequence number of the packets. */
+    int seq;
 
     /**
      * Constructor.
@@ -118,25 +118,51 @@ public abstract class Transport {
             mac = ImplementationFactory.getMac(config, agreement.getMac(cipherMode));
             mac.init(expandKey(md, K, H, macKey, mac.getDigestLength()));
         }
-
-        isChaCha = cipher instanceof ChaChaCipher;
-        isAEAD = cipher instanceof AEADCipher;
-        isEtM = mac != null && mac.isEtm() && !(cipher instanceof AEADCipher);
     }
 
+    // force api
     abstract void initCompression(@NonNull final KexAgreement agreement,
                                   final boolean authenticated)
             throws IOException, NoSuchAlgorithmException;
 
     boolean isChaCha() {
-        return isChaCha;
+        return cipher instanceof ChaChaCipher;
     }
 
     boolean isAEAD() {
-        return isAEAD;
+        return cipher instanceof AEADCipher;
     }
 
     boolean isEtM() {
-        return isEtM;
+        return !(cipher instanceof AEADCipher) && mac != null && mac.isEtm();
+    }
+
+    /**
+     * Get the block size used by the cipher.
+     *
+     * @return block-size
+     */
+    @NonNull
+    public Optional<Integer> getCipherBlockSize() {
+        if (cipher == null) {
+            return Optional.empty();
+        }
+        return Optional.of(cipher.getBlockSize());
+    }
+
+    /**
+     * Get the block size used by the mac.
+     *
+     * @return block-size
+     */
+    @NonNull
+    public Optional<Integer> getMacBlockSize() {
+        if (cipher != null && isAEAD()) {
+            return Optional.of(((AEADCipher) cipher).getTagSizeInBytes());
+        } else if (mac != null) {
+            return Optional.of(mac.getDigestLength());
+        } else {
+            return Optional.empty();
+        }
     }
 }

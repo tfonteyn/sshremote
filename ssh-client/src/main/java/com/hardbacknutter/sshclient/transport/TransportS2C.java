@@ -44,9 +44,6 @@ class TransportS2C
     @Nullable
     private SshInflater inflater;
 
-    /** Sequence number of incoming packets. */
-    private int seq;
-
     TransportS2C(@NonNull final Session session,
                  @NonNull final InputStream socketInputStream) {
         super(session, Cipher.DECRYPT_MODE);
@@ -115,9 +112,9 @@ class TransportS2C
         } else if (isAEAD()) {
             decodeAEAD(packet);
         } else if (isEtM()) {
-            decodeWithEtM(packet);
+            decodeEtM(packet);
         } else {
-            decode(packet);
+            decodeMtE(packet);
         }
 
         if (inflater != null) {
@@ -231,7 +228,7 @@ class TransportS2C
         packet.moveWritePosition(-((AEADCipher) cipher).getTagSizeInBytes());
     }
 
-    private void decodeWithEtM(@NonNull final Packet packet)
+    private void decodeEtM(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
 
         Objects.requireNonNull(cipher, ERROR_CIPHER_IS_NOT_SET);
@@ -277,7 +274,7 @@ class TransportS2C
         cipher.update(packet.data, 4, packetLen, packet.data, 4);
     }
 
-    private void decode(@NonNull final Packet packet)
+    private void decodeMtE(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
 
         Objects.requireNonNull(socketInputStream, ERROR_SOCKET_INPUT_STREAM_IS_NULL);
@@ -406,7 +403,7 @@ class TransportS2C
                 socketInputStream.close();
             }
             socketInputStream = null;
-        } catch (final Exception ignore1) {
+        } catch (@NonNull final Exception ignore) {
         }
     }
 }

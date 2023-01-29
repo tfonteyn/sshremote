@@ -27,9 +27,6 @@ public class TransportC2S
     @Nullable
     private SshDeflater deflater;
 
-    /** Sequence number of outgoing packets. */
-    private int seq;
-
     TransportC2S(@NonNull final Session session,
                  @NonNull final OutputStream socketOutputStream)
             throws NoSuchAlgorithmException {
@@ -82,9 +79,15 @@ public class TransportC2S
 
         if (cipher == null) {
             // pre-kex, not encrypted, just add padding etc... and we're done
-            packet.finish(8, true, random);
+            packet.finish(8, true, config.getRandom());
+        } else if (isChaCha()) {
+            encodeChaCha(packet);
+        } else if (isAEAD()) {
+            encodeAEAD(packet);
+        } else if (isEtM()) {
+            encodeEtM(packet);
         } else {
-            encode(packet);
+            encodeMtE(packet);
         }
 
         if (socketOutputStream != null) {
@@ -97,64 +100,62 @@ public class TransportC2S
         seq++;
     }
 
-    /**
-     * Encode the packet with the active cipher.
-     *
-     * @param packet to encode
-     *
-     * @see #write(Packet)
-     */
-    private void encode(@NonNull final Packet packet)
+    private void encodeChaCha(@NonNull final Packet packet)
             throws GeneralSecurityException {
-
         Objects.requireNonNull(cipher, ERROR_CIPHER_IS_NOT_SET);
 
-        if (isChaCha()) {
-            packet.finish(cipher.getBlockSize(), false, random);
-            // init cipher with seq number
-            ((ChaChaCipher) cipher).update(seq);
-            // encrypt packet length field
-            cipher.update(packet.data, 0, 4, packet.data, 0);
-            //encrypt rest of packet & add tag
-            cipher.doFinal(packet.data, 0, packet.writeOffset, packet.data, 0);
-            // adjust write offset
-            packet.moveWritePosition(((ChaChaCipher) cipher).getTagSizeInBytes());
+        packet.finish(cipher.getBlockSize(), false, config.getRandom());
+        // init cipher with seq number
+        ((ChaChaCipher) cipher).update(seq);
+        // encrypt packet length field
+        cipher.update(packet.data, 0, 4, packet.data, 0);
+        //encrypt rest of packet & add tag
+        cipher.doFinal(packet.data, 0, packet.writeOffset, packet.data, 0);
+        // adjust write offset
+        packet.moveWritePosition(((ChaChaCipher) cipher).getTagSizeInBytes());
+    }
 
-        } else if (isAEAD()) {
-            packet.finish(cipher.getBlockSize(), false, random);
-            // Authenticated Encryption with Additional Data
-            cipher.updateAAD(packet.data, 0, 4);
-            cipher.doFinal(packet.data, 4, packet.writeOffset - 4, packet.data, 4);
-            // adjust write offset
-            packet.moveWritePosition(((AEADCipher) cipher).getTagSizeInBytes());
+    private void encodeAEAD(@NonNull final Packet packet)
+            throws GeneralSecurityException {
+        Objects.requireNonNull(cipher, ERROR_CIPHER_IS_NOT_SET);
 
-        } else if (isEtM()) {
-            packet.finish(cipher.getBlockSize(), false, random);
-            // First Encrypt
-            cipher.update(packet.data, 4, packet.writeOffset - 4, packet.data, 4);
-            // then Mac
-            //noinspection ConstantConditions
+        packet.finish(cipher.getBlockSize(), false, config.getRandom());
+        // Authenticated Encryption with Additional Data
+        cipher.updateAAD(packet.data, 0, 4);
+        cipher.doFinal(packet.data, 4, packet.writeOffset - 4, packet.data, 4);
+        // adjust write offset
+        packet.moveWritePosition(((AEADCipher) cipher).getTagSizeInBytes());
+    }
+
+    private void encodeEtM(@NonNull final Packet packet) throws GeneralSecurityException {
+        Objects.requireNonNull(cipher, ERROR_CIPHER_IS_NOT_SET);
+        packet.finish(cipher.getBlockSize(), false, config.getRandom());
+        // First Encrypt
+        cipher.update(packet.data, 4, packet.writeOffset - 4, packet.data, 4);
+        // then Mac
+        //noinspection ConstantConditions
+        mac.update(seq);
+        mac.update(packet.data, 0, packet.writeOffset);
+        mac.doFinal(packet.data, packet.writeOffset);
+        // adjust write offset
+        packet.moveWritePosition(mac.getDigestLength());
+    }
+
+    private void encodeMtE(@NonNull final Packet packet) throws GeneralSecurityException {
+        Objects.requireNonNull(cipher, ERROR_CIPHER_IS_NOT_SET);
+        packet.finish(cipher.getBlockSize(), true, config.getRandom());
+        // First Mac
+        if (mac != null) {
             mac.update(seq);
             mac.update(packet.data, 0, packet.writeOffset);
             mac.doFinal(packet.data, packet.writeOffset);
-            // adjust write offset
+        }
+        // then Encrypt
+        cipher.update(packet.data, 0, packet.writeOffset, packet.data, 0);
+
+        // adjust write offset if we used a MAC
+        if (mac != null) {
             packet.moveWritePosition(mac.getDigestLength());
-
-        } else {
-            packet.finish(cipher.getBlockSize(), true, random);
-            // First Mac
-            if (mac != null) {
-                mac.update(seq);
-                mac.update(packet.data, 0, packet.writeOffset);
-                mac.doFinal(packet.data, packet.writeOffset);
-            }
-            // then Encrypt
-            cipher.update(packet.data, 0, packet.writeOffset, packet.data, 0);
-
-            // adjust write offset if we used a MAC
-            if (mac != null) {
-                packet.moveWritePosition(mac.getDigestLength());
-            }
         }
     }
 
@@ -164,7 +165,7 @@ public class TransportC2S
                 socketOutputStream.close();
             }
             socketOutputStream = null;
-        } catch (final Exception ignore1) {
+        } catch (@NonNull final Exception ignore) {
         }
     }
 }
