@@ -14,7 +14,6 @@ import com.hardbacknutter.sshclient.identity.IdentityRepositoryWrapper;
 import com.hardbacknutter.sshclient.identity.InMemoryIdentityRepository;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.userauth.SshAuthException;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.SshClientConfigImpl;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -613,20 +611,6 @@ public class SshClient {
         }
 
         return identityRepository.add(identity);
-    }
-
-    /**
-     * INTERNAL USE ONLY.
-     */
-    @NonNull
-    public Random getRandom()
-            throws NoSuchAlgorithmException {
-        synchronized (this) {
-            if (random == null) {
-                random = ImplementationFactory.getRandom(config);
-            }
-        }
-        return random;
     }
 
     /**
