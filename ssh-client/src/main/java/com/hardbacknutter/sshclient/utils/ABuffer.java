@@ -6,6 +6,7 @@ import com.hardbacknutter.sshclient.transport.Packet;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -112,7 +113,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * reset both the read and write position to the start of the buffer.
+     * Reset both the read and write position to the start of the buffer.
      */
     @NonNull
     public T reset() {
@@ -123,7 +124,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * returns the current absolute position for the next read.
+     * Get the current absolute position for the next read.
+     *
+     * @return the offset
      */
     public int getReadOffSet() {
         return readOffset;
@@ -153,22 +156,21 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     /**
      * Move the write position forward by the given number of bytes.
      * (or backwards if the number is negative);
+     *
+     * @param n amount
      */
-    @NonNull
-    public T moveWritePosition(final int n) {
+    public void moveWritePosition(final int n) {
         if (n > 0) {
             ensureCapacity(n);
         } else if (n + writeOffset < 0) {
             throw new IllegalArgumentException("writeOffset=" + writeOffset + ", n=" + n);
         }
         writeOffset += n;
-        //noinspection unchecked
-        return (T) this;
     }
 
 
     /**
-     * Shifts the contents between {@link #readOffset} and  {@link #writeOffset}
+     * Shift the contents between {@link #readOffset} and  {@link #writeOffset}
      * back to the start of the buffer, and adjusts those two values accordingly.
      */
     public void shiftBuffer() {
@@ -199,7 +201,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Puts one byte into the buffer.
+     * Put one byte into the buffer.
      */
     @NonNull
     public T putByte(final byte b) {
@@ -210,7 +212,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Puts all bytes from the given byte array in the buffer.
+     * Put all bytes from the given byte array into the buffer.
+     *
+     * @param bytes array
      */
     @NonNull
     public T putBytes(@NonNull final byte[] bytes) {
@@ -222,7 +226,11 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Puts a subsequence of the given byte array in the buffer.
+     * Put a subsequence of the given byte array into the buffer.
+     *
+     * @param bytes  array
+     * @param offset start position in the array
+     * @param length number of bytes to copy
      */
     @NonNull
     public T putBytes(@NonNull final byte[] bytes,
@@ -235,13 +243,16 @@ public abstract class ABuffer<T extends ABuffer<T>> {
         return (T) this;
     }
 
+    /**
+     * Put a Java Boolean as a byte with value 0 or 1 into the buffer.
+     */
     @NonNull
     public T putBoolean(final boolean bool) {
         return putByte((byte) (bool ? 1 : 0));
     }
 
     /**
-     * Puts a 32-bit number as 4 bytes (network byte order) into the buffer.
+     * Put a 32-bit number as 4 bytes (network byte order) into the buffer.
      */
     @NonNull
     public T putInt(final int val) {
@@ -255,7 +266,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Puts a 64-bit number as 8 bytes (network byte order) into the buffer.
+     * Put a 64-bit number as 8 bytes (network byte order) into the buffer.
      */
     @NonNull
     public T putLong(final long val) {
@@ -273,7 +284,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Puts a byte[] as an unsigned multiple precision integer (mpint).
+     * Put a byte[] as an unsigned multiple precision integer (mpint).
      * This consists of first the number of bytes as a
      * {@linkplain #putInt 32-bit integer}, then the bytes of the number
      * themselves.
@@ -317,11 +328,26 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Put a Java String formatted as a SSH string into the buffer.
+     * Put a Java String formatted as a SSH string in in UTF_8 into the buffer.
+     *
+     * @see #putString(byte[], int, int)
      */
     @NonNull
     public T putString(@NonNull final String str) {
-        return putString(str.getBytes(StandardCharsets.UTF_8));
+        final byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
+        return putString(bytes, 0, bytes.length);
+    }
+
+    /**
+     * Put a Java String formatted as a SSH string in the given charset into the buffer.
+     *
+     * @see #putString(byte[], int, int)
+     */
+    @NonNull
+    public T putString(@NonNull final String str,
+                       @NonNull final Charset charset) {
+        final byte[] bytes = str.getBytes(charset);
+        return putString(bytes, 0, bytes.length);
     }
 
     /**
@@ -355,6 +381,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * Ensures that at least {@code n} <strong>more</strong> bytes can be
      * put into the packet (i.e. current size PLUS 'n')
      *
+     * @param n amount
+     *
      * @throws IllegalStateException if the buffer has a fixed size and is full
      */
     public void ensureCapacity(final int n) {
@@ -371,14 +399,16 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Reads a single (unsigned) byte from the buffer.
+     * Read a single (unsigned) byte from the buffer.
+     *
+     * @return ubyte
      */
     public byte getByte() {
         return data[readOffset++];
     }
 
     /**
-     * Reads a byte array from the buffer starting at the current {@link #readOffset}.
+     * Read a byte array from the buffer starting at the current {@link #readOffset}.
      *
      * @param dest the array to put the bytes to. This array will
      *             be filled, i.e. we read dest.length bytes from the buffer.
@@ -389,7 +419,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * reads a byte array from the buffer starting at the current {@link #readOffset}.
+     * Read a byte array from the buffer starting at the current {@link #readOffset}.
      *
      * @param dest   the array to put the bytes to.
      * @param offset the start index in the destination array.
@@ -407,14 +437,18 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * reads a 64-bit number from the buffer.
+     * Read a 64-bit number from the buffer.
+     *
+     * @return uint64
      */
     public long getLong() {
         return ((getInt() & 0xffffffffL) << 32) | ((getInt() & 0xffffffffL));
     }
 
     /**
-     * reads a signed 32-bit number from the buffer.
+     * Read a signed 32-bit number from the buffer.
+     *
+     * @return uint32
      */
     public int getInt() {
         return ((data[readOffset++] & 0xff) << 24)
@@ -424,7 +458,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * reads an unsigned 32-bit number from the buffer.
+     * Read an unsigned 32-bit number from the buffer.
+     *
+     * @return uint32
      */
     public long getUInt() {
         return (((long) (data[readOffset++] & 0xff)) << 24)
@@ -433,11 +469,10 @@ public abstract class ABuffer<T extends ABuffer<T>> {
                 | ((long) (data[readOffset++] & 0xff));
     }
 
-
     /**
-     * Length-prefixed..
+     * Length-prefixed.
      * <p>
-     * Get a Java String (converted from an SSH String).
+     * Read a Java String (converted from an SSH String) from the buffer.
      *
      * @return String
      *
@@ -451,9 +486,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Length-prefixed..
+     * Length-prefixed.
      * <p>
-     * reads an SSH String, which is a byte[]
+     * Read an SSH String.
      *
      * @return a new byte[] with the contents of the string.
      *
@@ -477,19 +512,29 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Length-prefixed..
+     * Length-prefixed.
      * <p>
-     * reads an SSH String, and ignores/skips it.
+     * Read an SSH String, and ignore/skip it.
      */
     public void skipString() {
         final int len = getInt();
         readOffset += len;
     }
 
+    /**
+     * Skip the given number of bytes.
+     *
+     * @param n amount
+     */
     public void skip(final int n) {
         readOffset += n;
     }
 
+    /**
+     * Read a multiple-precision (signed) integer and transforms it to a Java BigInteger.
+     *
+     * @return BigInteger
+     */
     @NonNull
     public BigInteger getBigInteger()
             throws IOException {
@@ -499,8 +544,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     /**
      * Length-prefixed.
      * <p>
-     * reads a multiple-precision (signed) integer.
+     * Read a multiple-precision (signed) integer.
      *
+     * @see #getBigInteger()
      * @see #putMPInt(byte[])
      */
     @NonNull
@@ -520,9 +566,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Length-prefixed..
+     * Length-prefixed.
      * <p>
-     * reads a multiple precision signed integer as unsigned.
+     * Read a multiple precision signed integer as unsigned.
      * i.e. the highest-order bit is guaranteed to be 0.
      */
     @NonNull
