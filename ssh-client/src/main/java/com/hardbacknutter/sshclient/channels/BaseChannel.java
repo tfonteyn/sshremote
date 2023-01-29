@@ -11,7 +11,7 @@ import com.hardbacknutter.sshclient.channels.io.MyPipedInputStream;
 import com.hardbacknutter.sshclient.channels.io.PassiveOutputStream;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
-import com.hardbacknutter.sshclient.transport.Transport;
+import com.hardbacknutter.sshclient.transport.TransportC2S;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
 import java.io.IOException;
@@ -23,8 +23,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The abstract base class for the different
- * types of channel which may be associated with a {@link Session}.
+ * The abstract base class for the different types of channel
+ * which may be associated with a {@link Session}.
  *
  * @see Session#openChannel
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5">
@@ -63,9 +63,14 @@ public abstract class BaseChannel
     /** Local channel id generator. */
     private static final AtomicInteger channelIdGenerator = new AtomicInteger();
 
+    private static final int NO_RECIPIENT = -1;
+
     @NonNull
     protected final IOStreams ioStreams;
-    private static final int NO_RECIPIENT = -1;
+
+    protected final int safePacketMargin;
+    @NonNull
+    private final TransportC2S transportC2s;
     /** Channel type name. */
     @NonNull
     private final String type;
@@ -152,6 +157,7 @@ public abstract class BaseChannel
                           @NonNull final SessionImpl session) {
         this.type = type;
         this.session = session;
+        transportC2s = session.getTransportC2s();
         this.id = channelIdGenerator.getAndIncrement();
 
         ioStreams = new IOStreams();
@@ -665,8 +671,7 @@ public abstract class BaseChannel
             }
 
             if (sendNow) {
-                session.getTransportC2s()
-                       .write(packet);
+                transportC2s.write(packet);
                 // All done?
                 if (dataLength == 0) {
                     return;
@@ -686,14 +691,12 @@ public abstract class BaseChannel
         }
 
         // we get here when the remote window size is big enough and we can just send it.
-        session.getTransportC2s()
-               .write(packet);
+        transportC2s.write(packet);
     }
 
     protected void sendPacket(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
-        session.getTransportC2s()
-               .write(packet);
+        transportC2s.write(packet);
     }
 
     /**
@@ -709,21 +712,13 @@ public abstract class BaseChannel
 
         final int srcPos = 1 + CHANNEL_PACKET_HEADER_LEN + dataLength;
 
-        final Transport transport = session.getTransportC2s();
-        final int blockSize;
-        final int macBlockSize;
+        // 8 is the old hardcoded size
+        final int cipherBlockSize = transportC2s.getCipherBlockSize().orElse(8);
+        final int macBlockSize = transportC2s.getMacBlockSize().orElse(0);
 
-        if (transport.cipher == null) {
-            blockSize = 8;
-            macBlockSize = 0;
-        } else {
-            blockSize = transport.cipher.getBlockSize();
-            macBlockSize = transport.mac != null ? transport.mac.getDigestLength() : 0;
-        }
-
-        int paddingLength = (-srcPos) & (blockSize - 1);
-        if (paddingLength < blockSize) {
-            paddingLength += blockSize;
+        int paddingLength = (-srcPos) & (cipherBlockSize - 1);
+        if (paddingLength < cipherBlockSize) {
+            paddingLength += cipherBlockSize;
         }
 
         //TODO: we CANNOT enlarge the packet! It's a fixed size!!
