@@ -42,10 +42,10 @@ public interface SshMac {
     /**
      * Get the digest length of the Mac.
      * Depending on which docs you read (Java, SSH, Wiki...),
-     * this is also known as also known as <em>hash-size</em></em>
-     * and as <em>hash output length</em>
+     * this is also known as <em>hash-size</em></em>, <em>hash output length</em>,
+     * <em>block size</em>
      * <p>
-     * Not to be confused with the key-block-length.
+     * Not to be confused with the KEY-block-length.
      *
      * @return size in bytes
      */
