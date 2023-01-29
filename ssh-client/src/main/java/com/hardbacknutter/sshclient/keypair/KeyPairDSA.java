@@ -231,11 +231,11 @@ public class KeyPairDSA
         //noinspection ConstantConditions
         return new Buffer()
                 .putString(serverHostKeyAlgorithm)
-                .putBigInteger(p)
-                .putBigInteger(q)
-                .putBigInteger(g)
-                .putBigInteger(y)
-                .putBigInteger(x)
+                .putMPInt(p)
+                .putMPInt(q)
+                .putMPInt(g)
+                .putMPInt(y)
+                .putMPInt(x)
                 .putString(publicKeyComment)
                 .getPayload();
     }

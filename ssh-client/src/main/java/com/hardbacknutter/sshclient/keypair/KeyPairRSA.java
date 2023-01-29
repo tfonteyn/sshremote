@@ -271,12 +271,12 @@ public class KeyPairRSA
         //noinspection ConstantConditions
         return new Buffer()
                 .putString(serverHostKeyAlgorithm)
-                .putBigInteger(modulus)
-                .putBigInteger(publicExponent)
-                .putBigInteger(privateExponent)
-                .putBigInteger(coefficient)
-                .putBigInteger(p)
-                .putBigInteger(q)
+                .putMPInt(modulus)
+                .putMPInt(publicExponent)
+                .putMPInt(privateExponent)
+                .putMPInt(coefficient)
+                .putMPInt(p)
+                .putMPInt(q)
                 .putString(publicKeyComment)
                 .getPayload();
     }

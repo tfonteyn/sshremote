@@ -307,8 +307,12 @@ public abstract class ABuffer<T extends ABuffer<T>> {
         return putBytes(bytes);
     }
 
-    public T putBigInteger(@NonNull final BigInteger val) {
-        //TODO: or use putMPInt?
+    /**
+     * Put a Java BigInteger as an unsigned multiple precision integer (mpint) into the buffer.
+     *
+     * @see #putMPInt(byte[])
+     */
+    public T putMPInt(@NonNull final BigInteger val) {
         return putMPInt(val.toByteArray());
     }
 

@@ -55,8 +55,8 @@ public class SshSignatureDSA
         }
 
         return new Buffer()
-                .putMPInt(r.toByteArray())
-                .putMPInt(s.toByteArray())
+                .putMPInt(r)
+                .putMPInt(s)
                 .getPayload();
     }
 

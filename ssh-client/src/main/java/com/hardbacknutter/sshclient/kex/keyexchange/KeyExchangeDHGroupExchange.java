@@ -164,7 +164,7 @@ public class KeyExchangeDHGroupExchange
                 // mpint    e <- g^x mod p
                 //          x is a random number (1 < x < (p-1)/2)
                 final Packet packet = new Packet(SSH_MSG_KEX_DH_GEX_INIT)
-                        .putBigInteger(e);
+                        .putMPInt(e);
                 io.write(packet);
 
                 if (getLogger().isEnabled(Logger.DEBUG)) {
@@ -214,10 +214,10 @@ public class KeyExchangeDHGroupExchange
                         .putInt(minKeySize)
                         .putInt(preferredKeySize)
                         .putInt(maxKeySize)
-                        .putBigInteger(p)
-                        .putBigInteger(g)
-                        .putBigInteger(e)
-                        .putBigInteger(f)
+                        .putMPInt(p)
+                        .putMPInt(g)
+                        .putMPInt(e)
+                        .putMPInt(f)
                         .putMPInt(K)
                         .getPayload();
 

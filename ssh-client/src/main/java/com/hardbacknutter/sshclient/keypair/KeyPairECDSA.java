@@ -253,7 +253,7 @@ public class KeyPairECDSA
                 .putString((ecType.hostKeyAlgorithm))
                 .putString(ecType.nistName)
                 .putString(ecType.encodePoint(w))
-                .putBigInteger(s)
+                .putMPInt(s)
                 .putString(publicKeyComment)
                 .getPayload();
     }

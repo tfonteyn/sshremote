@@ -87,7 +87,7 @@ abstract class KeyExchangeDHGroup_n
         }
 
         final Packet packet = new Packet(SSH_MSG_KEXDH_INIT)
-                .putBigInteger(e);
+                .putMPInt(e);
 
         io.write(packet);
 
@@ -141,8 +141,8 @@ abstract class KeyExchangeDHGroup_n
                     .putString(I_C)
                     .putString(I_S)
                     .putString(K_S)
-                    .putBigInteger(e)
-                    .putBigInteger(f)
+                    .putMPInt(e)
+                    .putMPInt(f)
                     .putMPInt(K)
                     .getPayload();
 
