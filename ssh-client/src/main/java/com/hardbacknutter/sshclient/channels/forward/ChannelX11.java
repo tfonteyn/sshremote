@@ -146,7 +146,7 @@ public class ChannelX11
 
             byte[] hexEncodedCookie = hexCookiePool.get(session);
             if (hexEncodedCookie == null) {
-                final byte[] cookieBlob = session.getSshClient().getRandom().nextBytes(16);
+                final byte[] cookieBlob = session.getConfig().getRandom().nextBytes(16);
                 cookiePool.put(session, cookieBlob);
 
                 hexEncodedCookie = hexEncode(cookieBlob);

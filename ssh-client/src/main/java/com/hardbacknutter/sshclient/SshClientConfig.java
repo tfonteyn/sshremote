@@ -11,6 +11,7 @@ import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.userauth.UserAuth;
 import com.hardbacknutter.sshclient.utils.BaseConfig;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /**
@@ -66,6 +67,10 @@ public interface SshClientConfig
     Logger getLogger();
 
     void setLogger(@Nullable Logger logger);
+
+    @NonNull
+    Random getRandom()
+            throws NoSuchAlgorithmException;
 
     @NonNull
     Map<String, String> getAll();

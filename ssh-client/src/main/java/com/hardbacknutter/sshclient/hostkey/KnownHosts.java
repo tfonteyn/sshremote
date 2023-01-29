@@ -235,7 +235,7 @@ public class KnownHosts
 
         if (config.getBooleanValue(HostConfig.HASH_KNOWN_HOSTS, false)) {
             final HashedHostKey hhk = new HashedHostKey(getMac(), host, key);
-            hhk.hash(sshClient.getRandom());
+            hhk.hash(config.getRandom());
             return hhk;
 
         } else {

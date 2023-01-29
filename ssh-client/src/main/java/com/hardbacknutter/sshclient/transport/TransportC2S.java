@@ -3,7 +3,6 @@ package com.hardbacknutter.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Random;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.ciphers.AEADCipher;
 import com.hardbacknutter.sshclient.ciphers.ChaChaCipher;
@@ -23,8 +22,6 @@ import javax.crypto.Cipher;
 public class TransportC2S
         extends Transport {
 
-    @NonNull
-    private final Random random;
     @Nullable
     private OutputStream socketOutputStream;
     @Nullable
@@ -38,7 +35,6 @@ public class TransportC2S
             throws NoSuchAlgorithmException {
         super(session, Cipher.ENCRYPT_MODE);
         this.socketOutputStream = socketOutputStream;
-        this.random = session.getSshClient().getRandom();
     }
 
     /**

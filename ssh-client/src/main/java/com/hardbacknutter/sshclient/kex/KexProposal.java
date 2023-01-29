@@ -136,7 +136,7 @@ public class KexProposal {
         // boolean   first_kex_packet_follows
         // uint32    0 (reserved for future extension)
         clientPacket = new Packet(SshConstants.SSH_MSG_KEXINIT)
-                .putBytes(session.getSshClient().getRandom().nextBytes(16))
+                .putBytes(config.getRandom().nextBytes(16))
                 .putString(String.join(",", kexAlgorithms))
                 .putString(String.join(",", hostKeyAlgorithms))
                 .putString(String.join(",", ciphers_c2s))

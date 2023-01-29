@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.Random;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -21,6 +22,7 @@ import com.hardbacknutter.sshclient.userauth.UserAuthPassword;
 import com.hardbacknutter.sshclient.userauth.UserAuthPublicKey;
 import com.hardbacknutter.sshclient.userauth.jgss.UserAuthGSSContextKrb5;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -91,6 +93,10 @@ public final class SshClientConfigImpl
     @NonNull
     private Logger logger;
 
+    /** Random generator used by this config */
+    @Nullable
+    private Random random;
+
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
      */
@@ -144,6 +150,17 @@ public final class SshClientConfigImpl
     @Nullable
     public HostConfig getHostConfig() {
         return hostConfig;
+    }
+
+    @NonNull
+    public Random getRandom()
+            throws NoSuchAlgorithmException {
+        synchronized (this) {
+            if (random == null) {
+                random = ImplementationFactory.getRandom(this);
+            }
+        }
+        return random;
     }
 
     @Override
