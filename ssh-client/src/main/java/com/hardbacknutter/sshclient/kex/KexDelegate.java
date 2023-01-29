@@ -375,8 +375,7 @@ public class KexDelegate {
             final KexProposal.StrictHostKeyChecking strictHostKeyChecking =
                     KexProposal.StrictHostKeyChecking.get(session.getConfig());
 
-            final HostKey hostkey = hkr.createHostKey(session.getSshClient(),
-                                                      hostKeyName, kex.getK_S());
+            final HostKey hostkey = hkr.createHostKey(hostKeyName, kex.getK_S());
 
             boolean addNewKey = false;
 
