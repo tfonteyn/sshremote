@@ -264,53 +264,82 @@ public class KeyPairTool {
             return keyPair;
         }
 
-        //TODO (perhaps...) the below assumes that the key/pem starts on line 1
         try (PemReader reader = new PemReader(publicKeyReader)) {
             reader.mark(32);
-            final String line = reader.readLine();
-            if (line.startsWith("-----BEGIN PUBLIC KEY")) {
-                reader.reset();
-                final PemObject pem = reader.readPemObject();
-                if (pem == null) {
-                    throw new InvalidKeyException("Invalid public key");
-                }
-
-                keyPair.setSshPublicKeyBlob(pem.getContent());
-                //noinspection unchecked
-                final Optional<String> optionalComment =
-                        ((List<PemHeader>) pem.getHeaders())
-                                .stream()
-                                .filter(h -> "Comment".equalsIgnoreCase(h.getName()))
-                                .map(PemHeader::getValue)
-                                .findFirst();
-                if (optionalComment.isPresent()) {
-                    keyPair.setPublicKeyComment(optionalComment.get());
-                }
-
-            } else {
-                // try format: "type base64publickey comment"
-                final String[] parts = line.split(" ");
-                if (parts.length > 1) {
-                    // part 0 is the type; don't need it - we get the type from the private key
-                    // part 1 is the base64 key
-                    try {
-                        keyPair.setSshPublicKeyBlob(Base64.getDecoder().decode(parts[1].trim()));
-
-                    } catch (final IllegalArgumentException e) {
-                        throw new InvalidKeyException("Invalid base64 data for public key", e);
-                    }
-                    // any subsequent parts are comment
-                    if (parts.length > 2) {
-                        final StringBuilder comment = new StringBuilder();
-                        for (int i = 2; i < parts.length; i++) {
-                            comment.append(parts[i]);
-                        }
-                        keyPair.setPublicKeyComment(comment.toString());
-                    }
+            @Nullable final String line = reader.readLine();
+            if (line != null) {
+                if (line.startsWith("-----BEGIN PUBLIC KEY")) {
+                    parsePublicKeyFromPem(keyPair, reader);
+                } else {
+                    parsePublicKeyFromSingleLine(keyPair, reader, line);
                 }
             }
         }
         return keyPair;
+    }
+
+    /**
+     * Continue parsing for the public key in PEM format.
+     *
+     * @param keyPair the KeyPair to add public key info to.
+     * @param reader  to read from
+     */
+    private void parsePublicKeyFromPem(@NonNull final SshKeyPair keyPair,
+                                       @NonNull final PemReader reader)
+            throws IOException, InvalidKeyException {
+        reader.reset();
+        final PemObject pem = reader.readPemObject();
+        if (pem == null) {
+            throw new InvalidKeyException("Invalid public key");
+        }
+
+        keyPair.setSshPublicKeyBlob(pem.getContent());
+
+        //noinspection unchecked
+        ((List<PemHeader>) pem.getHeaders())
+                .stream()
+                .filter(h -> "Comment".equalsIgnoreCase(h.getName()))
+                .map(PemHeader::getValue)
+                .findFirst()
+                .ifPresent(keyPair::setPublicKeyComment);
+    }
+
+    /**
+     * Continue parsing for the public key in "type base64publickey comment" format.
+     *
+     * @param keyPair the KeyPair to add public key info to.
+     * @param reader  to read from
+     */
+    private void parsePublicKeyFromSingleLine(@NonNull final SshKeyPair keyPair,
+                                              @NonNull final PemReader reader,
+                                              @Nullable String line)
+            throws IOException, InvalidKeyException {
+        // skip blank lines and any comments
+        while (line != null && (line.isBlank() || line.charAt(0) == '#')) {
+            line = reader.readLine();
+        }
+        if (line != null) {
+            final String[] parts = line.split(" ");
+            if (parts.length > 1) {
+                // part 0 is the type; don't need it - we get the type from the private key
+                // part 1 is the base64 key
+                try {
+                    keyPair.setSshPublicKeyBlob(Base64.getDecoder()
+                                                      .decode(parts[1].trim()));
+
+                } catch (final IllegalArgumentException e) {
+                    throw new InvalidKeyException("Invalid base64 data for public key", e);
+                }
+                // any subsequent parts are comment
+                if (parts.length > 2) {
+                    final StringBuilder comment = new StringBuilder();
+                    for (int i = 2; i < parts.length; i++) {
+                        comment.append(parts[i]);
+                    }
+                    keyPair.setPublicKeyComment(comment.toString());
+                }
+            }
+        }
     }
 
     @Nullable
