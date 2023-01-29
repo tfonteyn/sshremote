@@ -228,8 +228,7 @@ public class KnownHosts
 
     @Override
     @NonNull
-    public HostKey createHostKey(@NonNull final SshClient sshClient,
-                                 @NonNull final String host,
+    public HostKey createHostKey(@NonNull final String host,
                                  @NonNull final byte[] key)
             throws GeneralSecurityException {
 

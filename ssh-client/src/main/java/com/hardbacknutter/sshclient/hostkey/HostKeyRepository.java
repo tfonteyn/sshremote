@@ -39,8 +39,7 @@ public interface HostKeyRepository {
      */
     @SuppressWarnings("OverlyBroadThrowsClause")
     @NonNull
-    default HostKey createHostKey(@NonNull final SshClient sshClient,
-                                  @NonNull final String host,
+    default HostKey createHostKey(@NonNull final String host,
                                   @NonNull final byte[] key)
             throws GeneralSecurityException {
         return new HostKey(host, key);
