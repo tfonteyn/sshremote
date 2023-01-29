@@ -9,7 +9,7 @@ import java.security.KeyException;
 import java.util.Arrays;
 
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class PBKDF2Argon
+public class PBKDFArgon2
         implements PBKDF {
 
     private int type;
@@ -31,7 +31,7 @@ public class PBKDF2Argon
      * @param salt           the salt.
      * @param iterationCount the iteration count.
      */
-    public PBKDF2Argon init(@NonNull final String type,
+    public PBKDFArgon2 init(@NonNull final String type,
                             @NonNull final String salt,
                             @NonNull final String iterationCount,
                             @NonNull final String memoryAsKB,
@@ -92,7 +92,7 @@ public class PBKDF2Argon
 
     @Override
     public String toString() {
-        return "PBKDF2Argon{"
+        return "PBKDFArgon2{"
                 + "type=" + type
                 + ", memory=" + memory
                 + ", iterations=" + iterationCount

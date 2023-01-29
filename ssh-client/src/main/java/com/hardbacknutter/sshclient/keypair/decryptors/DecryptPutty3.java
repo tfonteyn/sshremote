@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF2Argon;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFArgon2;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
@@ -37,7 +37,7 @@ public class DecryptPutty3 implements PKDecryptor {
 
         this.macLength = macLength;
 
-        pbkdf = new PBKDF2Argon()
+        pbkdf = new PBKDFArgon2()
                 .init(keyDerivation, salt, iterationCount,
                       memoryAsKB, parallelism,
                       //  a secret key, and some ‘associated data’.
