@@ -1005,7 +1005,7 @@ public final class SessionImpl
                             packet.skipString(/* request name */);
                             final boolean wantReply = packet.getBoolean();
                             if (wantReply) {
-                                packet.startCommand(SshConstants.SSH_MSG_REQUEST_FAILURE);
+                                packet.init(SshConstants.SSH_MSG_REQUEST_FAILURE);
                                 write(packet);
                             }
                             break;

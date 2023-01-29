@@ -79,7 +79,7 @@ public class UserAuthKeyboardInteractive
             // string    "keyboard-interactive" (US-ASCII)
             // string    language tag (as defined in [RFC-3066])
             // string    sub-methods (ISO-10646 UTF-8)
-            packet.startCommand(SshConstants.SSH_MSG_USERAUTH_REQUEST)
+            packet.init(SshConstants.SSH_MSG_USERAUTH_REQUEST)
                   .putString(username)
                   .putString(UserAuth.SSH_CONNECTION)
                   .putString(METHOD)
@@ -168,7 +168,7 @@ public class UserAuthKeyboardInteractive
                     // string    response[1] (ISO-10646 UTF-8)
                     // ...
                     // string    response[num-responses] (ISO-10646 UTF-8)
-                    packet.startCommand(SshConstants.SSH_MSG_USERAUTH_INFO_RESPONSE);
+                    packet.init(SshConstants.SSH_MSG_USERAUTH_INFO_RESPONSE);
                     if (num_prompts > 0 &&
                             (response == null ||  // cancel
                                     num_prompts != response.length)) {

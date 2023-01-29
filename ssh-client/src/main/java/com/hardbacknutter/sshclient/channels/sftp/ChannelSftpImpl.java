@@ -2152,7 +2152,7 @@ public class ChannelSftpImpl
         }
 
         // Always write a clean header (remember, we re-use this packet!)
-        uploadPacket.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
+        uploadPacket.init(SshConstants.SSH_MSG_CHANNEL_DATA)
                     .putInt(getRecipient())
                     .putInt(0xDEAD)
                     .putInt(0xBEEF)
@@ -2244,7 +2244,7 @@ public class ChannelSftpImpl
                 // byte      SSH_MSG_CHANNEL_DATA
                 // uint32    recipient channel
                 // string    data
-                .startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
+                .init(SshConstants.SSH_MSG_CHANNEL_DATA)
                 .putInt(getRecipient())
                 // We use place holders for the length fields. They will be updated at 'write' time
                 // length of the "data" string: payloadLength + 4

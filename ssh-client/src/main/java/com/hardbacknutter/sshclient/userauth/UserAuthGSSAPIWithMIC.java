@@ -184,7 +184,7 @@ public class UserAuthGSSAPIWithMIC
             // byte        SSH_MSG_USERAUTH_GSSAPI_TOKEN
             // string      data returned from either GSS_Init_sec_context()
             //             or GSS_Accept_sec_context()
-            packet.startCommand(SSH_MSG_USERAUTH_GSSAPI_TOKEN)
+            packet.init(SSH_MSG_USERAUTH_GSSAPI_TOKEN)
                   .putString(token);
             io.write(packet);
 
@@ -251,7 +251,7 @@ public class UserAuthGSSAPIWithMIC
         // send
         // byte      SSH_MSG_USERAUTH_GSSAPI_MIC
         // string    MIC
-        packet.startCommand(SSH_MSG_USERAUTH_GSSAPI_MIC)
+        packet.init(SSH_MSG_USERAUTH_GSSAPI_MIC)
               .putString(mic);
         io.write(packet);
 

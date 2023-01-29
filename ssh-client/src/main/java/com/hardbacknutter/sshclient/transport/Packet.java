@@ -141,7 +141,7 @@ public class Packet
      * and set the buffer's WRITE-position to the start of the payload
      * (i.e. AFTER the command byte).
      */
-    public Packet startCommand(final byte command) {
+    public Packet init(final byte command) {
         writeOffset = HEADER_LEN;
         putByte(command);
         return this;

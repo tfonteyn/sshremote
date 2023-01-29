@@ -77,7 +77,7 @@ public class UserAuthNone
         // string    user name
         // string    service name ("ssh-connection")
         // string    method ("none")
-        packet.startCommand(SshConstants.SSH_MSG_USERAUTH_REQUEST)
+        packet.init(SshConstants.SSH_MSG_USERAUTH_REQUEST)
               .putString(username)
               .putString(UserAuth.SSH_CONNECTION)
               .putString(METHOD);

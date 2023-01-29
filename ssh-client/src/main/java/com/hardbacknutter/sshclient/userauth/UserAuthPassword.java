@@ -100,7 +100,7 @@ public class UserAuthPassword
                 // string    method ("password")
                 // boolean   FALSE
                 // string    plaintext password in ISO-10646 UTF-8 encoding [RFC3629]
-                packet.startCommand(SshConstants.SSH_MSG_USERAUTH_REQUEST)
+                packet.init(SshConstants.SSH_MSG_USERAUTH_REQUEST)
                       .putString(username)
                       .putString(UserAuth.SSH_CONNECTION)
                       .putString(METHOD)
@@ -168,7 +168,7 @@ public class UserAuthPassword
                             // boolean   TRUE
                             // string    plaintext old password (ISO-10646 UTF-8)
                             // string    plaintext new password (ISO-10646 UTF-8)
-                            packet.startCommand(SshConstants.SSH_MSG_USERAUTH_REQUEST)
+                            packet.init(SshConstants.SSH_MSG_USERAUTH_REQUEST)
                                   .putString(username)
                                   .putString(UserAuth.SSH_CONNECTION)
                                   .putString(METHOD)

@@ -296,7 +296,7 @@ public class ChannelAgentForwarding
         // the length of the response string (4 bytes for the len prefix)
         final int dataLength = 4 + response.length;
         //TODO: add optimization reusing the response buffer as the packet buffer ?
-        packet.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
+        packet.init(SshConstants.SSH_MSG_CHANNEL_DATA)
               .putInt(getRecipient())
               .putInt(dataLength)
               .putString(response);

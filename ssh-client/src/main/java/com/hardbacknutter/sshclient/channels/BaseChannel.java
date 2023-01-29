@@ -400,7 +400,7 @@ public abstract class BaseChannel
                     return;
                 }
                 //noinspection ConstantConditions
-                packet.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
+                packet.init(SshConstants.SSH_MSG_CHANNEL_DATA)
                       .putInt(recipient)
                       .putInt(dataLength)
                       // we already copied the actual data in #write
@@ -527,7 +527,7 @@ public abstract class BaseChannel
 
                 // Complete the packet with the header,
                 // and set the write offset behind the payload ready to send.
-                packet.startCommand(SshConstants.SSH_MSG_CHANNEL_DATA)
+                packet.init(SshConstants.SSH_MSG_CHANNEL_DATA)
                       .putInt(recipient)
                       .putInt(dataLength)
                       .moveWritePosition(dataLength);
@@ -762,7 +762,7 @@ public abstract class BaseChannel
                          packet.data, CHANNEL_PACKET_HEADER_LEN + 1,
                          dataLength);
         // and reconstruct the channel data header.
-        packet.startCommand(command)
+        packet.init(command)
               .putInt(recipient)
               .putInt(dataLength)
               .moveWritePosition(dataLength);
@@ -977,7 +977,7 @@ public abstract class BaseChannel
                 final boolean wantReply = packet.getBoolean();
                 if (wantReply) {
                     // re-use the packet
-                    packet.startCommand(SshConstants.SSH_MSG_CHANNEL_FAILURE)
+                    packet.init(SshConstants.SSH_MSG_CHANNEL_FAILURE)
                           .putInt(getRecipient());
                     session.write(packet);
                 }
