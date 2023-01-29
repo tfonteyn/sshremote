@@ -24,6 +24,7 @@ import java.util.Objects;
 
 /**
  * A PKCS#8 KeyPair is a wrapper containing the actual KeyPair as {@link #delegate}.
+ * <p>
  * The type / {@link #delegate} is available after a {@link #parse} when constructing.
  * Decrypting passphrase protected keys is as normal with {@link #decryptPrivateKey(byte[])}.
  * <p>
@@ -228,8 +229,7 @@ public class KeyPairPKCS8
 
         } catch (final Exception e) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () ->
-                        "Parsing failed, key is probably encrypted");
+                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
             }
             privateKeyBlob.setEncrypted(true);
             return;

@@ -24,6 +24,10 @@ import java.security.GeneralSecurityException;
 public abstract class KeyPairBase
         implements SshKeyPair {
 
+    // This is NOT an error; it will happen when the key is encrypted
+    // and we try to parse it without decoding correctly
+    static final String DEBUG_KEY_PARSING_FAILED = "Parsing failed, key is still encrypted";
+
     @NonNull
     final SshClientConfig config;
     @NonNull

@@ -36,7 +36,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 public class KeyPairTool {
 

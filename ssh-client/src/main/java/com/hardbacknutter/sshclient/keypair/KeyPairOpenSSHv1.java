@@ -20,8 +20,9 @@ import java.util.Objects;
 /**
  * An OpenSSHv1 KeyPair is a wrapper containing a generic encrypted KeyPair.
  * <p>
- * They can be unencrypted, but the {@link OpenSSHv1Reader} and {@link Builder}
+ * If the wrapped key is NOT encrypted, the {@link OpenSSHv1Reader} and {@link Builder}
  * will detect the actual type and create the actual KeyPair directly.
+ * If it IS encrypted, this class behaves will use a delegate after decryption.
  */
 @SuppressWarnings("ClassWithOnlyPrivateConstructors")
 public
@@ -29,6 +30,7 @@ class KeyPairOpenSSHv1
         extends KeyPairBase {
 
     private static final String MUST_PARSE_FIRST = "Must call decrypt/parse first";
+    private static final String UNKNOWN_KEY_TYPE_VENDOR = "Unknown key type/vendor";
 
     /** key derivation function. */
     @NonNull
@@ -261,7 +263,7 @@ class KeyPairOpenSSHv1
                 throws GeneralSecurityException {
 
             if (hostKeyType.isBlank()) {
-                throw new InvalidKeyException("Unknown key type/vendor");
+                throw new InvalidKeyException(UNKNOWN_KEY_TYPE_VENDOR);
             }
 
             final SshKeyPair keyPair;
@@ -272,12 +274,10 @@ class KeyPairOpenSSHv1
                     break;
 
                 case HostKeyAlgorithm.__PKCS8__:
-                    // not encrypted, but in a PKCS8 wrapper
-                    // (does this case actually exists in the real world?)
+                    // Does this situation actually exists in the real world?
                     keyPair = new KeyPairPKCS8(config, privateKeyBlob);
                     break;
 
-                // all other cases are not encrypted
                 case HostKeyAlgorithm.SSH_RSA:
                     keyPair = new KeyPairRSA(config, privateKeyBlob);
                     break;
@@ -300,7 +300,7 @@ class KeyPairOpenSSHv1
                     break;
 
                 default:
-                    throw new InvalidKeyException("Unknown key type/vendor");
+                    throw new InvalidKeyException(UNKNOWN_KEY_TYPE_VENDOR);
             }
 
             keyPair.setSshPublicKeyBlob(publicKeyBlob);

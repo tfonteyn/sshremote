@@ -309,8 +309,7 @@ public class KeyPairECDSA
 
         } catch (final Exception e) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () ->
-                        "Parsing failed, key is probably encrypted");
+                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
             }
 
             privateKeyBlob.setEncrypted(true);
