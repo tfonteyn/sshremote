@@ -194,7 +194,7 @@ class KeyPairOpenSSHv1
         @NonNull
         final SshClientConfig config;
         @NonNull
-        private String hostKeyType = HostKeyAlgorithm.__DEFERRED__;
+        private String hostKeyType = HostKeyAlgorithm.__OPENSSH_V1__;
 
         @Nullable
         private String kdfName;
@@ -231,7 +231,7 @@ class KeyPairOpenSSHv1
             this.publicKeyBlob = publicKeyBlob;
 
             // if possible, use the type derived from the public key
-            if (HostKeyAlgorithm.__DEFERRED__.equals(hostKeyType) && publicKeyBlob != null) {
+            if (HostKeyAlgorithm.__OPENSSH_V1__.equals(hostKeyType) && publicKeyBlob != null) {
                 final Buffer pb = new Buffer(publicKeyBlob);
                 try {
                     hostKeyType = HostKeyAlgorithm.parseType(pb.getJString());
@@ -268,8 +268,7 @@ class KeyPairOpenSSHv1
 
             final SshKeyPair keyPair;
             switch (hostKeyType) {
-                case HostKeyAlgorithm.__DEFERRED__:
-                    // encrypted
+                case HostKeyAlgorithm.__OPENSSH_V1__:
                     keyPair = new KeyPairOpenSSHv1(config, this);
                     break;
 

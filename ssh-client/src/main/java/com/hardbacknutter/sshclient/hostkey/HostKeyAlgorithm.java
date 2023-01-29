@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public final class HostKeyAlgorithm {
 
     /**
@@ -20,12 +21,12 @@ public final class HostKeyAlgorithm {
     /**
      * The 256/512 strings ARE SEND to the server in the list of key algorithms
      * the client supports.
+     * <p>
      * The wire protocol is however always "ssh-rsa" while
      * the 256/512 strings are used in signature wrappers to identify the hash function to use
      * for verification of the key.
      *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc8332">
-     * RFC 8332</a>
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc8332">RFC 8332</a>
      */
     public static final String SSH_RSA = "ssh-rsa";
     public static final String SIG_ONLY_RSA_SHA2_256 = "rsa-sha2-256";
@@ -44,30 +45,42 @@ public final class HostKeyAlgorithm {
     public static final String SSH_ED448 = "ssh-ed448";
 
     /**
-     * Special case, see {@link com.hardbacknutter.sshclient.keypair} KeyPairBase.KeyPairBuilder
+     * This is a wrapper around the 'real' KeyPair.
+     *
+     * @see com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1
      */
-    public static final String __DEFERRED__ = "__DEFERRED__";
+    public static final String __OPENSSH_V1__ = "__OPENSSH_V1__";
     /**
-     * Special case, see {@link com.hardbacknutter.sshclient.keypair} KeyPairBase.KeyPairBuilder
+     * This is a wrapper around the 'real' KeyPair.
+     *
+     * @see com.hardbacknutter.sshclient.keypair.KeyPairPKCS8
      */
     public static final String __PKCS8__ = "__PKCS8__";
 
     /**
      * All host key algorithm's that can be used for KEX.
      */
-    private static final String[] ALL = {SSH_DSS,
+    private static final String[] ALL = {
+            SSH_DSS,
             SSH_RSA,
             SSH_ECDSA_SHA2_NISTP256,
             SSH_ECDSA_SHA2_NISTP384,
             SSH_ECDSA_SHA2_NISTP521,
             SSH_ED25519,
             SSH_ED448,
-            __DEFERRED__,
+            __OPENSSH_V1__,
             __PKCS8__};
 
     private HostKeyAlgorithm() {
     }
 
+    /**
+     * Check if the given type is of the RSA family.
+     *
+     * @param type to check
+     *
+     * @return {@code true} if it's one of the RSA family
+     */
     public static boolean isRSA(final String type) {
         return SSH_RSA.equals(type) ||
                 SIG_ONLY_RSA_SHA2_256.equals(type) ||
@@ -78,6 +91,16 @@ public final class HostKeyAlgorithm {
                 SIG_ONLY_RSA_SHA_512_SSH_COM.equals(type);
     }
 
+    /**
+     * Parse/check if the given algorithm name is a supported type.
+     *
+     * @param keyAlgorithm to check
+     *
+     * @return one of the constants with the algorithm name
+     *
+     * @throws InvalidKeyException if the type is not recognised/supported
+     * @see #parseType(byte[])
+     */
     @NonNull
     public static String parseType(@Nullable final String keyAlgorithm)
             throws InvalidKeyException {
@@ -88,8 +111,18 @@ public final class HostKeyAlgorithm {
         throw new InvalidKeyException("key type " + keyAlgorithm + " not supported");
     }
 
+    /**
+     * Parse a binary key for the string header, and return the algorithm name.
+     *
+     * @param key to check
+     *
+     * @return one of the constants with the algorithm name
+     *
+     * @throws InvalidKeyException if the type is not recognised/supported
+     * @see #parseType(String)
+     */
     @NonNull
-    static String parseType(@NonNull final byte[] key)
+    public static String parseType(@NonNull final byte[] key)
             throws InvalidKeyException {
         if (key.length > 20) {
             if (key[8] == 'd') {

@@ -110,16 +110,15 @@ public class OpenSSHv1Reader {
         final byte[] privateKeyBlob = buffer.getString();
 
         if (SshCipherConstants.NONE.equals(cipherName)) {
-            // not encrypted, we'll bypass the DEFERRED state and
-            // create the real KeyPair directly.
+            // not encrypted, create the real KeyPair directly.
             builder.setHostKeyType(getHostKeyType(privateKeyBlob))
                    .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
         } else {
-            // the type can only be determined after decryption,
-            // so we take this intermediate here:
+            // The type can only be determined after decryption.
+            // Use a deferred decryptor.
             final PKDecryptor decryptor = new DecryptDeferred();
             decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
-            builder.setHostKeyType(HostKeyAlgorithm.__DEFERRED__)
+            builder.setHostKeyType(HostKeyAlgorithm.__OPENSSH_V1__)
                    .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
         }
 
