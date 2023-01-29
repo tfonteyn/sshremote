@@ -14,7 +14,6 @@ import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -183,7 +182,7 @@ public class RemoteForwardingHandlerImpl
         // string   address_to_bind (e.g. "127.0.0.1")
         // uint32   port number to bind
         final Packet packet = new Packet(SshConstants.SSH_MSG_GLOBAL_REQUEST)
-                .putString("cancel-tcpip-forward".getBytes(StandardCharsets.UTF_8))
+                .putString("cancel-tcpip-forward")
                 .putBoolean(false)
                 .putString(bindAddress)
                 .putInt(remotePort);
