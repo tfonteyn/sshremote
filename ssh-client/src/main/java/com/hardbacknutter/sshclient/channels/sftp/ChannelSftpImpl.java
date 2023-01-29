@@ -215,18 +215,6 @@ public class ChannelSftpImpl
     }
 
     /**
-     * Convert a String into a {@code byte[]} using the remote charset.
-     *
-     * @param s to convert
-     *
-     * @return a {@code byte[]} in the remote charset
-     */
-    @NonNull
-    private byte[] str2byte(@NonNull final String s) {
-        return s.getBytes(remoteCharset);
-    }
-
-    /**
      * Convert the {@code byte[]} using the remote charset into a String.
      *
      * @param bytes to convert
@@ -1931,25 +1919,21 @@ public class ChannelSftpImpl
 
     private void sendSTAT(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendPacketPath(SftpConstants.SSH_FXP_STAT, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_STAT, path, null);
     }
 
     private void sendSTAT(@NonNull final byte[] path)
             throws IOException, GeneralSecurityException, SshChannelException {
-
         sendPacketPath(SftpConstants.SSH_FXP_STAT, path, null);
     }
 
     private void sendLSTAT(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendPacketPath(SftpConstants.SSH_FXP_LSTAT, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_LSTAT, path, null);
     }
 
     private void sendFSTAT(@NonNull final byte[] handle)
             throws IOException, GeneralSecurityException, SshChannelException {
-
         sendPacketPath(SftpConstants.SSH_FXP_FSTAT, handle, null);
     }
 
@@ -1959,7 +1943,7 @@ public class ChannelSftpImpl
 
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_SETSTAT)
                 .putInt(seq++)
-                .putString(str2byte(path));
+                .putString(path, remoteCharset);
         attr.putInto(packet);
         sendFxpPacket(packet);
     }
@@ -1977,8 +1961,7 @@ public class ChannelSftpImpl
 
     private void sendSTATVFS(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendPacketPath((byte) 0, str2byte(path), EXT_STATVFS_OPENSSH_COM);
+        sendPacketPath((byte) 0, path, EXT_STATVFS_OPENSSH_COM);
     }
 
     private void sendMKDIR(@NonNull final String path,
@@ -1987,7 +1970,7 @@ public class ChannelSftpImpl
 
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_MKDIR)
                 .putInt(seq++)
-                .putString(str2byte(path));
+                .putString(path, remoteCharset);
         if (attr != null) {
             attr.putInto(packet);
         } else {
@@ -1998,40 +1981,38 @@ public class ChannelSftpImpl
 
     private void sendRMDIR(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendPacketPath(SftpConstants.SSH_FXP_RMDIR, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_RMDIR, path, null);
     }
 
     private void sendREMOVE(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
-
-        sendPacketPath(SftpConstants.SSH_FXP_REMOVE, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_REMOVE, path, null);
     }
 
     private void sendSYMLINK(@NonNull final String p1,
                              @NonNull final String p2)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        sendPacketPath(SftpConstants.SSH_FXP_SYMLINK, str2byte(p1), str2byte(p2), null);
+        sendPacketPath(SftpConstants.SSH_FXP_SYMLINK, p1, p2, null);
     }
 
     private void sendHARDLINK(@NonNull final String p1,
                               @NonNull final String p2)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        sendPacketPath((byte) 0, str2byte(p1), str2byte(p2), EXT_HARDLINK_OPENSSH_COM);
+        sendPacketPath((byte) 0, p1, p2, EXT_HARDLINK_OPENSSH_COM);
     }
 
     private void sendREADLINK(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        sendPacketPath(SftpConstants.SSH_FXP_READLINK, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_READLINK, path, null);
     }
 
     private void sendREALPATH(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        sendPacketPath(SftpConstants.SSH_FXP_REALPATH, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_REALPATH, path, null);
     }
 
     /**
@@ -2046,7 +2027,7 @@ public class ChannelSftpImpl
     private void sendOPENDIR(@NonNull final String path)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        sendPacketPath(SftpConstants.SSH_FXP_OPENDIR, str2byte(path), null);
+        sendPacketPath(SftpConstants.SSH_FXP_OPENDIR, path, null);
     }
 
     private void sendREADDIR(@NonNull final byte[] handle)
@@ -2059,7 +2040,7 @@ public class ChannelSftpImpl
                             @NonNull final String p2)
             throws IOException, GeneralSecurityException, SshChannelException {
 
-        sendPacketPath(SftpConstants.SSH_FXP_RENAME, str2byte(p1), str2byte(p2),
+        sendPacketPath(SftpConstants.SSH_FXP_RENAME, p1, p2,
                        extPosixRename ? EXT_POSIX_RENAME_OPENSSH_COM : null);
     }
 
@@ -2075,7 +2056,7 @@ public class ChannelSftpImpl
 
         final Packet packet = createFxpPacket(SftpConstants.SSH_FXP_OPEN)
                 .putInt(seq++)
-                .putString(str2byte(path))
+                .putString(path, remoteCharset)
                 .putInt(mode)
                 // no attrs
                 .putInt(0);
@@ -2085,6 +2066,13 @@ public class ChannelSftpImpl
     /**
      * Single path operations. e.g. REMOVE
      */
+    private void sendPacketPath(final byte fxp,
+                                @NonNull final String path,
+                                @Nullable final String extension)
+            throws IOException, GeneralSecurityException, SshChannelException {
+        sendPacketPath(fxp, path.getBytes(remoteCharset), extension);
+    }
+
     private void sendPacketPath(final byte fxp,
                                 @NonNull final byte[] path,
                                 @Nullable final String extension)
@@ -2107,6 +2095,15 @@ public class ChannelSftpImpl
     /**
      * Dual-path operations. e.g. RENAME
      */
+    private void sendPacketPath(final byte fxp,
+                                @NonNull final String path1,
+                                @NonNull final String path2,
+                                @Nullable final String extension)
+            throws IOException, GeneralSecurityException, SshChannelException {
+        sendPacketPath(fxp, path1.getBytes(remoteCharset), path2.getBytes(remoteCharset),
+                       extension);
+    }
+
     private void sendPacketPath(final byte fxp,
                                 @NonNull final byte[] path1,
                                 @NonNull final byte[] path2,
