@@ -190,8 +190,8 @@ public class KeyPairTool {
      * @return the new KeyPair.
      */
     @NonNull
-    public SshKeyPair load(@NonNull final BufferedReader prvKeyReader,
-                           @Nullable final BufferedReader publicKeyReader)
+    private SshKeyPair load(@NonNull final BufferedReader prvKeyReader,
+                            @Nullable final BufferedReader publicKeyReader)
             throws IOException, GeneralSecurityException {
 
         // Check for PuTTY format.
