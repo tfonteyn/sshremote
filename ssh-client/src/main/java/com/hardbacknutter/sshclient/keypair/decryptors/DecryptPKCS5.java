@@ -4,20 +4,33 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF1;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
-import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class DecryptPKCS5 implements PKDecryptor {
+
+    @NonNull
+    private PBKDF pbkdf;
 
     @Nullable
     private SshCipher cipher;
     @Nullable
     private byte[] cipherIV;
+
+    public DecryptPKCS5 init(@NonNull final String algorithm,
+                             @NonNull final byte[] salt)
+            throws NoSuchAlgorithmException {
+        pbkdf = new PBKDF1().init(algorithm, salt);
+        return this;
+    }
 
     @Override
     public void setCipher(@Nullable final SshCipher cipher,
@@ -36,34 +49,7 @@ public class DecryptPKCS5 implements PKDecryptor {
 
         byte[] pbeKey = null;
         try {
-            /*
-             * https://datatracker.ietf.org/doc/html/rfc8018#section-5.1
-             * PBKDF1
-             * hash is MD5
-             * h(0) <- hash(passphrase, iv);
-             * h(n) <- hash(h(n-1), passphrase, iv);
-             * key <- (h(0),...,h(n))[0,..,key.length];
-             */
-            final MessageDigest md5 = MessageDigest.getInstance("MD5");
-            final int hashSize = md5.getDigestLength();
-            final byte[] hn = new byte[cipher.getKeySize() / hashSize * hashSize +
-                    (cipher.getKeySize() % hashSize
-                            == 0 ? 0 : hashSize)];
-            byte[] tmp = null;
-            for (int index = 0; index + hashSize <= hn.length; ) {
-                if (tmp != null) {
-                    md5.update(tmp, 0, tmp.length);
-                }
-                md5.update(passphrase, 0, passphrase.length);
-                md5.update(cipherIV, 0, Math.min(cipherIV.length, 8));
-
-                tmp = md5.digest();
-                System.arraycopy(tmp, 0, hn, index, tmp.length);
-                index += tmp.length;
-            }
-
-            pbeKey = new byte[cipher.getKeySize()];
-            System.arraycopy(hn, 0, pbeKey, 0, pbeKey.length);
+            pbeKey = pbkdf.generateSecretKey(passphrase, cipher.getKeySize());
 
             final byte[] plainKey = new byte[blob.length];
             cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
