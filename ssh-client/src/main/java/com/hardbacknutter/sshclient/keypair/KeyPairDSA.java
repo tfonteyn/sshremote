@@ -36,6 +36,7 @@ import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Objects;
 
 public class KeyPairDSA
         extends KeyPairBase {
@@ -275,6 +276,11 @@ public class KeyPairDSA
                 }
 
                 case PKCS8:
+                    x = new BigInteger(1, encodedKey);
+                    Objects.requireNonNull(g, "private key base 'g' not set");
+                    y = g.modPow(x, p);
+                    break;
+
                 case PKCS5:
                 default: {
                     // Sequence                 ==> 'root'
@@ -308,7 +314,7 @@ public class KeyPairDSA
 
         } catch (final Exception e) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+                config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
             }
 
             privateKeyBlob.setEncrypted(true);
