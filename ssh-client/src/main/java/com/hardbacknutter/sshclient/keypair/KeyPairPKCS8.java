@@ -199,7 +199,8 @@ public class KeyPairPKCS8
 
                 delegate = (KeyPairBase) new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
-                        // the octet string is the 'x' value
+                        // 'privateKey' is an octet string, we can just set the 'x' value
+                        // and calculate the 'y' from it.
                         .setXCalculateY(new BigInteger(1, privateKey))
                         .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
                         .build();
