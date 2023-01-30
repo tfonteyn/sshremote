@@ -357,8 +357,8 @@ public class KeyPairTool {
                     final SshCipher cipher = ImplementationFactory
                             .getCipher(config, getSshCipherName(values[0]));
                     final byte[] iv = createIV(values[1], cipher.getIVSize());
-
-                    final PKDecryptor decryptor = new DecryptPKCS5();
+                    // uses the iv as the salt
+                    final PKDecryptor decryptor = new DecryptPKCS5().init("MD5", iv);
                     decryptor.setCipher(cipher, iv);
                     return decryptor;
                 }
