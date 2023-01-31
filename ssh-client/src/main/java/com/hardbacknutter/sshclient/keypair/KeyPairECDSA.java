@@ -15,6 +15,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.sec.ECPrivateKey;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
@@ -291,6 +292,9 @@ public class KeyPairECDSA
                     type = ECKeyType.getByECPoint(w);
                     break;
                 }
+                default:
+                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
+
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error

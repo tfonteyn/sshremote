@@ -19,6 +19,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.util.ASN1Dump;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -296,6 +297,8 @@ public class KeyPairDSA
                     x = ASN1Integer.getInstance(root.getObjectAt(5)).getPositiveValue();
                     break;
                 }
+                default:
+                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error

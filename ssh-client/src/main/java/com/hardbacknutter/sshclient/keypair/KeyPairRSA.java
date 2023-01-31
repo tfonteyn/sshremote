@@ -18,6 +18,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -328,6 +329,9 @@ public class KeyPairRSA
                     coefficient = key.getCoefficient();
                     break;
                 }
+                default:
+                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
+
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
