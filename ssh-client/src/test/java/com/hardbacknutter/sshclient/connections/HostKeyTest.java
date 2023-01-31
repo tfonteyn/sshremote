@@ -1,5 +1,6 @@
 package com.hardbacknutter.sshclient.connections;
 
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.utils.SshException;
@@ -48,7 +49,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, "ssh-rsa");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.SSH_RSA);
 
         session.connect();
         Thread.sleep(100);
@@ -63,7 +64,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, "ssh-rsa");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.SSH_RSA);
 
         session.connect();
         session.disconnect();
@@ -75,7 +76,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, "rsa-sha2-256");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.RSA_SHA_2_256);
 
         session.connect();
         session.disconnect();
@@ -87,7 +88,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, "rsa-sha2-512");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.RSA_SHA_2_512);
 
         session.connect();
         session.disconnect();
@@ -99,7 +100,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, "ecdsa-sha2-nistp256");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.ECDSA_SHA_2_NISTP_256);
 
         session.connect();
         session.disconnect();
@@ -111,7 +112,7 @@ class HostKeyTest
 
         session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, "ssh-ed25519");
+        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.SSH_ED_25519);
 
         session.connect();
         session.disconnect();

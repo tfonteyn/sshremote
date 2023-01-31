@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.kex.KexProposal;
 
@@ -26,7 +27,7 @@ import java.util.List;
 class OpenSSHHostConfigRepositoryTest
         extends BaseConnectionTest {
 
-    private static final String configFile = TEST_RESOURCES + "ssh_config";
+    private static final String configFile = Constants.RESOURCES + "ssh_config";
 
     private static final int ZIP = 0;
     private static final String COMPRESS_YES = "zlib@openssh.com,zlib,none";

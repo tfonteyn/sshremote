@@ -2,7 +2,8 @@ package com.hardbacknutter.sshclient;
 
 import java.nio.charset.StandardCharsets;
 
-public final class LongText {
+public final class Constants {
+    public static final String PASSWORD = "secret";
     // Just a random long-ish test.
     private static final String longText =
             "Status of This Memo\n"
@@ -35,11 +36,21 @@ public final class LongText {
                     + "   This document also describes the Diffie-Hellman key exchange method\n"
                     + "   and the minimal set of algorithms that are needed to implement the\n"
                     + "   SSH transport layer protocol.\n";
+    public static final String RESOURCES = "src/test/resources/";
+    public static final String SSH_DSS = "ssh-dss";
+    public static final String SSH_RSA = "ssh-rsa";
+    public static final String ECDSA_SHA_2_NISTP_256 = "ecdsa-sha2-nistp256";
+    public static final String ECDSA_SHA_2_NISTP_384 = "ecdsa-sha2-nistp384";
+    public static final String ECDSA_SHA_2_NISTP_521 = "ecdsa-sha2-nistp521";
+    public static final String SSH_ED_25519 = "ssh-ed25519";
+    public static final String SSH_ED_448 = "ssh-ed448";
+    public static final String RSA_SHA_2_512 = "rsa-sha2-512";
+    public static final String RSA_SHA_2_256 = "rsa-sha2-256";
 
-    private LongText() {
+    private Constants() {
     }
 
-    public static byte[] getBytes() {
+    public static byte[] getTextBytes() {
         return longText.getBytes(StandardCharsets.UTF_8);
     }
 }

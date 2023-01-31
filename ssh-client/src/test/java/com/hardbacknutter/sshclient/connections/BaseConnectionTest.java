@@ -1,5 +1,6 @@
 package com.hardbacknutter.sshclient.connections;
 
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgJLogger;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClient;
@@ -39,17 +40,17 @@ public class BaseConnectionTest {
     private static final Logger LOGGER = new DbgJLogger();
 
     protected static final String HOST = "172.18.15.121";
-    protected static final String USERNAME = "test";
-    protected static final String PASSWORD = "test";
+    public static final String USERNAME = "test";
+    public static final String PASSWORD = "test";
 
     protected static final int PORT = 22;
-    protected static final String TEST_RESOURCES = "src/test/resources/";
     protected static final String[] ZIPPER = {
             KexProposal.COMPRESSION_NONE,
             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
             KexProposal.COMPRESSION_ZLIB
     };
-    static final String[] kexAlg = {"curve25519-sha256",
+    static final String[] kexAlg = {
+            "curve25519-sha256",
             "curve25519-sha256@libssh.org",
             "ecdh-sha2-nistp256",
             "ecdh-sha2-nistp384",
@@ -59,14 +60,12 @@ public class BaseConnectionTest {
             "diffie-hellman-group18-sha512",
             "diffie-hellman-group14-sha256",
             "diffie-hellman-group14-sha1"};
-    static final String[] sigAlg = {"ssh-rsa",
-            "rsa-sha2-256",
-            "rsa-sha2-512",
-            "ecdsa-sha2-nistp256",
-            "ssh-ed25519",
-            // "ecdsa-sha2-nistp384",
-            // "ecdsa-sha2-nistp521",
-            // "ssh-ed448"
+    static final String[] sigAlg = {
+            Constants.SSH_RSA,
+            Constants.RSA_SHA_2_256,
+            Constants.RSA_SHA_2_512,
+            Constants.ECDSA_SHA_2_NISTP_256,
+            Constants.SSH_ED_25519
     };
 
     private static final String KNOWN_HOSTS = "C:/tmp/ssh/known_hosts";

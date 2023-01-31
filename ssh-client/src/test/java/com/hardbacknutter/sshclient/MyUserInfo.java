@@ -3,14 +3,13 @@ package com.hardbacknutter.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 
 import java.nio.charset.StandardCharsets;
 
 public class MyUserInfo
         implements UserInfo {
-
-    private static final byte[] PASSWORD = "qwerty".getBytes(StandardCharsets.UTF_8);
 
     private boolean response = true;
 
@@ -30,7 +29,7 @@ public class MyUserInfo
     @Nullable
     @Override
     public byte[] getPassword() {
-        return PASSWORD;
+        return BaseConnectionTest.PASSWORD.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -44,7 +43,7 @@ public class MyUserInfo
     @Nullable
     @Override
     public byte[] getPassphrase() {
-        return PASSWORD;
+        return Constants.PASSWORD.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override

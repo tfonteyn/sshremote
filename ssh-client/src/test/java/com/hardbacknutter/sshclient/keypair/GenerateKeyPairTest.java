@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import androidx.annotation.NonNull;
 
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgJLogger;
 import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.LongText;
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
 import com.hardbacknutter.sshclient.signature.SshSignature;
@@ -50,7 +50,7 @@ class GenerateKeyPairTest {
     void keyPairTest(@NonNull final String keyType,
                      final int keySize)
             throws GeneralSecurityException, IOException {
-        final byte[] text = LongText.getBytes();
+        final byte[] text = Constants.getTextBytes();
 
         final KeyPairTool keyPairGen = new KeyPairTool(SSH_CLIENT.getConfig());
         final SshKeyPair keyPair = keyPairGen.generateKeyPair(keyType, keySize);
