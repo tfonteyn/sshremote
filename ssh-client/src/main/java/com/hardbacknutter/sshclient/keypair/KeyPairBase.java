@@ -3,14 +3,19 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityImpl;
+import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.KeyException;
+import java.util.Arrays;
 
 /**
  * Base class for a pair of public and private key.
@@ -30,32 +35,53 @@ public abstract class KeyPairBase
 
     @NonNull
     final SshClientConfig config;
-    @NonNull
-    PrivateKeyBlob privateKeyBlob;
+    @Nullable
+    PKDecryptor decryptor;
     /**
      * The encoded public key; if we have it, we use it directly, otherwise it will be
-     * build from the key components.
+     * build from the key components at first use.
      */
     @Nullable
-    byte[] publicKeyBlob;
+    private byte[] publicKeyBlob;
     @NonNull
-    String publicKeyComment = "";
+    private String publicKeyComment = "";
+    /**
+     * The private key as a byte[].
+     * The binary format is {@link #privateKeyFormat}.
+     * It may be {@link #privateKeyEncrypted} or not.
+     * If it is, then {@link #decryptor} should be able to decrypt it.
+     */
+    @Nullable
+    private byte[] privateKeyBlob;
+    @Nullable
+    private Vendor privateKeyFormat;
+    private boolean privateKeyEncrypted;
 
     /**
      * Constructor.
      */
     KeyPairBase(@NonNull final SshClientConfig config) {
         this.config = config;
-        this.privateKeyBlob = new PrivateKeyBlob();
     }
 
     /**
      * Constructor.
+     *
+     * @param encrypted flag; if {@code true} then 'decryptor' MUST be set.
+     *                  if {@code false} then 'decryptor' only needs setting
+     *                  if it will act as a wrapper/delegate (e.g. PKCS8).
+     * @param decryptor (optional) The vendor specific decryptor
      */
     KeyPairBase(@NonNull final SshClientConfig config,
-                @NonNull final PrivateKeyBlob privateKeyBlob) {
+                @NonNull final byte[] privateKeyBlob,
+                @NonNull final Vendor format,
+                final boolean encrypted,
+                @Nullable final PKDecryptor decryptor) {
         this.config = config;
         this.privateKeyBlob = privateKeyBlob;
+        this.privateKeyFormat = format;
+        this.privateKeyEncrypted = encrypted;
+        this.decryptor = decryptor;
     }
 
     /**
@@ -74,6 +100,7 @@ public abstract class KeyPairBase
     static byte[] wrapPublicKey(@NonNull final String keyAlgorithm,
                                 @NonNull final byte[]... args) {
         // use a fixed-size buffer
+        // (+4: a uint32 to store the length of the argument string)
         int length = 4 + keyAlgorithm.length();
         for (final byte[] arg : args) {
             length += 4 + arg.length;
@@ -100,9 +127,9 @@ public abstract class KeyPairBase
     static byte[] wrapSignature(@NonNull final String signature_name,
                                 @NonNull final byte[] signature_blob) {
         // use a fixed-size buffer
-        final Buffer buffer = new Buffer((2 * 4)
-                                                 + signature_name.length()
-                                                 + signature_blob.length)
+        // (+4: a uint32 to store the length of the argument string)
+        final Buffer buffer = new Buffer(4 + signature_name.length()
+                                                 + 4 + signature_blob.length)
                 .putString(signature_name)
                 .putString(signature_blob);
 
@@ -160,7 +187,11 @@ public abstract class KeyPairBase
 
     @Override
     public boolean isPrivateKeyEncrypted() {
-        return privateKeyBlob.isEncrypted();
+        return privateKeyEncrypted;
+    }
+
+    public void setPrivateKeyEncrypted(final boolean encrypted) {
+        this.privateKeyEncrypted = encrypted;
     }
 
     /**
@@ -170,12 +201,10 @@ public abstract class KeyPairBase
      *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
-    void parse()
+    final void parse()
             throws GeneralSecurityException {
-        final byte[] blob = privateKeyBlob.getBlob();
-        final Vendor format = privateKeyBlob.getFormat();
-        if (blob != null && format != null) {
-            parse(blob, format);
+        if (privateKeyBlob != null && privateKeyFormat != null) {
+            parse(privateKeyBlob, privateKeyFormat);
         }
     }
 
@@ -212,44 +241,92 @@ public abstract class KeyPairBase
     @Override
     public boolean decryptPrivateKey(@Nullable final byte[] passphrase)
             throws GeneralSecurityException, IOException {
-        if (!privateKeyBlob.isEncrypted()) {
+
+        if (!privateKeyEncrypted) {
             return true;
         }
 
-        final Vendor format = privateKeyBlob.getFormat();
         // sanity check
-        if (format == null) {
+        if (privateKeyFormat == null) {
             return false;
         }
 
-        // decrypted key, or garbage!
-        final byte[] plainKey = privateKeyBlob.decrypt(passphrase);
-        // We MUST try parsing first to determine if it decrypted ok, or not!
-        parse(plainKey, format);
+        final byte[] plainKey;
+        try {
+            plainKey = decrypt(passphrase);
+            // be optimistic, assume all went well
+            privateKeyEncrypted = false;
+        } catch (final GeneralSecurityException e) {
+            // We have an actual error
+            throw e;
+        } catch (@NonNull final Exception e) {
+            if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                config.getLogger().log(Logger.DEBUG, e, () -> "decrypt");
+            }
 
-        if (privateKeyBlob.isEncrypted()) {
-            // still encrypted or perhaps garbage
+            // failed due to a key format decoding problem
+            privateKeyEncrypted = true;
             return false;
         }
 
-        // success, replace the encrypted key with the now plain key
-        privateKeyBlob.setBlob(plainKey);
+        // Decrypt went fine, but if for example the passphrase was incorrect,
+        // then the plain key would be garbage hence the next step is to parse it.
+        parse(plainKey, privateKeyFormat);
+
+        if (privateKeyEncrypted) {
+            return false;
+        }
+
+        // Success! Replace the encrypted key with the now plain key
+        privateKeyBlob = plainKey;
         return true;
+    }
+
+    /**
+     * If the blob was not encrypted, we return the blob directly.
+     * <p>
+     * If it was encrypted, we return the decrypted blob.
+     * IMPORTANT: the returned byte[] CAN BE GARBAGE if the data/parameters were incorrect.
+     * <p>
+     * The returned value MUST be parsed for validity.
+     */
+    @NonNull
+    public byte[] decrypt(@Nullable final byte[] passphrase)
+            throws GeneralSecurityException, IOException {
+        if (privateKeyBlob == null) {
+            throw new InvalidKeyException("No key data");
+        }
+
+        if (!privateKeyEncrypted) {
+            return privateKeyBlob;
+        }
+
+        if (passphrase == null) {
+            throw new KeyException("Passphrase not set");
+        }
+
+        if (decryptor == null) {
+            throw new KeyException("PKDecryptor not set");
+        }
+
+        return decryptor.decrypt(passphrase, privateKeyBlob);
+    }
+
+    @Override
+    public void dispose() {
+        if (privateKeyBlob != null) {
+            Arrays.fill(privateKeyBlob, (byte) 0);
+        }
     }
 
     @Override
     @NonNull
     public String toString() {
-        return "KeyPairBase{" +
-                "privateKeyBlob=" + privateKeyBlob +
-                // ", publicKeyBlob=" + publicKeyBlob +
-                ", publicKeyComment='" + publicKeyComment + '\'' +
-                "}";
-    }
-
-    @Override
-    public void dispose() {
-        privateKeyBlob.dispose();
+        return "KeyPairBase{"
+                + "privateKeyBlob=" + Arrays.toString(privateKeyBlob)
+                + ", publicKeyBlob=" + Arrays.toString(publicKeyBlob)
+                + ", publicKeyComment='" + publicKeyComment + '\''
+                + "}";
     }
 
     /**
