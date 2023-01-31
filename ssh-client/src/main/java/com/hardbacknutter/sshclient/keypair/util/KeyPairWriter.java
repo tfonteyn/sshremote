@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.util.Base64;
 
 /**
@@ -52,7 +53,13 @@ public class KeyPairWriter {
                                @NonNull final PrintWriter out,
                                @NonNull final String comment)
             throws GeneralSecurityException {
-        final byte[] pub = Base64.getEncoder().encode(keyPair.getSshPublicKeyBlob());
+        final byte[] sshPublicKeyBlob = keyPair.getSshPublicKeyBlob();
+        if (sshPublicKeyBlob == null) {
+            throw new InvalidKeyException("No public key found");
+        }
+
+
+        final byte[] pub = Base64.getEncoder().encode(sshPublicKeyBlob);
 
         out.print(keyPair.getHostKeyAlgorithm());
         out.print(' ');
