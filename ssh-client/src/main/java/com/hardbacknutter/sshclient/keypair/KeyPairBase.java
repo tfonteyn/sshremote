@@ -85,29 +85,22 @@ public abstract class KeyPairBase
     }
 
     /**
-     * Create the publicKey blob using the key algorithm,
-     * and the list of the type specific parameters.
-     * <p>
-     * string    certificate or public key format identifier
-     * byte[n]   key/certificate data
+     * Create the publicKey blob using the list of the type specific parameters.
      *
-     * @param keyAlgorithm identifier
-     * @param args         key/certificate data
+     * @param args key/certificate data
      *
      * @return the blob
      */
     @NonNull
-    static byte[] wrapPublicKey(@NonNull final String keyAlgorithm,
-                                @NonNull final byte[]... args) {
+    static byte[] wrapPublicKey(@NonNull final byte[]... args) {
         // use a fixed-size buffer
         // (+4: a uint32 to store the length of the argument string)
-        int length = 4 + keyAlgorithm.length();
+        int length = 0;
         for (final byte[] arg : args) {
             length += 4 + arg.length;
         }
 
-        final Buffer buffer = new Buffer(length)
-                .putString(keyAlgorithm);
+        final Buffer buffer = new Buffer(length);
         for (final byte[] arg : args) {
             buffer.putString(arg);
         }

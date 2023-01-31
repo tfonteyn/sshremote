@@ -21,6 +21,7 @@ import org.bouncycastle.asn1.util.ASN1Dump;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -167,7 +168,7 @@ public class KeyPairDSA
         if (p == null || q == null || g == null || y == null) {
             return null;
         }
-        return wrapPublicKey(serverHostKeyAlgorithm,
+        return wrapPublicKey(serverHostKeyAlgorithm.getBytes(StandardCharsets.UTF_8),
                              p.toByteArray(),
                              q.toByteArray(),
                              g.toByteArray(),

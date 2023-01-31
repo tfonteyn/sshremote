@@ -185,7 +185,7 @@ public class KeyPairECDSA
         }
 
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-        return wrapPublicKey(type.hostKeyAlgorithm,
+        return wrapPublicKey(type.hostKeyAlgorithm.getBytes(StandardCharsets.UTF_8),
                              type.nistName.getBytes(StandardCharsets.UTF_8),
                              type.encodePoint(w));
     }

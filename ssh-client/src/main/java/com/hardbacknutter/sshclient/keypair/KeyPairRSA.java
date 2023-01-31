@@ -20,6 +20,7 @@ import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -207,7 +208,7 @@ public class KeyPairRSA
         if (publicExponent == null || modulus == null) {
             return null;
         }
-        return wrapPublicKey(serverHostKeyAlgorithm,
+        return wrapPublicKey(serverHostKeyAlgorithm.getBytes(StandardCharsets.UTF_8),
                              publicExponent.toByteArray(),
                              modulus.toByteArray());
     }
