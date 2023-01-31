@@ -1,24 +1,9 @@
-package com.hardbacknutter.sshclient.keypair;
+package com.hardbacknutter.sshclient;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import androidx.annotation.NonNull;
-
-import com.hardbacknutter.sshclient.DbgJLogger;
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
-import com.hardbacknutter.sshclient.signature.SshSignature;
-
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 
-class BaseKeyPairTest {
-
-    private static final Logger LOGGER = new DbgJLogger();
-    private static final SshClient SSH_CLIENT = new SshClient(LOGGER);
-
+public final class LongText {
+    // Just a random long-ish test.
     private static final String longText =
             "Status of This Memo\n"
                     + "\n"
@@ -51,36 +36,10 @@ class BaseKeyPairTest {
                     + "   and the minimal set of algorithms that are needed to implement the\n"
                     + "   SSH transport layer protocol.\n";
 
-    void keyPairTest(@NonNull final String keyType,
-                     final int keySize)
-            throws GeneralSecurityException, IOException {
-        final byte[] text = longText.getBytes(StandardCharsets.UTF_8);
-
-        final KeyPairTool keyPairGen = new KeyPairTool(SSH_CLIENT.getConfig());
-        final SshKeyPair keyPair = keyPairGen.generateKeyPair(keyType, keySize);
-
-        final String hostKeyAlgorithm = keyPair.getHostKeyAlgorithm();
-        final byte[] sig = keyPair.getSignature(text, hostKeyAlgorithm);
-
-        final SshSignature verifier = keyPair.getVerifier();
-        verifier.update(text);
-
-        assertTrue(verifier.verify(sig));
+    private LongText() {
     }
 
-    void keyPairTest(@NonNull final String keyType)
-            throws GeneralSecurityException, IOException {
-        final byte[] text = longText.getBytes(StandardCharsets.UTF_8);
-
-        final KeyPairTool keyPairGen = new KeyPairTool(SSH_CLIENT.getConfig());
-        final SshKeyPair keyPair = keyPairGen.generateKeyPair(keyType);
-
-        final String hostKeyAlgorithm = keyPair.getHostKeyAlgorithm();
-        final byte[] sig = keyPair.getSignature(text, hostKeyAlgorithm);
-
-        final SshSignature verifier = keyPair.getVerifier();
-        verifier.update(text);
-
-        assertTrue(verifier.verify(sig));
+    public static byte[] getBytes() {
+        return longText.getBytes(StandardCharsets.UTF_8);
     }
 }

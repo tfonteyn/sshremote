@@ -32,8 +32,10 @@ class IdRepoTest
             throws GeneralSecurityException, IOException {
 
         final KeyPairTool keyPairTool = new KeyPairTool(sshClient.getConfig());
-        final SshKeyPair p1 = keyPairTool.load(TEST_RESOURCES + "legacy/rsa");
-        final SshKeyPair p2 = keyPairTool.load(TEST_RESOURCES + "legacy/rsa_qwerty");
+        final SshKeyPair p1 = keyPairTool.load(TEST_RESOURCES + "legacy/rsa",
+                                               TEST_RESOURCES + "legacy/rsa.pub");
+        final SshKeyPair p2 = keyPairTool.load(TEST_RESOURCES + "legacy/rsa_qwerty",
+                                               TEST_RESOURCES + "legacy/rsa_qwerty.pub");
 
         final IdentityRepository identityRepository = sshClient.getIdentityRepository();
 

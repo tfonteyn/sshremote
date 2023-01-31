@@ -30,7 +30,7 @@ class PubKeyTest
     void id_rsa()
             throws SshException, GeneralSecurityException, IOException {
         final String keyFile = System.getProperty("user.home") + File.separatorChar
-                + ".ssh" + File.separatorChar + "id_rsa";
+                + ".ssh" + File.separatorChar + "opensshv1/id_rsa";
 
         sshClient.addIdentity(keyFile);
 
@@ -43,7 +43,7 @@ class PubKeyTest
     void id_rsa_qwerty()
             throws SshException, GeneralSecurityException, IOException {
         final String keyFile = System.getProperty("user.home") + File.separatorChar
-                + ".ssh" + File.separatorChar + "id_rsa_qwerty";
+                + ".ssh" + File.separatorChar + "opensshv1/id_rsa_qwerty";
 
         sshClient.addIdentity(keyFile);
 
