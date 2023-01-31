@@ -69,6 +69,12 @@ public final class KeyPairPKCS8
                @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
+        if (delegate != null) {
+            delegate.parse(encodedKey, keyFormat);
+            return;
+        }
+
+        // parse the wrapper, and create the delegate
         try {
             final ASN1Sequence root;
             try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
@@ -79,7 +85,7 @@ public final class KeyPairPKCS8
                         ASN1Dump.dumpAsString(root, true));
             }
 
-            // DSA unencrypted:
+            // DSA
             // Sequence                                         ==> 'root'
             //     Integer(0)                                   ==> version
             //     Sequence                                     ==> 'subSeq'
@@ -92,7 +98,7 @@ public final class KeyPairPKCS8
             //         02150097...
 
 
-            // RSA unencrypted:
+            // RSA
             // Sequence                                         ==> 'root'
             //     Integer(0)                                   ==> version
             //     Sequence                                     ==> 'subSeq'
@@ -101,7 +107,7 @@ public final class KeyPairPKCS8
             //     DER Octet String[1193]                       ==> 'privateKey'
             //         308204a50...
 
-            // ECDSA 256 unencrypted
+            // ECDSA 256
             // Sequence                                         ==> 'root'
             //     Integer(0)                                   ==> version
             //     Sequence                                     ==> 'subSeq'
@@ -110,6 +116,27 @@ public final class KeyPairPKCS8
             //     DER Octet String[109]                        ==> 'privateKey'
             //         306b02010...
 
+            // Ed25519
+            // Sequence                                         ==> 'root'
+            //     Integer(1)                                   ==> version
+            //     Sequence                                     ==> 'subSeq'
+            //         ObjectIdentifier(1.3.101.112)            ==> 'prvKeyAlgOID'
+            //     DER Octet String[34]                         ==> 'privateKey'
+            //         0420031...
+            //     Tagged [1] IMPLICIT
+            //         DER Octet String[33]
+            //             0031ae3...
+
+            // Ed448
+            // Sequence                                         ==> 'root'
+            //     Integer(1)                                   ==> version
+            //     Sequence                                     ==> 'subSeq'
+            //         ObjectIdentifier(1.3.101.113)            ==> 'prvKeyAlgOID'
+            //     DER Octet String[59]                         ==> 'privateKey'
+            //         0439580...
+            //     Tagged [1] IMPLICIT
+            //         DER Octet String[58]
+            //             00123
 
             final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
             //        ObjectIdentifier privateKeyAlgorithm
