@@ -63,7 +63,7 @@ public final class KeyPairOpenSSHv1
     @Override
     public boolean decryptPrivateKey(@Nullable final byte[] passphrase)
             throws GeneralSecurityException, IOException {
-        if (!privateKeyBlob.isEncrypted()) {
+        if (!isPrivateKeyEncrypted()) {
             return true;
         }
 
@@ -83,10 +83,10 @@ public final class KeyPairOpenSSHv1
             final int rounds = opts.getInt();
 
             //noinspection ConstantConditions
-            ((DecryptDeferred) privateKeyBlob.getDecryptor())
+            ((DecryptDeferred) decryptor)
                     .setDelegate(new DecryptBCrypt().init(salt, rounds));
 
-            plainKey = privateKeyBlob.decrypt(passphrase);
+            plainKey = decrypt(passphrase);
             // We MUST try parsing first to determine if it decrypted ok, or not!
             parse(plainKey, Vendor.OPENSSH_V1);
 
@@ -100,14 +100,15 @@ public final class KeyPairOpenSSHv1
         // Use the builder again, this time with an unencrypted key.
         delegate = (KeyPairBase) new Builder(config)
                 .setHostKeyType(hostKeyType)
-                .setPrivateKeyBlob(plainKey, Vendor.OPENSSH_V1, null)
+                .setPrivateKey(plainKey)
                 .build();
 
-        delegate.setSshPublicKeyBlob(publicKeyBlob);
-        delegate.setPublicKeyComment(publicKeyComment);
+        // Copy the public key as-is
+        delegate.setSshPublicKeyBlob(super.getSshPublicKeyBlob());
+        delegate.setPublicKeyComment(super.getPublicKeyComment());
 
         // mirror the setting for sanity
-        privateKeyBlob.setEncrypted(delegate.isPrivateKeyEncrypted());
+        setPrivateKeyEncrypted(delegate.isPrivateKeyEncrypted());
 
         return !delegate.isPrivateKeyEncrypted();
     }

@@ -124,7 +124,9 @@ public final class KeyPairPKCS8
             if (PKCSObjectIdentifiers.rsaEncryption.equals(prvKeyAlgOID)) {
                 // RSA has no extra attributes
                 delegate = (KeyPairBase) new KeyPairRSA.Builder(config)
-                        .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
+                        .setPrivateKey(privateKey)
+                        .setFormat(Vendor.ASN1)
+                        .setDecryptor(decryptor)
                         .build();
 
             } else if (X9ObjectIdentifiers.id_dsa.equals(prvKeyAlgOID)) {
@@ -139,13 +141,13 @@ public final class KeyPairPKCS8
 
                 delegate = (KeyPairBase) new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
-                        // 'privateKey' is an octet string, we can just set the 'x' value
-                        // and calculate the 'y' from it.
-                        .setXCalculateY(new BigInteger(1, privateKey))
-                        .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
+                        .setPrivateKey(privateKey)
+                        .setFormat(Vendor.RAW)
+                        .setDecryptor(decryptor)
                         .build();
 
             } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(prvKeyAlgOID)) {
+                // ECDSA attributes
                 final ASN1ObjectIdentifier primeOid = ASN1ObjectIdentifier
                         .getInstance(subSeq.getObjectAt(1));
 
@@ -162,17 +164,20 @@ public final class KeyPairPKCS8
                 return;
             }
 
-            delegate.setSshPublicKeyBlob(publicKeyBlob);
-            delegate.setPublicKeyComment(publicKeyComment);
+            // Copy the public key as-is
+            delegate.setSshPublicKeyBlob(super.getSshPublicKeyBlob());
+            delegate.setPublicKeyComment(super.getPublicKeyComment());
 
-        } catch (final GeneralSecurityException e) {
+        } catch (@NonNull final GeneralSecurityException e) {
+            // We have an actual error
             throw e;
 
-        } catch (final Exception e) {
+        } catch (@NonNull final Exception e) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+                config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
             }
-            privateKeyBlob.setEncrypted(true);
+            // failed due to a key format decoding problem
+            setPrivateKeyEncrypted(true);
             return;
 
         }

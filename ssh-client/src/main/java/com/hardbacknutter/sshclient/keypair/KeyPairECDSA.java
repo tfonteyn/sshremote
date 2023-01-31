@@ -233,7 +233,7 @@ public class KeyPairECDSA
     @Override
     public byte[] forSSHAgent()
             throws KeyManagementException {
-        if (privateKeyBlob.isEncrypted()) {
+        if (isPrivateKeyEncrypted()) {
             throw new KeyManagementException("key is encrypted");
         }
         //noinspection ConstantConditions
@@ -242,7 +242,7 @@ public class KeyPairECDSA
                 .putString(type.nistName)
                 .putString(type.encodePoint(w))
                 .putMPInt(s)
-                .putString(publicKeyComment)
+                .putString(getPublicKeyComment())
                 .getPayload();
     }
 
@@ -273,7 +273,7 @@ public class KeyPairECDSA
 
                     w = ECKeyType.decodePoint(buffer.getString());
                     s = buffer.getBigInteger();
-                    publicKeyComment = buffer.getJString();
+                    setPublicKeyComment(buffer.getJString());
 
                     break;
                 }
@@ -292,19 +292,20 @@ public class KeyPairECDSA
                     break;
                 }
             }
-        } catch (final GeneralSecurityException e) {
+        } catch (@NonNull final GeneralSecurityException e) {
+            // We have an actual error
             throw e;
 
-        } catch (final Exception e) {
+        } catch (@NonNull final Exception e) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+                config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
             }
-
-            privateKeyBlob.setEncrypted(true);
+            // failed due to a key format decoding problem
+            setPrivateKeyEncrypted(true);
             return;
         }
 
-        privateKeyBlob.setEncrypted(false);
+        setPrivateKeyEncrypted(false);
     }
 
     @NonNull
