@@ -64,11 +64,11 @@ public class KeyPairECDSA
         extends KeyPairBase {
 
     /**
+     * TODO: check WHEN/IF the type could be null
      * This error should only occur when the pair is used as a delegate
-     * (e.g. {@link KeyPairOpenSSHv1} in which case calling the related method
-     * is a bug.
+     * (e.g. {@link KeyPairOpenSSHv1} in which case calling the related method is a bug.
      */
-    private static final String ERROR_EC_TYPE_WAS_NULL = "ecType was null; using a delegate?";
+    private static final String ERROR_TYPE_WAS_NULL = "type was null; using a delegate?";
 
     @Nullable
     private ECKeyType type;
