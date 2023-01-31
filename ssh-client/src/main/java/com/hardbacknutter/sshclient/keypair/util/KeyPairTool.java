@@ -14,7 +14,6 @@ import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS5;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS8;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
