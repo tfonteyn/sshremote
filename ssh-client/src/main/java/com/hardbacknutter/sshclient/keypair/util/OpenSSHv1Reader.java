@@ -8,7 +8,6 @@ import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
@@ -112,14 +111,15 @@ public class OpenSSHv1Reader {
         if (SshCipherConstants.NONE.equals(cipherName)) {
             // not encrypted, create the real KeyPair directly.
             builder.setHostKeyType(getHostKeyType(privateKeyBlob))
-                   .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, null);
+                   .setPrivateKey(privateKeyBlob);
         } else {
             // The type can only be determined after decryption.
             // Use a deferred decryptor.
             final PKDecryptor decryptor = new DecryptDeferred();
             decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
             builder.setHostKeyType(HostKeyAlgorithm.__OPENSSH_V1__)
-                   .setPrivateKeyBlob(privateKeyBlob, Vendor.OPENSSH_V1, decryptor);
+                   .setPrivateKey(privateKeyBlob)
+                   .setDecryptor(decryptor);
         }
 
         return builder.build();

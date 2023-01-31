@@ -7,6 +7,7 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.ECKeyType;
+import com.hardbacknutter.sshclient.keypair.EdKeyType;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
@@ -154,7 +155,9 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
                         .setPublicExponent(publicExponent)
                         .setModulus(modulus)
-                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .setPrivateKey(prvKey)
+                        .setFormat(privateKeyFormat)
+                        .setDecryptor(decryptor)
                         .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
@@ -168,7 +171,9 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
                         .setY(y)
-                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .setPrivateKey(prvKey)
+                        .setFormat(privateKeyFormat)
+                        .setDecryptor(decryptor)
                         .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
@@ -183,7 +188,9 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
                         .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
                         .setPoint(w)
-                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .setPrivateKey(prvKey)
+                        .setFormat(privateKeyFormat)
+                        .setDecryptor(decryptor)
                         .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
@@ -191,9 +198,12 @@ class PuttyReader {
             case HostKeyAlgorithm.SSH_ED25519: {
                 final byte[] pubArray = buffer.getString();
 
-                final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm)
+                final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
+                        .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
                         .setPubArray(pubArray)
-                        .setPrivateKeyBlob(prvKey, privateKeyFormat, decryptor)
+                        .setPrivateKey(prvKey)
+                        .setFormat(privateKeyFormat)
+                        .setDecryptor(decryptor)
                         .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;

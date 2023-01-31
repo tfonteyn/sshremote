@@ -136,7 +136,8 @@ class SshAgentReader {
         // and finally the user comment for the key
         final String comment = buffer.getJString();
 
-        keyPair = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm)
+        keyPair = new KeyPairEdDSA.Builder(config)
+                .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
                 .setPubArray(pub_array)
                 .setPrvArray(prv_array)
                 .build();
