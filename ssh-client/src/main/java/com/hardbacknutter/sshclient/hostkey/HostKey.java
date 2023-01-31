@@ -174,7 +174,12 @@ public class HostKey {
                 return sb.toString();
             }
 
-            return new String(Base64.getEncoder().encode(md.digest()), StandardCharsets.UTF_8);
+            final String fp = new String(Base64.getEncoder()
+                                               .encode(md.digest()), StandardCharsets.UTF_8);
+            if (fp.endsWith("=")) {
+                return fp.substring(0, fp.length() - 1);
+            }
+            return fp;
 
         } catch (final Exception e) {
             return "???";
