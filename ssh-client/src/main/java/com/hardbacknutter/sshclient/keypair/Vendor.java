@@ -7,8 +7,9 @@ public enum Vendor {
 
     /** PKCS#8 format. */
     PKCS8,
-    /** PKCS#8 encrypted format using PKCS#5 for the key encryption. */
-    PKCS5,
+
+
+    ASN1,
 
     /** openssh.com standard */
     OPENSSH_V1,

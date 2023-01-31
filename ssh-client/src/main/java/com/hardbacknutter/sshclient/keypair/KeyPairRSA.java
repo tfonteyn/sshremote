@@ -313,9 +313,7 @@ public class KeyPairRSA
                     break;
                 }
 
-                case PKCS8:
-                case PKCS5:
-                default: {
+                case ASN1: {
                     final RSAPrivateKey key;
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
                         key = RSAPrivateKey.getInstance(stream.readObject());

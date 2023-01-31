@@ -270,9 +270,8 @@ public class KeyPairDSA
                     Objects.requireNonNull(g, "private key base 'g' not set");
                     y = g.modPow(x, p);
                     break;
-
-                case PKCS5:
-                default: {
+                }
+                case ASN1: {
                     // Sequence                 ==> 'root'
                     //     Integer(0)           ==> version
                     //     Integer(10745...     ==> p

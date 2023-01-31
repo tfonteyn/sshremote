@@ -279,9 +279,7 @@ public class KeyPairECDSA
                     break;
                 }
 
-                case PKCS8:
-                case PKCS5:
-                default: {
+                case ASN1: {
                     final ECPrivateKey key;
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
                         key = ECPrivateKey.getInstance(stream.readObject());
