@@ -45,27 +45,12 @@ import java.util.Objects;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5958">
  * RFC 5958 Asymmetric Key Packages</a> obsoletes 5208
  */
-public class KeyPairPKCS8
-        extends KeyPairBase {
+public final class KeyPairPKCS8
+        extends DelegatingKeyPair {
 
-    private static final String MUST_PARSE_FIRST = "Must call decrypt/parse first";
+    private static final ASN1ObjectIdentifier id_ed25519 = new ASN1ObjectIdentifier("1.3.101.112");
+    private static final ASN1ObjectIdentifier id_ed448 = new ASN1ObjectIdentifier("1.3.101.113");
 
-    /** The wrapped/actual KeyPair. */
-    @Nullable
-    private KeyPairBase delegate;
-
-    /**
-     * Constructor.
-     *
-     * @param privateKeyBlob to use
-     */
-    KeyPairPKCS8(@NonNull final SshClientConfig config,
-                 @NonNull final PrivateKeyBlob privateKeyBlob)
-            throws GeneralSecurityException {
-        super(config, privateKeyBlob);
-
-        parse();
-    }
 
     /**
      * Constructor.
@@ -77,52 +62,6 @@ public class KeyPairPKCS8
               builder.encrypted, builder.decryptor);
 
         parse();
-    }
-
-    @NonNull
-    @Override
-    public String getHostKeyAlgorithm()
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getHostKeyAlgorithm();
-    }
-
-    @Override
-    public int getKeySize() {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getKeySize();
-    }
-
-    @Nullable
-    @Override
-    public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException {
-        return delegate == null ? null : delegate.getSshPublicKeyBlob();
-    }
-
-    @NonNull
-    @Override
-    public byte[] getSignature(@NonNull final byte[] data,
-                               @NonNull final String algorithm)
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getSignature(data, algorithm);
-    }
-
-    @NonNull
-    @Override
-    public SshSignature getVerifier(@NonNull final String algorithm)
-            throws GeneralSecurityException, IOException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getVerifier(algorithm);
-    }
-
-    @NonNull
-    @Override
-    public byte[] forSSHAgent()
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).forSSHAgent();
-    }
-
-    @Override
-    public boolean isPrivateKeyEncrypted() {
-        return delegate == null || delegate.isPrivateKeyEncrypted();
     }
 
     @Override
@@ -235,39 +174,10 @@ public class KeyPairPKCS8
             }
             privateKeyBlob.setEncrypted(true);
             return;
+
         }
-
-        // mirror the setting for sanity
-        privateKeyBlob.setEncrypted(delegate.isPrivateKeyEncrypted());
-    }
-
-    @Override
-    public void dispose() {
-        if (delegate != null) {
-            delegate.dispose();
-        }
-        super.dispose();
-    }
-
-
-    @Override
-    @NonNull
-    public String getPublicKeyComment() {
-        return delegate != null ? delegate.getPublicKeyComment() : publicKeyComment;
-    }
-
-    @Override
-    @Nullable
-    public String getFingerPrint()
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint();
-    }
-
-    @Override
-    @Nullable
-    public String getFingerPrint(@NonNull final String algorithm)
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint(algorithm);
+        // the wrapper is decrypted; the delegate might not be
+        setPrivateKeyEncrypted(false);
     }
 
     public static class Builder {

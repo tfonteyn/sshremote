@@ -24,12 +24,9 @@ import java.util.Objects;
  * will detect the actual type and create the actual KeyPair directly.
  * If it IS encrypted, this class behaves will use a delegate after decryption.
  */
-@SuppressWarnings("ClassWithOnlyPrivateConstructors")
-public
-class KeyPairOpenSSHv1
-        extends KeyPairBase {
+public final class KeyPairOpenSSHv1
+        extends DelegatingKeyPair {
 
-    private static final String MUST_PARSE_FIRST = "Must call decrypt/parse first";
     private static final String UNKNOWN_KEY_TYPE_VENDOR = "Unknown key type/vendor";
 
     /** key derivation function. */
@@ -37,8 +34,6 @@ class KeyPairOpenSSHv1
     private final String kdfName;
     @NonNull
     private final byte[] kdfOptions;
-    @Nullable
-    private KeyPairBase delegate;
 
     /**
      * Constructor.
@@ -52,47 +47,7 @@ class KeyPairOpenSSHv1
         this.kdfName = Objects.requireNonNull(builder.kdfName, "kdfName is null");
         this.kdfOptions = Objects.requireNonNull(builder.kdfOptions, "kdfOptions is null");
 
-        // delegate does not exist yet, this call would be a NOP.
-        //parse();
-    }
-
-    @Override
-    @NonNull
-    public String getHostKeyAlgorithm()
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getHostKeyAlgorithm();
-    }
-
-    @Override
-    public int getKeySize() {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getKeySize();
-    }
-
-    @Override
-    @NonNull
-    public byte[] getSignature(@NonNull final byte[] data,
-                               @NonNull final String algorithm)
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getSignature(data, algorithm);
-    }
-
-    @Override
-    @NonNull
-    public SshSignature getVerifier(@NonNull final String algorithm)
-            throws GeneralSecurityException, IOException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getVerifier(algorithm);
-    }
-
-    @Override
-    @NonNull
-    public byte[] forSSHAgent()
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).forSSHAgent();
-    }
-
-    @Override
-    public boolean isPrivateKeyEncrypted() {
-        return delegate == null || delegate.isPrivateKeyEncrypted();
+        parse();
     }
 
     @Override
@@ -102,41 +57,7 @@ class KeyPairOpenSSHv1
         if (delegate != null) {
             delegate.parse(encodedKey, keyFormat);
         }
-    }
-
-    @Override
-    public void dispose() {
-        if (delegate != null) {
-            delegate.dispose();
-        }
-        super.dispose();
-    }
-
-    @Override
-    @Nullable
-    public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException {
-        return delegate != null ? delegate.getSshPublicKeyBlob() : publicKeyBlob;
-    }
-
-    @Override
-    @NonNull
-    public String getPublicKeyComment() {
-        return delegate != null ? delegate.getPublicKeyComment() : publicKeyComment;
-    }
-
-    @Override
-    @Nullable
-    public String getFingerPrint()
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint();
-    }
-
-    @Override
-    @Nullable
-    public String getFingerPrint(@NonNull final String algorithm)
-            throws GeneralSecurityException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint(algorithm);
+        //nothing to parse until the key is decrypted.
     }
 
     @Override
