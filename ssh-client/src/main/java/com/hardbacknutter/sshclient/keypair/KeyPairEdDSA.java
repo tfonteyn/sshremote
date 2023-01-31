@@ -22,6 +22,7 @@ import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -199,7 +200,9 @@ public class KeyPairEdDSA
         if (pub_array == null) {
             return null;
         }
-        return wrapPublicKey(edType.hostKeyAlgorithm, pub_array);
+
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return wrapPublicKey(type.hostKeyAlgorithm.getBytes(StandardCharsets.UTF_8), pub_array);
     }
 
     @Override
