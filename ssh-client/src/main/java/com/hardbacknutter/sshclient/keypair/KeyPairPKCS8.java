@@ -1,12 +1,11 @@
 package com.hardbacknutter.sshclient.keypair;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS8;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
-import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -17,10 +16,9 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.util.Objects;
+import java.security.InvalidKeyException;
 
 /**
  * A PKCS#8 KeyPair is a wrapper containing the actual KeyPair as {@link #delegate}.
@@ -180,15 +178,29 @@ public final class KeyPairPKCS8
 
                 delegate = (KeyPairBase) new KeyPairECDSA.Builder(config)
                         .setType(ECKeyType.getByOid(primeOid))
-                        // the octet string is the 's' value
-                        .setS(new BigInteger(1, privateKey))
-                        .setPrivateKeyBlob(privateKey, keyFormat, privateKeyBlob.getDecryptor())
+                        .setPrivateKey(privateKey)
+                        .setFormat(Vendor.ASN1)
+                        .setDecryptor(decryptor)
+                        .build();
+
+            } else if (id_ed25519.equals(prvKeyAlgOID)) {
+                delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
+                        .setType(EdKeyType.Ed25519)
+                        .setPrivateKey(privateKey)
+                        .setFormat(Vendor.ASN1)
+                        .setDecryptor(decryptor)
+                        .build();
+
+            } else if (id_ed448.equals(prvKeyAlgOID)) {
+                delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
+                        .setType(EdKeyType.Ed448)
+                        .setPrivateKey(privateKey)
+                        .setFormat(Vendor.ASN1)
+                        .setDecryptor(decryptor)
                         .build();
 
             } else {
-                delegate = null;
-                privateKeyBlob.setEncrypted(true);
-                return;
+                throw new InvalidKeyException("Unsupported prvKeyAlgOID: " + prvKeyAlgOID);
             }
 
             // Copy the public key as-is

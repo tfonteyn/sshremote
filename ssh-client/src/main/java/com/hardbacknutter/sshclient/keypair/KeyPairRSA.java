@@ -217,18 +217,20 @@ public class KeyPairRSA
     public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
         super.setSshPublicKeyBlob(publicKeyBlob);
 
-        if (publicKeyBlob != null) {
-            try {
-                final Buffer buffer = new Buffer(publicKeyBlob);
-                buffer.skipString(/* serverHostKeyAlgorithm */);
-                publicExponent = buffer.getBigInteger();
-                modulus = buffer.getBigInteger();
-            } catch (@NonNull final IOException e) {
-                if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                    config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
-                }
-            }
-        }
+//        if (publicKeyBlob != null) {
+//            if (privateKeyFormat == Vendor.ASN1) {
+//                try {
+//                    final Buffer buffer = new Buffer(publicKeyBlob);
+//                    buffer.skipString(/* serverHostKeyAlgorithm */);
+//                    publicExponent = buffer.getBigInteger();
+//                    modulus = buffer.getBigInteger();
+//                } catch (@NonNull final IOException e) {
+//                    if (config.getLogger().isEnabled(Logger.DEBUG)) {
+//                        config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+//                    }
+//                }
+//            }
+//        }
     }
 
     @NonNull

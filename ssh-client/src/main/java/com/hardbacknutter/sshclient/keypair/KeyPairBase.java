@@ -29,9 +29,7 @@ import java.util.Arrays;
 public abstract class KeyPairBase
         implements SshKeyPair {
 
-    // This is NOT an error; it will happen when the key is encrypted
-    // and we try to parse it without decoding correctly
-    static final String DEBUG_KEY_PARSING_FAILED = "Parsing failed, key is still encrypted";
+    static final String DEBUG_KEY_PARSING_FAILED = "Parsing failed";
 
     @NonNull
     final SshClientConfig config;
@@ -54,7 +52,7 @@ public abstract class KeyPairBase
     @Nullable
     private byte[] privateKeyBlob;
     @Nullable
-    private Vendor privateKeyFormat;
+    protected Vendor privateKeyFormat;
     private boolean privateKeyEncrypted;
 
     /**

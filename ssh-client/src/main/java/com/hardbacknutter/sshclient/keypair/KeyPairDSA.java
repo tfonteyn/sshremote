@@ -179,20 +179,22 @@ public class KeyPairDSA
     public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
         super.setSshPublicKeyBlob(publicKeyBlob);
 
-        if (publicKeyBlob != null) {
-            try {
-                final Buffer buffer = new Buffer(publicKeyBlob);
-                buffer.skipString(/* serverHostKeyAlgorithm */);
-                p = buffer.getBigInteger();
-                q = buffer.getBigInteger();
-                g = buffer.getBigInteger();
-                y = buffer.getBigInteger();
-            } catch (@NonNull final IOException e) {
-                if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                    config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
-                }
-            }
-        }
+//        if (publicKeyBlob != null) {
+//            if (privateKeyFormat == Vendor.ASN1) {
+//                try {
+//                    final Buffer buffer = new Buffer(publicKeyBlob);
+//                    buffer.skipString(/* serverHostKeyAlgorithm */);
+//                    p = buffer.getBigInteger();
+//                    q = buffer.getBigInteger();
+//                    g = buffer.getBigInteger();
+//                    y = buffer.getBigInteger();
+//                } catch (@NonNull final IOException e) {
+//                    if (config.getLogger().isEnabled(Logger.DEBUG)) {
+//                        config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+//                    }
+//                }
+//            }
+//        }
     }
 
     @NonNull
@@ -285,7 +287,7 @@ public class KeyPairDSA
                     break;
                 }
 
-                case PKCS8:
+                case RAW: {
                     x = new BigInteger(1, encodedKey);
                     Objects.requireNonNull(g, "private key base 'g' not set");
                     y = g.modPow(x, p);

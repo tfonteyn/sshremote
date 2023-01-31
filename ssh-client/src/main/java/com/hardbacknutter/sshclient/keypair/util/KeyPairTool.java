@@ -186,8 +186,11 @@ public class KeyPairTool {
                     final OpenSSHv1Reader parser = new OpenSSHv1Reader(config);
                     keyPair = parser.parse(pem.getContent());
                     if (keyPair != null) {
-                        // all done, the public key was embedded in the privateKeyBlob
-                        // We silently ignore the 'pubKey' which might have a 'comment' ...
+                        // The public key was embedded in the privateKeyBlob
+                        // but check for a 'comment' ...
+                        if (pubKeyReader != null) {
+                            readPublicKey(pubKeyReader, keyPair, false);
+                        }
                         return keyPair;
                     } else {
                         throw new InvalidKeyException("Invalid OpenSSHv1 format");
@@ -234,23 +237,28 @@ public class KeyPairTool {
             }
         }
 
-        if (pubKeyReader == null) {
-            return keyPair;
+        if (pubKeyReader != null) {
+            readPublicKey(pubKeyReader, keyPair, true);
         }
+        return keyPair;
+    }
 
+    private void readPublicKey(@NonNull final BufferedReader pubKeyReader,
+                               @NonNull final SshKeyPair keyPair,
+                               final boolean readKey)
+            throws IOException, InvalidKeyException {
         try (PemReader reader = new PemReader(pubKeyReader)) {
             reader.mark(32);
             @Nullable final String line = reader.readLine();
             if (line != null) {
                 reader.reset();
                 if (line.startsWith("-----BEGIN PUBLIC KEY")) {
-                    parsePublicKeyFromPem(reader, keyPair);
+                    parsePublicKeyFromPem(reader, keyPair, readKey);
                 } else {
-                    parsePublicKeyFromSingleLine(reader, keyPair);
+                    parsePublicKeyFromSingleLine(reader, keyPair, readKey);
                 }
             }
         }
-        return keyPair;
     }
 
     /**
@@ -260,7 +268,8 @@ public class KeyPairTool {
      * @param keyPair the KeyPair to update
      */
     private void parsePublicKeyFromPem(@NonNull final PemReader reader,
-                                       @NonNull final SshKeyPair keyPair)
+                                       @NonNull final SshKeyPair keyPair,
+                                       final boolean readKey)
             throws IOException, InvalidKeyException {
 
         final PemObject pem = reader.readPemObject();
@@ -268,7 +277,9 @@ public class KeyPairTool {
             throw new InvalidKeyException("Invalid public key");
         }
 
-        keyPair.setSshPublicKeyBlob(pem.getContent());
+        if (readKey) {
+            keyPair.setSshPublicKeyBlob(pem.getContent());
+        }
 
         //noinspection unchecked
         ((List<PemHeader>) pem.getHeaders())
@@ -286,7 +297,8 @@ public class KeyPairTool {
      * @param keyPair the KeyPair to update
      */
     private void parsePublicKeyFromSingleLine(@NonNull final PemReader reader,
-                                              @NonNull final SshKeyPair keyPair)
+                                              @NonNull final SshKeyPair keyPair,
+                                              final boolean readKey)
             throws IOException, InvalidKeyException {
         // skip blank lines and any comments
         String line;
@@ -297,14 +309,16 @@ public class KeyPairTool {
         if (line != null) {
             final String[] parts = line.split(" ");
             if (parts.length > 1) {
-                // part 0 is the type; don't need it - we get the type from the private key
-                // part 1 is the base64 encoded public key
-                try {
-                    keyPair.setSshPublicKeyBlob(Base64.getDecoder()
-                                                      .decode(parts[1].trim()));
+                if (readKey) {
+                    // part 0 is the type; don't need it - we get the type from the private key
+                    // part 1 is the base64 encoded public key
+                    try {
+                        keyPair.setSshPublicKeyBlob(Base64.getDecoder()
+                                                          .decode(parts[1].trim()));
 
-                } catch (final IllegalArgumentException e) {
-                    throw new InvalidKeyException("Invalid base64 data for public key", e);
+                    } catch (final IllegalArgumentException e) {
+                        throw new InvalidKeyException("Invalid base64 data for public key", e);
+                    }
                 }
                 // any subsequent parts are comment
                 if (parts.length > 2) {

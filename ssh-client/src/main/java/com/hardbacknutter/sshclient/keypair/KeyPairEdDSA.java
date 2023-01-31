@@ -11,13 +11,12 @@ import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey;
 import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 
 import java.io.IOException;
@@ -38,6 +37,7 @@ import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8032/">
@@ -206,6 +206,13 @@ public class KeyPairEdDSA
     }
 
     @Override
+    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
+        super.setSshPublicKeyBlob(publicKeyBlob);
+
+//        pub_array = publicKeyBlob;
+    }
+
+    @Override
     @NonNull
     public byte[] getSignature(@NonNull final byte[] data,
                                @NonNull final String algorithm)
@@ -229,13 +236,16 @@ public class KeyPairEdDSA
         final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
         sig.init(algorithm);
 
-        if (pub_array == null && this.getSshPublicKeyBlob() != null) {
-            final Buffer buffer = new Buffer(this.getSshPublicKeyBlob());
+        final byte[] tmp = this.getSshPublicKeyBlob();
+
+        if (pub_array == null && tmp != null) {
+            final Buffer buffer = new Buffer(tmp);
             buffer.skipString();
             pub_array = buffer.getString();
         }
 
-        sig.initVerify(generatePublic(edType, pub_array));
+        final PublicKey key = generatePublic(type, pub_array);
+        sig.initVerify(key);
         return sig;
     }
 
@@ -302,58 +312,34 @@ public class KeyPairEdDSA
                     break;
                 }
 
-                case PKCS8:
-                case PKCS5:
-                default: {
-                    // Ed25519
-                    // Sequence
-                    //     Integer(1)
-                    //     Sequence
-                    //         ObjectIdentifier(1.3.101.112)
-                    //     DER Octet String[34]
-                    //         0420031...
-                    //     Tagged [1] IMPLICIT
-                    //         DER Octet String[33]
-                    //             0031ae3...
-
-                    // Ed448
-                    // Sequence
-                    //     Integer(1)
-                    //     Sequence
-                    //         ObjectIdentifier(1.3.101.113)
-                    //     DER Octet String[59]
-                    //         0439580...
-                    //     Tagged [1] IMPLICIT
-                    //         DER Octet String[58]
-                    //             00123
-
-
-                    //TODO: This is silly... we're parsing the input twice
-                    final ASN1Primitive root;
+                case ASN1: {
+                    final ASN1OctetString root;
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                        root = stream.readObject();
+                        root = ASN1OctetString.getInstance(stream.readObject());
                     }
 
                     if (config.getLogger().isEnabled(Logger.DEBUG)) {
                         config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairEdDSA#parse ~~~\n" +
                                 ASN1Dump.dumpAsString(root, true));
                     }
+                    prv_array = root.getOctets();
 
-                    final KeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
-                    final KeyFactory kf = KeyFactory.getInstance("EdDSA", "BC");
-                    final EdDSAPrivateKey prvKey = (EdDSAPrivateKey) kf.generatePrivate(keySpec);
-                    // How do we get the byte array from prvKey ??
-
-                    pub_array = edType.extractPubArray(prvKey.getPublicKey());
-
-                    final PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(root);
-                    final byte[] privateKey = privateKeyInfo.getPrivateKey().getOctets();
-
-                    // TODO: is this really the correct/best way to do this ??
-                    // remove the tag + length byte
-                    // JDK 15 version of the Ed private key provides a getBytes() method.
-                    prv_array = new byte[edType.keySize];
-                    System.arraycopy(privateKey, 2, prv_array, 0, edType.keySize);
+//                    final KeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
+//                    final KeyFactory kf = KeyFactory.getInstance("EdDSA", "BC");
+//                    final EdDSAPrivateKey prvKey = (EdDSAPrivateKey) kf.generatePrivate(keySpec);
+//                    // How do we get the byte array from prvKey ??
+//
+//                    //noinspection ConstantConditions
+//                    pub_array = type.extractPubArray(prvKey.getPublicKey());
+//
+//                    final PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(root);
+//                    final byte[] privateKey = privateKeyInfo.getPrivateKey().getOctets();
+//
+//                    // TODO: is this really the correct/best way to do this ??
+//                    // remove the tag + length byte
+//                    // JDK 15 version of the Ed private key provides a getBytes() method.
+//                    prv_array = new byte[type.keySize];
+//                    System.arraycopy(privateKey, 2, prv_array, 0, type.keySize);
                     break;
                 }
                 default:
