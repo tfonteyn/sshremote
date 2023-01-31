@@ -6,13 +6,16 @@ import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFJCE;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFSCrypt;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.misc.MiscObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
@@ -37,7 +40,6 @@ public class DecryptPKCS8 implements PKDecryptor {
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
                           @NonNull final byte[] cipherIV) {
-        // N/A
     }
 
     @Override
@@ -46,29 +48,30 @@ public class DecryptPKCS8 implements PKDecryptor {
                           @NonNull final byte[] blob)
             throws GeneralSecurityException, IOException {
 
-        byte[] pbeKey = null;
-        try {
-            // RSA encrypted with prvKeyAlgOID == id_PBES2
-            // Sequence                                                     ==> 'root'
-            //     Sequence                                                 ==> 'subSeq'
-            //         ObjectIdentifier(1.2.840.113549.1.5.13)              ==> 'prvKeyAlgOID'
-            //         Sequence                                             ==> 'attributes'
-            //             Sequence                                         ==> 'encAttrs'
-            //                 ObjectIdentifier(1.2.840.113549.1.5.12)
-            //                 Sequence                                     ==> 'pkcs5Params'
-            //                     DER Octet String[8]                      ==> 'salt'
-            //                         29a1b47e62a1997c
-            //                     Integer(2048)                            ==> 'iterations'
-            //                     Sequence                                 ==> 'yaSeq'
-            //                         ObjectIdentifier(1.2.840.113549.2.9) ==> 'pbeOID'
-            //                         NULL                                 ==> no attributes here
-            //             Sequence                                         ==> 'cipherInfo'
-            //                 ObjectIdentifier(2.16.840.1.101.3.4.1.42)    ==> 'encOID' ==> 'cipher
-            //                 DER Octet String[16]                         ==> 'cipherIV'
-            //                     cebdb51e05bbf8aecb47b3f5335d3bbe
-            //     DER Octet String[1232]                                  ==> 'encryptedPrivateKey'
-            //         6557ddc888
+        // RSA encrypted with prvKeyAlgOID == id_PBES2
+        // Sequence                                                     ==> 'root'
+        //     Sequence                                                 ==> 'algorithmHeaderSeq'
+        //         ObjectIdentifier(1.2.840.113549.1.5.13)              ==> 'prvKeyAlgOID'
+        //         Sequence                                             ==> 'attributeHeaderSeq'
+        //             Sequence                                         ==> 'paramHeaderSeq'
+        // --- PKCS5 params -------------------------------------------------------------------
+        //                 ObjectIdentifier(1.2.840.113549.1.5.12)      ==> 'paramOID'
+        //                 Sequence                                     ==> 'parameters'
+        //                     DER Octet String[8]                      ==> 'salt'
+        //                         29a1b47e62a1997c
+        //                     Integer(2048)                            ==> 'iterations'
+        //                     Sequence                                 ==> 'yaSeq'
+        //                         ObjectIdentifier(1.2.840.113549.2.9) ==> 'pbeOID'
+        //                         NULL                                 ==> no attributes here
+        // ------------------------------------------------------------------------------------
+        //             Sequence                                         ==> 'cipherInfo'
+        //                 ObjectIdentifier(2.16.840.1.101.3.4.1.42)    ==> 'cipher
+        //                 DER Octet String[16]                         ==> 'cipherIV'
+        //                     cebdb51e05bbf8aecb47b3f5335d3bbe
+        //     DER Octet String[1232]                                  ==> 'encryptedPrivateKey'
+        //         6557ddc888
 
+        try {
             final ASN1Sequence root;
             try (ASN1InputStream stream = new ASN1InputStream(blob)) {
                 root = ASN1Sequence.getInstance(stream.readObject());
@@ -79,41 +82,32 @@ public class DecryptPKCS8 implements PKDecryptor {
                         ASN1Dump.dumpAsString(root, true));
             }
 
-            //    Sequence
-            final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(0));
-            //        ObjectIdentifier privateKeyAlgorithm
+            // Object 0 in root: the parameters as a Sequence
+            final ASN1Sequence algorithmHeaderSeq = ASN1Sequence.getInstance(root.getObjectAt(0));
+
+            // Object 1 in root: the (encrypted) PrivateKey blob
+            final byte[] encryptedPrivateKey = ASN1OctetString.getInstance(
+                    root.getObjectAt(1)).getOctets();
+
+            //        ObjectIdentifier with the privateKeyAlgorithm
             final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier
-                    .getInstance(subSeq.getObjectAt(0));
-            //        attributes: see below depending on algorithm
+                    .getInstance(algorithmHeaderSeq.getObjectAt(0));
+            //        Sequence
+            final ASN1Sequence attributeHeaderSeq = ASN1Sequence.getInstance(
+                    algorithmHeaderSeq.getObjectAt(1));
 
-            // we now have access to the 'real' PrivateKey blob which is encrypted
-            final byte[] encryptedPrivateKey = ASN1OctetString
-                    .getInstance(root.getObjectAt(1)).getOctets();
-
-
-            // PKCS#5: 1.2.840.113549.1.5.13
             if (PKCSObjectIdentifiers.id_PBES2.equals(prvKeyAlgOID)) {
-                // 2nd step, actual decryption
 
-                final ASN1Sequence attributes = ASN1Sequence.getInstance(subSeq.getObjectAt(1));
-                final ASN1Sequence encAttrs = ASN1Sequence.getInstance(attributes.getObjectAt(0));
-
-                final ASN1Sequence pkcs5Params = ASN1Sequence.getInstance(encAttrs.getObjectAt(1));
-                //                DER Octet String[8]
-                final byte[] salt = ASN1OctetString.getInstance(pkcs5Params.getObjectAt(0))
-                                                   .getOctets();
-                //                Integer(2048)
-                final int iterations = ASN1Integer.getInstance(pkcs5Params.getObjectAt(1))
-                                                  .intValueExact();
-                //                Sequence
-                final ASN1Sequence yaSeq = ASN1Sequence.getInstance(pkcs5Params.getObjectAt(2));
-                //                    ObjectIdentifier
-                final ASN1ObjectIdentifier pbeOID =
-                        ASN1ObjectIdentifier.getInstance(yaSeq.getObjectAt(0));
-                //                    NULL: no attributes
+                final ASN1Sequence paramHeaderSeq = ASN1Sequence.getInstance(
+                        attributeHeaderSeq.getObjectAt(0));
+                final ASN1ObjectIdentifier paramOID = ASN1ObjectIdentifier
+                        .getInstance(paramHeaderSeq.getObjectAt(0));
+                final ASN1Sequence parameters = ASN1Sequence.getInstance(
+                        paramHeaderSeq.getObjectAt(1));
 
                 //        Sequence
-                final ASN1Sequence cipherInfo = ASN1Sequence.getInstance(attributes.getObjectAt(1));
+                final ASN1Sequence cipherInfo = ASN1Sequence.getInstance(
+                        attributeHeaderSeq.getObjectAt(1));
                 //            ObjectIdentifier: the encryption algorithm
                 final SshCipher cipher = getCipher(ASN1ObjectIdentifier.getInstance(
                         cipherInfo.getObjectAt(0)));
@@ -126,32 +120,120 @@ public class DecryptPKCS8 implements PKDecryptor {
                     throw new KeyException("Cipher/iv not set");
                 }
 
-                final byte[] plainKey = new byte[encryptedPrivateKey.length];
-                try {
-                    pbeKey = new PBKDFJCE()
-                            .init(getPBEAlgorithm(pbeOID), salt, iterations)
-                            .generateSecretKey(passphrase, cipher.getKeySize());
-
-                    cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-                    cipher.doFinal(encryptedPrivateKey, 0, encryptedPrivateKey.length, plainKey, 0);
-
-                } finally {
-                    if (pbeKey != null) {
-                        Arrays.fill(pbeKey, (byte) 0);
-                    }
+                if (PKCSObjectIdentifiers.id_PBKDF2.equals(paramOID)) {
+                    return decryptPBKDF2(encryptedPrivateKey, passphrase, parameters,
+                                         cipher, cipherIV);
+                } else if (MiscObjectIdentifiers.id_scrypt.equals(paramOID)) {
+                    return decryptSCrypt(encryptedPrivateKey, passphrase, parameters,
+                                         cipher, cipherIV);
+                } else {
+                    throw new KeyException("Unsupported parameter OID: " + paramOID);
                 }
-                return plainKey;
-
             } else {
                 throw new KeyException("Unsupported algorithm: " + prvKeyAlgOID);
             }
 
         } finally {
+            Arrays.fill(passphrase, (byte) 0);
+        }
+    }
+
+    private byte[] decryptSCrypt(@NonNull final byte[] encryptedPrivateKey,
+                                 @NonNull final byte[] passphrase,
+                                 @NonNull final ASN1Encodable paramSequence,
+                                 @NonNull final SshCipher cipher,
+                                 @NonNull final byte[] cipherIV)
+            throws GeneralSecurityException {
+        //   scrypt-params ::= SEQUENCE {
+        //       salt OCTET STRING,
+        //       costParameter INTEGER (1..MAX),
+        //       blockSize INTEGER (1..MAX),
+        //       parallelizationParameter INTEGER (1..MAX),
+        //       keyLength INTEGER (1..MAX) OPTIONAL
+        //   }
+
+        final ASN1Sequence attributes = ASN1Sequence.getInstance(paramSequence);
+        final byte[] salt = ASN1OctetString.getInstance(attributes.getObjectAt(0))
+                                           .getOctets();
+        final int cost = ASN1Integer.getInstance(attributes.getObjectAt(1))
+                                    .intValueExact();
+        final int blockSize = ASN1Integer.getInstance(attributes.getObjectAt(2))
+                                         .intValueExact();
+        final int parallel = ASN1Integer.getInstance(attributes.getObjectAt(3))
+                                        .intValueExact();
+        if (attributes.size() > 4) {
+            final int keyLength = ASN1Integer.getInstance(attributes.getObjectAt(4))
+                                             .intValueExact();
+        }
+
+        byte[] pbeKey = null;
+        final byte[] plainKey = new byte[encryptedPrivateKey.length];
+        try {
+            pbeKey = new PBKDFSCrypt()
+                    .init(salt, cost, blockSize, parallel)
+                    .generateSecretKey(passphrase, cipher.getKeySize());
+
+            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
+            cipher.doFinal(encryptedPrivateKey, 0, encryptedPrivateKey.length, plainKey, 0);
+
+        } finally {
             if (pbeKey != null) {
                 Arrays.fill(pbeKey, (byte) 0);
             }
-            Arrays.fill(passphrase, (byte) 0);
         }
+        return plainKey;
+    }
+
+    // PKCS5 Params
+    @NonNull
+    private byte[] decryptPBKDF2(@NonNull final byte[] encryptedPrivateKey,
+                                 @NonNull final byte[] passphrase,
+                                 @NonNull final ASN1Encodable paramSequence,
+                                 @NonNull final SshCipher cipher,
+                                 @NonNull final byte[] cipherIV)
+            throws GeneralSecurityException {
+        //                 ObjectIdentifier(1.2.840.113549.1.5.12)      ==> 'paramOID'
+        //                 Sequence                                     ==> 'parameters'
+        //                     DER Octet String[8]                      ==> 'salt'
+        //                         29a1b47e62a1997c
+        //                     Integer(2048)                            ==> 'iterations'
+        //                     Sequence                                 ==> 'yaSeq'
+        //                         ObjectIdentifier(1.2.840.113549.2.9) ==> 'pbeOID'
+        //                         NULL                                 ==> no attributes here
+
+
+        //             Sequence
+        final ASN1Sequence parameters = ASN1Sequence.getInstance(paramSequence);
+        //                DER Octet String[8]
+        final byte[] salt = ASN1OctetString.getInstance(parameters.getObjectAt(0))
+                                           .getOctets();
+        //                Integer(2048)
+        final int iterations = ASN1Integer.getInstance(parameters.getObjectAt(1))
+                                          .intValueExact();
+        //                Sequence
+        final ASN1Sequence yaSeq = ASN1Sequence.getInstance(parameters.getObjectAt(2));
+        //                    ObjectIdentifier
+        final ASN1ObjectIdentifier pbeOID =
+                ASN1ObjectIdentifier.getInstance(yaSeq.getObjectAt(0));
+        //                    NULL: no attributes
+
+        byte[] pbeKey = null;
+        final byte[] plainKey = new byte[encryptedPrivateKey.length];
+        try {
+            pbeKey = new PBKDFJCE()
+                    .init(getPBEAlgorithm(pbeOID), salt, iterations)
+                    .generateSecretKey(passphrase, cipher.getKeySize());
+
+            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
+            cipher.doFinal(encryptedPrivateKey, 0, encryptedPrivateKey.length, plainKey, 0);
+
+        } finally {
+            if (pbeKey != null) {
+                Arrays.fill(pbeKey, (byte) 0);
+            }
+        }
+        return plainKey;
+
     }
 
     @NonNull

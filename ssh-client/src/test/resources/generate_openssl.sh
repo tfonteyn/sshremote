@@ -14,6 +14,8 @@ openssl gendsa -out dsa_enc.pem -passout pass:$PASSWORD dsa.param
 openssl dsa -in dsa_enc.pem -outform PEM -pubout -out dsa_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -out dsa_enc.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -traditional -out dsa_enc.pkcs8_traditional
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -scrypt -out dsa_scrypt.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -scrypt -traditional -out dsa_scrypt.pkcs8_traditional
 
 
 openssl genrsa -out rsa.pem 2048
@@ -24,6 +26,8 @@ openssl genrsa -out rsa_enc.pem -passout pass:$PASSWORD 2048
 openssl rsa -in rsa_enc.pem -outform PEM -pubout -out rsa_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in rsa_enc.pem -out rsa_enc.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in rsa_enc.pem -traditional -out rsa_enc.pkcs8_traditional
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in rsa_enc.pem -scrypt -out rsa_scrypt.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in rsa_enc.pem -scrypt -traditional -out rsa_scrypt.pkcs8_traditional
 
 
 # openssl ecparam -list_curves   to get a list of all possible "-name" values
@@ -52,11 +56,17 @@ openssl ec -in secp384r1.pem -passout pass:$PASSWORD -out secp384r1_enc.pem -aes
 openssl ec -in secp521r1.pem -passout pass:$PASSWORD -out secp521r1_enc.pem -aes256
 
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp256r1.pem -out secp256r1_enc.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp256r1.pem -scrypt -out secp256r1_scrypt.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp256r1.pem -traditional -out secp256r1_enc.pkcs8_traditional
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp256r1.pem -scrypt -traditional -out secp256r1_scrypt.pkcs8_traditional
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp384r1.pem -out secp384r1_enc.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp384r1.pem -scrypt -out secp384r1_scrypt.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp384r1.pem -traditional -out secp384r1_enc.pkcs8_traditional
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp384r1.pem -scrypt -traditional -out secp384r1_scrypt.pkcs8_traditional
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp521r1.pem -out secp521r1_enc.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp521r1.pem -scrypt -out secp521r1_scrypt.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp521r1.pem -traditional -out secp521r1_enc.pkcs8_traditional
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passout pass:$PASSWORD -in secp521r1.pem -scrypt -traditional -out secp521r1_scrypt.pkcs8_traditional
 
 
 openssl genpkey -algorithm ed25519 -out ed25519.pem
@@ -66,6 +76,7 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in ed25519.pem -out ed25
 openssl genpkey -algorithm ed25519 -pass pass:$PASSWORD -out ed25519_enc.pem
 openssl pkey -in ed25519_enc.pem -pubout -out ed25519_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in ed25519_enc.pem -out ed25519_enc.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in ed25519_enc.pem -scrypt -out ed25519_scrypt.pkcs8
 
 
 openssl genpkey -algorithm ed448 -out ed448.pem
@@ -75,6 +86,7 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in ed448.pem -out ed448.
 openssl genpkey -algorithm ed448 -pass pass:$PASSWORD -out ed448_enc.pem
 openssl pkey -in ed448_enc.pem -pubout -out ed448_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in ed448_enc.pem -out ed448_enc.pkcs8
+openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in ed448_enc.pem -scrypt -out ed448_scrypt.pkcs8
 
 
 
