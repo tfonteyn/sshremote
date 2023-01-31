@@ -13,6 +13,7 @@ import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
 import com.hardbacknutter.sshclient.keypair.util.KeyPairWriter;
+import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -230,6 +231,14 @@ class KeyPairTest {
 
         final String hostKeyAlgorithm = keyPair.getHostKeyAlgorithm();
         assertEquals(keyType, hostKeyAlgorithm);
+
+        if (pubPath != null) {
+            final File fp = new File(pubPath + ".fp_sha256");
+            if (fp.exists()) {
+                final String expected = Files.readString(fp.toPath()).strip();
+                assertEquals(expected, keyPair.getFingerPrint("SHA-256"));
+            }
+        }
 
         writePubKey(keyPair);
 
