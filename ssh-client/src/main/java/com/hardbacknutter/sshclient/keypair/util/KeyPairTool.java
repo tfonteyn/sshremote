@@ -24,10 +24,10 @@ import org.bouncycastle.util.io.pem.PemReader;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -84,51 +84,13 @@ public class KeyPairTool {
     }
 
     /**
-     * Creates a new key pair.
-     *
-     * @param keyType ed25519 | ed448
-     *
-     * @return the new key pair.
-     */
-    @NonNull
-    public SshKeyPair generateKeyPair(@NonNull final String keyType)
-            throws GeneralSecurityException {
-        switch (keyType.toLowerCase(Locale.ENGLISH)) {
-            case "ed25519":
-                return new KeyPairEdDSA(config, EdKeyType.Ed25519);
-
-            case "ed448":
-                return new KeyPairEdDSA(config, EdKeyType.Ed448);
-
-            default:
-                throw new InvalidKeySpecException("Unsupported type: " + keyType);
-        }
-    }
-
-    /**
      * Loads a key pair from a pair of files.
+     * <p>
+     * For some key formats, the private-key will have the public-key embedded,
+     * and which case 'publicKeyFilename' can be set to {@code null}.
      *
      * @param privateKeyFilename the file name of the private key file.
-     *                           The public key is expected in a file with the same name
-     *                           and suffix {@code .pub}.
-     *
-     * @return the new KeyPair.
-     */
-    @NonNull
-    public SshKeyPair load(@NonNull final String privateKeyFilename)
-            throws IOException, GeneralSecurityException {
-        String publicKeyFilename = privateKeyFilename + ".pub";
-        if (!new File(publicKeyFilename).exists()) {
-            publicKeyFilename = null;
-        }
-        return load(privateKeyFilename, publicKeyFilename);
-    }
-
-    /**
-     * Loads a key pair from a pair of files.
-     *
-     * @param privateKeyFilename the file name of the private key file.
-     * @param publicKeyFilename  the file name of the public key file.
+     * @param publicKeyFilename  (optional) the file name of the public key file.
      *
      * @return the new KeyPair.
      */
@@ -139,17 +101,17 @@ public class KeyPairTool {
 
         //TODO: Android API 26 limitation
         //noinspection ImplicitDefaultCharsetUsage
-        final BufferedReader prvKeyReader = new BufferedReader(
-                // new FileReader(privateKeyFilename, StandardCharsets.UTF_8));
-                new FileReader(privateKeyFilename));
+        final FileReader prvKeyReader = new FileReader(privateKeyFilename);
+//      final FileReader prvKeyReader = new FileReader(privateKeyFilename, StandardCharsets.UTF_8);
 
-        final BufferedReader pubKeyReader;
+
+        final FileReader pubKeyReader;
         if (publicKeyFilename != null) {
             //TODO: Android API 26 limitation
             //noinspection ImplicitDefaultCharsetUsage
-            pubKeyReader = new BufferedReader(
-                    // new FileReader(publicKeyFilename, StandardCharsets.UTF_8));
-                    new FileReader(publicKeyFilename));
+            pubKeyReader = new FileReader(publicKeyFilename);
+//          pubKeyReader = new FileReader(publicKeyFilename, StandardCharsets.UTF_8);
+
         } else {
             pubKeyReader = null;
         }
@@ -157,6 +119,17 @@ public class KeyPairTool {
         return load(prvKeyReader, pubKeyReader);
     }
 
+    /**
+     * Loads a key pair from a pair of byte[].
+     * <p>
+     * For some key formats, the private-key will have the public-key embedded,
+     * and which case 'pubKey' can be set to {@code null}.
+     *
+     * @param prvKey the private key blob.
+     * @param pubKey (optional) the public key blob.
+     *
+     * @return the new KeyPair.
+     */
     @NonNull
     public SshKeyPair load(@NonNull final byte[] prvKey,
                            @Nullable final byte[] pubKey)
@@ -168,31 +141,31 @@ public class KeyPairTool {
             return sshAgentReader.parse(prvKey);
         }
 
-        final BufferedReader prvKeyReader = new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(prvKey),
-                                      StandardCharsets.UTF_8));
-        final BufferedReader pubKeyReader;
-        if (pubKey != null) {
-            pubKeyReader = new BufferedReader(
-                    new InputStreamReader(new ByteArrayInputStream(pubKey),
-                                          StandardCharsets.UTF_8));
-        } else {
-            pubKeyReader = null;
-        }
+        final InputStreamReader prvKeyReader = new InputStreamReader(
+                new ByteArrayInputStream(prvKey), StandardCharsets.UTF_8);
+
+        final InputStreamReader pubKeyReader = pubKey != null
+                ? new InputStreamReader(new ByteArrayInputStream(pubKey),
+                                        StandardCharsets.UTF_8)
+                : null;
 
         return load(prvKeyReader, pubKeyReader);
     }
 
     /**
-     * Loads a key pair from a pair of BufferedReader.
-     * They MUST be BufferedReader as we'll need to use mark/reset.
+     * Loads a key pair from a pair of {@link Reader}s.
      *
      * @return the new KeyPair.
      */
+    @SuppressWarnings("WeakerAccess")
     @NonNull
-    private SshKeyPair load(@NonNull final BufferedReader prvKeyReader,
-                            @Nullable final BufferedReader publicKeyReader)
+    public SshKeyPair load(@NonNull final Reader privateKeyReader,
+                           @Nullable final Reader publicKeyReader)
             throws IOException, GeneralSecurityException {
+
+        final BufferedReader prvKeyReader = new BufferedReader(privateKeyReader);
+        final BufferedReader pubKeyReader = publicKeyReader != null
+                ? new BufferedReader(publicKeyReader) : null;
 
         // Check for PuTTY format.
         final PuttyReader puttyReader = new PuttyReader(config);
@@ -207,6 +180,7 @@ public class KeyPairTool {
                 throw new InvalidKeyException("Invalid private key");
             }
 
+            // https://www.rfc-editor.org/rfc/rfc7468.html#section-4
             switch (pem.getType()) {
                 case "OPENSSH PRIVATE KEY": {
                     // current openssh v1 default
@@ -221,37 +195,38 @@ public class KeyPairTool {
                     }
                 }
                 case "RSA PRIVATE KEY": {
-                    // legacy openssh rsa pem
-                    final PKDecryptor decryptor = createPKDecryptor(pem);
                     keyPair = new KeyPairRSA.Builder(config)
-                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor)
+                            .setPrivateKey(pem.getContent())
+                            .setFormat(Vendor.ASN1)
+                            .setDecryptor(createPKDecryptor(pem))
                             .build();
                     break;
                 }
                 case "DSA PRIVATE KEY": {
-                    // legacy openssh dsa pem
-                    final PKDecryptor decryptor = createPKDecryptor(pem);
                     keyPair = new KeyPairDSA.Builder(config)
-                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor)
+                            .setPrivateKey(pem.getContent())
+                            .setFormat(Vendor.ASN1)
+                            .setDecryptor(createPKDecryptor(pem))
                             .build();
                     break;
                 }
                 case "EC PRIVATE KEY": {
-                    // legacy openssh ec pem
-                    // The type will be one of (currently) 3: ECDSA 256/384/521
-                    // We'll find out at a later stage in parsing.
-                    final PKDecryptor decryptor = createPKDecryptor(pem);
                     keyPair = new KeyPairECDSA.Builder(config)
-                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS5, decryptor)
+                            .setPrivateKey(pem.getContent())
+                            .setFormat(Vendor.ASN1)
+                            .setDecryptor(createPKDecryptor(pem))
                             .build();
                     break;
                 }
-                case "ENCRYPTED PRIVATE KEY":
-                case "PRIVATE KEY": {
-                    // SSL style PKCS8 wrapper
-                    final PKDecryptor decryptor = new DecryptPKCS8(config);
+                case "ENCRYPTED PRIVATE KEY": {
                     keyPair = new KeyPairPKCS8.Builder(config)
-                            .setPrivateKeyBlob(pem.getContent(), Vendor.PKCS8, decryptor)
+                            .setPrivateKey(pem.getContent(), true)
+                            .build();
+                    break;
+                }
+                case "PRIVATE KEY": {
+                    keyPair = new KeyPairPKCS8.Builder(config)
+                            .setPrivateKey(pem.getContent(), false)
                             .build();
                     break;
                 }
@@ -260,18 +235,19 @@ public class KeyPairTool {
             }
         }
 
-        if (publicKeyReader == null) {
+        if (pubKeyReader == null) {
             return keyPair;
         }
 
-        try (PemReader reader = new PemReader(publicKeyReader)) {
+        try (PemReader reader = new PemReader(pubKeyReader)) {
             reader.mark(32);
             @Nullable final String line = reader.readLine();
             if (line != null) {
+                reader.reset();
                 if (line.startsWith("-----BEGIN PUBLIC KEY")) {
-                    parsePublicKeyFromPem(keyPair, reader);
+                    parsePublicKeyFromPem(reader, keyPair);
                 } else {
-                    parsePublicKeyFromSingleLine(keyPair, reader, line);
+                    parsePublicKeyFromSingleLine(reader, keyPair);
                 }
             }
         }
@@ -281,13 +257,13 @@ public class KeyPairTool {
     /**
      * Continue parsing for the public key in PEM format.
      *
-     * @param keyPair the KeyPair to add public key info to.
      * @param reader  to read from
+     * @param keyPair the KeyPair to update
      */
-    private void parsePublicKeyFromPem(@NonNull final SshKeyPair keyPair,
-                                       @NonNull final PemReader reader)
+    private void parsePublicKeyFromPem(@NonNull final PemReader reader,
+                                       @NonNull final SshKeyPair keyPair)
             throws IOException, InvalidKeyException {
-        reader.reset();
+
         final PemObject pem = reader.readPemObject();
         if (pem == null) {
             throw new InvalidKeyException("Invalid public key");
@@ -307,22 +283,23 @@ public class KeyPairTool {
     /**
      * Continue parsing for the public key in "type base64publickey comment" format.
      *
-     * @param keyPair the KeyPair to add public key info to.
      * @param reader  to read from
+     * @param keyPair the KeyPair to update
      */
-    private void parsePublicKeyFromSingleLine(@NonNull final SshKeyPair keyPair,
-                                              @NonNull final PemReader reader,
-                                              @Nullable String line)
+    private void parsePublicKeyFromSingleLine(@NonNull final PemReader reader,
+                                              @NonNull final SshKeyPair keyPair)
             throws IOException, InvalidKeyException {
         // skip blank lines and any comments
-        while (line != null && (line.isBlank() || line.charAt(0) == '#')) {
+        String line;
+        do {
             line = reader.readLine();
-        }
+        } while (line != null && (line.isBlank() || line.trim().charAt(0) == '#'));
+
         if (line != null) {
             final String[] parts = line.split(" ");
             if (parts.length > 1) {
                 // part 0 is the type; don't need it - we get the type from the private key
-                // part 1 is the base64 key
+                // part 1 is the base64 encoded public key
                 try {
                     keyPair.setSshPublicKeyBlob(Base64.getDecoder()
                                                       .decode(parts[1].trim()));
