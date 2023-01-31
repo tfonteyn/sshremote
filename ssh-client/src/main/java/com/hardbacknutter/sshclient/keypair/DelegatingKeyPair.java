@@ -47,14 +47,14 @@ public abstract class DelegatingKeyPair
     @Override
     @Nullable
     public String getFingerPrint()
-            throws GeneralSecurityException, IOException {
+            throws GeneralSecurityException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint();
     }
 
     @Override
     @Nullable
     public String getFingerPrint(@NonNull final String algorithm)
-            throws GeneralSecurityException, IOException {
+            throws GeneralSecurityException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint(algorithm);
     }
 
@@ -118,7 +118,7 @@ public abstract class DelegatingKeyPair
     @Nullable
     @Override
     public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException, IOException {
+            throws GeneralSecurityException {
         if (delegate == null) {
             return super.getSshPublicKeyBlob();
         }
@@ -126,8 +126,7 @@ public abstract class DelegatingKeyPair
     }
 
     @Override
-    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob)
-            throws IOException {
+    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
         if (delegate == null) {
             super.setSshPublicKeyBlob(publicKeyBlob);
             return;
