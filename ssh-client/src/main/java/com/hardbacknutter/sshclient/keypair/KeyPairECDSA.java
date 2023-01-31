@@ -190,9 +190,22 @@ public class KeyPairECDSA
                              type.encodePoint(w));
     }
 
-        return wrapPublicKey(ecType.hostKeyAlgorithm,
-                             ecType.nistName.getBytes(StandardCharsets.UTF_8),
-                             ecType.encodePoint(w));
+    @Override
+    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
+        super.setSshPublicKeyBlob(publicKeyBlob);
+
+        if (publicKeyBlob != null) {
+            try {
+                final Buffer buffer = new Buffer(publicKeyBlob);
+                buffer.skipString(/* type.hostKeyAlgorithm */);
+                buffer.skipString(/* type.nistName */);
+                w = ECKeyType.decodePoint(buffer.getString());
+            } catch (@NonNull final IOException e) {
+                if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                    config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+                }
+            }
+        }
     }
 
     @NonNull

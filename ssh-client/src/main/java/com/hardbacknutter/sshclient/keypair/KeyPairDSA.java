@@ -175,6 +175,26 @@ public class KeyPairDSA
                              y.toByteArray());
     }
 
+    @Override
+    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
+        super.setSshPublicKeyBlob(publicKeyBlob);
+
+        if (publicKeyBlob != null) {
+            try {
+                final Buffer buffer = new Buffer(publicKeyBlob);
+                buffer.skipString(/* serverHostKeyAlgorithm */);
+                p = buffer.getBigInteger();
+                q = buffer.getBigInteger();
+                g = buffer.getBigInteger();
+                y = buffer.getBigInteger();
+            } catch (@NonNull final IOException e) {
+                if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                    config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+                }
+            }
+        }
+    }
+
     @NonNull
     public byte[] getSignature(@NonNull final byte[] data,
                                @NonNull final String algorithm)
