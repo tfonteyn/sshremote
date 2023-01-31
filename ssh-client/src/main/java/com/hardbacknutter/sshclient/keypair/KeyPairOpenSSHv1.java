@@ -44,8 +44,10 @@ class KeyPairOpenSSHv1
      * Constructor.
      */
     private KeyPairOpenSSHv1(@NonNull final SshClientConfig config,
-                             @NonNull final Builder builder) {
-        super(config, builder.privateKeyBlob);
+                             @NonNull final Builder builder)
+            throws GeneralSecurityException {
+        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+              builder.decryptor != null, builder.decryptor);
 
         this.kdfName = Objects.requireNonNull(builder.kdfName, "kdfName is null");
         this.kdfOptions = Objects.requireNonNull(builder.kdfOptions, "kdfOptions is null");
@@ -203,7 +205,10 @@ class KeyPairOpenSSHv1
 
         @Nullable
         private byte[] publicKeyBlob;
-        private PrivateKeyBlob privateKeyBlob;
+        private final Vendor privateKeyFormat = Vendor.OPENSSH_V1;
+        private byte[] privateKeyBlob;
+        @Nullable
+        private PKDecryptor decryptor;
 
         public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
@@ -243,24 +248,30 @@ class KeyPairOpenSSHv1
         }
 
         /**
-         * Set the private key blob and its format.
+         * Set the private key blob.
          *
-         * @param blob      The byte[] with the private key
-         * @param format    The vendor specific format of the private key
-         *                  This is independent from the encryption state.
+         * @param privateKeyBlob The byte[] with the private key
+         */
+        @NonNull
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+            this.privateKeyBlob = privateKeyBlob;
+            return this;
+        }
+
+        /**
+         * Set the optional decryptor to use if the key is encrypted.
+         *
          * @param decryptor (optional) The vendor specific decryptor
          */
         @NonNull
-        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
-                                         @NonNull final Vendor format,
-                                         @Nullable final PKDecryptor decryptor) {
-            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+            this.decryptor = decryptor;
             return this;
         }
 
         @NonNull
         public SshKeyPair build()
-                throws GeneralSecurityException {
+                throws GeneralSecurityException, IOException {
 
             if (hostKeyType.isBlank()) {
                 throw new InvalidKeyException(UNKNOWN_KEY_TYPE_VENDOR);
@@ -272,30 +283,41 @@ class KeyPairOpenSSHv1
                     keyPair = new KeyPairOpenSSHv1(config, this);
                     break;
 
-                case HostKeyAlgorithm.__PKCS8__:
-                    // Does this situation actually exists in the real world?
-                    keyPair = new KeyPairPKCS8(config, privateKeyBlob);
-                    break;
-
                 case HostKeyAlgorithm.SSH_RSA:
-                    keyPair = new KeyPairRSA(config, privateKeyBlob);
+                    keyPair = new KeyPairRSA.Builder(config)
+                            .setPrivateKey(privateKeyBlob)
+                            .setFormat(privateKeyFormat)
+                            .setDecryptor(decryptor)
+                            .build();
                     break;
 
                 case HostKeyAlgorithm.SSH_DSS:
-                    keyPair = new KeyPairDSA(config, privateKeyBlob);
+                    keyPair = new KeyPairDSA.Builder(config)
+                            .setPrivateKey(privateKeyBlob)
+                            .setFormat(privateKeyFormat)
+                            .setDecryptor(decryptor)
+                            .build();
                     break;
 
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                    keyPair = new KeyPairECDSA(config, privateKeyBlob,
-                                               ECKeyType.getByHostKeyAlgorithm(hostKeyType));
+                    keyPair = new KeyPairECDSA.Builder(config)
+                            .setPrivateKey(privateKeyBlob)
+                            .setFormat(privateKeyFormat)
+                            .setDecryptor(decryptor)
+                            .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyType))
+                            .build();
                     break;
 
                 case HostKeyAlgorithm.SSH_ED25519:
                 case HostKeyAlgorithm.SSH_ED448:
-                    keyPair = new KeyPairEdDSA(config, privateKeyBlob,
-                                               EdKeyType.getByHostKeyAlgorithm(hostKeyType));
+                    keyPair = new KeyPairEdDSA.Builder(config)
+                            .setPrivateKey(privateKeyBlob)
+                            .setFormat(privateKeyFormat)
+                            .setDecryptor(decryptor)
+                            .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyType))
+                            .build();
                     break;
 
                 default:

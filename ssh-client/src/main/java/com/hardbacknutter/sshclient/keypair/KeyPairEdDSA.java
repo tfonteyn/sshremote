@@ -44,29 +44,21 @@ import java.util.Arrays;
 public class KeyPairEdDSA
         extends KeyPairBase {
 
-    @NonNull
-    private final EdKeyType edType;
+    /**
+     * TODO: check WHEN/IF the type could be null
+     * This error should only occur when the pair is used as a delegate
+     * (e.g. {@link KeyPairOpenSSHv1} in which case calling the related method is a bug.
+     */
+    private static final String ERROR_TYPE_WAS_NULL = "type was null; using a delegate?";
 
     @Nullable
-    private byte[] pub_array;
+    private final EdKeyType type;
+
     @Nullable
     private byte[] prv_array;
 
-    /**
-     * Constructor.
-     *
-     * @param privateKeyBlob to use
-     * @param edType         {@link EdKeyType}
-     */
-    KeyPairEdDSA(@NonNull final SshClientConfig config,
-                 @NonNull final PrivateKeyBlob privateKeyBlob,
-                 @NonNull final EdKeyType edType)
-            throws GeneralSecurityException {
-        super(config, privateKeyBlob);
-        this.edType = edType;
-
-        parse();
-    }
+    @Nullable
+    private byte[] pub_array;
 
     /**
      * Constructor.
@@ -76,9 +68,10 @@ public class KeyPairEdDSA
     private KeyPairEdDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+              builder.encrypted, builder.decryptor);
 
-        this.edType = builder.edType;
+        this.type = builder.type;
         this.prv_array = builder.prv_array;
         this.pub_array = builder.pub_array;
 
@@ -88,25 +81,25 @@ public class KeyPairEdDSA
     /**
      * Generate a <strong>new</strong> KeyPair with the given curve.
      *
-     * @param edType {@link EdKeyType}
+     * @param type {@link EdKeyType}
      */
     public KeyPairEdDSA(@NonNull final SshClientConfig config,
-                        @NonNull final EdKeyType edType)
+                        @NonNull final EdKeyType type)
             throws GeneralSecurityException {
         super(config);
 
-        this.edType = edType;
+        this.type = type;
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator
-                .getInstance(edType.curveName, "BC");
+                .getInstance(type.curveName, "BC");
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-        pub_array = edType.extractPubArray((EdDSAPublicKey) keyPair.getPublic());
+        pub_array = type.extractPubArray((EdDSAPublicKey) keyPair.getPublic());
 
         @Nullable final byte[] prvKey = keyPair.getPrivate().getEncoded();
         // sanity check for null
         if (prvKey != null) {
-            parse(prvKey, Vendor.PKCS8);
+            parse(prvKey, Vendor.ASN1);
         }
     }
 
@@ -178,7 +171,8 @@ public class KeyPairEdDSA
     @NonNull
     @Override
     public String getHostKeyAlgorithm() {
-        return edType.hostKeyAlgorithm;
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return type.hostKeyAlgorithm;
     }
 
     /**
@@ -188,7 +182,8 @@ public class KeyPairEdDSA
      */
     @Override
     public int getKeySize() {
-        return edType.keySize;
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return type.keySize;
     }
 
     @Nullable
@@ -216,7 +211,7 @@ public class KeyPairEdDSA
         sig.init(algorithm);
 
         //noinspection ConstantConditions
-        sig.initSign(generatePrivate(edType, prv_array));
+        sig.initSign(generatePrivate(type, prv_array));
         sig.update(data);
         final byte[] signature_blob = sig.sign();
         return wrapSignature(algorithm, signature_blob);
@@ -257,8 +252,9 @@ public class KeyPairEdDSA
         System.arraycopy(prv_array, 0, encodedKeys, 0, prv_array.length);
         System.arraycopy(pub_array, 0, encodedKeys, prv_array.length, pub_array.length);
 
+        //noinspection ConstantConditions
         return new Buffer()
-                .putString(edType.hostKeyAlgorithm)
+                .putString(type.hostKeyAlgorithm)
                 .putString(pub_array)
                 .putString(encodedKeys)
                 .putString(publicKeyComment)
@@ -295,7 +291,8 @@ public class KeyPairEdDSA
                     // of public key in second half of string
                     final byte[] tmp = buffer.getString(); // secret key (private key + public key)
                     // extract the first half
-                    prv_array = Arrays.copyOf(tmp, edType.keySize);
+                    //noinspection ConstantConditions
+                    prv_array = Arrays.copyOf(tmp, type.keySize);
 
                     publicKeyComment = buffer.getJString();
 
@@ -383,19 +380,27 @@ public class KeyPairEdDSA
 
         @NonNull
         final SshClientConfig config;
-        @NonNull
-        private final EdKeyType edType;
+        @Nullable
+        private EdKeyType type;
         @Nullable
         private byte[] prv_array;
         @Nullable
         private byte[] pub_array;
-        private PrivateKeyBlob privateKeyBlob;
+        private byte[] privateKeyBlob;
+        private Vendor privateKeyFormat;
+        private boolean encrypted;
+        @Nullable
+        private PKDecryptor decryptor;
 
-        public Builder(@NonNull final SshClientConfig config,
-                       @NonNull final String hostKeyAlgorithm)
+        public Builder(@NonNull final SshClientConfig config)
                 throws NoSuchAlgorithmException {
             this.config = config;
-            edType = EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
+        }
+
+        @NonNull
+        public Builder setType(@NonNull final EdKeyType type) {
+            this.type = type;
+            return this;
         }
 
         @NonNull
@@ -411,18 +416,37 @@ public class KeyPairEdDSA
         }
 
         /**
-         * Set the private key blob and its format.
+         * Set the private key blob.
          *
-         * @param blob      The byte[] with the private key
-         * @param format    The vendor specific format of the private key
-         *                  This is independent from the encryption state.
+         * @param privateKeyBlob The byte[] with the private key
+         */
+        @NonNull
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+            this.privateKeyBlob = privateKeyBlob;
+            return this;
+        }
+
+        /**
+         * Set the encoding/format for the private key blob.
+         *
+         * @param format The vendor specific format of the private key
+         *               This is independent from the encryption state.
+         */
+        @NonNull
+        public Builder setFormat(@NonNull final Vendor format) {
+            this.privateKeyFormat = format;
+            return this;
+        }
+
+        /**
+         * Set the optional decryptor to use if the key is encrypted.
+         *
          * @param decryptor (optional) The vendor specific decryptor
          */
         @NonNull
-        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
-                                         @NonNull final Vendor format,
-                                         @Nullable final PKDecryptor decryptor) {
-            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+            this.decryptor = decryptor;
+            this.encrypted = decryptor != null;
             return this;
         }
 

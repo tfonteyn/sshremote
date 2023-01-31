@@ -100,25 +100,13 @@ public class KeyPairRSA
     /**
      * Constructor.
      *
-     * @param privateKeyBlob to use
-     */
-    KeyPairRSA(@NonNull final SshClientConfig config,
-               @NonNull final PrivateKeyBlob privateKeyBlob)
-            throws GeneralSecurityException {
-        super(config, privateKeyBlob);
-
-        parse();
-    }
-
-    /**
-     * Constructor.
-     *
      * @param builder to use
      */
     private KeyPairRSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+              builder.encrypted, builder.decryptor);
 
         modulus = builder.modulus;
         publicExponent = builder.publicExponent;
@@ -439,7 +427,11 @@ public class KeyPairRSA
         BigInteger p;
         @Nullable
         BigInteger q;
-        private PrivateKeyBlob privateKeyBlob;
+        private byte[] privateKeyBlob;
+        private Vendor privateKeyFormat;
+        private boolean encrypted;
+        @Nullable
+        private PKDecryptor decryptor;
 
         public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
@@ -482,18 +474,37 @@ public class KeyPairRSA
         }
 
         /**
-         * Set the private key blob and its format.
+         * Set the private key blob.
          *
-         * @param blob      The byte[] with the private key
-         * @param format    The vendor specific format of the private key
-         *                  This is independent from the encryption state.
+         * @param privateKeyBlob The byte[] with the private key
+         */
+        @NonNull
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+            this.privateKeyBlob = privateKeyBlob;
+            return this;
+        }
+
+        /**
+         * Set the encoding/format for the private key blob.
+         *
+         * @param format The vendor specific format of the private key
+         *               This is independent from the encryption state.
+         */
+        @NonNull
+        public Builder setFormat(@NonNull final Vendor format) {
+            this.privateKeyFormat = format;
+            return this;
+        }
+
+        /**
+         * Set the optional decryptor to use if the key is encrypted.
+         *
          * @param decryptor (optional) The vendor specific decryptor
          */
         @NonNull
-        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
-                                         @NonNull final Vendor format,
-                                         @Nullable final PKDecryptor decryptor) {
-            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+            this.decryptor = decryptor;
+            this.encrypted = decryptor != null;
             return this;
         }
 

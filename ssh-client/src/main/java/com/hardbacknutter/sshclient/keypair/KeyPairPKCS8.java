@@ -73,7 +73,8 @@ public class KeyPairPKCS8
     private KeyPairPKCS8(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+              builder.encrypted, builder.decryptor);
 
         parse();
     }
@@ -273,25 +274,28 @@ public class KeyPairPKCS8
 
         @NonNull
         final SshClientConfig config;
-        private PrivateKeyBlob privateKeyBlob;
+        private final Vendor privateKeyFormat = Vendor.PKCS8;
+        @NonNull
+        private final PKDecryptor decryptor;
+        private byte[] privateKeyBlob;
+        private boolean encrypted;
 
         public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
+            this.decryptor = new DecryptPKCS8(config);
         }
 
         /**
-         * Set the private key blob and its format.
+         * Set the private key blob.
          *
-         * @param blob      The byte[] with the private key
-         * @param format    The vendor specific format of the private key
-         *                  This is independent from the encryption state.
-         * @param decryptor (optional) The vendor specific decryptor
+         * @param privateKeyBlob The byte[] with the private key
+         * @param encrypted      Whether the embedded key is encrypted or not.
          */
         @NonNull
-        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
-                                         @NonNull final Vendor format,
-                                         @Nullable final PKDecryptor decryptor) {
-            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+                                     final boolean encrypted) {
+            this.privateKeyBlob = privateKeyBlob;
+            this.encrypted = encrypted;
             return this;
         }
 

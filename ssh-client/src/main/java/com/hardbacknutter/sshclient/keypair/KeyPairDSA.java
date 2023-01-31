@@ -64,25 +64,13 @@ public class KeyPairDSA
     /**
      * Constructor.
      *
-     * @param privateKeyBlob to use
-     */
-    KeyPairDSA(@NonNull final SshClientConfig config,
-               @NonNull final PrivateKeyBlob privateKeyBlob)
-            throws GeneralSecurityException {
-        super(config, privateKeyBlob);
-
-        parse();
-    }
-
-    /**
-     * Constructor.
-     *
      * @param builder to use
      */
     private KeyPairDSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+              builder.encrypted, builder.decryptor);
 
         p = builder.p;
         q = builder.q;
@@ -365,7 +353,11 @@ public class KeyPairDSA
         private BigInteger q;
         @Nullable
         private BigInteger g;
-        private PrivateKeyBlob privateKeyBlob;
+        private byte[] privateKeyBlob;
+        private Vendor privateKeyFormat;
+        private boolean encrypted;
+        @Nullable
+        private PKDecryptor decryptor;
 
         /**
          * Constructor.
@@ -382,6 +374,10 @@ public class KeyPairDSA
             this.q = q;
             this.g = g;
 
+            // if we have x, then we can calculate y
+            if (y == null && x != null) {
+                this.y = this.g.modPow(this.x, this.p);
+            }
             return this;
         }
 
@@ -404,32 +400,45 @@ public class KeyPairDSA
         }
 
         /**
-         * If we have X (and g/p), then we can calculate Y
+         * Set the private key blob.
+         *
+         * @param privateKeyBlob The byte[] with the private key
          */
         @NonNull
-        Builder setXCalculateY(@NonNull final BigInteger x) {
-            if (p == null || g == null) {
-                throw new IllegalStateException("setPQG() must be called first");
-            }
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+            this.privateKeyBlob = privateKeyBlob;
+            // 'privateKey' is an octet string, we can just set the 'x' value
+            // and calculate the 'y' from it.
+            this.x = new BigInteger(1, privateKeyBlob);
 
-            this.x = x;
-            this.y = this.g.modPow(this.x, this.p);
+            // If we have p/q, then we can calculate y
+            if (y == null && p != null && g != null) {
+                this.y = this.g.modPow(this.x, this.p);
+            }
             return this;
         }
 
         /**
-         * Set the private key blob and its format.
+         * Set the encoding/format for the private key blob.
          *
-         * @param blob      The byte[] with the private key
-         * @param format    The vendor specific format of the private key
-         *                  This is independent from the encryption state.
+         * @param format The vendor specific format of the private key
+         *               This is independent from the encryption state.
+         */
+        @NonNull
+        public Builder setFormat(@NonNull final Vendor format) {
+            this.privateKeyFormat = format;
+            return this;
+        }
+
+        /**
+         * Set the optional decryptor to use if the key is encrypted.
+         *
          * @param decryptor (optional) The vendor specific decryptor
          */
         @NonNull
-        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
-                                         @NonNull final Vendor format,
-                                         @Nullable final PKDecryptor decryptor) {
-            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+            this.decryptor = decryptor;
+            this.encrypted = decryptor != null;
             return this;
         }
 

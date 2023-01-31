@@ -70,7 +70,7 @@ public class KeyPairECDSA
     private static final String ERROR_EC_TYPE_WAS_NULL = "ecType was null; using a delegate?";
 
     @Nullable
-    private ECKeyType ecType;
+    private ECKeyType type;
 
     /** private key value. */
     @Nullable
@@ -82,31 +82,15 @@ public class KeyPairECDSA
     /**
      * Constructor.
      *
-     * @param privateKeyBlob to use
-     * @param ecType         {@link ECKeyType}
-     */
-    KeyPairECDSA(@NonNull final SshClientConfig config,
-                 @NonNull final PrivateKeyBlob privateKeyBlob,
-                 @NonNull final ECKeyType ecType)
-            throws GeneralSecurityException {
-        super(config, privateKeyBlob);
-
-        this.ecType = ecType;
-
-        parse();
-    }
-
-    /**
-     * Constructor.
-     *
      * @param builder to use
      */
     private KeyPairECDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob);
+        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+              builder.encrypted, builder.decryptor);
 
-        this.ecType = builder.ecType;
+        this.type = builder.type;
         this.s = builder.s;
         this.w = builder.w;
 
@@ -121,10 +105,10 @@ public class KeyPairECDSA
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
         super(config);
 
-        this.ecType = ECKeyType.getByKeySize(keySize);
+        this.type = ECKeyType.getByKeySize(keySize);
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
-        final AlgorithmParameterSpec params = new ECGenParameterSpec(ecType.curveName);
+        final AlgorithmParameterSpec params = new ECGenParameterSpec(type.curveName);
         keyPairGenerator.initialize(params);
 
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -176,14 +160,14 @@ public class KeyPairECDSA
     @NonNull
     @Override
     public String getHostKeyAlgorithm() {
-        Objects.requireNonNull(ecType, ERROR_EC_TYPE_WAS_NULL);
-        return ecType.hostKeyAlgorithm;
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return type.hostKeyAlgorithm;
     }
 
     @Override
     public int getKeySize() {
-        Objects.requireNonNull(ecType, ERROR_EC_TYPE_WAS_NULL);
-        return ecType.keySize;
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return type.keySize;
     }
 
     @Nullable
@@ -199,7 +183,11 @@ public class KeyPairECDSA
             return null;
         }
 
-        Objects.requireNonNull(ecType, ERROR_EC_TYPE_WAS_NULL);
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return wrapPublicKey(type.hostKeyAlgorithm,
+                             type.nistName.getBytes(StandardCharsets.UTF_8),
+                             type.encodePoint(w));
+    }
 
         return wrapPublicKey(ecType.hostKeyAlgorithm,
                              ecType.nistName.getBytes(StandardCharsets.UTF_8),
@@ -215,7 +203,7 @@ public class KeyPairECDSA
         sig.init(algorithm);
 
         //noinspection ConstantConditions
-        sig.initSign(generatePrivate(ecType.curveName, s));
+        sig.initSign(generatePrivate(type.curveName, s));
         sig.update(data);
         final byte[] signature_blob = sig.sign();
         return wrapSignature(algorithm, signature_blob);
@@ -225,6 +213,7 @@ public class KeyPairECDSA
     @Override
     public SshSignature getVerifier(@NonNull final String algorithm)
             throws GeneralSecurityException, IOException {
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
 
         final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
         sig.init(algorithm);
@@ -236,8 +225,7 @@ public class KeyPairECDSA
             w = ECKeyType.decodePoint(buffer.getString());
         }
 
-        //noinspection ConstantConditions
-        sig.initVerify(generatePublic(ecType.curveName, w));
+        sig.initVerify(generatePublic(type.curveName, w));
         return sig;
     }
 
@@ -250,9 +238,9 @@ public class KeyPairECDSA
         }
         //noinspection ConstantConditions
         return new Buffer()
-                .putString((ecType.hostKeyAlgorithm))
-                .putString(ecType.nistName)
-                .putString(ecType.encodePoint(w))
+                .putString((type.hostKeyAlgorithm))
+                .putString(type.nistName)
+                .putString(type.encodePoint(w))
                 .putMPInt(s)
                 .putString(publicKeyComment)
                 .getPayload();
@@ -280,7 +268,7 @@ public class KeyPairECDSA
                     if (checkInt1 != checkInt2) {
                         throw new InvalidKeyException("checksum failed");
                     }
-                    ecType = ECKeyType.getByHostKeyAlgorithm(buffer.getJString());
+                    type = ECKeyType.getByHostKeyAlgorithm(buffer.getJString());
                     buffer.skipString(/* nist name*/);
 
                     w = ECKeyType.decodePoint(buffer.getString());
@@ -300,7 +288,7 @@ public class KeyPairECDSA
                     w = ECKeyType.decodePoint(key.getPublicKey().getBytes());
                     s = key.getKey();
 
-                    this.ecType = ECKeyType.getByECPoint(w);
+                    type = ECKeyType.getByECPoint(w);
                     break;
                 }
             }
@@ -323,16 +311,17 @@ public class KeyPairECDSA
     @Override
     public byte[] getEncoded()
             throws InvalidKeyException, IOException {
-        if (ecType == null || s == null) {
+        if (type == null || s == null) {
             throw new InvalidKeyException("No key data");
         }
 
         if (w != null) {
-            return new ECPrivateKey(ecType.keySize, s,
-                                    new DERBitString(ecType.encodePoint(w)), ecType.keyOid)
+            return new ECPrivateKey(type.keySize, s,
+                                    new DERBitString(type.encodePoint(w)),
+                                    type.keyOid)
                     .getEncoded();
         } else {
-            return new ECPrivateKey(ecType.keySize, s, null, null)
+            return new ECPrivateKey(type.keySize, s, null, null)
                     .getEncoded();
         }
     }
@@ -342,22 +331,26 @@ public class KeyPairECDSA
         @NonNull
         final SshClientConfig config;
         @Nullable
-        private ECKeyType ecType;
+        private ECKeyType type;
 
         @Nullable
         private ECPoint w;
 
         @Nullable
         private BigInteger s;
-        private PrivateKeyBlob privateKeyBlob;
+        private byte[] privateKeyBlob;
+        private Vendor privateKeyFormat;
+        private boolean encrypted;
+        @Nullable
+        private PKDecryptor decryptor;
 
         public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
         }
 
         @NonNull
-        public Builder setType(@NonNull final ECKeyType ecType) {
-            this.ecType = ecType;
+        public Builder setType(@NonNull final ECKeyType type) {
+            this.type = type;
             return this;
         }
 
@@ -374,18 +367,38 @@ public class KeyPairECDSA
         }
 
         /**
-         * Set the private key blob and its format.
+         * Set the private key blob.
          *
-         * @param blob      The byte[] with the private key
-         * @param format    The vendor specific format of the private key
-         *                  This is independent from the encryption state.
+         * @param privateKeyBlob The byte[] with the private key
+         */
+        @NonNull
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+            this.privateKeyBlob = privateKeyBlob;
+            this.s = new BigInteger(1, this.privateKeyBlob);
+            return this;
+        }
+
+        /**
+         * Set the encoding/format for the private key blob.
+         *
+         * @param format The vendor specific format of the private key
+         *               This is independent from the encryption state.
+         */
+        @NonNull
+        public Builder setFormat(@NonNull final Vendor format) {
+            this.privateKeyFormat = format;
+            return this;
+        }
+
+        /**
+         * Set the optional decryptor to use if the key is encrypted.
+         *
          * @param decryptor (optional) The vendor specific decryptor
          */
         @NonNull
-        public Builder setPrivateKeyBlob(@NonNull final byte[] blob,
-                                         @NonNull final Vendor format,
-                                         @Nullable final PKDecryptor decryptor) {
-            privateKeyBlob = new PrivateKeyBlob(blob, format, decryptor);
+        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+            this.decryptor = decryptor;
+            this.encrypted = decryptor != null;
             return this;
         }
 
