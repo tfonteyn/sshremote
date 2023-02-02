@@ -16,9 +16,9 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
 
 /**
  * A PKCS#8 KeyPair is a wrapper containing the actual KeyPair as {@link #delegate}.
@@ -71,6 +71,11 @@ public final class KeyPairPKCS8
             delegate.parse(encodedKey, keyFormat);
             return;
         }
+
+        // Take a copy of these BEFORE we create the delegate.
+        // We'll set them on the delegate after its creation
+        final byte[] sshPublicKeyBlob = getSshPublicKeyBlob();
+        final String publicKeyComment = getPublicKeyComment();
 
         // parse the wrapper, and create the delegate
         try {
@@ -136,20 +141,23 @@ public final class KeyPairPKCS8
             //         DER Octet String[58]
             //             00123
 
+            final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
+            //    Sequence
             final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
+            //    DER Octet String[]
+            final byte[] privateKeyBlob = ASN1OctetString.getInstance(root.getObjectAt(2))
+                                                         .getOctets();
+
             //        ObjectIdentifier privateKeyAlgorithm
             final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier
                     .getInstance(subSeq.getObjectAt(0));
             //        attributes: see below depending on algorithm
 
-            //    DER Octet String[]
-            final byte[] privateKey = ASN1OctetString.getInstance(root.getObjectAt(2))
-                                                     .getOctets();
 
             if (PKCSObjectIdentifiers.rsaEncryption.equals(prvKeyAlgOID)) {
                 // RSA has no extra attributes
                 delegate = (KeyPairBase) new KeyPairRSA.Builder(config)
-                        .setPrivateKey(privateKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(decryptor)
                         .build();
@@ -166,7 +174,7 @@ public final class KeyPairPKCS8
 
                 delegate = (KeyPairBase) new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
-                        .setPrivateKey(privateKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(Vendor.RAW)
                         .setDecryptor(decryptor)
                         .build();
@@ -178,7 +186,7 @@ public final class KeyPairPKCS8
 
                 delegate = (KeyPairBase) new KeyPairECDSA.Builder(config)
                         .setType(ECKeyType.getByOid(primeOid))
-                        .setPrivateKey(privateKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(decryptor)
                         .build();
@@ -186,7 +194,7 @@ public final class KeyPairPKCS8
             } else if (id_ed25519.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
                         .setType(EdKeyType.Ed25519)
-                        .setPrivateKey(privateKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(decryptor)
                         .build();
@@ -194,18 +202,18 @@ public final class KeyPairPKCS8
             } else if (id_ed448.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
                         .setType(EdKeyType.Ed448)
-                        .setPrivateKey(privateKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(decryptor)
                         .build();
 
             } else {
-                throw new InvalidKeyException("Unsupported prvKeyAlgOID: " + prvKeyAlgOID);
+                throw new UnsupportedEncodingException("Unsupported prvKeyAlgOID: " + prvKeyAlgOID);
             }
 
-            // Copy the public key as-is
-            delegate.setSshPublicKeyBlob(super.getSshPublicKeyBlob());
-            delegate.setPublicKeyComment(super.getPublicKeyComment());
+            // now set the previously store key/comment
+            delegate.setSshPublicKeyBlob(sshPublicKeyBlob);
+            delegate.setPublicKeyComment(publicKeyComment);
 
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
