@@ -21,6 +21,7 @@ import java.security.InvalidKeyException;
 import java.security.spec.ECPoint;
 import java.util.Arrays;
 
+// URGENT: this class has never been tested; we never set the keypair format, ....
 class SshAgentReader {
 
     @NonNull
@@ -113,9 +114,9 @@ class SshAgentReader {
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_ED25519:
-                return parseEdKey(buffer, hostKeyAlgorithm, EdKeyType.Ed25519.keySize);
+                return parseEdKey(EdKeyType.Ed25519, buffer);
             case HostKeyAlgorithm.SSH_ED448:
-                return parseEdKey(buffer, hostKeyAlgorithm, EdKeyType.Ed448.keySize);
+                return parseEdKey(EdKeyType.Ed448, buffer);
 
             default:
                 throw new InvalidKeyException("Invalid private key");
@@ -123,22 +124,21 @@ class SshAgentReader {
     }
 
     @NonNull
-    private SshKeyPair parseEdKey(final Buffer buffer,
-                                  final String hostKeyAlgorithm,
-                                  final int keySize)
+    private SshKeyPair parseEdKey(@NonNull final EdKeyType type,
+                                  @NonNull final Buffer buffer)
             throws IOException, GeneralSecurityException {
         final SshKeyPair keyPair;
         // the public key
         final byte[] pub_array = buffer.getString();
         // OpenSSH stores private key in first half of string and duplicate copy
         // of public key in second half of string. Hence only copy one half.
-        final byte[] prv_array = Arrays.copyOf(buffer.getString(), keySize);
+        final byte[] prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
 
         // the user comment for the key
         final String comment = buffer.getJString();
 
         keyPair = new KeyPairEdDSA.Builder(config)
-                .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                .setType(type)
                 .setPubArray(pub_array)
                 .setPrvArray(prv_array)
                 .build();
