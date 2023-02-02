@@ -223,16 +223,19 @@ public class KeyPairDSA
         final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
         sig.init(algorithm);
 
-        if (y == null && p == null && getSshPublicKeyBlob() != null) {
-            final Buffer buffer = new Buffer(getSshPublicKeyBlob());
+        final byte[] publicKeyBlob = getSshPublicKeyBlob();
+        if (y == null && p == null && publicKeyBlob != null) {
+            final Buffer buffer = new Buffer(publicKeyBlob);
             buffer.skipString(/* "ssh-dss" */);
             p = buffer.getBigInteger();
             q = buffer.getBigInteger();
             g = buffer.getBigInteger();
             y = buffer.getBigInteger();
         }
-
-        //noinspection ConstantConditions
+        Objects.requireNonNull(y);
+        Objects.requireNonNull(p);
+        Objects.requireNonNull(q);
+        Objects.requireNonNull(g);
         sig.initVerify(generatePublic(y, p, q, g));
         return sig;
     }

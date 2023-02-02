@@ -237,13 +237,15 @@ public class KeyPairECDSA
         final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
         sig.init(algorithm);
 
-        if (w == null && this.getSshPublicKeyBlob() != null) {
-            final Buffer buffer = new Buffer(this.getSshPublicKeyBlob());
+        final byte[] publicKeyBlob = this.getSshPublicKeyBlob();
+        if (w == null && publicKeyBlob != null) {
+            final Buffer buffer = new Buffer(publicKeyBlob);
             buffer.skipString(/* hostKeyAlgorithmName */);
             buffer.skipString(/* nistName */);
             w = ECKeyType.decodePoint(buffer.getString());
         }
 
+        Objects.requireNonNull(w);
         sig.initVerify(generatePublic(type.curveName, w));
         return sig;
     }

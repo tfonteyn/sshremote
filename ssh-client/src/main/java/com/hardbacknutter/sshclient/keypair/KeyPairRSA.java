@@ -260,13 +260,16 @@ public class KeyPairRSA
         final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
         sig.init(algorithm);
 
-        if (publicExponent == null && modulus == null && this.getSshPublicKeyBlob() != null) {
-            final Buffer buffer = new Buffer(this.getSshPublicKeyBlob());
+        final byte[] publicKeyBlob = this.getSshPublicKeyBlob();
+        if (publicExponent == null && modulus == null && publicKeyBlob != null) {
+            final Buffer buffer = new Buffer(publicKeyBlob);
             buffer.skipString(/* "ssh-rsa" */);
             publicExponent = buffer.getBigInteger();
             modulus = buffer.getBigInteger();
         }
-        //noinspection ConstantConditions
+
+        Objects.requireNonNull(publicExponent);
+        Objects.requireNonNull(modulus);
         sig.initVerify(generatePublic(publicExponent, modulus));
         return sig;
     }
