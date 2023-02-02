@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS8;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -56,8 +55,8 @@ public final class KeyPairPKCS8
     private KeyPairPKCS8(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
-              builder.encrypted, builder.decryptor);
+        super(config, builder.privateKeyBlob, Vendor.PKCS8,
+              false, new DecryptPKCS8(config));
 
         parse();
     }
@@ -236,28 +235,20 @@ public final class KeyPairPKCS8
 
         @NonNull
         final SshClientConfig config;
-        private final Vendor privateKeyFormat = Vendor.PKCS8;
-        @NonNull
-        private final PKDecryptor decryptor;
         private byte[] privateKeyBlob;
-        private boolean encrypted;
 
         public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
-            this.decryptor = new DecryptPKCS8(config);
         }
 
         /**
          * Set the private key blob.
          *
          * @param privateKeyBlob The byte[] with the private key
-         * @param encrypted      Whether the embedded key is encrypted or not.
          */
         @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
-                                     final boolean encrypted) {
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
             this.privateKeyBlob = privateKeyBlob;
-            this.encrypted = encrypted;
             return this;
         }
 
