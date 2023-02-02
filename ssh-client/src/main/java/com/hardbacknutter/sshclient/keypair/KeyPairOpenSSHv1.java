@@ -49,6 +49,31 @@ public final class KeyPairOpenSSHv1
         parse();
     }
 
+    /**
+     * reads openssh key v1 format and returns key type.
+     */
+    @NonNull
+    public static String getHostKeyType(@NonNull final byte[] blob)
+            throws IOException, InvalidKeyException {
+
+        if (blob.length % 8 != 0) {
+            throw new IOException("The private key must be a multiple of the block size (8)");
+        }
+
+        final Buffer buffer = new Buffer(blob);
+        // 64-bit dummy checksum  # a random 32-bit int, repeated
+        final int checkInt1 = buffer.getInt();
+        final int checkInt2 = buffer.getInt();
+        if (checkInt1 != checkInt2) {
+            throw new InvalidKeyException("checksum failed");
+        }
+
+        final String sshName = buffer.getJString();
+        // the rest of the buffer contains the actual key data - not needed here.
+
+        return HostKeyAlgorithm.parseType(sshName);
+    }
+
     @Override
     void parse(@NonNull final byte[] encodedKey,
                @NonNull final Vendor keyFormat)
