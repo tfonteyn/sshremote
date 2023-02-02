@@ -8,7 +8,6 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptBCrypt;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
-import com.hardbacknutter.sshclient.keypair.util.OpenSSHv1Reader;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.Objects;
 /**
  * An OpenSSHv1 KeyPair is a wrapper containing a generic encrypted KeyPair.
  * <p>
- * If the wrapped key is NOT encrypted, the {@link OpenSSHv1Reader} and {@link Builder}
+ * If the wrapped key is NOT encrypted, the {@link Builder}
  * will detect the actual type and create the actual KeyPair directly.
  * If it IS encrypted, this class behaves will use a delegate after decryption.
  */
@@ -119,7 +118,12 @@ public final class KeyPairOpenSSHv1
         }
 
         // now we have the decrypted key and can thus determine the real type
-        final String hostKeyType = OpenSSHv1Reader.getHostKeyType(plainKey);
+        final String hostKeyType = getHostKeyType(plainKey);
+
+        // Take a copy of these BEFORE we create the delegate.
+        // We'll set them on the delegate after its creation
+        final byte[] sshPublicKeyBlob = getSshPublicKeyBlob();
+        final String publicKeyComment = getPublicKeyComment();
 
         // Use the builder again, this time with an unencrypted key.
         delegate = (KeyPairBase) new Builder(config)
@@ -128,8 +132,8 @@ public final class KeyPairOpenSSHv1
                 .build();
 
         // Copy the public key as-is
-        delegate.setSshPublicKeyBlob(super.getSshPublicKeyBlob());
-        delegate.setPublicKeyComment(super.getPublicKeyComment());
+        delegate.setSshPublicKeyBlob(sshPublicKeyBlob);
+        delegate.setPublicKeyComment(publicKeyComment);
 
         // mirror the setting for sanity
         setPrivateKeyEncrypted(delegate.isPrivateKeyEncrypted());
