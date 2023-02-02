@@ -13,6 +13,8 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
+import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
 
 import java.io.IOException;
@@ -59,7 +61,8 @@ public class KeyExchangeEdDSA
      *                        {@link XDHParameterSpec#X448}
      * @param oid             {@link EdECObjectIdentifiers#id_X25519} or
      *                        {@link EdECObjectIdentifiers#id_X448}
-     * @param keySize         32 or 57
+     * @param keySize         {@link X25519PublicKeyParameters#KEY_SIZE} or
+     *                        {@link X448PublicKeyParameters#KEY_SIZE}
      */
     public KeyExchangeEdDSA(@NonNull final String digestAlgorithm,
                             @NonNull final String xdhCurveName,
