@@ -215,16 +215,10 @@ public class KeyPairTool {
                     keyPair = parser.parse(pem);
                     break;
                 }
-                case "ENCRYPTED PRIVATE KEY": {
-                    keyPair = new KeyPairPKCS8.Builder(config)
-                            .setPrivateKey(pem.getContent(), true)
-                            .build();
-                    break;
-                }
+                case "ENCRYPTED PRIVATE KEY":
                 case "PRIVATE KEY": {
-                    final byte[] content = pem.getContent();
                     keyPair = new KeyPairPKCS8.Builder(config)
-                            .setPrivateKey(content, false)
+                            .setPrivateKey(pem.getContent())
                             .build();
                     break;
                 }
