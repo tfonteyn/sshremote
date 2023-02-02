@@ -49,6 +49,8 @@ import com.hardbacknutter.sshclient.signature.SshSignatureRSA;
 import com.hardbacknutter.sshclient.userauth.UserAuth;
 
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
+import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
 
 import java.io.IOException;
@@ -227,12 +229,16 @@ public final class ImplementationFactory {
 
                 case KeyExchangeConstants.CURVE_25519_SHA_256:
                 case KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG:
-                    return new KeyExchangeEdDSA("SHA-256", XDHParameterSpec.X25519,
-                                                EdECObjectIdentifiers.id_X25519, 32);
+                    return new KeyExchangeEdDSA("SHA-256",
+                                                XDHParameterSpec.X25519,
+                                                EdECObjectIdentifiers.id_X25519,
+                                                X25519PublicKeyParameters.KEY_SIZE);
 
                 case KeyExchangeConstants.CURVE_448_SHA_512:
-                    return new KeyExchangeEdDSA("SHA-512", XDHParameterSpec.X448,
-                                                EdECObjectIdentifiers.id_X448, 57);
+                    return new KeyExchangeEdDSA("SHA-512",
+                                                XDHParameterSpec.X448,
+                                                EdECObjectIdentifiers.id_X448,
+                                                X448PublicKeyParameters.KEY_SIZE);
 
                 case KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_1:
                     return new KeyExchangeDHGroupExchange("SHA-1");
