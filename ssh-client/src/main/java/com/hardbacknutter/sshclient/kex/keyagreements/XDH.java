@@ -7,6 +7,8 @@ import com.hardbacknutter.sshclient.kex.KexProposal;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
+import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
 
 import java.security.GeneralSecurityException;
@@ -27,7 +29,8 @@ public interface XDH {
      *                     {@link XDHParameterSpec#X448}
      * @param oid          {@link EdECObjectIdentifiers#id_X25519} or
      *                     {@link EdECObjectIdentifiers#id_X448}
-     * @param keySize      32 or 57
+     * @param keySize      {@link X25519PublicKeyParameters#KEY_SIZE} or
+     *                     {@link X448PublicKeyParameters#KEY_SIZE}
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
