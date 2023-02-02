@@ -52,33 +52,6 @@ public enum EdKeyType {
     }
 
     @NonNull
-    public static EdKeyType getByCurveName(@NonNull final String curveName)
-            throws NoSuchAlgorithmException {
-        return Arrays.stream(values())
-                     .filter(e -> e.curveName.equalsIgnoreCase(curveName))
-                     .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
-    }
-
-    @NonNull
-    public static EdKeyType getByKeySize(final int keySize)
-            throws NoSuchAlgorithmException {
-        return Arrays.stream(values())
-                     .filter(e -> e.keySize == keySize)
-                     .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
-    }
-
-    @NonNull
-    public static EdKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
-            throws NoSuchAlgorithmException {
-        return Arrays.stream(values())
-                     .filter(e -> e.keyOid.equals(oid))
-                     .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
-    }
-
-    @NonNull
     private static byte[] rotate(@NonNull final byte[] in,
                                  final int keyLength) {
         final int len = in.length;
