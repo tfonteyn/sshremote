@@ -86,8 +86,8 @@ class PuttyReader {
 
         String publicKeyComment = "";
 
-        byte[] prvKey = null;
-        byte[] pubKey = null;
+        byte[] privateKeyBlob = null;
+        byte[] publicKeyBlob = null;
 
         while ((line = reader.readLine()) != null) {
             final String value = line.substring(line.indexOf(':') + 2).trim();
@@ -103,10 +103,10 @@ class PuttyReader {
                 publicKeyComment = value;
 
             } else if (line.startsWith("Public-Lines: ")) {
-                pubKey = parseBase64(reader, line);
+                publicKeyBlob = parseBase64(reader, line);
 
             } else if (line.startsWith("Private-Lines: ")) {
-                prvKey = parseBase64(reader, line);
+                privateKeyBlob = parseBase64(reader, line);
 
             } else if (line.startsWith("Key-Derivation: ")) {
                 argonKeyDerivation = value;
@@ -121,7 +121,7 @@ class PuttyReader {
             }
         }
 
-        if (pubKey == null || prvKey == null) {
+        if (publicKeyBlob == null || privateKeyBlob == null) {
             return null;
         }
 
@@ -145,7 +145,7 @@ class PuttyReader {
             decryptor = null;
         }
 
-        final Buffer buffer = new Buffer(pubKey);
+        final Buffer buffer = new Buffer(publicKeyBlob);
         final String hostKeyAlgorithm = buffer.getJString();
         switch (hostKeyAlgorithm) {
             case HostKeyAlgorithm.SSH_RSA: {
@@ -155,7 +155,7 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
                         .setPublicExponent(publicExponent)
                         .setModulus(modulus)
-                        .setPrivateKey(prvKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
@@ -171,7 +171,7 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
                         .setY(y)
-                        .setPrivateKey(prvKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
@@ -188,26 +188,26 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
                         .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
                         .setPoint(w)
-                        .setPrivateKey(prvKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
-            case HostKeyAlgorithm.SSH_ED25519: {
+            case HostKeyAlgorithm.SSH_ED25519:
+            case HostKeyAlgorithm.SSH_ED448: {
                 final byte[] pubArray = buffer.getString();
 
                 final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
                         .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
                         .setPubArray(pubArray)
-                        .setPrivateKey(prvKey)
+                        .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
-
             }
             default:
                 return null;

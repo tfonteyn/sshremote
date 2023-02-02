@@ -133,7 +133,8 @@ class SshAgentReader {
         // OpenSSH stores private key in first half of string and duplicate copy
         // of public key in second half of string. Hence only copy one half.
         final byte[] prv_array = Arrays.copyOf(buffer.getString(), keySize);
-        // and finally the user comment for the key
+
+        // the user comment for the key
         final String comment = buffer.getJString();
 
         keyPair = new KeyPairEdDSA.Builder(config)
