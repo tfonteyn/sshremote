@@ -36,6 +36,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Objects;
 
 /**
  * The KeyPair implementation for an RSA key pair.
