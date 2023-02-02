@@ -14,10 +14,9 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
+import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -35,11 +34,12 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
+ * Using Bouncy castle; using SunEC requires Java 15
+ *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8032/">
  * RFC 8032 Edwards-Curve Digital Signature Algorithm (EdDSA)</a>
  */
@@ -59,6 +59,7 @@ public class KeyPairEdDSA
     @Nullable
     private byte[] prv_array;
 
+    /** the length will be {@link EdKeyType#keySize}. */
     @Nullable
     private byte[] pub_array;
 
@@ -98,10 +99,10 @@ public class KeyPairEdDSA
 
         pub_array = type.extractPubArray((EdDSAPublicKey) keyPair.getPublic());
 
-        @Nullable final byte[] prvKey = keyPair.getPrivate().getEncoded();
+        @Nullable final byte[] encodedPrivateKeyBlob = keyPair.getPrivate().getEncoded();
         // sanity check for null
-        if (prvKey != null) {
-            parse(prvKey, Vendor.ASN1);
+        if (encodedPrivateKeyBlob != null) {
+            parse(encodedPrivateKeyBlob, Vendor.ASN1);
         }
     }
 
@@ -132,41 +133,22 @@ public class KeyPairEdDSA
         return keyFactory.generatePrivate(keySpec);
     }
 
-    // SunEC, needs Java 15
-    // public static PublicKey generatePublic(@NonNull final EdKeyType edType,
-    //                                           @NonNull final byte[] bytes)
-    //         throws InvalidKeySpecException, NoSuchAlgorithmException,
-    //                NoSuchProviderException {
-    //
-    //     final NamedParameterSpec params = new NamedParameterSpec(edType.curveName);
-    //     final EdECPoint edECPoint = new EdECPoint(bytes);
-    //     final KeySpec keySpec = new XECPublicKeySpec(params, edECPoint.getY());
-    //
-    //     final KeyFactory keyFactory = KeyFactory.getInstance(edType.curveName, "SunEC");
-    //     return keyFactory.generatePublic(keySpec);
-    // }
-
     /**
      * Construct the PublicKey based on the components.
+     *
+     * @param curveName "Ed25519" or "Ed448"
+     * @param rawKey    the {@link EdKeyType#keySize} byte long raw public key data
      *
      * @return key
      */
     @NonNull
-    public static PublicKey generatePublic(@NonNull final EdKeyType edType,
-                                           @NonNull final byte[] bytes)
+    public static PublicKey generatePublic(@NonNull final String curveName,
+                                           @NonNull final byte[] rawKey)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
 
-        // create as an ASN1 object, so we can read the keySpec from it.
-        final SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo(
-                new AlgorithmIdentifier(edType.keyOid), bytes);
-        final KeySpec keySpec;
-        try {
-            keySpec = new X509EncodedKeySpec(keyInfo.getEncoded());
+        final KeySpec keySpec = new RawEncodedKeySpec(rawKey);
 
-        } catch (final IOException e) {
-            throw new InvalidKeySpecException(e);
-        }
-        final KeyFactory keyFactory = KeyFactory.getInstance("EdDSA", "BC");
+        final KeyFactory keyFactory = KeyFactory.getInstance(curveName, "BC");
         return keyFactory.generatePublic(keySpec);
     }
 
@@ -178,7 +160,7 @@ public class KeyPairEdDSA
     }
 
     /**
-     * EdDSA uses the length (32 or 57) of the key.
+     * EdDSA uses the length {@link EdKeyType#keySize} of the key.
      *
      * @return key size in bytes
      */
@@ -212,7 +194,10 @@ public class KeyPairEdDSA
     public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
         super.setSshPublicKeyBlob(publicKeyBlob);
 
-//        pub_array = publicKeyBlob;
+        if (publicKeyBlob != null) {
+            Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+            type.stripPrefix(publicKeyBlob).ifPresent(key -> pub_array = key);
+        }
     }
 
     @Override
@@ -239,16 +224,18 @@ public class KeyPairEdDSA
         final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
         sig.init(algorithm);
 
-        final byte[] tmp = this.getSshPublicKeyBlob();
 
-        if (pub_array == null && tmp != null) {
-            final Buffer buffer = new Buffer(tmp);
+        final byte[] publicKeyBlob = getSshPublicKeyBlob();
+        if (pub_array == null && publicKeyBlob != null) {
+            final Buffer buffer = new Buffer(publicKeyBlob);
             buffer.skipString();
             pub_array = buffer.getString();
         }
 
-        final PublicKey key = generatePublic(type, pub_array);
-        sig.initVerify(key);
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        Objects.requireNonNull(pub_array, "pub_array");
+        final PublicKey publicKey = generatePublic(type.curveName, pub_array);
+        sig.initVerify(publicKey);
         return sig;
     }
 
@@ -311,7 +298,6 @@ public class KeyPairEdDSA
                     prv_array = Arrays.copyOf(tmp, type.keySize);
 
                     setPublicKeyComment(buffer.getJString());
-
                     break;
                 }
 
@@ -320,29 +306,7 @@ public class KeyPairEdDSA
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
                         root = ASN1OctetString.getInstance(stream.readObject());
                     }
-
-                    if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                        config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairEdDSA#parse ~~~\n" +
-                                ASN1Dump.dumpAsString(root, true));
-                    }
                     prv_array = root.getOctets();
-
-//                    final KeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
-//                    final KeyFactory kf = KeyFactory.getInstance("EdDSA", "BC");
-//                    final EdDSAPrivateKey prvKey = (EdDSAPrivateKey) kf.generatePrivate(keySpec);
-//                    // How do we get the byte array from prvKey ??
-//
-//                    //noinspection ConstantConditions
-//                    pub_array = type.extractPubArray(prvKey.getPublicKey());
-//
-//                    final PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(root);
-//                    final byte[] privateKey = privateKeyInfo.getPrivateKey().getOctets();
-//
-//                    // TODO: is this really the correct/best way to do this ??
-//                    // remove the tag + length byte
-//                    // JDK 15 version of the Ed private key provides a getBytes() method.
-//                    prv_array = new byte[type.keySize];
-//                    System.arraycopy(privateKey, 2, prv_array, 0, type.keySize);
                     break;
                 }
                 default:
@@ -400,15 +364,36 @@ public class KeyPairEdDSA
             return this;
         }
 
+        /**
+         * Set the raw 32 byte private key blob.
+         *
+         * @throws InvalidKeyException if the length was not 32
+         */
         @NonNull
-        public Builder setPrvArray(@NonNull final byte[] prv_array) {
-            this.prv_array = prv_array;
+        public Builder setPrvArray(@NonNull final byte[] bytes) throws InvalidKeyException {
+            Objects.requireNonNull(type, "Set type first");
+            if (bytes.length != type.keySize) {
+                throw new InvalidKeyException("prv_array length must be " + type.keySize
+                                                      + ", but was " + bytes.length);
+            }
+
+            this.prv_array = bytes;
             return this;
         }
 
+        /**
+         * Set the raw 32 byte public key blob.
+         *
+         * @throws InvalidKeyException if the length was not 32
+         */
         @NonNull
-        public Builder setPubArray(@NonNull final byte[] pub_array) {
-            this.pub_array = pub_array;
+        public Builder setPubArray(@NonNull final byte[] bytes) throws InvalidKeyException {
+            Objects.requireNonNull(type, "Set type first");
+            if (bytes.length != type.keySize) {
+                throw new InvalidKeyException("pub_array length must be " + type.keySize
+                                                      + ", but was " + bytes.length);
+            }
+            this.pub_array = bytes;
             return this;
         }
 
