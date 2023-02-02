@@ -39,7 +39,7 @@ public final class KeyPairOpenSSHv1
     private KeyPairOpenSSHv1(@NonNull final SshClientConfig config,
                              @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+        super(config, builder.privateKeyBlob, Vendor.OPENSSH_V1,
               builder.decryptor != null, builder.decryptor);
 
         this.kdfName = Objects.requireNonNull(builder.kdfName, "kdfName is null");
@@ -155,7 +155,6 @@ public final class KeyPairOpenSSHv1
 
         @Nullable
         private byte[] publicKeyBlob;
-        private final Vendor privateKeyFormat = Vendor.OPENSSH_V1;
         private byte[] privateKeyBlob;
         @Nullable
         private PKDecryptor decryptor;
@@ -236,7 +235,7 @@ public final class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.SSH_RSA:
                     keyPair = new KeyPairRSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(privateKeyFormat)
+                            .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
                     break;
@@ -244,7 +243,7 @@ public final class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.SSH_DSS:
                     keyPair = new KeyPairDSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(privateKeyFormat)
+                            .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
                     break;
@@ -254,7 +253,7 @@ public final class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
                     keyPair = new KeyPairECDSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(privateKeyFormat)
+                            .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyType))
                             .build();
@@ -264,7 +263,7 @@ public final class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.SSH_ED448:
                     keyPair = new KeyPairEdDSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(privateKeyFormat)
+                            .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyType))
                             .build();
