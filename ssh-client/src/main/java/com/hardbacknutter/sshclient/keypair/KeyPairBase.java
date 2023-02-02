@@ -134,6 +134,12 @@ public abstract class KeyPairBase
         return publicKeyBlob;
     }
 
+    /**
+     * Store the public key blob as-as.
+     * Child classes should decode as needed.
+     *
+     * @param publicKeyBlob to set/decode
+     */
     public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
         this.publicKeyBlob = publicKeyBlob;
     }

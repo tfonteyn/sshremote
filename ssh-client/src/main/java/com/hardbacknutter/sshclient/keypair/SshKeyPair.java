@@ -35,6 +35,12 @@ public interface SshKeyPair {
     byte[] getSshPublicKeyBlob()
             throws GeneralSecurityException;
 
+    /**
+     * 1. Store the public key blob as-is.
+     * 2. Decode the blob into the components.
+     *
+     * @param publicKeyBlob to set/decode
+     */
     void setSshPublicKeyBlob(@Nullable byte[] publicKeyBlob);
 
     /**

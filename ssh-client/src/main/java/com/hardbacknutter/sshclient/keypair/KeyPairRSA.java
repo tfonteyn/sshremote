@@ -201,13 +201,16 @@ public class KeyPairRSA
     public byte[] getSshPublicKeyBlob()
             throws GeneralSecurityException {
         final byte[] keyBlob = super.getSshPublicKeyBlob();
+        // If we have a pre-build encoded public key, use it.
         if (keyBlob != null) {
             return keyBlob;
         }
 
+        // Do we have what we need to construct the encoded public key?
         if (publicExponent == null || modulus == null) {
             return null;
         }
+
         return wrapPublicKey(serverHostKeyAlgorithm.getBytes(StandardCharsets.UTF_8),
                              publicExponent.toByteArray(),
                              modulus.toByteArray());

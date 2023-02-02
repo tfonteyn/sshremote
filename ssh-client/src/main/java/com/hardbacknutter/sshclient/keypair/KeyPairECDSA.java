@@ -176,14 +176,17 @@ public class KeyPairECDSA
     public byte[] getSshPublicKeyBlob()
             throws GeneralSecurityException {
         final byte[] keyBlob = super.getSshPublicKeyBlob();
+        // If we have a pre-build encoded public key, use it.
         if (keyBlob != null) {
             return keyBlob;
         }
 
+        // Do we have what we need to construct the encoded public key?
         if (w == null) {
             return null;
         }
 
+        // sanity check for the type.
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
         return wrapPublicKey(type.hostKeyAlgorithm.getBytes(StandardCharsets.UTF_8),
                              type.nistName.getBytes(StandardCharsets.UTF_8),
