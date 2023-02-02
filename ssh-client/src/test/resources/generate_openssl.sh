@@ -1,8 +1,9 @@
 #!/bin/bash
 
-cd ./openssl || exit
-
 export PASSWORD=secret
+
+mkdir -p openssl
+cd ./openssl || exit
 
 openssl dsaparam -out dsa.param 2048
 
@@ -88,6 +89,4 @@ openssl pkey -in ed448_enc.pem -pubout -out ed448_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in ed448_enc.pem -out ed448_enc.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in ed448_enc.pem -scrypt -out ed448_scrypt.pkcs8
 
-
-
-
+cd ..

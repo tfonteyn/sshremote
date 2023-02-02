@@ -1,8 +1,9 @@
 #!/bin/bash
 
-cd ./opensshv1 || exit
-
 export PASSWORD=secret
+
+mkdir -p opensshv1
+cd ./opensshv1 || exit
 
 ssh-keygen -t dsa -f dsa -N "" -C "ssh-keygen dsa"
 ssh-keygen -l -f dsa.pub | awk '{print $2}' | sed 's|SHA256:||' | tee dsa.pub.fp_sha256
@@ -34,8 +35,10 @@ ssh-keygen -l -f ed25519.pub | awk '{print $2}' | sed 's|SHA256:||' | tee ed2551
 ssh-keygen -t ed25519 -f ed25519_enc  -N "$PASSWORD" -C "ssh-keygen ed25519_enc"
 ssh-keygen -l -f ed25519_enc.pub | awk '{print $2}' | sed 's|SHA256:||' | tee ed25519_enc.pub.fp_sha256
 
+cd ..
 
-cd ../legacy || exit
+mkdir -p legacy
+cd ./legacy || exit
 
 ssh-keygen -t dsa -f dsa -N "" -C "ssh-keygen dsa" -m PEM
 ssh-keygen -l -f dsa.pub | awk '{print $2}' | sed 's|SHA256:||' | tee dsa.pub.fp_sha256
