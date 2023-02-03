@@ -117,17 +117,15 @@ public final class KeyPairOpenSSHv1
             throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
         }
 
-        // now we have the decrypted key and can thus determine the real type
-        final String hostKeyType = getHostKeyType(plainKey);
-
         // Take a copy of these BEFORE we create the delegate.
         // We'll set them on the delegate after its creation
         final byte[] sshPublicKeyBlob = getSshPublicKeyBlob();
         final String publicKeyComment = getPublicKeyComment();
 
-        // Use the builder again, this time with an unencrypted key.
+        // Use the builder again, this time with an unencrypted key
+        // and the type derived from that key
         delegate = (KeyPairBase) new Builder(config)
-                .setHostKeyType(hostKeyType)
+                .setHostKeyType(getHostKeyType(plainKey))
                 .setPrivateKey(plainKey)
                 .build();
 
