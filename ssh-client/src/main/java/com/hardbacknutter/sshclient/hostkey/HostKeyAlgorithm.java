@@ -50,10 +50,6 @@ public final class HostKeyAlgorithm {
      * @see com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1
      */
     public static final String __OPENSSH_V1__ = "__OPENSSH_V1__";
-    /**
-     * This is a wrapper around the 'real' KeyPair.
-     */
-    public static final String __PKCS8__ = "__PKCS8__";
 
     /**
      * All host key algorithm's that can be used for KEX.
@@ -66,8 +62,7 @@ public final class HostKeyAlgorithm {
             SSH_ECDSA_SHA2_NISTP521,
             SSH_ED25519,
             SSH_ED448,
-            __OPENSSH_V1__,
-            __PKCS8__};
+            __OPENSSH_V1__};
 
     private HostKeyAlgorithm() {
     }
