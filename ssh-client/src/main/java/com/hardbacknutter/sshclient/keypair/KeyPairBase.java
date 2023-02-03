@@ -201,14 +201,13 @@ public abstract class KeyPairBase
     final void parse()
             throws GeneralSecurityException {
         if (privateKeyBlob != null && privateKeyFormat != null) {
-            parse(privateKeyBlob, privateKeyFormat);
+            parsePrivateKey(privateKeyBlob, privateKeyFormat);
         }
     }
 
     /**
-     * TRY to parse the <strong>unencrypted</strong> but encoded key blob.
-     * This blob will normally always have the private key information,
-     * and for some formats also the public key data.
+     * TRY to parse the <strong>unencrypted</strong> but encoded private key blob.
+     * Some formats include the public key data.
      * <p>
      * The data must be in some format that the implementation can parse.
      * <p>
@@ -222,8 +221,8 @@ public abstract class KeyPairBase
      *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
-    abstract void parse(@NonNull byte[] encodedKey,
-                        @NonNull final Vendor keyFormat)
+    abstract void parsePrivateKey(@NonNull byte[] encodedKey,
+                                  @NonNull final Vendor keyFormat)
             throws GeneralSecurityException;
 
     /**
@@ -268,7 +267,7 @@ public abstract class KeyPairBase
 
         // Decrypt went fine, but if for example the passphrase was incorrect,
         // then the plain key would be garbage hence the next step is to parse it.
-        parse(plainKey, privateKeyFormat);
+        parsePrivateKey(plainKey, privateKeyFormat);
 
         if (privateKeyEncrypted) {
             return false;

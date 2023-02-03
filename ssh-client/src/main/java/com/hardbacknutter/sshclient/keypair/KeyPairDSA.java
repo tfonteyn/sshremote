@@ -260,8 +260,8 @@ public class KeyPairDSA
     }
 
     @Override
-    void parse(@NonNull final byte[] encodedKey,
-               @NonNull final Vendor keyFormat)
+    void parsePrivateKey(@NonNull final byte[] encodedKey,
+                         @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
         try {
@@ -309,12 +309,14 @@ public class KeyPairDSA
                     //     Integer(12058...     ==> x
                     final ASN1Sequence root;
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        // There is no BC DSAPrivateKey ?? we must decode manually
                         root = ASN1Sequence.getInstance(stream.readObject());
                     }
 
                     if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                        config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairDSA#parse ~~~\n" +
-                                ASN1Dump.dumpAsString(root, true));
+                        config.getLogger()
+                              .log(Logger.DEBUG, () -> "~~~ KeyPairDSA#parsePrivateKey ~~~\n" +
+                                      ASN1Dump.dumpAsString(root, true));
                     }
 
                     p = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
@@ -326,7 +328,7 @@ public class KeyPairDSA
                     break;
                 }
                 default:
-                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
+                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error

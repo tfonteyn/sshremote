@@ -19,7 +19,6 @@ import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -102,7 +101,7 @@ public class KeyPairEdDSA
         @Nullable final byte[] encodedPrivateKeyBlob = keyPair.getPrivate().getEncoded();
         // sanity check for null
         if (encodedPrivateKeyBlob != null) {
-            parse(encodedPrivateKeyBlob, Vendor.ASN1);
+            parsePrivateKey(encodedPrivateKeyBlob, Vendor.ASN1);
         }
     }
 
@@ -265,8 +264,8 @@ public class KeyPairEdDSA
     }
 
     @Override
-    void parse(@NonNull final byte[] encodedKey,
-               @NonNull final Vendor keyFormat)
+    void parsePrivateKey(@NonNull final byte[] encodedKey,
+                         @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
         try {
@@ -310,7 +309,7 @@ public class KeyPairEdDSA
                     break;
                 }
                 default:
-                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
+                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
 
             }
         } catch (@NonNull final GeneralSecurityException e) {

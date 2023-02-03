@@ -15,14 +15,13 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 
 /**
  * A PKCS#8 KeyPair is a wrapper containing the actual KeyPair as {@link #delegate}.
  * <p>
- * The type / {@link #delegate} is available after a {@link #parse} when constructing.
+ * The type / {@link #delegate} is available after a {@link #parsePrivateKey} when constructing.
  * Decrypting passphrase protected keys is as normal with {@link #decryptPrivateKey(byte[])}.
  * <p>
  * Keys are usually created with:
@@ -62,12 +61,12 @@ public final class KeyPairPKCS8
     }
 
     @Override
-    void parse(@NonNull final byte[] encodedKey,
-               @NonNull final Vendor keyFormat)
+    void parsePrivateKey(@NonNull final byte[] encodedKey,
+                         @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
         if (delegate != null) {
-            delegate.parse(encodedKey, keyFormat);
+            delegate.parsePrivateKey(encodedKey, keyFormat);
             return;
         }
 
@@ -83,8 +82,9 @@ public final class KeyPairPKCS8
                 root = ASN1Sequence.getInstance(stream.readObject());
             }
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> "~~~ KeyPairPKCS8#parse ~~~\n" +
-                        ASN1Dump.dumpAsString(root, true));
+                config.getLogger()
+                      .log(Logger.DEBUG, () -> "~~~ KeyPairPKCS8#parsePrivateKey ~~~\n" +
+                              ASN1Dump.dumpAsString(root, true));
             }
 
             // DSA
@@ -207,7 +207,7 @@ public final class KeyPairPKCS8
                         .build();
 
             } else {
-                throw new UnsupportedEncodingException("Unsupported prvKeyAlgOID: " + prvKeyAlgOID);
+                throw new UnsupportedAlgorithmException(String.valueOf(prvKeyAlgOID));
             }
 
             // now set the previously store key/comment

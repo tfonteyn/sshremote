@@ -18,7 +18,6 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -299,8 +298,8 @@ public class KeyPairRSA
     }
 
     @Override
-    void parse(@NonNull final byte[] encodedKey,
-               @NonNull final Vendor keyFormat)
+    void parsePrivateKey(@NonNull final byte[] encodedKey,
+                         @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
         try {
@@ -356,7 +355,7 @@ public class KeyPairRSA
                     break;
                 }
                 default:
-                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
+                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
 
             }
         } catch (@NonNull final GeneralSecurityException e) {

@@ -15,7 +15,6 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.sec.ECPrivateKey;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
@@ -268,8 +267,8 @@ public class KeyPairECDSA
     }
 
     @Override
-    void parse(@NonNull final byte[] encodedKey,
-               @NonNull final Vendor keyFormat)
+    void parsePrivateKey(@NonNull final byte[] encodedKey,
+                         @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
 
         try {
@@ -311,7 +310,7 @@ public class KeyPairECDSA
                     break;
                 }
                 default:
-                    throw new UnsupportedEncodingException(String.valueOf(keyFormat));
+                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
 
             }
         } catch (@NonNull final GeneralSecurityException e) {

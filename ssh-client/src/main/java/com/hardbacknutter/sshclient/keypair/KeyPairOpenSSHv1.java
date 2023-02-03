@@ -74,11 +74,11 @@ public final class KeyPairOpenSSHv1
     }
 
     @Override
-    void parse(@NonNull final byte[] encodedKey,
-               @NonNull final Vendor keyFormat)
+    void parsePrivateKey(@NonNull final byte[] encodedKey,
+                         @NonNull final Vendor keyFormat)
             throws GeneralSecurityException {
         if (delegate != null) {
-            delegate.parse(encodedKey, keyFormat);
+            delegate.parsePrivateKey(encodedKey, keyFormat);
         }
         //nothing to parse until the key is decrypted.
     }
@@ -111,7 +111,7 @@ public final class KeyPairOpenSSHv1
 
             plainKey = decrypt(passphrase);
             // We MUST try parsing first to determine if it decrypted ok, or not!
-            parse(plainKey, Vendor.OPENSSH_V1);
+            parsePrivateKey(plainKey, Vendor.OPENSSH_V1);
 
         } else {
             throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
