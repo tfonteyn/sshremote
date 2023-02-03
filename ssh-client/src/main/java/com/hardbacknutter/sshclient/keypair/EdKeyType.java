@@ -67,6 +67,15 @@ public enum EdKeyType {
     }
 
     @NonNull
+    public static EdKeyType getByCurveName(@NonNull final String curveName)
+            throws NoSuchAlgorithmException {
+        return Arrays.stream(values())
+                     .filter(e -> e.curveName.equalsIgnoreCase(curveName))
+                     .findFirst()
+                     .orElseThrow(NoSuchAlgorithmException::new);
+    }
+
+    @NonNull
     private static byte[] rotate(@NonNull final byte[] in,
                                  final int keyLength) {
         final int len = in.length;

@@ -7,9 +7,9 @@ package com.hardbacknutter.sshclient.keypair;
 public enum Vendor {
 
     RAW,
-    /** PKCS#8 format. */
-    PKCS8,
 
+    /** PKCS#8 format. Used as a place holder only. */
+    PKCS8,
 
     ASN1,
 

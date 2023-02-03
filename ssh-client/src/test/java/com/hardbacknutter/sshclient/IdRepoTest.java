@@ -7,7 +7,7 @@ import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityRepository;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
+import com.hardbacknutter.sshclient.keypair.util.KeyPairParser;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,11 +31,11 @@ class IdRepoTest
     void repo()
             throws GeneralSecurityException, IOException {
 
-        final KeyPairTool keyPairTool = new KeyPairTool(sshClient.getConfig());
-        final SshKeyPair p1 = keyPairTool.load(Constants.RESOURCES + "legacy/rsa",
-                                               Constants.RESOURCES + "legacy/rsa.pub");
-        final SshKeyPair p2 = keyPairTool.load(Constants.RESOURCES + "legacy/rsa_enc",
-                                               Constants.RESOURCES + "legacy/rsa_enc.pub");
+        final KeyPairParser keyPairParser = new KeyPairParser(sshClient.getConfig());
+        final SshKeyPair p1 = keyPairParser.parse(Constants.RESOURCES + "legacy/rsa",
+                                                  Constants.RESOURCES + "legacy/rsa.pub");
+        final SshKeyPair p2 = keyPairParser.parse(Constants.RESOURCES + "legacy/rsa_enc",
+                                                  Constants.RESOURCES + "legacy/rsa_enc.pub");
 
         final IdentityRepository identityRepository = sshClient.getIdentityRepository();
 

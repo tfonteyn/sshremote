@@ -4,12 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.EdKeyType;
-import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
-import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 
 import org.bouncycastle.util.io.pem.PemObject;
@@ -25,15 +20,12 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Locale;
 
 /**
- * Provides {@link #generateKeyPair(String, int)} to generate keys
- * and a set of methods to {@link #load} keys from files, {@code byte[]} or {@link Reader}s.
+ * Provides a set of methods to {@link #parse} keys from files, {@code byte[]} or {@link Reader}s.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class KeyPairTool {
+public class KeyPairParser {
 
     private static final String INVALID_FORMAT = "Invalid format";
     private static final String UNSUPPORTED_TYPE_X = "Unsupported type: ";
@@ -43,42 +35,8 @@ public class KeyPairTool {
     /**
      * Constructor.
      */
-    public KeyPairTool(@NonNull final SshClientConfig config) {
+    public KeyPairParser(@NonNull final SshClientConfig config) {
         this.config = config;
-    }
-
-    /**
-     * Creates a new key pair.
-     *
-     * @param keyType dsa | ecdsa | ed25519 | ed448 | rsa
-     * @param keySize the size of the keys, in bits. Must be suitable to the type.
-     *                Ignored for ed25519 | ed448
-     *
-     * @return the new key pair.
-     */
-    @NonNull
-    public SshKeyPair generateKeyPair(@NonNull final String keyType,
-                                      final int keySize)
-            throws GeneralSecurityException {
-        switch (keyType.toLowerCase(Locale.ENGLISH)) {
-            case "rsa":
-                return new KeyPairRSA(config, keySize);
-
-            case "dsa":
-                return new KeyPairDSA(config, keySize);
-
-            case "ecdsa":
-                return new KeyPairECDSA(config, keySize);
-
-            case "ed25519":
-                return new KeyPairEdDSA(config, EdKeyType.Ed25519);
-
-            case "ed448":
-                return new KeyPairEdDSA(config, EdKeyType.Ed448);
-
-            default:
-                throw new InvalidKeySpecException(UNSUPPORTED_TYPE_X + keyType);
-        }
     }
 
     /**
@@ -92,13 +50,13 @@ public class KeyPairTool {
      * @return the new KeyPair.
      */
     @NonNull
-    public SshKeyPair load(@NonNull final String privateKeyFilename)
+    public SshKeyPair parse(@NonNull final String privateKeyFilename)
             throws IOException, GeneralSecurityException {
         String publicKeyFilename = privateKeyFilename + ".pub";
         if (!new File(publicKeyFilename).exists()) {
             publicKeyFilename = null;
         }
-        return load(privateKeyFilename, publicKeyFilename);
+        return parse(privateKeyFilename, publicKeyFilename);
     }
 
     /**
@@ -113,8 +71,8 @@ public class KeyPairTool {
      * @return the new KeyPair.
      */
     @NonNull
-    public SshKeyPair load(@NonNull final String privateKeyFilename,
-                           @Nullable final String publicKeyFilename)
+    public SshKeyPair parse(@NonNull final String privateKeyFilename,
+                            @Nullable final String publicKeyFilename)
             throws IOException, GeneralSecurityException {
 
         //TODO: Android API 26 limitation
@@ -134,7 +92,7 @@ public class KeyPairTool {
             pubKeyReader = null;
         }
 
-        return load(prvKeyReader, pubKeyReader);
+        return parse(prvKeyReader, pubKeyReader);
     }
 
     /**
@@ -149,8 +107,8 @@ public class KeyPairTool {
      * @return the new KeyPair.
      */
     @NonNull
-    public SshKeyPair load(@NonNull final byte[] prvKey,
-                           @Nullable final byte[] pubKey)
+    public SshKeyPair parse(@NonNull final byte[] prvKey,
+                            @Nullable final byte[] pubKey)
             throws IOException, GeneralSecurityException {
 
         // Check for binary format key from "ssh-add" command on the remote.
@@ -167,7 +125,7 @@ public class KeyPairTool {
                                         StandardCharsets.UTF_8)
                 : null;
 
-        return load(prvKeyReader, pubKeyReader);
+        return parse(prvKeyReader, pubKeyReader);
     }
 
     /**
@@ -180,8 +138,8 @@ public class KeyPairTool {
      *                             is not supported
      */
     @NonNull
-    public SshKeyPair load(@NonNull final Reader privateKeyReader,
-                           @Nullable final Reader publicKeyReader)
+    public SshKeyPair parse(@NonNull final Reader privateKeyReader,
+                            @Nullable final Reader publicKeyReader)
             throws IOException, GeneralSecurityException {
 
         final BufferedReader prvKeyReader = new BufferedReader(privateKeyReader);

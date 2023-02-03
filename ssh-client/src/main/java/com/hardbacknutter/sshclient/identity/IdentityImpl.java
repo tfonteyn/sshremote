@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
+import com.hardbacknutter.sshclient.keypair.util.KeyPairParser;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -41,8 +41,8 @@ public final class IdentityImpl
                                      @Nullable final String pubKeyFilename)
             throws IOException, GeneralSecurityException {
 
-        final KeyPairTool keyPairTool = new KeyPairTool(config);
-        final SshKeyPair keyPair = keyPairTool.load(prvKeyFilename, pubKeyFilename);
+        final KeyPairParser keyPairParser = new KeyPairParser(config);
+        final SshKeyPair keyPair = keyPairParser.parse(prvKeyFilename, pubKeyFilename);
         return new IdentityImpl(config, prvKeyFilename, keyPair);
     }
 
@@ -57,8 +57,8 @@ public final class IdentityImpl
                                        @Nullable final byte[] pubKey)
             throws IOException, GeneralSecurityException {
 
-        final KeyPairTool keyPairTool = new KeyPairTool(config);
-        final SshKeyPair keyPair = keyPairTool.load(prvKey, pubKey);
+        final KeyPairParser keyPairParser = new KeyPairParser(config);
+        final SshKeyPair keyPair = keyPairParser.parse(prvKey, pubKey);
         return new IdentityImpl(config, name, keyPair);
     }
 

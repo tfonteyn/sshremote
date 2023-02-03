@@ -8,7 +8,7 @@ import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgJLogger;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
+import com.hardbacknutter.sshclient.keypair.util.KeyPairGen;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,7 +52,7 @@ class GenerateKeyPairTest {
             throws GeneralSecurityException, IOException {
         final byte[] text = Constants.getTextBytes();
 
-        final KeyPairTool keyPairGen = new KeyPairTool(SSH_CLIENT.getConfig());
+        final KeyPairGen keyPairGen = new KeyPairGen(SSH_CLIENT.getConfig());
         final SshKeyPair keyPair = keyPairGen.generateKeyPair(keyType, keySize);
 
         final String hostKeyAlgorithm = keyPair.getHostKeyAlgorithm();

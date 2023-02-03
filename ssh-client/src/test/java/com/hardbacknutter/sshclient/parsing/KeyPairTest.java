@@ -11,7 +11,7 @@ import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgJLogger;
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.util.KeyPairTool;
+import com.hardbacknutter.sshclient.keypair.util.KeyPairParser;
 import com.hardbacknutter.sshclient.keypair.util.KeyPairWriter;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 
@@ -168,8 +168,8 @@ class KeyPairTest {
                 ? new File(Constants.RESOURCES + pub).getAbsolutePath()
                 : null;
 
-        final KeyPairTool keyPairTool = new KeyPairTool(SSH_CLIENT.getConfig());
-        final SshKeyPair keyPair = keyPairTool.load(prvPath, pubPath);
+        final KeyPairParser keyPairParser = new KeyPairParser(SSH_CLIENT.getConfig());
+        final SshKeyPair keyPair = keyPairParser.parse(prvPath, pubPath);
         assertNotNull(keyPair);
 
         final byte[] pp = password != null ? password.getBytes(StandardCharsets.UTF_8) : null;

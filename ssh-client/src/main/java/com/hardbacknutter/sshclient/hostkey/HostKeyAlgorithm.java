@@ -52,8 +52,6 @@ public final class HostKeyAlgorithm {
     public static final String __OPENSSH_V1__ = "__OPENSSH_V1__";
     /**
      * This is a wrapper around the 'real' KeyPair.
-     *
-     * @see com.hardbacknutter.sshclient.keypair.KeyPairPKCS8
      */
     public static final String __PKCS8__ = "__PKCS8__";
 

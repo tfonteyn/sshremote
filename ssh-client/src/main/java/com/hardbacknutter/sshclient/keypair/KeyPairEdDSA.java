@@ -84,14 +84,14 @@ public class KeyPairEdDSA
     /**
      * Generate a <strong>new</strong> KeyPair with the given curve.
      *
-     * @param type {@link EdKeyType}
+     * @param curveName "Ed25519" or "Ed448"
      */
     public KeyPairEdDSA(@NonNull final SshClientConfig config,
-                        @NonNull final EdKeyType type)
+                        @NonNull final String curveName)
             throws GeneralSecurityException {
         super(config);
 
-        this.type = type;
+        this.type = EdKeyType.getByCurveName(curveName);
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator
                 .getInstance(type.curveName, "BC");
