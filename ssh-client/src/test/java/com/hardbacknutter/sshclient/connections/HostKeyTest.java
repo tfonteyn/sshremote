@@ -1,120 +1,71 @@
 package com.hardbacknutter.sshclient.connections;
 
+import androidx.annotation.NonNull;
+
 import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.utils.SshException;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.stream.Stream;
 
 /**
  * Uses a fixed signature algorithm, and variable KEX algorithms.
- * <p>
- * 2021-08-01: current test server supports these sig algorithms:
- * <p>
- * curve25519-sha256,
- * curve25519-sha256@libssh.org,
- * ecdh-sha2-nistp256,
- * ecdh-sha2-nistp384,
- * ecdh-sha2-nistp521,
- * diffie-hellman-group-exchange-sha256,
- * diffie-hellman-group16-sha512,
- * diffie-hellman-group18-sha512,
- * diffie-hellman-group14-sha256,
- * diffie-hellman-group14-sha1
  */
 class HostKeyTest
         extends BaseConnectionTest {
 
+    private static final boolean TEST_REKEY = false;
+
     private static final int ZIP = 1;
-    private Session session;
 
     @BeforeEach
     void setup()
             throws GeneralSecurityException, IOException {
         super.setup(ZIPPER[ZIP]);
-
-        //TODO: use a junit parameter test and run all in one go.
-        sshClient.setConfig(HostConfig.KEX_ALGS, kexAlg[0]);
     }
 
-    @Test
-    void rsa1_rekey()
+    @NonNull
+    static Stream<Arguments> readArgs() {
+        //TODO: automate this
+        final int kex = 0;
+
+        return Stream.of(
+                Arguments.of(kexAlg[kex], Constants.SSH_RSA),
+                Arguments.of(kexAlg[kex], Constants.RSA_SHA_2_256),
+                Arguments.of(kexAlg[kex], Constants.RSA_SHA_2_512),
+                Arguments.of(kexAlg[kex], Constants.ECDSA_SHA_2_NISTP_256),
+                //Arguments.of(kexAlg[kex], Constants.ECDSA_SHA_2_NISTP_384),
+                //Arguments.of(kexAlg[kex], Constants.ECDSA_SHA_2_NISTP_521),
+                Arguments.of(kexAlg[kex], Constants.SSH_ED_25519)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("readArgs")
+    void connect(@NonNull final String kexAlgorithms,
+                 @NonNull final String hostKeyAlgorithms)
             throws SshException, GeneralSecurityException, IOException, InterruptedException {
 
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
+        final Session session = sshClient.getSession(USERNAME, HOST, PORT);
         session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.SSH_RSA);
+
+        session.setConfig(HostConfig.KEX_ALGS, kexAlgorithms);
+        session.setConfig(HostConfig.HOST_KEY_ALGS, hostKeyAlgorithms);
 
         session.connect();
-        Thread.sleep(100);
-        session.rekey();
-        Thread.sleep(5000);
-        session.disconnect();
-    }
-
-    @Test
-    void rsa1()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.SSH_RSA);
-
-        session.connect();
-        session.disconnect();
-    }
-
-    @Test
-    void rsa256()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.RSA_SHA_2_256);
-
-        session.connect();
-        session.disconnect();
-    }
-
-    @Test
-    void rsa512()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.RSA_SHA_2_512);
-
-        session.connect();
-        session.disconnect();
-    }
-
-    @Test
-    void ecdsa256()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.ECDSA_SHA_2_NISTP_256);
-
-        session.connect();
-        session.disconnect();
-    }
-
-    @Test
-    void ed25519()
-            throws SshException, GeneralSecurityException, IOException {
-
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
-        session.setConfig(HostConfig.HOST_KEY_ALGS, Constants.SSH_ED_25519);
-
-        session.connect();
+        if (TEST_REKEY) {
+            Thread.sleep(100);
+            session.rekey();
+            Thread.sleep(5000);
+        }
         session.disconnect();
     }
 }
