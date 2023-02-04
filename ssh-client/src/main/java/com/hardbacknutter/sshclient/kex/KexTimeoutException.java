@@ -1,7 +1,5 @@
 package com.hardbacknutter.sshclient.kex;
 
-import androidx.annotation.NonNull;
-
 public class KexTimeoutException
         extends KexException {
 
@@ -10,9 +8,5 @@ public class KexTimeoutException
 
     public KexTimeoutException() {
         super(TIMEOUT);
-    }
-
-    public KexTimeoutException(@NonNull final String message) {
-        super(message);
     }
 }

@@ -87,7 +87,9 @@ public class KexProposal {
     private final List<String> compression_s2c;
     private final List<String> language_c2s;
     private final List<String> language_s2c;
+    @SuppressWarnings("FieldNotUsedInToString")
     private final SshClientConfig config;
+    @SuppressWarnings("FieldNotUsedInToString")
     private final Packet clientPacket;
     private List<String> hostKeyAlgorithms;
 
@@ -223,13 +225,13 @@ public class KexProposal {
      *
      * @return the agreed upon value
      *
-     * @throws KexException if no agreement can be found
+     * @throws KexNegotiationException if no agreement can be found
      */
     @NonNull
     private String negotiate(@NonNull final String type,
                              @NonNull final List<String> client,
                              @NonNull final String server)
-            throws KexException {
+            throws KexNegotiationException {
 
         final List<String> serverList = Arrays.asList(server.split(","));
         for (final String clientAlg : client) {
@@ -244,7 +246,7 @@ public class KexProposal {
                             + "|server=" + server);
         }
 
-        throw new KexException("Algorithm negotiation failed: " + type);
+        throw new KexNegotiationException(type, server, client);
     }
 
     /**
@@ -378,6 +380,22 @@ public class KexProposal {
         if (c2s.isEmpty() || s2c.isEmpty()) {
             throw new NoSuchAlgorithmException(errMsg + " algorithms: none available");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "KexProposal{"
+                + "kexAlgorithms=" + kexAlgorithms
+                + ", hostKeyAlgorithms=" + hostKeyAlgorithms
+                + ", ciphers_c2s=" + ciphers_c2s
+                + ", ciphers_s2c=" + ciphers_s2c
+                + ", mac_c2s=" + mac_c2s
+                + ", mac_s2c=" + mac_s2c
+                + ", compression_c2s=" + compression_c2s
+                + ", compression_s2c=" + compression_s2c
+                + ", language_c2s=" + language_c2s
+                + ", language_s2c=" + language_s2c
+                + '}';
     }
 
     /**
