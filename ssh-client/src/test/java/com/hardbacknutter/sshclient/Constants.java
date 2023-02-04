@@ -4,6 +4,43 @@ import java.nio.charset.StandardCharsets;
 
 public final class Constants {
     public static final String PASSWORD = "secret";
+
+    public static final String RESOURCES = "src/test/resources/";
+
+    public static final String KEX_ALG_ECDH_SHA_2_NISTP_256 = "ecdh-sha2-nistp256";
+    public static final String KEX_ALG_ECDH_SHA_2_NISTP_384 = "ecdh-sha2-nistp384";
+    public static final String KEX_ALG_ECDH_SHA_2_NISTP_521 = "ecdh-sha2-nistp521";
+    public static final String KEX_ALG_CURVE_25519_SHA_256 = "curve25519-sha256";
+    public static final String KEX_ALG_CURVE_25519_SHA_256_LIBSSH_ORG = "curve25519-sha256@libssh.org";
+    public static final String KEX_ALG_DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256 = "diffie-hellman-group-exchange-sha256";
+    public static final String KEX_ALG_DIFFIE_HELLMAN_GROUP_16_SHA_512 = "diffie-hellman-group16-sha512";
+    public static final String KEX_ALG_DIFFIE_HELLMAN_GROUP_18_SHA_512 = "diffie-hellman-group18-sha512";
+    public static final String KEX_ALG_DIFFIE_HELLMAN_GROUP_14_SHA_1 = "diffie-hellman-group14-sha1";
+    public static final String KEX_ALG_DIFFIE_HELLMAN_GROUP_14_SHA_256 = "diffie-hellman-group14-sha256";
+
+
+    public static final String SSH_DSS = "ssh-dss";
+    public static final String SSH_RSA = "ssh-rsa";
+    public static final String ECDSA_SHA_2_NISTP_256 = "ecdsa-sha2-nistp256";
+    public static final String ECDSA_SHA_2_NISTP_384 = "ecdsa-sha2-nistp384";
+    public static final String ECDSA_SHA_2_NISTP_521 = "ecdsa-sha2-nistp521";
+    public static final String SSH_ED_25519 = "ssh-ed25519";
+    public static final String SSH_ED_448 = "ssh-ed448";
+    public static final String RSA_SHA_2_512 = "rsa-sha2-512";
+    public static final String RSA_SHA_2_256 = "rsa-sha2-256";
+
+
+    public static final String ENC_ALG_CHACHA_20_POLY_1305_OPENSSH_COM = "chacha20-poly1305@openssh.com";
+    public static final String ENC_ALG_AES_128_CTR = "aes128-ctr";
+    public static final String ENC_ALG_AES_192_CTR = "aes192-ctr";
+    public static final String ENC_ALG_AES_256_CTR = "aes256-ctr";
+    public static final String ENC_ALG_AES_128_GCM_OPENSSH_COM = "aes128-gcm@openssh.com";
+    public static final String ENC_ALG_AES_256_GCM_OPENSSH_COM = "aes256-gcm@openssh.com";
+
+
+    public static final String HMAC_SHA_1 = "hmac-sha1";
+
+
     // Just a random long-ish test.
     private static final String longText =
             "Status of This Memo\n"
@@ -36,16 +73,6 @@ public final class Constants {
                     + "   This document also describes the Diffie-Hellman key exchange method\n"
                     + "   and the minimal set of algorithms that are needed to implement the\n"
                     + "   SSH transport layer protocol.\n";
-    public static final String RESOURCES = "src/test/resources/";
-    public static final String SSH_DSS = "ssh-dss";
-    public static final String SSH_RSA = "ssh-rsa";
-    public static final String ECDSA_SHA_2_NISTP_256 = "ecdsa-sha2-nistp256";
-    public static final String ECDSA_SHA_2_NISTP_384 = "ecdsa-sha2-nistp384";
-    public static final String ECDSA_SHA_2_NISTP_521 = "ecdsa-sha2-nistp521";
-    public static final String SSH_ED_25519 = "ssh-ed25519";
-    public static final String SSH_ED_448 = "ssh-ed448";
-    public static final String RSA_SHA_2_512 = "rsa-sha2-512";
-    public static final String RSA_SHA_2_256 = "rsa-sha2-256";
 
     private Constants() {
     }
