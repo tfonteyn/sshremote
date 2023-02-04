@@ -22,7 +22,7 @@ public class DbgJLogger
     public void log(final int level,
                     @NonNull final Throwable e,
                     @NonNull final Supplier<String> message) {
-        System.out.println("SshClientDbg" + level + ": " + message + "\n");
+        System.out.println("SshClientDbg" + level + ": " + message.get() + "\n");
         //noinspection CallToPrintStackTrace
         e.printStackTrace();
     }
