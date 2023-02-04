@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.List;
 
 /**
  * Test server:
@@ -40,7 +41,7 @@ public class BaseConnectionTest {
     private static final Logger LOGGER = new DbgJLogger();
 
     protected static final String HOST = "172.18.15.121";
-    public static final String USERNAME = "test";
+    protected static final String USERNAME = "test";
     public static final String PASSWORD = "test";
 
     protected static final int PORT = 22;
@@ -49,24 +50,36 @@ public class BaseConnectionTest {
             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
             KexProposal.COMPRESSION_ZLIB
     };
-    static final String[] kexAlg = {
-            "curve25519-sha256",
-            "curve25519-sha256@libssh.org",
-            "ecdh-sha2-nistp256",
-            "ecdh-sha2-nistp384",
-            "ecdh-sha2-nistp521",
-            "diffie-hellman-group-exchange-sha256",
-            "diffie-hellman-group16-sha512",
-            "diffie-hellman-group18-sha512",
-            "diffie-hellman-group14-sha256",
-            "diffie-hellman-group14-sha1"};
-    static final String[] sigAlg = {
+    static final List<String> KEX_ALGS = List.of(
+            Constants.KEX_ALG_CURVE_25519_SHA_256,
+            Constants.KEX_ALG_CURVE_25519_SHA_256_LIBSSH_ORG,
+            Constants.KEX_ALG_ECDH_SHA_2_NISTP_256,
+            Constants.KEX_ALG_ECDH_SHA_2_NISTP_384,
+            Constants.KEX_ALG_ECDH_SHA_2_NISTP_521,
+            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256,
+            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_16_SHA_512,
+            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_18_SHA_512,
+            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_14_SHA_256,
+            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_14_SHA_1);
+    static final List<String> SIG_ALGS = List.of(
             Constants.SSH_RSA,
             Constants.RSA_SHA_2_256,
             Constants.RSA_SHA_2_512,
             Constants.ECDSA_SHA_2_NISTP_256,
-            Constants.SSH_ED_25519
-    };
+            Constants.SSH_ED_25519);
+
+    static final List<String> ENC_ALGS = List.of(
+            Constants.ENC_ALG_CHACHA_20_POLY_1305_OPENSSH_COM,
+            Constants.ENC_ALG_AES_128_CTR,
+            Constants.ENC_ALG_AES_192_CTR,
+            Constants.ENC_ALG_AES_256_CTR,
+            Constants.ENC_ALG_AES_128_GCM_OPENSSH_COM,
+            Constants.ENC_ALG_AES_256_GCM_OPENSSH_COM
+    );
+
+    static final List<String> MACS = List.of(
+            Constants.HMAC_SHA_1
+    );
 
     private static final String KNOWN_HOSTS = "C:/tmp/ssh/known_hosts";
 
@@ -88,32 +101,5 @@ public class BaseConnectionTest {
         new File(KNOWN_HOSTS).createNewFile();
         sshClient.setKnownHosts(KNOWN_HOSTS);
         sshClient.setConfig("StrictHostKeyChecking", "no");
-    }
-
-    private void setupJSch() {
-
-        // Pick ONE SET of TWO lines, comment out the others.
-        // sshClient.setConfig(KexEnv.PROPOSAL_ENC_ALGS_STOC, "chacha20-poly1305@openssh.com");
-        // sshClient.setConfig(KexEnv.PROPOSAL_ENC_ALGS_CTOS, "chacha20-poly1305@openssh.com");
-
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_STOC, "aes128-ctr");
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_CTOS, "aes128-ctr");
-
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_STOC, "aes192-ctr");
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_CTOS, "aes192-ctr");
-        //
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_STOC, "aes256-ctr");
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_CTOS, "aes256-ctr");
-        //
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_STOC, "aes128-gcm@openssh.com");
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_CTOS, "aes128-gcm@openssh.com");
-        //
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_STOC, "aes256-gcm@openssh.com");
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_ENC_ALGS_CTOS, "aes256-gcm@openssh.com");
-
-        // Pick ONE SET of TWO lines, comment out the others.
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_MAC_ALGS_CTOS, "hmac-sha1");
-        // sshClient.setConfig(CryptoEnv.PROPOSAL_MAC_ALGS_STOC, "hmac-sha1");
-
     }
 }
