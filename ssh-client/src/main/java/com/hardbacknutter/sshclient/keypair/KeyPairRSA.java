@@ -311,9 +311,11 @@ public class KeyPairRSA
                 }
 
                 case ASN1: {
-                    final RSAPrivateKey key;
+                    // There are no JCE KeySpec for this format.
+                    final org.bouncycastle.asn1.pkcs.RSAPrivateKey key;
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                        key = RSAPrivateKey.getInstance(stream.readObject());
+                        key = org.bouncycastle.asn1.pkcs.RSAPrivateKey
+                                .getInstance(stream.readObject());
                     }
                     modulus = key.getModulus();
                     publicExponent = key.getPublicExponent();
