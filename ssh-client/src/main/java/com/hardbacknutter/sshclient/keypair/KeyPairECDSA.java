@@ -170,7 +170,8 @@ public class KeyPairECDSA
                 case OPENSSH_V1: {
                     try {
                         final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString();
+                        buffer.skipString(/* HostKeyAlgorithm */);
+                        buffer.skipString(/* nistName */);
                         w = ECKeyType.decodePoint(buffer.getString());
                     } catch (@NonNull final IOException e) {
                         throw new InvalidKeyException(e);
