@@ -9,13 +9,7 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
-import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,6 +26,7 @@ import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -329,31 +324,22 @@ public class KeyPairRSA
                 }
 
                 case PKCS8: {
-                    // Sequence                                         ==> 'root'
-                    //     Integer(0)                                   ==> version
-                    //     Sequence                                     ==> 'subSeq'
-                    //         ObjectIdentifier(1.2.840.113549.1.1.1)   ==> 'prvKeyAlgOID'
-                    //         NULL                                     ==> attributes, none for RSA
-                    //     DER Octet String[1193]                       ==> 'privateKey'
-                    //         308204a50...
-                    final ASN1Sequence root;
-                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                        root = ASN1Sequence.getInstance(stream.readObject());
-                    }
-                    // final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
-                    // final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
-                    final ASN1OctetString privateKeyBlob = ASN1OctetString.getInstance(
-                            root.getObjectAt(2));
-
-                    // final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier.getInstance(
-                    //        subSeq.getObjectAt(0));
-
-                    parsePrivateKey(privateKeyBlob.getOctets(), Vendor.ASN1);
-                    return;
+                    final KeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    final RSAPrivateCrtKey key =
+                            (RSAPrivateCrtKey) keyFactory.generatePrivate(keySpec);
+                    modulus = key.getModulus();
+                    publicExponent = key.getPublicExponent();
+                    privateExponent = key.getPrivateExponent();
+                    p = key.getPrimeP();
+                    q = key.getPrimeQ();
+                    primeEP = key.getPrimeExponentP();
+                    primeEQ = key.getPrimeExponentQ();
+                    coefficient = key.getCrtCoefficient();
+                    break;
                 }
                 default:
                     throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
-
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
