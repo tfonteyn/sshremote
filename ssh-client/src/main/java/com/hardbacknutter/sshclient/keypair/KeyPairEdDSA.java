@@ -189,7 +189,7 @@ public class KeyPairEdDSA
 
         final KeySpec keySpec;
         try {
-            // create as an ASN1 object, so we can read the keySpec from it.
+            // create as an ASN1 object, so we can create the PKCS8 keySpec from it.
             final PrivateKeyInfo keyInfo = new PrivateKeyInfo(
                     new AlgorithmIdentifier(type.keyOid),
                     new DEROctetString(prv_array));
