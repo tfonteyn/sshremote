@@ -36,6 +36,6 @@ public class Buffer
      * @return a NEW (copied) byte array.
      */
     public byte[] getPayload() {
-        return Arrays.copyOfRange(data, 0, writeOffset);
+        return Arrays.copyOfRange(data, 0, getWriteOffset());
     }
 }

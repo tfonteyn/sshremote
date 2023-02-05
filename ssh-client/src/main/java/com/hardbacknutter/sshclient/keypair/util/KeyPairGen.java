@@ -31,9 +31,9 @@ public class KeyPairGen {
     /**
      * Creates a new key pair.
      *
-     * @param keyType dsa | ecdsa | ed25519 | ed448 | rsa
+     * @param keyType ed25519 | ed448 | ecdsa | rsa | dsa
      * @param keySize the size of the keys, in bits. Must be suitable to the type.
-     *                Ignored for ed25519 | ed448
+     *                Ignored for ed25519 | ed448 | dss
      *
      * @return the new key pair.
      */
@@ -46,7 +46,7 @@ public class KeyPairGen {
                 return new KeyPairRSA(config, keySize);
 
             case "dsa":
-                return new KeyPairDSA(config, keySize);
+                return new KeyPairDSA(config);
 
             case "ecdsa":
                 return new KeyPairECDSA(config, keySize);

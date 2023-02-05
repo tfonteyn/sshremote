@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
@@ -88,16 +87,18 @@ class OpenSSHv1Reader {
 
         if (SshCipherConstants.NONE.equals(cipherName)) {
             // not encrypted, the builder will create the real SshKeypair directly
-            builder.setHostKeyType(KeyPairOpenSSHv1.getHostKeyType(privateKeyBlob))
+            builder.setHostKeyAlgorithm(KeyPairOpenSSHv1.getHostKeyAlgorithm(privateKeyBlob))
                    .setPrivateKey(privateKeyBlob);
         } else {
             // The type can only be determined after decryption.
             // Use a deferred decryptor.
             final PKDecryptor decryptor = new DecryptDeferred();
             decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
-            builder.setHostKeyType(HostKeyAlgorithm.__OPENSSH_V1__)
-                   .setPrivateKey(privateKeyBlob)
-                   .setDecryptor(decryptor);
+            // set the fake HostKeyAlgorithm as a flag; we don't know it yet
+            builder
+                    .setHostKeyAlgorithm(KeyPairOpenSSHv1.__OPENSSH_V1__)
+                    .setPrivateKey(privateKeyBlob)
+                    .setDecryptor(decryptor);
         }
 
         return builder.build();

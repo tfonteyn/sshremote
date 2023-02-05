@@ -7,21 +7,21 @@ import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
-import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -40,6 +40,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Objects;
 
+/**
+ * @see <a href="https://www.rfc-editor.org/rfc/rfc5480#appendix-A">rfc5480 ASN.1</a>
+ */
 public class KeyPairDSA
         extends KeyPairBase {
 
@@ -85,20 +88,16 @@ public class KeyPairDSA
 
     /**
      * Generate a <strong>new</strong> KeyPair of the given key size.
-     *
-     * @param keySize the number of bits of the key to be produced.
      */
-    public KeyPairDSA(@NonNull final SshClientConfig config,
-                      final int keySize)
+    public KeyPairDSA(@NonNull final SshClientConfig config)
             throws NoSuchAlgorithmException {
         super(config);
 
-        this.keySize = keySize;
-
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DSA");
-        keyPairGenerator.initialize(keySize);
-        final KeyPair keyPairGen = keyPairGenerator.generateKeyPair();
+        keyPairGenerator.initialize(this.keySize);
 
+        final KeyPair keyPairGen = keyPairGenerator.generateKeyPair();
+        // JCE provides direct access; no need to use getEncoded() + parse()
         final DSAPrivateKey prvKey = (DSAPrivateKey) keyPairGen.getPrivate();
         final DSAPublicKey pubKey = (DSAPublicKey) keyPairGen.getPublic();
 
@@ -112,33 +111,15 @@ public class KeyPairDSA
     }
 
     /**
-     * Construct the PrivateKey based on the components.
-     *
-     * @return key
-     */
-
-    @SuppressWarnings("WeakerAccess")
-    @NonNull
-    public static PrivateKey generatePrivate(@NonNull final BigInteger x,
-                                             @NonNull final BigInteger p,
-                                             @NonNull final BigInteger q,
-                                             @NonNull final BigInteger g)
-            throws InvalidKeySpecException, NoSuchAlgorithmException {
-        final KeySpec keySpec = new DSAPrivateKeySpec(x, p, q, g);
-        final KeyFactory keyFactory = KeyFactory.getInstance("DSA");
-        return keyFactory.generatePrivate(keySpec);
-    }
-
-    /**
      * Construct the PublicKey based on the components.
      *
      * @return key
      */
     @NonNull
-    public static PublicKey generatePublic(@NonNull final BigInteger y,
-                                           @NonNull final BigInteger p,
-                                           @NonNull final BigInteger q,
-                                           @NonNull final BigInteger g)
+    public static PublicKey createPublicKey(@NonNull final BigInteger y,
+                                            @NonNull final BigInteger p,
+                                            @NonNull final BigInteger q,
+                                            @NonNull final BigInteger g)
             throws InvalidKeySpecException, NoSuchAlgorithmException {
         final KeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
         final KeyFactory keyFactory = KeyFactory.getInstance("DSA");
@@ -156,88 +137,117 @@ public class KeyPairDSA
         return keySize;
     }
 
-    @Nullable
+
     @Override
-    public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException {
-        final byte[] keyBlob = super.getSshPublicKeyBlob();
-        // If we have a pre-build encoded public key, use it.
-        if (keyBlob != null) {
-            return keyBlob;
-        }
+    public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
+                                    @Nullable final PublicKeyFormat keyFormat) {
+        if (encodedKey != null && keyFormat != null) {
+            try {
+                switch (keyFormat) {
+                    case X509: {
+                        // Sequence                                             ==> 'root'
+                        //    Sequence                                          ==> 'subSeq'
+                        //        ObjectIdentifier(1.2.840.10040.4.1)           ==> 'oid'
+                        //        Sequence                                      ==> 'params'
+                        //            Integer(32297387747201053186540584898...  ==> 'p'
+                        //            Integer(71207178785611282044091955018...  ==> 'q'
+                        //            Integer(26478369615294946530586257630...  ==> 'g'
+                        //    DER Bit String[261, 0]                            ==> 'y'
+                        //        0282010100800881da19906c314a98ec47a05671f...
+                        final ASN1Sequence root;
+                        try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                            root = ASN1Sequence.getInstance(stream.readObject());
+                        }
+                        if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                            config.getLogger().log(Logger.DEBUG, () ->
+                                    "~~~ KeyPairDSA#setSshPublicKeyBlob ~~~\n" +
+                                            ASN1Dump.dumpAsString(root, true));
+                        }
 
-        // Do we have what we need to construct the encoded public key?
-        if (p == null || q == null || g == null || y == null) {
-            return null;
-        }
+                        final ASN1Sequence subSeq = ASN1Sequence.getInstance(
+                                root.getObjectAt(0));
+                        final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(
+                                subSeq.getObjectAt(0));
+                        if (!X9ObjectIdentifiers.id_dsa.equals(oid)) {
+                            throw new UnsupportedKeyBlobEncodingException(String.valueOf(oid));
+                        }
 
-        return wrapPublicKey(serverHostKeyAlgorithm.getBytes(StandardCharsets.UTF_8),
+                        //    DSS-Parms ::= SEQUENCE {
+                        //     p  INTEGER,
+                        //     q  INTEGER,
+                        //     g  INTEGER
+                        //   }
+                        final ASN1Sequence params = ASN1Sequence.getInstance(subSeq.getObjectAt(1));
+                        p = ASN1Integer.getInstance(params.getObjectAt(0)).getPositiveValue();
+                        q = ASN1Integer.getInstance(params.getObjectAt(1)).getPositiveValue();
+                        g = ASN1Integer.getInstance(params.getObjectAt(2)).getPositiveValue();
+
+                        final ASN1BitString bitString = ASN1BitString.getInstance(
+                                root.getObjectAt(1));
+                        // DSAPublicKey ::= INTEGER --  public key, y
+                        y = ASN1Integer.getInstance(bitString.getBytes()).getPositiveValue();
+
+                        break;
+                    }
+                    case OPENSSH_V1: {
+                        // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
+                        final Buffer buffer = new Buffer(encodedKey);
+                        buffer.skipString();
+                        p = buffer.getBigInteger();
+                        q = buffer.getBigInteger();
+                        g = buffer.getBigInteger();
+                        y = buffer.getBigInteger();
+                        break;
+                    }
+                    default:
+                        throw new UnsupportedKeyBlobEncodingException(keyFormat);
+                }
+            } catch (@NonNull final IllegalArgumentException | IOException e) {
+                if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                    config.getLogger().log(Logger.DEBUG, e, () ->
+                            "~~~ KeyPairDSA#setSshPublicKeyBlob ~ Exception ~~~\n");
+                }
+            }
+        }
+    }
+
+    @Override
+    @NonNull
+    public PublicKey getPublicKey()
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        Objects.requireNonNull(y, "y");
+        Objects.requireNonNull(p, "p");
+        Objects.requireNonNull(q, "q");
+        Objects.requireNonNull(g, "g");
+        return createPublicKey(y, p, q, g);
+    }
+
+    @NonNull
+    @Override
+    protected PrivateKey getPrivateKey()
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        Objects.requireNonNull(x, "x");
+        Objects.requireNonNull(p, "p");
+        Objects.requireNonNull(q, "q");
+        Objects.requireNonNull(g, "g");
+
+        final KeySpec keySpec = new DSAPrivateKeySpec(x, p, q, g);
+        final KeyFactory keyFactory = KeyFactory.getInstance("DSA");
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    @NonNull
+    @Override
+    public byte[] getSshEncodedPublicKey() {
+        Objects.requireNonNull(y, "y");
+        Objects.requireNonNull(p, "p");
+        Objects.requireNonNull(q, "q");
+        Objects.requireNonNull(g, "g");
+        return wrapPublicKey(serverHostKeyAlgorithm,
                              p.toByteArray(),
                              q.toByteArray(),
                              g.toByteArray(),
                              y.toByteArray());
-    }
-
-    @Override
-    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
-        super.setSshPublicKeyBlob(publicKeyBlob);
-
-//        if (publicKeyBlob != null) {
-//            if (privateKeyFormat == Vendor.ASN1) {
-//                try {
-//                    final Buffer buffer = new Buffer(publicKeyBlob);
-//                    buffer.skipString(/* serverHostKeyAlgorithm */);
-//                    p = buffer.getBigInteger();
-//                    q = buffer.getBigInteger();
-//                    g = buffer.getBigInteger();
-//                    y = buffer.getBigInteger();
-//                } catch (@NonNull final IOException e) {
-//                    if (config.getLogger().isEnabled(Logger.DEBUG)) {
-//                        config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
-//                    }
-//                }
-//            }
-//        }
-    }
-
-    @NonNull
-    public byte[] getSignature(@NonNull final byte[] data,
-                               @NonNull final String algorithm)
-            throws GeneralSecurityException {
-
-        final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
-        sig.init(algorithm);
-
-        //noinspection ConstantConditions
-        sig.initSign(generatePrivate(x, p, q, g));
-        sig.update(data);
-        final byte[] signature_blob = sig.sign();
-        return wrapSignature(algorithm, signature_blob);
-    }
-
-    @NonNull
-    @Override
-    public SshSignature getVerifier(@NonNull final String algorithm)
-            throws GeneralSecurityException, IOException {
-
-        final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
-        sig.init(algorithm);
-
-        final byte[] publicKeyBlob = getSshPublicKeyBlob();
-        if (y == null && p == null && publicKeyBlob != null) {
-            final Buffer buffer = new Buffer(publicKeyBlob);
-            buffer.skipString(/* "ssh-dss" */);
-            p = buffer.getBigInteger();
-            q = buffer.getBigInteger();
-            g = buffer.getBigInteger();
-            y = buffer.getBigInteger();
-        }
-        Objects.requireNonNull(y);
-        Objects.requireNonNull(p);
-        Objects.requireNonNull(q);
-        Objects.requireNonNull(g);
-        sig.initVerify(generatePublic(y, p, q, g));
-        return sig;
     }
 
     @NonNull
@@ -247,7 +257,12 @@ public class KeyPairDSA
         if (isPrivateKeyEncrypted()) {
             throw new KeyManagementException("key is encrypted.");
         }
-        //noinspection ConstantConditions
+        Objects.requireNonNull(x, "x");
+        Objects.requireNonNull(y, "y");
+        Objects.requireNonNull(p, "p");
+        Objects.requireNonNull(q, "q");
+        Objects.requireNonNull(g, "g");
+
         return new Buffer()
                 .putString(serverHostKeyAlgorithm)
                 .putMPInt(p)
@@ -266,15 +281,14 @@ public class KeyPairDSA
 
         try {
             switch (keyFormat) {
-                case PUTTY3:
-                case PUTTY2: {
+                case PUTTY_V3:
+                case PUTTY_V2: {
                     final Buffer buffer = new Buffer(encodedKey);
                     x = buffer.getBigInteger();
                     break;
                 }
                 case OPENSSH_V1: {
                     final Buffer buffer = new Buffer(encodedKey);
-                    // 64-bit dummy checksum  # a random 32-bit int, repeated
                     // 64-bit dummy checksum  # a random 32-bit int, repeated
                     final int checkInt1 = buffer.getInt();
                     final int checkInt2 = buffer.getInt();
@@ -293,12 +307,6 @@ public class KeyPairDSA
                     break;
                 }
 
-                case RAW: {
-                    x = new BigInteger(1, encodedKey);
-                    Objects.requireNonNull(g, "private key base 'g' not set");
-                    y = g.modPow(x, p);
-                    break;
-                }
                 case ASN1: {
                     // Sequence                 ==> 'root'
                     //     Integer(0)           ==> version
@@ -327,6 +335,35 @@ public class KeyPairDSA
                     x = ASN1Integer.getInstance(root.getObjectAt(5)).getPositiveValue();
                     break;
                 }
+
+                case PKCS8: {
+                    // Sequence                                         ==> 'root'
+                    //     Integer(0)                                   ==> version
+                    //     Sequence                                     ==> 'subSeq'
+                    //         ObjectIdentifier(1.2.840.10040.4.1)      ==> 'prvKeyAlgOID'
+                    //         Sequence                                 ==> attributes
+                    //             Integer(177451...                    ==> p
+                    //             Integer(131449...                    ==> q
+                    //             Integer(163872...                    ==> g
+                    //     DER Octet String[23]                         ==> 'privateKey'
+                    //         02150097...
+                    final ASN1Sequence root;
+                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        root = ASN1Sequence.getInstance(stream.readObject());
+                    }
+                    //final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
+                    final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
+                    final ASN1OctetString privateKeyBlob = ASN1OctetString.getInstance(
+                            root.getObjectAt(2));
+
+                    final ASN1Sequence attr = ASN1Sequence.getInstance(subSeq.getObjectAt(1));
+                    p = ASN1Integer.getInstance(attr.getObjectAt(0)).getPositiveValue();
+                    q = ASN1Integer.getInstance(attr.getObjectAt(1)).getPositiveValue();
+                    g = ASN1Integer.getInstance(attr.getObjectAt(2)).getPositiveValue();
+                    x = new BigInteger(1, privateKeyBlob.getOctets());
+                    y = g.modPow(x, p);
+                    break;
+                }
                 default:
                     throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
             }
@@ -334,11 +371,10 @@ public class KeyPairDSA
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception e) {
+        } catch (@NonNull final Exception ignore) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
             }
-
             // failed due to a key format decoding problem
             setPrivateKeyEncrypted(true);
             return;

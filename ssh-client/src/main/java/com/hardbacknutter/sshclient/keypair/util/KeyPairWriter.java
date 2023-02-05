@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
 import java.util.Base64;
 
 /**
@@ -56,10 +55,7 @@ public class KeyPairWriter {
                                @NonNull final PrintWriter out,
                                @NonNull final String comment)
             throws GeneralSecurityException {
-        final byte[] sshPublicKeyBlob = keyPair.getSshPublicKeyBlob();
-        if (sshPublicKeyBlob == null) {
-            throw new InvalidKeyException(NO_PUBLIC_KEY_FOUND);
-        }
+        final byte[] sshPublicKeyBlob = keyPair.getSshEncodedPublicKey();
 
         final byte[] base64blob = Base64.getEncoder().encode(sshPublicKeyBlob);
 
@@ -103,12 +99,8 @@ public class KeyPairWriter {
     @SuppressWarnings("WeakerAccess")
     public void writeSECSHPublicKey(@NonNull final SshKeyPair keyPair,
                                     @NonNull final PrintWriter out,
-                                    @NonNull final String comment)
-            throws GeneralSecurityException {
-        final byte[] sshPublicKeyBlob = keyPair.getSshPublicKeyBlob();
-        if (sshPublicKeyBlob == null) {
-            throw new InvalidKeyException(NO_PUBLIC_KEY_FOUND);
-        }
+                                    @NonNull final String comment) {
+        final byte[] sshPublicKeyBlob = keyPair.getSshEncodedPublicKey();
 
         final byte[] base64blob = Base64.getEncoder().encode(sshPublicKeyBlob);
 

@@ -142,11 +142,13 @@ public class KeyPairParser {
                             @Nullable final Reader publicKeyReader)
             throws IOException, GeneralSecurityException {
 
+        // Use a BufferedReader as we'll need to use mark/reset.
         final BufferedReader prvKeyReader = new BufferedReader(privateKeyReader);
         final BufferedReader pubKeyReader = publicKeyReader != null
                 ? new BufferedReader(publicKeyReader) : null;
 
-        // Check for PuTTY format.
+        // Check for PuTTY format first.
+        // The PuttyReader will reset the prvKeyReader if it fails.
         final PuttyReader puttyReader = new PuttyReader(config);
         SshKeyPair keyPair = puttyReader.parse(prvKeyReader);
         if (keyPair != null) {
@@ -155,35 +157,39 @@ public class KeyPairParser {
 
         try (PemReader reader = new PemReader(prvKeyReader)) {
             final PemObject pem = reader.readPemObject();
-            if (pem == null) {
-                throw new IOException(INVALID_FORMAT);
-            }
-
-            // https://www.rfc-editor.org/rfc/rfc7468.html#section-4
-            switch (pem.getType()) {
-                case "OPENSSH PRIVATE KEY": {
-                    final OpenSSHv1Reader parser = new OpenSSHv1Reader(config);
-                    keyPair = parser.parse(pem);
-                    break;
+            if (pem != null) {
+                // https://www.rfc-editor.org/rfc/rfc7468.html#section-4
+                switch (pem.getType()) {
+                    case "OPENSSH PRIVATE KEY": {
+                        final OpenSSHv1Reader parser = new OpenSSHv1Reader(config);
+                        keyPair = parser.parse(pem);
+                        break;
+                    }
+                    case "RSA PRIVATE KEY":
+                    case "DSA PRIVATE KEY":
+                    case "EC PRIVATE KEY": {
+                        final LegacyPEMReader parser = new LegacyPEMReader(config);
+                        keyPair = parser.parse(pem);
+                        break;
+                    }
+                    case "ENCRYPTED PRIVATE KEY": {
+                        keyPair = new KeyPairPKCS8.Builder(config)
+                                .setPrivateKey(pem.getContent(), true)
+                                .build();
+                        break;
+                    }
+                    case "PRIVATE KEY": {
+                        keyPair = new KeyPairPKCS8.Builder(config)
+                                .setPrivateKey(pem.getContent(), false)
+                                .build();
+                        break;
+                    }
+                    default:
+                        throw new InvalidKeyException(UNSUPPORTED_TYPE_X + pem.getType());
                 }
-                case "RSA PRIVATE KEY":
-                case "DSA PRIVATE KEY":
-                case "EC PRIVATE KEY": {
-                    final LegacyPEMReader parser = new LegacyPEMReader(config);
-                    keyPair = parser.parse(pem);
-                    break;
-                }
-                case "ENCRYPTED PRIVATE KEY":
-                case "PRIVATE KEY": {
-                    keyPair = new KeyPairPKCS8.Builder(config)
-                            .setPrivateKey(pem.getContent())
-                            .build();
-                    break;
-                }
-                default:
-                    throw new InvalidKeyException(UNSUPPORTED_TYPE_X + pem.getType());
             }
         }
+
         if (keyPair == null) {
             throw new IOException(INVALID_FORMAT);
         }
@@ -192,11 +198,7 @@ public class KeyPairParser {
             final PublicKeyReader.PublicKeyAndComment pkc =
                     new PublicKeyReader().parse(pubKeyReader);
 
-            // do NOT overwrite the public key if we previously decoded it
-            if (keyPair.getSshPublicKeyBlob() == null) {
-                keyPair.setSshPublicKeyBlob(pkc.getBlob());
-            }
-
+            keyPair.setEncodedPublicKey(pkc.getBlob(), pkc.getFormat());
             keyPair.setPublicKeyComment(pkc.getComment());
         }
         return keyPair;

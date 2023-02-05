@@ -9,6 +9,12 @@ import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.Objects;
 
 public abstract class DelegatingKeyPair
@@ -16,13 +22,18 @@ public abstract class DelegatingKeyPair
 
     private static final String MUST_PARSE_FIRST = "Must call decrypt/parse first";
 
+    /** Holds the public key blob before the delegate is created. */
+    @Nullable
+    protected byte[] publicKeyBlob;
     /** The wrapped/actual KeyPair. */
     @Nullable
-    protected KeyPairBase delegate;
-
-    DelegatingKeyPair(@NonNull final SshClientConfig config) {
-        super(config);
-    }
+    KeyPairBase delegate;
+    /** Holds the public key format before the delegate is created. */
+    @Nullable
+    PublicKeyFormat publicKeyBlobFormat;
+    /** Holds the public key comment before the delegate is created. */
+    @NonNull
+    String publicKeyComment = "";
 
     DelegatingKeyPair(@NonNull final SshClientConfig config,
                       @NonNull final byte[] privateKeyBlob,
@@ -45,17 +56,32 @@ public abstract class DelegatingKeyPair
     }
 
     @Override
-    @Nullable
+    @NonNull
     public String getFingerPrint()
-            throws GeneralSecurityException {
+            throws NoSuchAlgorithmException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint();
     }
 
     @Override
-    @Nullable
+    @NonNull
     public String getFingerPrint(@NonNull final String algorithm)
-            throws GeneralSecurityException {
+            throws NoSuchAlgorithmException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getFingerPrint(algorithm);
+    }
+
+    @Override
+    @NonNull
+    public PublicKey getPublicKey()
+            throws GeneralSecurityException {
+        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getPublicKey();
+    }
+
+    @NonNull
+    @Override
+    protected PrivateKey getPrivateKey()
+            throws InvalidKeySpecException, NoSuchAlgorithmException,
+                   NoSuchProviderException, InvalidParameterSpecException {
+        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getPrivateKey();
     }
 
     @NonNull
@@ -68,9 +94,9 @@ public abstract class DelegatingKeyPair
 
     @NonNull
     @Override
-    public SshSignature getVerifier(@NonNull final String algorithm)
-            throws GeneralSecurityException, IOException {
-        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getVerifier(algorithm);
+    public SshSignature getVerifier()
+            throws GeneralSecurityException {
+        return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getVerifier();
     }
 
     @NonNull
@@ -101,7 +127,7 @@ public abstract class DelegatingKeyPair
     @NonNull
     public String getPublicKeyComment() {
         if (delegate == null) {
-            return super.getPublicKeyComment();
+            return publicKeyComment;
         }
         return delegate.getPublicKeyComment();
     }
@@ -109,29 +135,31 @@ public abstract class DelegatingKeyPair
     @Override
     public void setPublicKeyComment(@Nullable final String comment) {
         if (delegate == null) {
-            super.setPublicKeyComment(comment);
+            publicKeyComment = comment != null ? comment : "";
             return;
         }
         delegate.setPublicKeyComment(comment);
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException {
+    public byte[] getSshEncodedPublicKey() {
         if (delegate == null) {
-            return super.getSshPublicKeyBlob();
+            Objects.requireNonNull(publicKeyBlob, "publicKeyBlob");
+            return publicKeyBlob;
         }
-        return delegate.getSshPublicKeyBlob();
+        return delegate.getSshEncodedPublicKey();
     }
 
     @Override
-    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
+    public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
+                                    @Nullable final PublicKeyFormat keyFormat) {
         if (delegate == null) {
-            super.setSshPublicKeyBlob(publicKeyBlob);
+            this.publicKeyBlob = encodedKey;
+            this.publicKeyBlobFormat = keyFormat;
             return;
         }
-        delegate.setSshPublicKeyBlob(publicKeyBlob);
+        delegate.setEncodedPublicKey(encodedKey, keyFormat);
     }
 
     @Override

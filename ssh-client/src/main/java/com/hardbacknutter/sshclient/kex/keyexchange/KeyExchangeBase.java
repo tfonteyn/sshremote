@@ -104,7 +104,7 @@ abstract class KeyExchangeBase
     }
 
     /**
-     * Get the algorithm name as received in the final KEX packet.
+     * Get the algorithm name as <strong>received</strong> in the final KEX packet.
      *
      * @return "ssh-dss", "ssh-rsa", "ecdsa*", "ssh-ed25519", "ssh-ed448"
      */
@@ -165,7 +165,7 @@ abstract class KeyExchangeBase
                 final BigInteger publicExponent = buffer.getBigInteger();
                 final BigInteger modulus = buffer.getBigInteger();
 
-                publicKey = KeyPairRSA.generatePublic(publicExponent, modulus);
+                publicKey = KeyPairRSA.createPublicKey(publicExponent, modulus);
                 break;
             }
             case HostKeyAlgorithm.SSH_DSS: {
@@ -174,7 +174,7 @@ abstract class KeyExchangeBase
                 final BigInteger g = buffer.getBigInteger();
                 final BigInteger y = buffer.getBigInteger();
 
-                publicKey = KeyPairDSA.generatePublic(y, p, q, g);
+                publicKey = KeyPairDSA.createPublicKey(y, p, q, g);
                 break;
             }
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
@@ -182,14 +182,14 @@ abstract class KeyExchangeBase
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256: {
                 buffer.skipString(/* nistName */);
                 final ECPoint w = ECKeyType.decodePoint(buffer.getString());
-                publicKey = KeyPairECDSA.generatePublic(
+                publicKey = KeyPairECDSA.createPublicKey(
                         ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm).curveName, w);
                 break;
             }
             case HostKeyAlgorithm.SSH_ED25519:
             case HostKeyAlgorithm.SSH_ED448: {
                 final byte[] key = buffer.getString();
-                publicKey = KeyPairEdDSA.generatePublic(
+                publicKey = KeyPairEdDSA.createPublicKey(
                         EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm).curveName, key);
                 break;
             }

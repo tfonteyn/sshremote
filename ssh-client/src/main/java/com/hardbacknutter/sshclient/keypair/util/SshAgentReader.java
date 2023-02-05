@@ -114,36 +114,29 @@ class SshAgentReader {
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_ED25519:
-                return parseEdKey(EdKeyType.Ed25519, buffer);
-            case HostKeyAlgorithm.SSH_ED448:
-                return parseEdKey(EdKeyType.Ed448, buffer);
+            case HostKeyAlgorithm.SSH_ED448: {
+                // the public key
+                final byte[] pub_array = buffer.getString();
+                // OpenSSH stores private key in first half of string and duplicate copy
+                // of public key in second half of string. Hence only copy one half.
+                final EdKeyType type = EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
+                final byte[] prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
+
+                // the user comment for the key
+                final String comment = buffer.getJString();
+
+                keyPair = new KeyPairEdDSA.Builder(config)
+                        .setType(hostKeyAlgorithm)
+                        .setPubArray(pub_array)
+                        .setPrvArray(prv_array)
+                        .build();
+                keyPair.setPublicKeyComment(comment);
+                return keyPair;
+            }
 
             default:
                 throw new InvalidKeyException("Invalid private key");
         }
-    }
-
-    @NonNull
-    private SshKeyPair parseEdKey(@NonNull final EdKeyType type,
-                                  @NonNull final Buffer buffer)
-            throws IOException, GeneralSecurityException {
-        final SshKeyPair keyPair;
-        // the public key
-        final byte[] pub_array = buffer.getString();
-        // OpenSSH stores private key in first half of string and duplicate copy
-        // of public key in second half of string. Hence only copy one half.
-        final byte[] prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
-
-        // the user comment for the key
-        final String comment = buffer.getJString();
-
-        keyPair = new KeyPairEdDSA.Builder(config)
-                .setType(type)
-                .setPubArray(pub_array)
-                .setPrvArray(prv_array)
-                .build();
-        keyPair.setPublicKeyComment(comment);
-        return keyPair;
     }
 
 }

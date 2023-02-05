@@ -83,10 +83,9 @@ public final class IdentityImpl
      * @return the public-key blob
      */
     @Override
-    @Nullable
-    public byte[] getPublicKeyBlob()
-            throws GeneralSecurityException {
-        return sshKeyPair.getSshPublicKeyBlob();
+    @NonNull
+    public byte[] getPublicKeyBlob() {
+        return sshKeyPair.getSshEncodedPublicKey();
     }
 
     @Override

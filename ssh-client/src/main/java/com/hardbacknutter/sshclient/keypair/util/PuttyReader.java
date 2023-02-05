@@ -7,7 +7,6 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.ECKeyType;
-import com.hardbacknutter.sshclient.keypair.EdKeyType;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
@@ -68,9 +67,9 @@ class PuttyReader {
         String line = reader.readLine();
         if (line != null) {
             if (line.startsWith("PuTTY-User-Key-File-2")) {
-                privateKeyFormat = Vendor.PUTTY2;
+                privateKeyFormat = Vendor.PUTTY_V2;
             } else if (line.startsWith("PuTTY-User-Key-File-3")) {
-                privateKeyFormat = Vendor.PUTTY3;
+                privateKeyFormat = Vendor.PUTTY_V3;
             } else {
                 reader.reset();
                 return null;
@@ -127,7 +126,7 @@ class PuttyReader {
 
         final PKDecryptor decryptor;
         if (AES_256_CBC.equals(encryption)) {
-            if (privateKeyFormat == Vendor.PUTTY3) {
+            if (privateKeyFormat == Vendor.PUTTY_V3) {
                 // from the Putty docs:
                 // encryption-type is ‘aes256-cbc’,
                 // ... The length of the MAC key is also chosen to be 32 bytes.
@@ -200,7 +199,7 @@ class PuttyReader {
                 final byte[] pubArray = buffer.getString();
 
                 final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
-                        .setType(EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                        .setType(hostKeyAlgorithm)
                         .setPubArray(pubArray)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)

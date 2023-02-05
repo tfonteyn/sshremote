@@ -9,12 +9,20 @@ import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityImpl;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.Arrays;
 
 /**
@@ -35,12 +43,7 @@ public abstract class KeyPairBase
     final SshClientConfig config;
     @Nullable
     PKDecryptor decryptor;
-    /**
-     * The encoded public key; if we have it, we use it directly, otherwise it will be
-     * build from the key components at first use.
-     */
-    @Nullable
-    private byte[] publicKeyBlob;
+
     @NonNull
     private String publicKeyComment = "";
     /**
@@ -52,7 +55,7 @@ public abstract class KeyPairBase
     @Nullable
     private byte[] privateKeyBlob;
     @Nullable
-    protected Vendor privateKeyFormat;
+    private Vendor privateKeyFormat;
     private boolean privateKeyEncrypted;
 
     /**
@@ -83,65 +86,32 @@ public abstract class KeyPairBase
     }
 
     /**
-     * Create the publicKey blob using the list of the type specific parameters.
+     * Create the publicKey blob using the list of parameters.
+     * <p>
+     * string    certificate or public key format identifier
+     * byte[n]   key/certificate data
      *
-     * @param args key/certificate data
+     * @param keyAlgorithm identifier
+     * @param args         key/certificate data
      *
      * @return the blob
      */
     @NonNull
-    static byte[] wrapPublicKey(@NonNull final byte[]... args) {
+    static byte[] wrapPublicKey(@NonNull final String keyAlgorithm,
+                                @NonNull final byte[]... args) {
         // use a fixed-size buffer
         // (+4: a uint32 to store the length of the argument string)
-        int length = 0;
+        int length = 4 + keyAlgorithm.length();
         for (final byte[] arg : args) {
             length += 4 + arg.length;
         }
 
-        final Buffer buffer = new Buffer(length);
+        final Buffer buffer = new Buffer(length)
+                .putString(keyAlgorithm);
         for (final byte[] arg : args) {
             buffer.putString(arg);
         }
         return buffer.data;
-    }
-
-    /**
-     * The resulting signature is encoded as follows:
-     * <p>
-     * string    "signature_name"
-     * string    signature_blob
-     *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.6">
-     * RFC 4253 SSH Transport Layer Protocol, section 6.6.</a>
-     */
-    @NonNull
-    static byte[] wrapSignature(@NonNull final String signature_name,
-                                @NonNull final byte[] signature_blob) {
-        // use a fixed-size buffer
-        // (+4: a uint32 to store the length of the argument string)
-        final Buffer buffer = new Buffer(4 + signature_name.length()
-                                                 + 4 + signature_blob.length)
-                .putString(signature_name)
-                .putString(signature_blob);
-
-        return buffer.data;
-    }
-
-    @Override
-    @Nullable
-    public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException {
-        return publicKeyBlob;
-    }
-
-    /**
-     * Store the public key blob as-as.
-     * Child classes should decode as needed.
-     *
-     * @param publicKeyBlob to set/decode
-     */
-    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
-        this.publicKeyBlob = publicKeyBlob;
     }
 
     @Override
@@ -154,25 +124,53 @@ public abstract class KeyPairBase
         this.publicKeyComment = comment != null ? comment : "";
     }
 
+    @NonNull
+    protected abstract PrivateKey getPrivateKey()
+            throws InvalidKeySpecException,
+                   NoSuchAlgorithmException,
+                   NoSuchProviderException,
+                   InvalidParameterSpecException;
+
+    @NonNull
     @Override
-    @Nullable
-    public String getFingerPrint()
+    public byte[] getSignature(@NonNull final byte[] data,
+                               @NonNull final String algorithm)
             throws GeneralSecurityException {
-        final byte[] keyBlob = getSshPublicKeyBlob();
-        if (keyBlob == null) {
-            return null;
-        }
+
+        final PrivateKey privateKey = getPrivateKey();
+        final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
+        sig.init(algorithm);
+        sig.initSign(privateKey);
+        sig.update(data);
+        return sig.sign();
+    }
+
+    @NonNull
+    @Override
+    public SshSignature getVerifier()
+            throws GeneralSecurityException {
+
+        final PublicKey publicKey = getPublicKey();
+        final String hostKeyAlgorithm = getHostKeyAlgorithm();
+        final SshSignature sig = ImplementationFactory.getSignature(config, hostKeyAlgorithm);
+        sig.init(hostKeyAlgorithm);
+        sig.initVerify(publicKey);
+        return sig;
+    }
+
+    @Override
+    @NonNull
+    public String getFingerPrint()
+            throws NoSuchAlgorithmException {
+        final byte[] keyBlob = getSshEncodedPublicKey();
         return HostKey.getFingerPrint(config, keyBlob);
     }
 
     @Override
-    @Nullable
+    @NonNull
     public String getFingerPrint(@NonNull final String algorithm)
-            throws GeneralSecurityException {
-        final byte[] keyBlob = getSshPublicKeyBlob();
-        if (keyBlob == null) {
-            return null;
-        }
+            throws NoSuchAlgorithmException {
+        final byte[] keyBlob = getSshEncodedPublicKey();
         return HostKey.getFingerPrint(algorithm, keyBlob);
     }
 
@@ -320,7 +318,6 @@ public abstract class KeyPairBase
     public String toString() {
         return "KeyPairBase{"
                 + "privateKeyBlob=" + Arrays.toString(privateKeyBlob)
-                + ", publicKeyBlob=" + Arrays.toString(publicKeyBlob)
                 + ", publicKeyComment='" + publicKeyComment + '\''
                 + "}";
     }

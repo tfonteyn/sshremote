@@ -43,6 +43,7 @@ import com.hardbacknutter.sshclient.macs.SshMacConstants;
 import com.hardbacknutter.sshclient.macs.SshMacImpl;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.signature.SshSignatureDSA;
+import com.hardbacknutter.sshclient.signature.SshSignatureECDSA;
 import com.hardbacknutter.sshclient.signature.SshSignatureEd25519;
 import com.hardbacknutter.sshclient.signature.SshSignatureEd448;
 import com.hardbacknutter.sshclient.signature.SshSignatureRSA;
@@ -314,12 +315,13 @@ public final class ImplementationFactory {
             switch (algorithm) {
                 case HostKeyAlgorithm.SSH_DSS:
                     return new SshSignatureDSA("SHA1withDSA");
+
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
-                    return new SshSignatureDSA("SHA256withECDSA");
+                    return new SshSignatureECDSA("SHA256withECDSA");
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
-                    return new SshSignatureDSA("SHA384withECDSA");
+                    return new SshSignatureECDSA("SHA384withECDSA");
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                    return new SshSignatureDSA("SHA512withECDSA");
+                    return new SshSignatureECDSA("SHA512withECDSA");
 
                 case HostKeyAlgorithm.SSH_RSA:
                     return new SshSignatureRSA("SHA1withRSA");

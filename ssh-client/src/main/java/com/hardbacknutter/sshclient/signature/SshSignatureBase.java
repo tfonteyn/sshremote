@@ -54,7 +54,7 @@ abstract class SshSignatureBase
     @Override
     public byte[] sign()
             throws SignatureException {
-        return signature.sign();
+        return wrap(signature.sign());
     }
 
     @Override
@@ -71,6 +71,27 @@ abstract class SshSignatureBase
         return signature.verify(signatureBlob);
     }
 
+    /**
+     * The resulting signature is encoded as follows:
+     * <p>
+     * string    "signature_name"
+     * string    signature_blob
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.6">
+     * RFC 4253 SSH Transport Layer Protocol, section 6.6.</a>
+     */
+    @NonNull
+    byte[] wrap(@NonNull final byte[] signature_blob) {
+        // use a fixed-size buffer
+        // (+4: a uint32 to store the length of the argument string)
+        final Buffer buffer = new Buffer(4 + hostKeyAlgorithm.length()
+                                                 + 4 + signature_blob.length)
+                .putString(hostKeyAlgorithm)
+                .putString(signature_blob);
+
+        return buffer.data;
+    }
+
     @SuppressWarnings("WeakerAccess")
     @NonNull
     protected byte[] unwrap(@NonNull final byte[] sig) {
@@ -81,9 +102,8 @@ abstract class SshSignatureBase
                 return buffer.getString();
             }
         } catch (final IOException ignore) {
-            // not wrapped
-        }
 
+        }
         return sig;
     }
 }

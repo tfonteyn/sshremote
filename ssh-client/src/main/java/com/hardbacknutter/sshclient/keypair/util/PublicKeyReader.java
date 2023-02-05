@@ -3,6 +3,8 @@ package com.hardbacknutter.sshclient.keypair.util;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.hardbacknutter.sshclient.keypair.PublicKeyFormat;
+
 import org.bouncycastle.util.io.pem.PemHeader;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.util.Base64;
 import java.util.List;
+import java.util.StringJoiner;
 
 class PublicKeyReader {
 
@@ -32,7 +35,7 @@ class PublicKeyReader {
                 }
             }
         }
-        return new PublicKeyAndComment(null, "");
+        return new PublicKeyAndComment();
     }
 
     /**
@@ -57,7 +60,7 @@ class PublicKeyReader {
                 .findFirst()
                 .orElse("");
 
-        return new PublicKeyAndComment(pem.getContent(), comment);
+        return new PublicKeyAndComment(pem.getContent(), PublicKeyFormat.X509, comment);
     }
 
     /**
@@ -90,16 +93,16 @@ class PublicKeyReader {
                 }
                 // any subsequent parts are comment
                 if (parts.length > 2) {
-                    final StringBuilder sb = new StringBuilder();
+                    final StringJoiner sb = new StringJoiner(" ");
                     for (int i = 2; i < parts.length; i++) {
-                        sb.append(parts[i]);
+                        sb.add(parts[i]);
                     }
                     comment = sb.toString();
                 }
             }
         }
 
-        return new PublicKeyAndComment(blob, comment != null ? comment : "");
+        return new PublicKeyAndComment(blob, PublicKeyFormat.OPENSSH_V1, comment);
     }
 
 
@@ -109,15 +112,31 @@ class PublicKeyReader {
         @NonNull
         private final String comment;
 
+        @Nullable
+        private final PublicKeyFormat format;
+
+        PublicKeyAndComment() {
+            blob = null;
+            format = null;
+            comment = "";
+        }
+
         PublicKeyAndComment(@Nullable final byte[] blob,
-                            @NonNull final String comment) {
+                            @Nullable final PublicKeyFormat format,
+                            @Nullable final String comment) {
             this.blob = blob;
-            this.comment = comment;
+            this.format = format;
+            this.comment = comment != null ? comment : "";
         }
 
         @Nullable
         public byte[] getBlob() {
             return blob;
+        }
+
+        @Nullable
+        public PublicKeyFormat getFormat() {
+            return format;
         }
 
         @NonNull

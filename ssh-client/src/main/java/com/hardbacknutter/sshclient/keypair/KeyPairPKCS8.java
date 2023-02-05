@@ -7,15 +7,13 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS8;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 
 /**
@@ -44,10 +42,6 @@ import java.security.GeneralSecurityException;
 public final class KeyPairPKCS8
         extends DelegatingKeyPair {
 
-    private static final ASN1ObjectIdentifier id_ed25519 = new ASN1ObjectIdentifier("1.3.101.112");
-    private static final ASN1ObjectIdentifier id_ed448 = new ASN1ObjectIdentifier("1.3.101.113");
-
-
     /**
      * Constructor.
      */
@@ -55,7 +49,7 @@ public final class KeyPairPKCS8
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
         super(config, builder.privateKeyBlob, Vendor.PKCS8,
-              false, new DecryptPKCS8(config));
+              builder.encrypted, new DecryptPKCS8(config));
 
         parse();
     }
@@ -70,10 +64,8 @@ public final class KeyPairPKCS8
             return;
         }
 
-        // Take a copy of these BEFORE we create the delegate.
-        // We'll set them on the delegate after its creation
-        final byte[] sshPublicKeyBlob = getSshPublicKeyBlob();
-        final String publicKeyComment = getPublicKeyComment();
+        // Copy BEFORE we create the delegate
+        final boolean privateKeyEncrypted = isPrivateKeyEncrypted();
 
         // parse the wrapper, and create the delegate
         try {
@@ -87,122 +79,36 @@ public final class KeyPairPKCS8
                               ASN1Dump.dumpAsString(root, true));
             }
 
-            // DSA
-            // Sequence                                         ==> 'root'
-            //     Integer(0)                                   ==> version
-            //     Sequence                                     ==> 'subSeq'
-            //         ObjectIdentifier(1.2.840.10040.4.1)      ==> 'prvKeyAlgOID'
-            //         Sequence                                 ==> attributes
-            //             Integer(177451...                    ==> p
-            //             Integer(131449...                    ==> q
-            //             Integer(163872...                    ==> g
-            //     DER Octet String[23]                         ==> 'privateKey'
-            //         02150097...
-
-
-            // RSA
-            // Sequence                                         ==> 'root'
-            //     Integer(0)                                   ==> version
-            //     Sequence                                     ==> 'subSeq'
-            //         ObjectIdentifier(1.2.840.113549.1.1.1)   ==> 'prvKeyAlgOID'
-            //         NULL                                     ==> attributes, none for RSA
-            //     DER Octet String[1193]                       ==> 'privateKey'
-            //         308204a50...
-
-            // ECDSA 256
-            // Sequence                                         ==> 'root'
-            //     Integer(0)                                   ==> version
-            //     Sequence                                     ==> 'subSeq'
-            //         ObjectIdentifier(1.2.840.10045.2.1)      ==> 'prvKeyAlgOID'
-            //         ObjectIdentifier(1.2.840.10045.3.1.7)    ==> curve
-            //     DER Octet String[109]                        ==> 'privateKey'
-            //         306b02010...
-
-            // Ed25519
-            // Sequence                                         ==> 'root'
-            //     Integer(1)                                   ==> version
-            //     Sequence                                     ==> 'subSeq'
-            //         ObjectIdentifier(1.3.101.112)            ==> 'prvKeyAlgOID'
-            //     DER Octet String[34]                         ==> 'privateKey'
-            //         0420031...
-            //     Tagged [1] IMPLICIT
-            //         DER Octet String[33]
-            //             0031ae3...
-
-            // Ed448
-            // Sequence                                         ==> 'root'
-            //     Integer(1)                                   ==> version
-            //     Sequence                                     ==> 'subSeq'
-            //         ObjectIdentifier(1.3.101.113)            ==> 'prvKeyAlgOID'
-            //     DER Octet String[59]                         ==> 'privateKey'
-            //         0439580...
-            //     Tagged [1] IMPLICIT
-            //         DER Octet String[58]
-            //             00123
-
-            final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
-            //    Sequence
             final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
-            //    DER Octet String[]
-            final byte[] privateKeyBlob = ASN1OctetString.getInstance(root.getObjectAt(2))
-                                                         .getOctets();
-
-            //        ObjectIdentifier privateKeyAlgorithm
             final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier
                     .getInstance(subSeq.getObjectAt(0));
-            //        attributes: see below depending on algorithm
-
 
             if (PKCSObjectIdentifiers.rsaEncryption.equals(prvKeyAlgOID)) {
-                // RSA has no extra attributes
                 delegate = (KeyPairBase) new KeyPairRSA.Builder(config)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(Vendor.ASN1)
+                        .setPrivateKey(encodedKey)
+                        .setFormat(Vendor.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
             } else if (X9ObjectIdentifiers.id_dsa.equals(prvKeyAlgOID)) {
-                // DSA attributes
-                final ASN1Sequence attr = ASN1Sequence.getInstance(subSeq.getObjectAt(1));
-                final BigInteger p = ASN1Integer.getInstance(attr.getObjectAt(0))
-                                                .getPositiveValue();
-                final BigInteger q = ASN1Integer.getInstance(attr.getObjectAt(1))
-                                                .getPositiveValue();
-                final BigInteger g = ASN1Integer.getInstance(attr.getObjectAt(2))
-                                                .getPositiveValue();
-
                 delegate = (KeyPairBase) new KeyPairDSA.Builder(config)
-                        .setPQG(p, q, g)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(Vendor.RAW)
+                        .setPrivateKey(encodedKey)
+                        .setFormat(Vendor.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
             } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(prvKeyAlgOID)) {
-                // ECDSA attributes
-                final ASN1ObjectIdentifier primeOid = ASN1ObjectIdentifier
-                        .getInstance(subSeq.getObjectAt(1));
-
                 delegate = (KeyPairBase) new KeyPairECDSA.Builder(config)
-                        .setType(ECKeyType.getByOid(primeOid))
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(Vendor.ASN1)
+                        .setPrivateKey(encodedKey)
+                        .setFormat(Vendor.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
-            } else if (id_ed25519.equals(prvKeyAlgOID)) {
+            } else if (EdECObjectIdentifiers.id_Ed25519.equals(prvKeyAlgOID)
+                    || EdECObjectIdentifiers.id_Ed448.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
-                        .setType(EdKeyType.Ed25519)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(Vendor.ASN1)
-                        .setDecryptor(decryptor)
-                        .build();
-
-            } else if (id_ed448.equals(prvKeyAlgOID)) {
-                delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
-                        .setType(EdKeyType.Ed448)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(Vendor.ASN1)
+                        .setPrivateKey(encodedKey)
+                        .setFormat(Vendor.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
@@ -210,25 +116,20 @@ public final class KeyPairPKCS8
                 throw new UnsupportedAlgorithmException(String.valueOf(prvKeyAlgOID));
             }
 
-            // now set the previously store key/comment
-            delegate.setSshPublicKeyBlob(sshPublicKeyBlob);
+            // now set the previously stored key/comment
+            delegate.setEncodedPublicKey(publicKeyBlob, publicKeyBlobFormat);
             delegate.setPublicKeyComment(publicKeyComment);
+            delegate.setPrivateKeyEncrypted(privateKeyEncrypted);
 
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception e) {
+        } catch (@NonNull final Exception ignore) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
             }
-            // failed due to a key format decoding problem
-            setPrivateKeyEncrypted(true);
-            return;
-
         }
-        // the wrapper is decrypted; the delegate might not be
-        setPrivateKeyEncrypted(false);
     }
 
     public static class Builder {
@@ -236,6 +137,7 @@ public final class KeyPairPKCS8
         @NonNull
         final SshClientConfig config;
         private byte[] privateKeyBlob;
+        private boolean encrypted;
 
         public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
@@ -245,10 +147,13 @@ public final class KeyPairPKCS8
          * Set the private key blob.
          *
          * @param privateKeyBlob The byte[] with the private key
+         * @param encrypted      flag
          */
         @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+                                     final boolean encrypted) {
             this.privateKeyBlob = privateKeyBlob;
+            this.encrypted = encrypted;
             return this;
         }
 

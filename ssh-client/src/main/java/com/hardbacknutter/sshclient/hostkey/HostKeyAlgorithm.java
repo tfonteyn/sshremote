@@ -6,6 +6,27 @@ import androidx.annotation.Nullable;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 
+/**
+ * Add extra keys on Ubuntu:
+ * <pre>{@code
+ *   cd /ect/ssh
+ *   ssh-keygen -b 1024 -f ssh_host_dsa_key -t dsa -N ""
+ *   ssh-keygen -b 384 -t ecdsa -N "" -f ssh_host_ecdsa384_key
+ *   ssh-keygen -b 521 -t ecdsa -N "" -f ssh_host_ecdsa521_key
+ *   }
+ *   Then edit "sshd_config" and add:
+ *   {@code
+ *      # enabled the defaults:
+ *      hostkey /etc/ssh/ssh_host_rsa_key
+ *      hostkey /etc/ssh/ssh_host_ecdsa_key
+ *      hostkey /etc/ssh/ssh_host_ed25519_key
+ *      # add:
+ *      hostkey /etc/ssh/ssh_host_dsa_key
+ *      hostkey /etc/ssh/ssh_host_ecdsa384_key
+ *      hostkey /etc/ssh/ssh_host_ecdsa521_key
+ * }
+ * </pre>
+ */
 @SuppressWarnings("WeakerAccess")
 public final class HostKeyAlgorithm {
 
@@ -18,7 +39,17 @@ public final class HostKeyAlgorithm {
      */
     public static final String SSH_DSS = "ssh-dss";
 
+
+    public static final String SSH_ECDSA_SHA2_NISTP256 = "ecdsa-sha2-nistp256";
+    public static final String SSH_ECDSA_SHA2_NISTP384 = "ecdsa-sha2-nistp384";
+    public static final String SSH_ECDSA_SHA2_NISTP521 = "ecdsa-sha2-nistp521";
+
+    public static final String SSH_ED25519 = "ssh-ed25519";
+    public static final String SSH_ED448 = "ssh-ed448";
+
     /**
+     * The RSA family.
+     * <p>
      * The 256/512 strings ARE SEND to the server in the list of key algorithms
      * the client supports.
      * <p>
@@ -35,24 +66,11 @@ public final class HostKeyAlgorithm {
     public static final String SIG_ONLY_RSA_SHA_224_SSH_COM = "ssh-rsa-sha224@ssh.com";
     public static final String SIG_ONLY_RSA_SHA_256_SSH_COM = "ssh-rsa-sha256@ssh.com";
     public static final String SIG_ONLY_RSA_SHA_384_SSH_COM = "ssh-rsa-sha384@ssh.com";
-    public static final String SIG_ONLY_RSA_SHA_512_SSH_COM = "ssh-rsa-sha3512@ssh.com";
+    public static final String SIG_ONLY_RSA_SHA_512_SSH_COM = "ssh-rsa-sha512@ssh.com";
 
-    public static final String SSH_ECDSA_SHA2_NISTP256 = "ecdsa-sha2-nistp256";
-    public static final String SSH_ECDSA_SHA2_NISTP384 = "ecdsa-sha2-nistp384";
-    public static final String SSH_ECDSA_SHA2_NISTP521 = "ecdsa-sha2-nistp521";
-
-    public static final String SSH_ED25519 = "ssh-ed25519";
-    public static final String SSH_ED448 = "ssh-ed448";
 
     /**
-     * This is a wrapper around the 'real' KeyPair.
-     *
-     * @see com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1
-     */
-    public static final String __OPENSSH_V1__ = "__OPENSSH_V1__";
-
-    /**
-     * All host key algorithm's that can be used for KEX.
+     * All <strong>concrete</strong> host key algorithm's that are used by KEX.
      */
     private static final String[] ALL = {
             SSH_DSS,
@@ -61,8 +79,7 @@ public final class HostKeyAlgorithm {
             SSH_ECDSA_SHA2_NISTP384,
             SSH_ECDSA_SHA2_NISTP521,
             SSH_ED25519,
-            SSH_ED448,
-            __OPENSSH_V1__};
+            SSH_ED448};
 
     private HostKeyAlgorithm() {
     }

@@ -2,9 +2,6 @@ package com.hardbacknutter.sshclient.signature;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.utils.Buffer;
-
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -15,19 +12,27 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
 
-/**
- * Base class for plain DSA and ECDSA algorithms.
- *
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc5656#section-3.1.2">
- * RFC 5656 Elliptic Curve Algorithm Integration in the Secure Shell Transport Layer,
- * section 3: SSH ECC Public Key Algorithm</a>
- * @see <a href="https://www.secg.org/sec2-v2.pdf">sec2-v2.pdf</a>
- */
 public class SshSignatureDSA
         extends SshSignatureBase {
 
+    // result must be 40 bytes
+    private static final int SIG_LEN = 40;
+    //length of r and s may not exceed 20 bytes
+    private static final int INT_LEN = 20;
+
     public SshSignatureDSA(@NonNull final String jcaSignatureAlgorithm) {
         super(jcaSignatureAlgorithm);
+    }
+
+    private static void putBigInteger(@NonNull final BigInteger value,
+                                      final byte[] result,
+                                      final int offset) {
+        final byte[] data = value.toByteArray();
+        final boolean maxExceeded = data.length > INT_LEN;
+        final int dstOffset = maxExceeded ? 0 : (INT_LEN - data.length);
+        System.arraycopy(data, maxExceeded ? 1 : 0,
+                         result, offset + dstOffset,
+                         Math.min(INT_LEN, data.length));
     }
 
     @NonNull
@@ -35,29 +40,29 @@ public class SshSignatureDSA
     public byte[] sign()
             throws SignatureException {
 
+        // sig is in ASN.1  ::=  SEQUENCE { r INTEGER, s INTEGER  }
         final byte[] sig = signature.sign();
 
-        final BigInteger r;
-        final BigInteger s;
-
+        //   The value for 'signatureBlob' is encoded as a string containing
+        //   r, followed by s (which are 160-bit integers, without lengths or
+        //   padding, unsigned, and in network byte order).
         try {
-            // sig is in ASN.1  ::=  SEQUENCE { r INTEGER, s INTEGER  }
             final ASN1Sequence root;
             try (ASN1InputStream stream = new ASN1InputStream(sig)) {
                 root = ASN1Sequence.getInstance(stream.readObject());
             }
 
-            r = ASN1Integer.getInstance(root.getObjectAt(0)).getPositiveValue();
-            s = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
+            final BigInteger r = ASN1Integer.getInstance(root.getObjectAt(0)).getPositiveValue();
+            final BigInteger s = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
+
+            final byte[] signatureBlob = new byte[SIG_LEN];
+            putBigInteger(r, signatureBlob, 0);
+            putBigInteger(s, signatureBlob, INT_LEN);
+            return wrap(signatureBlob);
 
         } catch (final IOException e) {
             throw new SignatureException(e);
         }
-
-        return new Buffer()
-                .putMPInt(r)
-                .putMPInt(s)
-                .getPayload();
     }
 
     @Override
@@ -66,16 +71,20 @@ public class SshSignatureDSA
 
         final byte[] signatureBlob = unwrap(sig);
 
-        final Buffer buffer = new Buffer(signatureBlob);
+        // After unwrapping, the blob is 2 raw integers of 20 bytes each.
+        // We have to split them into the 2 integers r and s
+        final byte[] r = new byte[INT_LEN];
+        final byte[] s = new byte[INT_LEN];
+        System.arraycopy(signatureBlob, 0, r, 0, INT_LEN);
+        System.arraycopy(signatureBlob, INT_LEN, s, 0, INT_LEN);
+
+        // The r and s values must be converted to
+        // ASN.1  ::=  SEQUENCE { r INTEGER, s INTEGER  }
+        final ASN1EncodableVector rs = new ASN1EncodableVector();
+        rs.add(new ASN1Integer(r));
+        rs.add(new ASN1Integer(s));
         try {
-            final ASN1Encodable r = new ASN1Integer(buffer.getMPInt());
-            final ASN1Encodable s = new ASN1Integer(buffer.getMPInt());
-
-            final ASN1EncodableVector rs = new ASN1EncodableVector();
-            rs.add(r);
-            rs.add(s);
-            return signature.verify(new DERSequence(rs).getEncoded());
-
+            return signature.verify((new DERSequence(rs)).getEncoded());
         } catch (final IOException e) {
             throw new SignatureException(e);
         }

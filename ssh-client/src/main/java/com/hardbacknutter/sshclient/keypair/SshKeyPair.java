@@ -9,6 +9,10 @@ import com.hardbacknutter.sshclient.signature.SshSignature;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 
 public interface SshKeyPair {
 
@@ -24,24 +28,31 @@ public interface SshKeyPair {
     int getKeySize();
 
     /**
-     * Returns the blob of the public key in the SSH wrapped encoding.
+     * Returns the blob of the public key in the <strong>SSH wrapped encoding</strong>.
      * <p>
      * string    format identifier
      * byte[n]   key data
      *
      * @return blob of the public key
      */
-    @Nullable
-    byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException;
+    @NonNull
+    byte[] getSshEncodedPublicKey();
+
+    @NonNull
+    PublicKey getPublicKey()
+            throws InvalidKeySpecException,
+                   InvalidParameterSpecException,
+                   NoSuchAlgorithmException,
+                   GeneralSecurityException;
 
     /**
-     * 1. Store the public key blob as-is.
-     * 2. Decode the blob into the components.
+     * Decode the blob into the components.
      *
-     * @param publicKeyBlob to set/decode
+     * @param encodedKey to set/decode
+     * @param keyFormat  of the blob
      */
-    void setSshPublicKeyBlob(@Nullable byte[] publicKeyBlob);
+    void setEncodedPublicKey(@Nullable byte[] encodedKey,
+                             @Nullable PublicKeyFormat keyFormat);
 
     /**
      * Returns the user comment of the public key.
@@ -109,23 +120,10 @@ public interface SshKeyPair {
     /**
      * Not used by the library.
      *
-     * @return the verifier to verify data returned by {@link #getSignature(byte[], String)}
+     * @return the verifier to verify data returned by {@link #getSignature(byte[])}
      */
     @NonNull
-    default SshSignature getVerifier()
-            throws GeneralSecurityException, IOException {
-        return getVerifier(getHostKeyAlgorithm());
-    }
-
-    /**
-     * Not used by the library.
-     *
-     * @param algorithm the ssh style signature algorithm name
-     *
-     * @return the verifier to verify data returned by {@link #getSignature(byte[], String)}
-     */
-    @NonNull
-    SshSignature getVerifier(@NonNull String algorithm)
+    SshSignature getVerifier()
             throws GeneralSecurityException, IOException;
 
     /**
@@ -134,9 +132,9 @@ public interface SshKeyPair {
      * <p>
      * Uses the configured hash algorithm.
      */
-    @Nullable
+    @NonNull
     String getFingerPrint()
-            throws GeneralSecurityException;
+            throws NoSuchAlgorithmException;
 
     /**
      * Creates and returns a fingerprint of the public key,
@@ -144,9 +142,9 @@ public interface SshKeyPair {
      * <p>
      * Uses the specified hash algorithm.
      */
-    @Nullable
+    @NonNull
     String getFingerPrint(@NonNull String algorithm)
-            throws GeneralSecurityException;
+            throws NoSuchAlgorithmException;
 
     /**
      * Convert this KeyPair to the binary format for the SSH agent.

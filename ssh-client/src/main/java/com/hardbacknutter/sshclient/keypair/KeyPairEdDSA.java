@@ -6,22 +6,23 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
-import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
@@ -45,15 +46,10 @@ import java.util.Objects;
 public class KeyPairEdDSA
         extends KeyPairBase {
 
-    /**
-     * TODO: check WHEN/IF the type could be null
-     * This error should only occur when the pair is used as a delegate
-     * (e.g. {@link KeyPairOpenSSHv1} in which case calling the related method is a bug.
-     */
-    private static final String ERROR_TYPE_WAS_NULL = "type was null; using a delegate?";
+    private static final String ERROR_TYPE_WAS_NULL = "type was null";
 
     @Nullable
-    private final EdKeyType type;
+    private EdKeyType type;
 
     @Nullable
     private byte[] prv_array;
@@ -96,40 +92,12 @@ public class KeyPairEdDSA
                 .getInstance(type.curveName, "BC");
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-        pub_array = type.extractPubArray((EdDSAPublicKey) keyPair.getPublic());
+        // parse from encoded... remember, this is BC, you need Java 15 to use JCE with Ed.
+        final Key publicKey = keyPair.getPublic();
+        setEncodedPublicKey(publicKey.getEncoded(), PublicKeyFormat.X509);
 
-        @Nullable final byte[] encodedPrivateKeyBlob = keyPair.getPrivate().getEncoded();
-        // sanity check for null
-        if (encodedPrivateKeyBlob != null) {
-            parsePrivateKey(encodedPrivateKeyBlob, Vendor.ASN1);
-        }
-    }
-
-    /**
-     * Construct the PrivateKey based on the components.
-     *
-     * @return key
-     */
-    @SuppressWarnings("WeakerAccess")
-    @NonNull
-    public static PrivateKey generatePrivate(@NonNull final EdKeyType edType,
-                                             @NonNull final byte[] bytes)
-            throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
-
-        final KeySpec keySpec;
-        try {
-            // create as an ASN1 object, so we can read the keySpec from it.
-            final PrivateKeyInfo keyInfo = new PrivateKeyInfo(
-                    new AlgorithmIdentifier(edType.keyOid),
-                    new DEROctetString(bytes));
-            keySpec = new PKCS8EncodedKeySpec(keyInfo.getEncoded());
-
-        } catch (final IOException e) {
-            throw new InvalidKeySpecException(e);
-        }
-
-        final KeyFactory keyFactory = KeyFactory.getInstance("EdDSA", "BC");
-        return keyFactory.generatePrivate(keySpec);
+        final Key privateKey = keyPair.getPrivate();
+        parsePrivateKey(privateKey.getEncoded(), Vendor.PKCS8);
     }
 
     /**
@@ -141,8 +109,8 @@ public class KeyPairEdDSA
      * @return key
      */
     @NonNull
-    public static PublicKey generatePublic(@NonNull final String curveName,
-                                           @NonNull final byte[] rawKey)
+    public static PublicKey createPublicKey(@NonNull final String curveName,
+                                            @NonNull final byte[] rawKey)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
 
         final KeySpec keySpec = new RawEncodedKeySpec(rawKey);
@@ -169,73 +137,102 @@ public class KeyPairEdDSA
         return type.keySize;
     }
 
-    @Nullable
     @Override
-    public byte[] getSshPublicKeyBlob()
-            throws GeneralSecurityException {
-        final byte[] keyBlob = super.getSshPublicKeyBlob();
-        // If we have a pre-build encoded public key, use it.
-        if (keyBlob != null) {
-            return keyBlob;
-        }
+    public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
+                                    @Nullable final PublicKeyFormat keyFormat) {
+        if (encodedKey != null && keyFormat != null) {
+            try {
+                switch (keyFormat) {
+                    case X509: {
+                        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
 
-        // Do we have what we need to construct the encoded public key?
-        if (pub_array == null) {
-            return null;
-        }
+                        // Sequence
+                        //    Sequence
+                        //        ObjectIdentifier(1.3.101.112)
+                        //    DER Bit String[32, 0]
+                        //        621e3a1533c442f39913cd040026142446bf6d47be75b0ddd...
 
-        // sanity check for the type.
-        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-        return wrapPublicKey(type.hostKeyAlgorithm.getBytes(StandardCharsets.UTF_8), pub_array);
-    }
+                        final ASN1Sequence root;
+                        try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                            root = ASN1Sequence.getInstance(stream.readObject());
+                        }
+                        if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                            config.getLogger().log(Logger.DEBUG, () ->
+                                    "~~~ KeyPairEdDSA#setSshPublicKeyBlob ~~~\n" +
+                                            ASN1Dump.dumpAsString(root, true));
+                        }
 
-    @Override
-    public void setSshPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
-        super.setSshPublicKeyBlob(publicKeyBlob);
+                        final ASN1Sequence subSeq =
+                                ASN1Sequence.getInstance(root.getObjectAt(0));
+                        final ASN1ObjectIdentifier oid =
+                                ASN1ObjectIdentifier.getInstance(subSeq.getObjectAt(0));
+                        if (!type.keyOid.equals(oid)) {
+                            throw new UnsupportedKeyBlobEncodingException(String.valueOf(oid));
+                        }
 
-        if (publicKeyBlob != null) {
-            Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-            type.stripPrefix(publicKeyBlob).ifPresent(key -> pub_array = key);
+                        final ASN1BitString bitString = ASN1BitString.getInstance(
+                                root.getObjectAt(1));
+                        pub_array = bitString.getBytes();
+
+                        break;
+                    }
+                    case OPENSSH_V1: {
+                        final Buffer buffer = new Buffer(encodedKey);
+                        buffer.skipString();
+                        pub_array = buffer.getString();
+                        break;
+                    }
+                    default:
+                        throw new UnsupportedKeyBlobEncodingException(keyFormat);
+                }
+            } catch (@NonNull final IOException e) {
+                if (config.getLogger().isEnabled(Logger.DEBUG)) {
+                    config.getLogger().log(Logger.DEBUG, () ->
+                            "~~~ KeyPairEdDSA#setSshPublicKeyBlob ~ Exception ~~~\n");
+                }
+            }
         }
     }
 
     @Override
     @NonNull
-    public byte[] getSignature(@NonNull final byte[] data,
-                               @NonNull final String algorithm)
-            throws GeneralSecurityException {
-
-        final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
-        sig.init(algorithm);
-
-        //noinspection ConstantConditions
-        sig.initSign(generatePrivate(type, prv_array));
-        sig.update(data);
-        final byte[] signature_blob = sig.sign();
-        return wrapSignature(algorithm, signature_blob);
-    }
-
-    @Override
-    @NonNull
-    public SshSignature getVerifier(@NonNull final String algorithm)
-            throws GeneralSecurityException, IOException {
-
-        final SshSignature sig = ImplementationFactory.getSignature(config, algorithm);
-        sig.init(algorithm);
-
-
-        final byte[] publicKeyBlob = getSshPublicKeyBlob();
-        if (pub_array == null && publicKeyBlob != null) {
-            final Buffer buffer = new Buffer(publicKeyBlob);
-            buffer.skipString();
-            pub_array = buffer.getString();
-        }
-
+    public PublicKey getPublicKey()
+            throws InvalidKeySpecException,
+                   NoSuchAlgorithmException,
+                   NoSuchProviderException {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
         Objects.requireNonNull(pub_array, "pub_array");
-        final PublicKey publicKey = generatePublic(type.curveName, pub_array);
-        sig.initVerify(publicKey);
-        return sig;
+        return createPublicKey(type.curveName, pub_array);
+    }
+
+    @NonNull
+    @Override
+    protected PrivateKey getPrivateKey()
+            throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        Objects.requireNonNull(prv_array, "prv_array");
+
+        final KeySpec keySpec;
+        try {
+            // create as an ASN1 object, so we can read the keySpec from it.
+            final PrivateKeyInfo keyInfo = new PrivateKeyInfo(
+                    new AlgorithmIdentifier(type.keyOid),
+                    new DEROctetString(prv_array));
+            keySpec = new PKCS8EncodedKeySpec(keyInfo.getEncoded());
+
+        } catch (final IOException e) {
+            throw new InvalidKeySpecException(e);
+        }
+
+        final KeyFactory keyFactory = KeyFactory.getInstance("EdDSA", "BC");
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    @NonNull
+    @Override
+    public byte[] getSshEncodedPublicKey() {
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+        return wrapPublicKey(type.hostKeyAlgorithm, pub_array);
     }
 
     @Override
@@ -248,13 +245,12 @@ public class KeyPairEdDSA
         if (prv_array == null || pub_array == null) {
             throw new KeyManagementException("pub/prv arrays are not set");
         }
+        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
 
         // concat the private key + the public key
         final byte[] encodedKeys = new byte[prv_array.length + pub_array.length];
         System.arraycopy(prv_array, 0, encodedKeys, 0, prv_array.length);
         System.arraycopy(pub_array, 0, encodedKeys, prv_array.length, pub_array.length);
-
-        //noinspection ConstantConditions
         return new Buffer()
                 .putString(type.hostKeyAlgorithm)
                 .putString(pub_array)
@@ -270,14 +266,16 @@ public class KeyPairEdDSA
 
         try {
             switch (keyFormat) {
-                case PUTTY3:
-                case PUTTY2: {
+                case PUTTY_V3:
+                case PUTTY_V2: {
                     final Buffer buffer = new Buffer(encodedKey);
                     prv_array = buffer.getString();
                     break;
                 }
 
                 case OPENSSH_V1: {
+                    Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+
                     final Buffer buffer = new Buffer(encodedKey);
                     // 64-bit dummy checksum  # a random 32-bit int, repeated
                     final int checkInt1 = buffer.getInt();
@@ -293,7 +291,6 @@ public class KeyPairEdDSA
                     // of public key in second half of string
                     final byte[] tmp = buffer.getString(); // secret key (private key + public key)
                     // extract the first half
-                    //noinspection ConstantConditions
                     prv_array = Arrays.copyOf(tmp, type.keySize);
 
                     setPublicKeyComment(buffer.getJString());
@@ -308,6 +305,45 @@ public class KeyPairEdDSA
                     prv_array = root.getOctets();
                     break;
                 }
+
+                case PKCS8: {
+                    // id_Ed25519
+                    // Sequence                              ==> 'root'
+                    //     Integer(1)                        ==> version
+                    //     Sequence
+                    //         ObjectIdentifier(1.3.101.112) ==> EdECObjectIdentifiers.id_Ed25519
+                    //     DER Octet String[59]              ==> 'privateKeyBlob'
+                    //         0439580...
+                    //     Tagged [1] IMPLICIT
+                    //         DER Octet String[58]
+                    //             00123
+
+                    // id_Ed448
+                    // Sequence                              ==> 'root'
+                    //     Integer(1)                        ==> version
+                    //     Sequence
+                    //         ObjectIdentifier(1.3.101.113) ==> EdECObjectIdentifiers.id_Ed448
+                    //     DER Octet String[59]              ==> 'privateKeyBlob'
+                    //         0439580...
+                    //     Tagged [1] IMPLICIT
+                    //         DER Octet String[58]
+                    //             00123
+                    final ASN1Sequence root;
+                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
+                        root = ASN1Sequence.getInstance(stream.readObject());
+                    }
+                    //final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
+                    final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
+                    final ASN1OctetString privateKeyBlob = ASN1OctetString.getInstance(
+                            root.getObjectAt(2));
+
+                    final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier.getInstance(
+                            subSeq.getObjectAt(0));
+                    type = EdKeyType.getByOid(prvKeyAlgOID);
+
+                    parsePrivateKey(privateKeyBlob.getOctets(), Vendor.ASN1);
+                    return;
+                }
                 default:
                     throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
 
@@ -316,9 +352,9 @@ public class KeyPairEdDSA
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception e) {
+        } catch (@NonNull final Exception ignore) {
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, e, () -> DEBUG_KEY_PARSING_FAILED);
+                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
             }
             // failed due to a key format decoding problem
             setPrivateKeyEncrypted(true);
@@ -358,8 +394,9 @@ public class KeyPairEdDSA
         }
 
         @NonNull
-        public Builder setType(@NonNull final EdKeyType type) {
-            this.type = type;
+        public Builder setType(@NonNull final String hostKeyAlgorithm)
+                throws NoSuchAlgorithmException {
+            this.type = EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
             return this;
         }
 

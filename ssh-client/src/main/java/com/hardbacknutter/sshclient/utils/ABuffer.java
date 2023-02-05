@@ -142,6 +142,15 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
+     * Get the current absolute position for the next write.
+     *
+     * @return the offset
+     */
+    public int getWriteOffset() {
+        return writeOffset;
+    }
+
+    /**
      * Set the absolute position for the next write.
      *
      * @param offset the new offset.
@@ -532,6 +541,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Read a multiple-precision (signed) integer and transforms it to a Java BigInteger.
+     * <p>
+     * This is a convenience wrapper around {@link #getMPInt()}.
      *
      * @return BigInteger
      */
@@ -570,6 +581,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * <p>
      * Read a multiple precision signed integer as unsigned.
      * i.e. the highest-order bit is guaranteed to be 0.
+     *
+     * @deprecated use {@link #getBigInteger()} instead
      */
     @NonNull
     public byte[] getMPIntBits() {
