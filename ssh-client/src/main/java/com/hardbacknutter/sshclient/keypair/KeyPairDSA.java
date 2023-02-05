@@ -144,10 +144,9 @@ public class KeyPairDSA
                 case X509: {
                     final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
                     final KeyFactory keyFactory = KeyFactory.getInstance("DSA");
-                    final DSAPublicKey publicKey =
-                            (DSAPublicKey) keyFactory.generatePublic(keySpec);
-                    y = publicKey.getY();
-                    final DSAParams params = publicKey.getParams();
+                    final DSAPublicKey key = (DSAPublicKey) keyFactory.generatePublic(keySpec);
+                    y = key.getY();
+                    final DSAParams params = key.getParams();
                     p = params.getP();
                     q = params.getQ();
                     g = params.getG();
