@@ -95,17 +95,16 @@ public class KeyPairDSA
         keyPairGenerator.initialize(this.keySize);
 
         final KeyPair keyPairGen = keyPairGenerator.generateKeyPair();
-        // JCE provides direct access; no need to use getEncoded() + parse()
         final DSAPrivateKey prvKey = (DSAPrivateKey) keyPairGen.getPrivate();
         final DSAPublicKey pubKey = (DSAPublicKey) keyPairGen.getPublic();
 
-        final DSAParams params = prvKey.getParams();
+        this.y = pubKey.getY();
+        this.x = prvKey.getX();
 
+        final DSAParams params = prvKey.getParams();
         this.p = params.getP();
         this.q = params.getQ();
         this.g = params.getG();
-        this.y = pubKey.getY();
-        this.x = prvKey.getX();
     }
 
     /**
