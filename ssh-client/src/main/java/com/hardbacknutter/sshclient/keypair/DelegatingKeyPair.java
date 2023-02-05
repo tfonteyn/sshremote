@@ -9,6 +9,7 @@ import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -72,15 +73,20 @@ public abstract class DelegatingKeyPair
     @Override
     @NonNull
     public PublicKey getPublicKey()
-            throws GeneralSecurityException {
+            throws InvalidKeySpecException,
+                   InvalidParameterSpecException,
+                   NoSuchAlgorithmException,
+                   NoSuchProviderException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getPublicKey();
     }
 
     @NonNull
     @Override
     protected PrivateKey getPrivateKey()
-            throws InvalidKeySpecException, NoSuchAlgorithmException,
-                   NoSuchProviderException, InvalidParameterSpecException {
+            throws InvalidKeySpecException,
+                   NoSuchAlgorithmException,
+                   NoSuchProviderException,
+                   InvalidParameterSpecException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getPrivateKey();
     }
 
@@ -153,7 +159,11 @@ public abstract class DelegatingKeyPair
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat) {
+                                    @Nullable final PublicKeyFormat keyFormat)
+            throws InvalidKeyException,
+                   InvalidKeySpecException,
+                   NoSuchAlgorithmException,
+                   NoSuchProviderException {
         if (delegate == null) {
             this.publicKeyBlob = encodedKey;
             this.publicKeyBlobFormat = keyFormat;

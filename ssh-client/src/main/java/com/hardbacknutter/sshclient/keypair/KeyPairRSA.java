@@ -9,17 +9,13 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
-import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
-import org.bouncycastle.asn1.util.ASN1Dump;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -38,6 +34,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Objects;
 
 /**
@@ -184,71 +181,36 @@ public class KeyPairRSA
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat) {
+                                    @Nullable final PublicKeyFormat keyFormat)
+            throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (encodedKey != null && keyFormat != null) {
-            try {
-                switch (keyFormat) {
-                    case X509: {
-                        // Sequence                                             ==> 'root'
-                        //    Sequence                                          ==> 'subSeq'
-                        //        ObjectIdentifier(1.2.840.113549.1.1.1)        ==> 'oid'
-                        //        NULL                                          ==> no params
-                        //    DER Bit String[270, 0]
-                        //        3082010a0282010100bd614016f3cddbafdc1eb32...
-                        final ASN1Sequence root;
-//                    final org.bouncycastle.asn1.pkcs.RSAPublicKey key;
-                        try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                            root = ASN1Sequence.getInstance(stream.readObject());
-//                        key = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(stream.readObject());
-                        }
-                        if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                            config.getLogger().log(Logger.DEBUG, () ->
-                                    "~~~ KeyPairRSA#setSshPublicKeyBlob ~~~\n" +
-                                            ASN1Dump.dumpAsString(root, true));
-                        }
+            switch (keyFormat) {
+                case X509: {
+                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    final RSAPublicKey publicKey =
+                            (RSAPublicKey) keyFactory.generatePublic(keySpec);
 
-                        final ASN1Sequence subSeq =
-                                ASN1Sequence.getInstance(root.getObjectAt(0));
-                        final ASN1ObjectIdentifier oid =
-                                ASN1ObjectIdentifier.getInstance(subSeq.getObjectAt(0));
-                        if (!PKCSObjectIdentifiers.rsaEncryption.equals(oid)) {
-                            throw new UnsupportedKeyBlobEncodingException(String.valueOf(oid));
-                        }
-
-                        final ASN1BitString bitString = ASN1BitString.getInstance(
-                                root.getObjectAt(1));
-                        // RSAPublicKey ::= SEQUENCE {
-                        //    modulus           INTEGER,  -- n
-                        //    publicExponent    INTEGER   -- e
-                        //}
-                        final ASN1Sequence components = ASN1Sequence.getInstance(
-                                bitString.getBytes());
-                        modulus = ASN1Integer.getInstance(components.getObjectAt(0))
-                                             .getPositiveValue();
-                        publicExponent = ASN1Integer.getInstance(components.getObjectAt(1))
-                                                    .getPositiveValue();
-//                    modulus = key.getModulus();
-//                    publicExponent = key.getPublicExponent();
-
-                        break;
-                    }
-                    case OPENSSH_V1: {
+                    modulus = publicKey.getModulus();
+                    publicExponent = publicKey.getPublicExponent();
+                    break;
+                }
+                case OPENSSH_V1: {
+                    try {
                         // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
                         final Buffer buffer = new Buffer(encodedKey);
                         buffer.skipString();
                         publicExponent = buffer.getBigInteger();
                         modulus = buffer.getBigInteger();
-                        break;
+                    } catch (@NonNull final IllegalArgumentException | IOException e) {
+                        throw new InvalidKeyException(e);
                     }
-                    default:
-                        throw new UnsupportedKeyBlobEncodingException(keyFormat);
+                    break;
                 }
-            } catch (@NonNull final IllegalArgumentException | IOException e) {
-                if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                    config.getLogger().log(Logger.DEBUG, e, () ->
-                            "~~~ KeyPairRSA#setSshPublicKeyBlob ~ Exception ~~~\n");
-                }
+                default:
+                    throw new InvalidKeyException(String.valueOf(keyFormat));
             }
+
         }
     }
 

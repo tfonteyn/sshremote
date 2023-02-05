@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -43,7 +44,7 @@ public interface SshKeyPair {
             throws InvalidKeySpecException,
                    InvalidParameterSpecException,
                    NoSuchAlgorithmException,
-                   GeneralSecurityException;
+                   NoSuchProviderException;
 
     /**
      * Decode the blob into the components.
@@ -52,7 +53,11 @@ public interface SshKeyPair {
      * @param keyFormat  of the blob
      */
     void setEncodedPublicKey(@Nullable byte[] encodedKey,
-                             @Nullable PublicKeyFormat keyFormat);
+                             @Nullable PublicKeyFormat keyFormat)
+            throws InvalidKeyException,
+                   InvalidKeySpecException,
+                   NoSuchAlgorithmException,
+                   NoSuchProviderException;
 
     /**
      * Returns the user comment of the public key.

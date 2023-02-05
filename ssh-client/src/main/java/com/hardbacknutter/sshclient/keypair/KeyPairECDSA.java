@@ -8,15 +8,12 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
-import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.sec.ECPrivateKey;
-import org.bouncycastle.asn1.util.ASN1Dump;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,6 +29,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
@@ -41,6 +39,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Objects;
 
 /**
@@ -156,64 +155,30 @@ public class KeyPairECDSA
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat) {
+                                    @Nullable final PublicKeyFormat keyFormat)
+            throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (encodedKey != null && keyFormat != null) {
-            try {
-                switch (keyFormat) {
-                    case X509: {
-                        // Sequence
-                        //    Sequence
-                        //        ObjectIdentifier(1.2.840.10045.2.1)     ==> id_ecPublicKey
-                        //        ObjectIdentifier(1.2.840.10045.3.1.7)   ==> prime256v1
-                        //                                                (see below for 384/521)
-                        //    DER Bit String[65, 0]
-                        //        04bc35fdb57d8e0bd34b35dedde8baaae49cb94bf37afc863...
-                        final ASN1Sequence root;
-                        try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                            root = ASN1Sequence.getInstance(stream.readObject());
-                        }
-                        if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                            config.getLogger().log(Logger.DEBUG, () ->
-                                    "~~~ KeyPairECDSA#setSshPublicKeyBlob ~~~\n" +
-                                            ASN1Dump.dumpAsString(root, true));
-                        }
-
-                        final ASN1Sequence subSeq = ASN1Sequence.getInstance(
-                                root.getObjectAt(0));
-                        final ASN1ObjectIdentifier oid0 = ASN1ObjectIdentifier.getInstance(
-                                subSeq.getObjectAt(0));
-                        // final ASN1ObjectIdentifier oid1 = ASN1ObjectIdentifier.getInstance(
-                        //        subSeq.getObjectAt(1));
-
-                        if (!X9ObjectIdentifiers.id_ecPublicKey.equals(oid0)) {
-                            throw new UnsupportedKeyBlobEncodingException(String.valueOf(oid0));
-                        }
-                        // oid1:
-                        // 1.2.840.10045.3.1.7: X9ObjectIdentifiers.prime256v1
-                        // 1.3.132.0.34       : SECObjectIdentifiers.secp384r1
-                        // 1.3.132.0.35       : SECObjectIdentifiers.secp521r1
-
-                        final ASN1BitString bitString = ASN1BitString.getInstance(
-                                root.getObjectAt(1));
-                        // ECPoint ::= OCTET STRING
-                        w = ECKeyType.decodePoint(bitString.getBytes());
-
-                        break;
-                    }
-                    case OPENSSH_V1: {
+            switch (keyFormat) {
+                case X509: {
+                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance("EC");
+                    final ECPublicKey publicKey =
+                            (ECPublicKey) keyFactory.generatePublic(keySpec);
+                    w = publicKey.getW();
+                    break;
+                }
+                case OPENSSH_V1: {
+                    try {
                         final Buffer buffer = new Buffer(encodedKey);
                         buffer.skipString();
                         w = ECKeyType.decodePoint(buffer.getString());
-                        break;
+                    } catch (@NonNull final IOException e) {
+                        throw new InvalidKeyException(e);
                     }
-                    default:
-                        throw new UnsupportedKeyBlobEncodingException(keyFormat);
+                    break;
                 }
-            } catch (@NonNull final IOException e) {
-                if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                    config.getLogger().log(Logger.DEBUG, () ->
-                            "~~~ KeyPairECDSA#setSshPublicKeyBlob ~ Exception ~~~\n");
-                }
+                default:
+                    throw new InvalidKeyException(String.valueOf(keyFormat));
             }
         }
     }

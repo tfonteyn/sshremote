@@ -130,9 +130,9 @@ public abstract class KeyPairBase
     @NonNull
     protected abstract PrivateKey getPrivateKey()
             throws InvalidKeySpecException,
+                   InvalidParameterSpecException,
                    NoSuchAlgorithmException,
-                   NoSuchProviderException,
-                   InvalidParameterSpecException;
+                   NoSuchProviderException;
 
     @NonNull
     @Override

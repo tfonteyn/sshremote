@@ -8,15 +8,14 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
-import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
 
 import java.io.IOException;
@@ -34,6 +33,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -139,57 +139,33 @@ public class KeyPairEdDSA
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat) {
+                                    @Nullable final PublicKeyFormat keyFormat)
+            throws InvalidKeyException, NoSuchAlgorithmException,
+                   InvalidKeySpecException, NoSuchProviderException {
         if (encodedKey != null && keyFormat != null) {
-            try {
-                switch (keyFormat) {
-                    case X509: {
-                        Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+            switch (keyFormat) {
+                case X509: {
+                    Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
 
-                        // Sequence
-                        //    Sequence
-                        //        ObjectIdentifier(1.3.101.112)
-                        //    DER Bit String[32, 0]
-                        //        621e3a1533c442f39913cd040026142446bf6d47be75b0ddd...
-
-                        final ASN1Sequence root;
-                        try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                            root = ASN1Sequence.getInstance(stream.readObject());
-                        }
-                        if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                            config.getLogger().log(Logger.DEBUG, () ->
-                                    "~~~ KeyPairEdDSA#setSshPublicKeyBlob ~~~\n" +
-                                            ASN1Dump.dumpAsString(root, true));
-                        }
-
-                        final ASN1Sequence subSeq =
-                                ASN1Sequence.getInstance(root.getObjectAt(0));
-                        final ASN1ObjectIdentifier oid =
-                                ASN1ObjectIdentifier.getInstance(subSeq.getObjectAt(0));
-                        if (!type.keyOid.equals(oid)) {
-                            throw new UnsupportedKeyBlobEncodingException(String.valueOf(oid));
-                        }
-
-                        final ASN1BitString bitString = ASN1BitString.getInstance(
-                                root.getObjectAt(1));
-                        pub_array = bitString.getBytes();
-
-                        break;
-                    }
-                    case OPENSSH_V1: {
+                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance(type.curveName, "BC");
+                    final EdDSAPublicKey publicKey =
+                            (EdDSAPublicKey) keyFactory.generatePublic(keySpec);
+                    pub_array = publicKey.getPointEncoding();
+                    break;
+                }
+                case OPENSSH_V1: {
+                    try {
                         final Buffer buffer = new Buffer(encodedKey);
                         buffer.skipString();
                         pub_array = buffer.getString();
-                        break;
+                    } catch (@NonNull final IOException e) {
+                        throw new InvalidKeyException(e);
                     }
-                    default:
-                        throw new UnsupportedKeyBlobEncodingException(keyFormat);
+                    break;
                 }
-            } catch (@NonNull final IOException e) {
-                if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                    config.getLogger().log(Logger.DEBUG, () ->
-                            "~~~ KeyPairEdDSA#setSshPublicKeyBlob ~ Exception ~~~\n");
-                }
+                default:
+                    throw new InvalidKeyException(String.valueOf(keyFormat));
             }
         }
     }
