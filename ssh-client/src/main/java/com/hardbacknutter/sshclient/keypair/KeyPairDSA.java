@@ -282,12 +282,6 @@ public class KeyPairDSA
                         root = ASN1Sequence.getInstance(stream.readObject());
                     }
 
-                    if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                        config.getLogger()
-                              .log(Logger.DEBUG, () -> "~~~ KeyPairDSA#parsePrivateKey ~~~\n" +
-                                      ASN1Dump.dumpAsString(root, true));
-                    }
-
                     p = ASN1Integer.getInstance(root.getObjectAt(1)).getPositiveValue();
                     q = ASN1Integer.getInstance(root.getObjectAt(2)).getPositiveValue();
                     g = ASN1Integer.getInstance(root.getObjectAt(3)).getPositiveValue();
