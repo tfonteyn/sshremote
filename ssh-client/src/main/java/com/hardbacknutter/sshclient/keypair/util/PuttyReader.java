@@ -6,11 +6,11 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.ECKeyType;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
+import com.hardbacknutter.sshclient.keypair.PublicKeyFormat;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
@@ -21,10 +21,8 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.spec.ECPoint;
 import java.util.Base64;
 
 
@@ -148,63 +146,47 @@ class PuttyReader {
         final String hostKeyAlgorithm = buffer.getJString();
         switch (hostKeyAlgorithm) {
             case HostKeyAlgorithm.SSH_RSA: {
-                final BigInteger publicExponent = buffer.getBigInteger();
-                final BigInteger modulus = buffer.getBigInteger();
-
                 final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
-                        .setPublicExponent(publicExponent)
-                        .setModulus(modulus)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_DSS: {
-                final BigInteger p = buffer.getBigInteger();
-                final BigInteger q = buffer.getBigInteger();
-                final BigInteger g = buffer.getBigInteger();
-                final BigInteger y = buffer.getBigInteger();
-
                 final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
-                        .setPQG(p, q, g)
-                        .setY(y)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521: {
-                buffer.skipString(/* nistName */);
-
-                final ECPoint w = ECKeyType.decodePoint(buffer.getString());
-
                 final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
                         .setHostKeyAlgorithm(hostKeyAlgorithm)
-                        .setPoint(w)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_ED25519:
             case HostKeyAlgorithm.SSH_ED448: {
-                final byte[] pubArray = buffer.getString();
-
                 final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
                         .setHostKeyAlgorithm(hostKeyAlgorithm)
-                        .setPubArray(pubArray)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
                         .setDecryptor(decryptor)
                         .build();
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
