@@ -21,7 +21,7 @@ import java.security.InvalidKeyException;
 import java.security.spec.ECPoint;
 import java.util.Arrays;
 
-// URGENT: this class has never been tested; we never set the keypair format, ....
+// URGENT: this class has never been tested
 class SshAgentReader {
 
     @NonNull
@@ -59,7 +59,6 @@ class SshAgentReader {
         final Buffer buffer = new Buffer(prvKey);
         final String hostKeyAlgorithm = buffer.getJString();
 
-        final SshKeyPair keyPair;
         switch (hostKeyAlgorithm) {
             case HostKeyAlgorithm.SSH_RSA: {
                 final BigInteger modulus = buffer.getBigInteger();
@@ -70,7 +69,7 @@ class SshAgentReader {
                 final BigInteger q = buffer.getBigInteger();
                 final String comment = buffer.getJString();
 
-                keyPair = new KeyPairRSA.Builder(config)
+                final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
                         .setModulus(modulus)
                         .setPublicExponent(publicExponent)
                         .setPrivateExponent(privateExponent)
@@ -89,7 +88,7 @@ class SshAgentReader {
                 final BigInteger x = buffer.getBigInteger();
                 final String comment = buffer.getJString();
 
-                keyPair = new KeyPairDSA.Builder(config)
+                final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
                         .setPQG(p, q, g)
                         .setX(x)
                         .setY(y)
@@ -105,8 +104,8 @@ class SshAgentReader {
                 final BigInteger s = buffer.getBigInteger();
                 final String comment = buffer.getJString();
 
-                keyPair = new KeyPairECDSA.Builder(config)
-                        .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
+                        .setHostKeyAlgorithm(hostKeyAlgorithm)
                         .setPoint(w)
                         .setS(s)
                         .build();
@@ -125,8 +124,8 @@ class SshAgentReader {
                 // the user comment for the key
                 final String comment = buffer.getJString();
 
-                keyPair = new KeyPairEdDSA.Builder(config)
-                        .setType(hostKeyAlgorithm)
+                final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
+                        .setHostKeyAlgorithm(hostKeyAlgorithm)
                         .setPubArray(pub_array)
                         .setPrvArray(prv_array)
                         .build();

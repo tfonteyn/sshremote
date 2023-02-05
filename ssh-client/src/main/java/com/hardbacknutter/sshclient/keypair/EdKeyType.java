@@ -8,7 +8,6 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.params.Ed448PublicKeyParameters;
-import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jcajce.spec.EdDSAParameterSpec;
 
 import java.security.NoSuchAlgorithmException;
@@ -67,7 +66,7 @@ public enum EdKeyType {
     }
 
     @NonNull
-    public static EdKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
+    static EdKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
                      .filter(e -> e.keyOid.equals(oid))
@@ -75,28 +74,22 @@ public enum EdKeyType {
                      .orElseThrow(NoSuchAlgorithmException::new);
     }
 
-    @NonNull
-    private static byte[] rotate(@NonNull final byte[] in,
-                                 final int keyLength) {
-        final int len = in.length;
-        final byte[] out = new byte[len];
-
-        for (int i = 0; i < len; i++) {
-            out[i] = in[len - i - 1];
-        }
-
-        return Arrays.copyOf(out, keyLength);
-    }
-
     // no longer used, but leaving here as "interesting" info.
-    @NonNull
-    byte[] extractPubArray(@NonNull final EdDSAPublicKey pubKey) {
-        final EdECPoint point = new EdECPoint(pubKey.getPointEncoding());
-        final byte[] blob = rotate(point.getY().toByteArray(), keySize);
-        if (point.isXOdd()) {
-            final int pos = blob.length - 1;
-            blob[pos] = (byte) (blob[pos] | 0x80);
-        }
-        return blob;
-    }
+//    @NonNull
+//    byte[] extractPubArray(@NonNull final EdDSAPublicKey pubKey) {
+//        final EdECPoint point = new EdECPoint(pubKey.getPointEncoding());
+//        final byte[] in = point.getY().toByteArray();
+//        // rotate
+//        final int len = in.length;
+//        final byte[] out = new byte[len];
+//        for (int i = 0; i < len; i++) {
+//            out[i] = in[len - i - 1];
+//        }
+//        final byte[] blob = Arrays.copyOf(out, keySize);
+//        if (point.isXOdd()) {
+//            final int pos = blob.length - 1;
+//            blob[pos] = (byte) (blob[pos] | 0x80);
+//        }
+//        return blob;
+//    }
 }

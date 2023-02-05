@@ -24,15 +24,16 @@ import java.util.Objects;
  */
 public final class KeyPairOpenSSHv1
         extends DelegatingKeyPair {
-
-    /** Flag to indicate the HostKeyAlgorithm is not known yet. */
-    public static final String __OPENSSH_V1__ = "__OPENSSH_V1__";
     private static final String UNKNOWN_KEY_TYPE_VENDOR = "Unknown key type/vendor";
+    @SuppressWarnings("WeakerAccess")
+    public static final String KDFNAME_NONE = "none";
+    @SuppressWarnings("WeakerAccess")
+    public static final String KDFNAME_BCRYPT = "bcrypt";
 
     /** key derivation function. */
-    @NonNull
+    @Nullable
     private final String kdfName;
-    @NonNull
+    @Nullable
     private final byte[] kdfOptions;
 
     /**
@@ -44,8 +45,8 @@ public final class KeyPairOpenSSHv1
         super(config, builder.privateKeyBlob, Vendor.OPENSSH_V1,
               builder.decryptor != null, builder.decryptor);
 
-        this.kdfName = Objects.requireNonNull(builder.kdfName, "kdfName is null");
-        this.kdfOptions = Objects.requireNonNull(builder.kdfOptions, "kdfOptions is null");
+        this.kdfName = builder.kdfName;
+        this.kdfOptions = builder.kdfOptions;
 
         parse();
     }
@@ -94,12 +95,13 @@ public final class KeyPairOpenSSHv1
 
         final byte[] plainKey;
 
-        if ("none".equals(kdfName)) {
+        if (kdfName == null || KDFNAME_NONE.equals(kdfName)) {
             // sanity check, if we had an unencrypted key, then we would never get here
             // as the Builder would have created the KeyPair directly.
             throw new IllegalStateException("Unencrypted deferred KeyPair... that's a bug");
 
-        } else if ("bcrypt".equals(kdfName)) {
+        } else if (KDFNAME_BCRYPT.equals(kdfName)) {
+            Objects.requireNonNull(kdfOptions, "bcrypt kdfOptions are null");
             // 2. KDF options for "bcrypt"
             //	string salt
             //	uint32 rounds
@@ -120,7 +122,7 @@ public final class KeyPairOpenSSHv1
         }
 
         // Use the builder again, this time with an unencrypted key
-        // and the type derived from that key
+        // and the HostKeyAlgorithm derived from that key
         delegate = (KeyPairBase) new Builder(config)
                 .setHostKeyAlgorithm(getHostKeyAlgorithm(plainKey))
                 .setPrivateKey(plainKey)
@@ -137,16 +139,14 @@ public final class KeyPairOpenSSHv1
 
         @NonNull
         final SshClientConfig config;
-        @NonNull
-        private String hostKeyAlgorithm = __OPENSSH_V1__;
+        @Nullable
+        private String hostKeyAlgorithm;
 
         @Nullable
         private String kdfName;
         @Nullable
         private byte[] kdfOptions;
 
-        @Nullable
-        private byte[] publicKeyBlob;
         private byte[] privateKeyBlob;
         @Nullable
         private PKDecryptor decryptor;
@@ -158,11 +158,7 @@ public final class KeyPairOpenSSHv1
         @NonNull
         public Builder setHostKeyAlgorithm(@NonNull final String type)
                 throws InvalidKeyException {
-            if (__OPENSSH_V1__.equals(type)) {
-                this.hostKeyAlgorithm = __OPENSSH_V1__;
-            } else {
-                this.hostKeyAlgorithm = HostKeyAlgorithm.parseType(type);
-            }
+            this.hostKeyAlgorithm = HostKeyAlgorithm.parseType(type);
             return this;
         }
 
@@ -175,27 +171,10 @@ public final class KeyPairOpenSSHv1
             return this;
         }
 
-        @SuppressWarnings("UnusedReturnValue")
-        @NonNull
-        public Builder setPublicKeyBlob(@Nullable final byte[] publicKeyBlob) {
-            this.publicKeyBlob = publicKeyBlob;
-
-            // if possible, use the type derived from the public key
-            if (__OPENSSH_V1__.equals(hostKeyAlgorithm) && publicKeyBlob != null) {
-                final Buffer pb = new Buffer(publicKeyBlob);
-                try {
-                    hostKeyAlgorithm = HostKeyAlgorithm.parseType(pb.getJString());
-                } catch (final IOException | InvalidKeyException ignore) {
-
-                }
-            }
-            return this;
-        }
-
         /**
          * Set the private key blob.
          *
-         * @param privateKeyBlob The byte[] with the private key
+         * @param privateKeyBlob The encoded private key
          */
         @NonNull
         public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
@@ -218,59 +197,47 @@ public final class KeyPairOpenSSHv1
         public SshKeyPair build()
                 throws GeneralSecurityException, IOException {
 
-            if (hostKeyAlgorithm.isBlank()) {
-                throw new InvalidKeyException(UNKNOWN_KEY_TYPE_VENDOR);
+            if (hostKeyAlgorithm == null) {
+                return new KeyPairOpenSSHv1(config, this);
             }
 
-            final SshKeyPair keyPair;
             switch (hostKeyAlgorithm) {
-                case __OPENSSH_V1__:
-                    keyPair = new KeyPairOpenSSHv1(config, this);
-                    break;
-
                 case HostKeyAlgorithm.SSH_RSA:
-                    keyPair = new KeyPairRSA.Builder(config)
+                    return new KeyPairRSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
                             .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
-                    break;
 
                 case HostKeyAlgorithm.SSH_DSS:
-                    keyPair = new KeyPairDSA.Builder(config)
+                    return new KeyPairDSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
                             .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
-                    break;
 
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
                 case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                    keyPair = new KeyPairECDSA.Builder(config)
+                    return new KeyPairECDSA.Builder(config)
+                            .setHostKeyAlgorithm(hostKeyAlgorithm)
                             .setPrivateKey(privateKeyBlob)
                             .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
-                            .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
                             .build();
-                    break;
 
                 case HostKeyAlgorithm.SSH_ED25519:
                 case HostKeyAlgorithm.SSH_ED448:
-                    keyPair = new KeyPairEdDSA.Builder(config)
+                    return new KeyPairEdDSA.Builder(config)
+                            .setHostKeyAlgorithm(hostKeyAlgorithm)
                             .setPrivateKey(privateKeyBlob)
                             .setFormat(Vendor.OPENSSH_V1)
                             .setDecryptor(decryptor)
-                            .setType(hostKeyAlgorithm)
                             .build();
-                    break;
 
                 default:
                     throw new InvalidKeyException(UNKNOWN_KEY_TYPE_VENDOR);
             }
-
-            keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
-            return keyPair;
         }
     }
 }

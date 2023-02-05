@@ -37,7 +37,10 @@ import java.util.Arrays;
 public abstract class KeyPairBase
         implements SshKeyPair {
 
-    static final String DEBUG_KEY_PARSING_FAILED = "Parsing failed";
+    // This is NOT an error; it will happen when we try parsing an encrypted key blob
+    // The parser will be called twice, and will succeed the 2nd time (providing the user
+    // gives ut the correct passphrase obviously)
+    static final String DEBUG_KEY_PARSING_FAILED = "Parsing failed, key is likely encrypted";
 
     @NonNull
     final SshClientConfig config;

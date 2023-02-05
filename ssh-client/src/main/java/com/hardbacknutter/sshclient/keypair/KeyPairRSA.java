@@ -544,7 +544,7 @@ public class KeyPairRSA
         /**
          * Set the private key blob.
          *
-         * @param privateKeyBlob The byte[] with the private key
+         * @param privateKeyBlob The encoded private key
          */
         @NonNull
         public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {

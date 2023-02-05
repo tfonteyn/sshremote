@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
+import com.hardbacknutter.sshclient.keypair.PublicKeyFormat;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 class OpenSSHv1Reader {
 
     private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes(StandardCharsets.UTF_8);
+    private static final String ERROR_INVALID_OPEN_SSH_V1_FORMAT = "Invalid OpenSSHv1 format";
 
     @NonNull
     private final SshClientConfig config;
@@ -50,15 +52,14 @@ class OpenSSHv1Reader {
             throws IOException, InvalidKeyException, GeneralSecurityException {
 
         if (!"OPENSSH PRIVATE KEY".equals(pem.getType())) {
-            throw new InvalidKeyException("Invalid OpenSSHv1 format");
+            throw new InvalidKeyException(ERROR_INVALID_OPEN_SSH_V1_FORMAT);
         }
 
         final byte[] blob = pem.getContent();
         if (!isOpenSSHv1(blob)) {
-            throw new InvalidKeyException("Invalid OpenSSHv1 format");
+            throw new InvalidKeyException(ERROR_INVALID_OPEN_SSH_V1_FORMAT);
         }
 
-        final KeyPairOpenSSHv1.Builder builder = new KeyPairOpenSSHv1.Builder(config);
 
         final Buffer buffer = new Buffer(blob);
         // "openssh-key-v1"0x00    # NULL-terminated "Auth Magic" string
@@ -71,36 +72,41 @@ class OpenSSHv1Reader {
         // kdfoptions
         // Length will be 0 (and no string) if there are no options
         final byte[] kdfoptions = buffer.getString();
-        builder.setKDF(kdfname, kdfoptions);
 
         // number of keys, for now always hard-coded to 1
         final int nrKeys = buffer.getInt();
         if (nrKeys != 1) {
-            throw new IOException("We don't support having more than 1 key in the file (yet).");
+            throw new IOException("Expected only 1 key but there were: " + nrKeys);
         }
         // public key encoded in ssh format
         final byte[] publicKeyBlob = buffer.getString();
-        builder.setPublicKeyBlob(publicKeyBlob);
-
         // private key encoded in ssh format
         final byte[] privateKeyBlob = buffer.getString();
 
-        if (SshCipherConstants.NONE.equals(cipherName)) {
+        final SshKeyPair keyPair;
+        if (SshCipherConstants.NONE.equals(cipherName)
+                // sanity check, if the cipher is "none" then kdfname SHOULD be "none"
+                // and vice-versa.
+                || KeyPairOpenSSHv1.KDFNAME_NONE.equals(kdfname)) {
             // not encrypted, the builder will create the real SshKeypair directly
-            builder.setHostKeyAlgorithm(KeyPairOpenSSHv1.getHostKeyAlgorithm(privateKeyBlob))
-                   .setPrivateKey(privateKeyBlob);
+            keyPair = new KeyPairOpenSSHv1.Builder(config)
+                    .setHostKeyAlgorithm(KeyPairOpenSSHv1.getHostKeyAlgorithm(privateKeyBlob))
+                    .setPrivateKey(privateKeyBlob)
+                    .build();
         } else {
             // The type can only be determined after decryption.
-            // Use a deferred decryptor.
+            // Use a deferred decryptor which acts a a placeholder for the cipher.
             final PKDecryptor decryptor = new DecryptDeferred();
             decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
-            // set the fake HostKeyAlgorithm as a flag; we don't know it yet
-            builder
-                    .setHostKeyAlgorithm(KeyPairOpenSSHv1.__OPENSSH_V1__)
+            // can't set HostKeyAlgorithm; we don't know it yet
+            keyPair = new KeyPairOpenSSHv1.Builder(config)
+                    .setKDF(kdfname, kdfoptions)
                     .setPrivateKey(privateKeyBlob)
-                    .setDecryptor(decryptor);
+                    .setDecryptor(decryptor)
+                    .build();
         }
 
-        return builder.build();
+        keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
+        return keyPair;
     }
 }

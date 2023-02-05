@@ -17,7 +17,6 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import org.bouncycastle.util.io.pem.PemHeader;
 import org.bouncycastle.util.io.pem.PemObject;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -33,41 +32,35 @@ class LegacyPEMReader {
         this.config = config;
     }
 
-    @Nullable
+    @NonNull
     SshKeyPair parse(@NonNull final PemObject pem)
-            throws IOException, InvalidKeyException, GeneralSecurityException {
+            throws InvalidKeyException, GeneralSecurityException {
 
-        final SshKeyPair keyPair;
         switch (pem.getType()) {
             case "RSA PRIVATE KEY": {
-                keyPair = new KeyPairRSA.Builder(config)
+                return new KeyPairRSA.Builder(config)
                         .setPrivateKey(pem.getContent())
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(createPKDecryptor(pem))
                         .build();
-                break;
             }
             case "DSA PRIVATE KEY": {
-                keyPair = new KeyPairDSA.Builder(config)
+                return new KeyPairDSA.Builder(config)
                         .setPrivateKey(pem.getContent())
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(createPKDecryptor(pem))
                         .build();
-                break;
             }
             case "EC PRIVATE KEY": {
-                keyPair = new KeyPairECDSA.Builder(config)
+                return new KeyPairECDSA.Builder(config)
                         .setPrivateKey(pem.getContent())
                         .setFormat(Vendor.ASN1)
                         .setDecryptor(createPKDecryptor(pem))
                         .build();
-                break;
             }
             default:
                 throw new InvalidKeyException("Invalid Legacy PEM format: " + pem.getType());
         }
-
-        return keyPair;
     }
 
     @Nullable

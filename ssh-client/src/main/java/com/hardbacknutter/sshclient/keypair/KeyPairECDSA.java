@@ -409,8 +409,9 @@ public class KeyPairECDSA
         }
 
         @NonNull
-        public Builder setType(@NonNull final ECKeyType type) {
-            this.type = type;
+        public Builder setHostKeyAlgorithm(@NonNull final String hostKeyAlgorithm)
+                throws NoSuchAlgorithmException {
+            this.type = ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
             return this;
         }
 
@@ -429,12 +430,11 @@ public class KeyPairECDSA
         /**
          * Set the private key blob.
          *
-         * @param privateKeyBlob The byte[] with the private key
+         * @param privateKeyBlob The encoded private key
          */
         @NonNull
         public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
             this.privateKeyBlob = privateKeyBlob;
-            this.s = new BigInteger(1, this.privateKeyBlob);
             return this;
         }
 

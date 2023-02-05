@@ -473,19 +473,11 @@ public class KeyPairDSA
         /**
          * Set the private key blob.
          *
-         * @param privateKeyBlob The byte[] with the private key
+         * @param privateKeyBlob The encoded private key
          */
         @NonNull
         public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
             this.privateKeyBlob = privateKeyBlob;
-            // 'privateKey' is an octet string, we can just set the 'x' value
-            // and calculate the 'y' from it.
-            this.x = new BigInteger(1, privateKeyBlob);
-
-            // If we have p/q, then we can calculate y
-            if (y == null && p != null && g != null) {
-                this.y = this.g.modPow(this.x, this.p);
-            }
             return this;
         }
 

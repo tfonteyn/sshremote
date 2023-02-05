@@ -185,7 +185,7 @@ class PuttyReader {
                 final ECPoint w = ECKeyType.decodePoint(buffer.getString());
 
                 final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
-                        .setType(ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm))
+                        .setHostKeyAlgorithm(hostKeyAlgorithm)
                         .setPoint(w)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)
@@ -199,7 +199,7 @@ class PuttyReader {
                 final byte[] pubArray = buffer.getString();
 
                 final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
-                        .setType(hostKeyAlgorithm)
+                        .setHostKeyAlgorithm(hostKeyAlgorithm)
                         .setPubArray(pubArray)
                         .setPrivateKey(privateKeyBlob)
                         .setFormat(privateKeyFormat)

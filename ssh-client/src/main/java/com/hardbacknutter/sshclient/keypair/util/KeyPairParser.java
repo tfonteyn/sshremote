@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 
 import org.bouncycastle.util.io.pem.PemObject;
@@ -172,16 +171,10 @@ public class KeyPairParser {
                         keyPair = parser.parse(pem);
                         break;
                     }
-                    case "ENCRYPTED PRIVATE KEY": {
-                        keyPair = new KeyPairPKCS8.Builder(config)
-                                .setPrivateKey(pem.getContent(), true)
-                                .build();
-                        break;
-                    }
+                    case "ENCRYPTED PRIVATE KEY":
                     case "PRIVATE KEY": {
-                        keyPair = new KeyPairPKCS8.Builder(config)
-                                .setPrivateKey(pem.getContent(), false)
-                                .build();
+                        final PKCS8Reader parser = new PKCS8Reader(config);
+                        keyPair = parser.parse(pem);
                         break;
                     }
                     default:

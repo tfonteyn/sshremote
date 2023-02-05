@@ -146,7 +146,7 @@ public final class KeyPairPKCS8
         /**
          * Set the private key blob.
          *
-         * @param privateKeyBlob The byte[] with the private key
+         * @param privateKeyBlob The encoded private key
          * @param encrypted      flag
          */
         @NonNull

@@ -394,7 +394,7 @@ public class KeyPairEdDSA
         }
 
         @NonNull
-        public Builder setType(@NonNull final String hostKeyAlgorithm)
+        public Builder setHostKeyAlgorithm(@NonNull final String hostKeyAlgorithm)
                 throws NoSuchAlgorithmException {
             this.type = EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
             return this;
@@ -436,7 +436,7 @@ public class KeyPairEdDSA
         /**
          * Set the private key blob.
          *
-         * @param privateKeyBlob The byte[] with the private key
+         * @param privateKeyBlob The encoded private key
          */
         @NonNull
         public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {

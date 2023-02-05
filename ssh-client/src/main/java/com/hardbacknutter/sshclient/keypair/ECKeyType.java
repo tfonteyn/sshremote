@@ -45,10 +45,10 @@ public enum ECKeyType {
     @NonNull
     public final String curveName;
     @NonNull
-    public final String nistName;
+    final String nistName;
     public final int keySize;
     @NonNull
-    public final ASN1ObjectIdentifier keyOid;
+    final ASN1ObjectIdentifier keyOid;
 
     ECKeyType(@NonNull final String hostKeyAlgorithm,
               @NonNull final String curveName,
@@ -73,25 +73,7 @@ public enum ECKeyType {
     }
 
     @NonNull
-    public static ECKeyType getByCurveName(@NonNull final String curveName)
-            throws NoSuchAlgorithmException {
-        return Arrays.stream(values())
-                     .filter(e -> e.curveName.equalsIgnoreCase(curveName))
-                     .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
-    }
-
-    @NonNull
-    public static ECKeyType getByNistName(@NonNull final String nistName)
-            throws NoSuchAlgorithmException {
-        return Arrays.stream(values())
-                     .filter(e -> e.nistName.equalsIgnoreCase(nistName))
-                     .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
-    }
-
-    @NonNull
-    public static ECKeyType getByKeySize(final int keySize)
+    static ECKeyType getByKeySize(final int keySize)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
                      .filter(e -> e.keySize == keySize)
@@ -100,7 +82,7 @@ public enum ECKeyType {
     }
 
     @NonNull
-    public static ECKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
+    static ECKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
                      .filter(e -> e.keyOid.equals(oid))
@@ -109,7 +91,7 @@ public enum ECKeyType {
     }
 
     @NonNull
-    public static ECKeyType getByECPoint(@NonNull final ECPoint point)
+    static ECKeyType getByECPoint(@NonNull final ECPoint point)
             throws NoSuchAlgorithmException {
         final int keySize = point.getAffineX().toByteArray().length;
         if (keySize >= 64) {
