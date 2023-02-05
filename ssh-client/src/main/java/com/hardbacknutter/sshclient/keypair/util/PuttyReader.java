@@ -10,9 +10,9 @@ import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
-import com.hardbacknutter.sshclient.keypair.PublicKeyFormat;
+import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
+import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty3;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
@@ -60,14 +60,14 @@ class PuttyReader {
 
         reader.mark(32);
 
-        Vendor privateKeyFormat = null;
+        PrivateKeyEncoding privateKeyEncoding = null;
         // First line identifies content and format version
         String line = reader.readLine();
         if (line != null) {
             if (line.startsWith("PuTTY-User-Key-File-2")) {
-                privateKeyFormat = Vendor.PUTTY_V2;
+                privateKeyEncoding = PrivateKeyEncoding.PUTTY_V2;
             } else if (line.startsWith("PuTTY-User-Key-File-3")) {
-                privateKeyFormat = Vendor.PUTTY_V3;
+                privateKeyEncoding = PrivateKeyEncoding.PUTTY_V3;
             } else {
                 reader.reset();
                 return null;
@@ -124,7 +124,7 @@ class PuttyReader {
 
         final PKDecryptor decryptor;
         if (AES_256_CBC.equals(encryption)) {
-            if (privateKeyFormat == Vendor.PUTTY_V3) {
+            if (privateKeyEncoding == PrivateKeyEncoding.PUTTY_V3) {
                 // from the Putty docs:
                 // encryption-type is ‘aes256-cbc’,
                 // ... The length of the MAC key is also chosen to be 32 bytes.
@@ -148,20 +148,20 @@ class PuttyReader {
             case HostKeyAlgorithm.SSH_RSA: {
                 final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
                         .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyFormat)
+                        .setFormat(privateKeyEncoding)
                         .setDecryptor(decryptor)
                         .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
             case HostKeyAlgorithm.SSH_DSS: {
                 final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
                         .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyFormat)
+                        .setFormat(privateKeyEncoding)
                         .setDecryptor(decryptor)
                         .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
@@ -171,10 +171,10 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
                         .setHostKeyAlgorithm(hostKeyAlgorithm)
                         .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyFormat)
+                        .setFormat(privateKeyEncoding)
                         .setDecryptor(decryptor)
                         .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }
@@ -183,10 +183,10 @@ class PuttyReader {
                 final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
                         .setHostKeyAlgorithm(hostKeyAlgorithm)
                         .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyFormat)
+                        .setFormat(privateKeyEncoding)
                         .setDecryptor(decryptor)
                         .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
+                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
                 keyPair.setPublicKeyComment(publicKeyComment);
                 return keyPair;
             }

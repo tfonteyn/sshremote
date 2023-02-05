@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.keypair;
 
-public enum PublicKeyFormat {
+public enum PublicKeyEncoding {
 
     /** OpenSSH standard format. Also used by Putty. */
     OPENSSH_V1,

@@ -42,7 +42,7 @@ public final class KeyPairOpenSSHv1
     private KeyPairOpenSSHv1(@NonNull final SshClientConfig config,
                              @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, Vendor.OPENSSH_V1,
+        super(config, builder.privateKeyBlob, PrivateKeyEncoding.OPENSSH_V1,
               builder.decryptor != null, builder.decryptor);
 
         this.kdfName = builder.kdfName;
@@ -78,10 +78,10 @@ public final class KeyPairOpenSSHv1
 
     @Override
     void parsePrivateKey(@NonNull final byte[] encodedKey,
-                         @NonNull final Vendor keyFormat)
+                         @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
         if (delegate != null) {
-            delegate.parsePrivateKey(encodedKey, keyFormat);
+            delegate.parsePrivateKey(encodedKey, encoding);
         }
         //nothing to parse until the key is decrypted.
     }
@@ -115,7 +115,7 @@ public final class KeyPairOpenSSHv1
 
             plainKey = decrypt(passphrase);
             // We MUST try parsing first to determine if it decrypted ok, or not!
-            parsePrivateKey(plainKey, Vendor.OPENSSH_V1);
+            parsePrivateKey(plainKey, PrivateKeyEncoding.OPENSSH_V1);
 
         } else {
             throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
@@ -205,14 +205,14 @@ public final class KeyPairOpenSSHv1
                 case HostKeyAlgorithm.SSH_RSA:
                     return new KeyPairRSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(Vendor.OPENSSH_V1)
+                            .setFormat(PrivateKeyEncoding.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
 
                 case HostKeyAlgorithm.SSH_DSS:
                     return new KeyPairDSA.Builder(config)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(Vendor.OPENSSH_V1)
+                            .setFormat(PrivateKeyEncoding.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
 
@@ -222,7 +222,7 @@ public final class KeyPairOpenSSHv1
                     return new KeyPairECDSA.Builder(config)
                             .setHostKeyAlgorithm(hostKeyAlgorithm)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(Vendor.OPENSSH_V1)
+                            .setFormat(PrivateKeyEncoding.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
 
@@ -231,7 +231,7 @@ public final class KeyPairOpenSSHv1
                     return new KeyPairEdDSA.Builder(config)
                             .setHostKeyAlgorithm(hostKeyAlgorithm)
                             .setPrivateKey(privateKeyBlob)
-                            .setFormat(Vendor.OPENSSH_V1)
+                            .setFormat(PrivateKeyEncoding.OPENSSH_V1)
                             .setDecryptor(decryptor)
                             .build();
 

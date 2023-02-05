@@ -48,7 +48,7 @@ public final class KeyPairPKCS8
     private KeyPairPKCS8(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, Vendor.PKCS8,
+        super(config, builder.privateKeyBlob, PrivateKeyEncoding.PKCS8,
               builder.encrypted, new DecryptPKCS8(config));
 
         parse();
@@ -56,11 +56,11 @@ public final class KeyPairPKCS8
 
     @Override
     void parsePrivateKey(@NonNull final byte[] encodedKey,
-                         @NonNull final Vendor keyFormat)
+                         @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
         if (delegate != null) {
-            delegate.parsePrivateKey(encodedKey, keyFormat);
+            delegate.parsePrivateKey(encodedKey, encoding);
             return;
         }
 
@@ -86,21 +86,21 @@ public final class KeyPairPKCS8
             if (PKCSObjectIdentifiers.rsaEncryption.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairRSA.Builder(config)
                         .setPrivateKey(encodedKey)
-                        .setFormat(Vendor.PKCS8)
+                        .setFormat(PrivateKeyEncoding.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
             } else if (X9ObjectIdentifiers.id_dsa.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairDSA.Builder(config)
                         .setPrivateKey(encodedKey)
-                        .setFormat(Vendor.PKCS8)
+                        .setFormat(PrivateKeyEncoding.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
             } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairECDSA.Builder(config)
                         .setPrivateKey(encodedKey)
-                        .setFormat(Vendor.PKCS8)
+                        .setFormat(PrivateKeyEncoding.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 
@@ -108,7 +108,7 @@ public final class KeyPairPKCS8
                     || EdECObjectIdentifiers.id_Ed448.equals(prvKeyAlgOID)) {
                 delegate = (KeyPairBase) new KeyPairEdDSA.Builder(config)
                         .setPrivateKey(encodedKey)
-                        .setFormat(Vendor.PKCS8)
+                        .setFormat(PrivateKeyEncoding.PKCS8)
                         .setDecryptor(decryptor)
                         .build();
 

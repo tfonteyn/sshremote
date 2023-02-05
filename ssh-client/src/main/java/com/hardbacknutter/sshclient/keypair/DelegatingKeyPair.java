@@ -31,14 +31,14 @@ public abstract class DelegatingKeyPair
     KeyPairBase delegate;
     /** Holds the public key format before the delegate is created. */
     @Nullable
-    PublicKeyFormat publicKeyBlobFormat;
+    PublicKeyEncoding publicKeyBlobFormat;
     /** Holds the public key comment before the delegate is created. */
     @NonNull
     String publicKeyComment = "";
 
     DelegatingKeyPair(@NonNull final SshClientConfig config,
                       @NonNull final byte[] privateKeyBlob,
-                      @NonNull final Vendor format,
+                      @NonNull final PrivateKeyEncoding format,
                       final boolean encrypted,
                       @Nullable final PKDecryptor decryptor) {
         super(config, privateKeyBlob, format, encrypted, decryptor);
@@ -159,17 +159,17 @@ public abstract class DelegatingKeyPair
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat)
+                                    @Nullable final PublicKeyEncoding encoding)
             throws InvalidKeyException,
                    InvalidKeySpecException,
                    NoSuchAlgorithmException,
                    NoSuchProviderException {
         if (delegate == null) {
             this.publicKeyBlob = encodedKey;
-            this.publicKeyBlobFormat = keyFormat;
+            this.publicKeyBlobFormat = encoding;
             return;
         }
-        delegate.setEncodedPublicKey(encodedKey, keyFormat);
+        delegate.setEncodedPublicKey(encodedKey, encoding);
     }
 
     @Override

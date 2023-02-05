@@ -51,14 +51,14 @@ public abstract class KeyPairBase
     private String publicKeyComment = "";
     /**
      * The private key as a byte[].
-     * The binary format is {@link #privateKeyFormat}.
+     * The binary format is {@link #privateKeyEncoding}.
      * It may be {@link #privateKeyEncrypted} or not.
      * If it is, then {@link #decryptor} should be able to decrypt it.
      */
     @Nullable
     private byte[] privateKeyBlob;
     @Nullable
-    private Vendor privateKeyFormat;
+    private PrivateKeyEncoding privateKeyEncoding;
     private boolean privateKeyEncrypted;
 
     /**
@@ -78,12 +78,12 @@ public abstract class KeyPairBase
      */
     KeyPairBase(@NonNull final SshClientConfig config,
                 @NonNull final byte[] privateKeyBlob,
-                @NonNull final Vendor format,
+                @NonNull final PrivateKeyEncoding format,
                 final boolean encrypted,
                 @Nullable final PKDecryptor decryptor) {
         this.config = config;
         this.privateKeyBlob = privateKeyBlob;
-        this.privateKeyFormat = format;
+        this.privateKeyEncoding = format;
         this.privateKeyEncrypted = encrypted;
         this.decryptor = decryptor;
     }
@@ -201,8 +201,8 @@ public abstract class KeyPairBase
      */
     final void parse()
             throws GeneralSecurityException {
-        if (privateKeyBlob != null && privateKeyFormat != null) {
-            parsePrivateKey(privateKeyBlob, privateKeyFormat);
+        if (privateKeyBlob != null && privateKeyEncoding != null) {
+            parsePrivateKey(privateKeyBlob, privateKeyEncoding);
         }
     }
 
@@ -218,12 +218,12 @@ public abstract class KeyPairBase
      * </strong>
      *
      * @param encodedKey the unencrypted (plain) key data.
-     * @param keyFormat  the encoding format
+     * @param encoding  the encoding format
      *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
     abstract void parsePrivateKey(@NonNull byte[] encodedKey,
-                                  @NonNull final Vendor keyFormat)
+                                  @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException;
 
     /**
@@ -244,7 +244,7 @@ public abstract class KeyPairBase
         }
 
         // sanity check
-        if (privateKeyFormat == null) {
+        if (privateKeyEncoding == null) {
             return false;
         }
 
@@ -268,7 +268,7 @@ public abstract class KeyPairBase
 
         // Decrypt went fine, but if for example the passphrase was incorrect,
         // then the plain key would be garbage hence the next step is to parse it.
-        parsePrivateKey(plainKey, privateKeyFormat);
+        parsePrivateKey(plainKey, privateKeyEncoding);
 
         if (privateKeyEncrypted) {
             return false;

@@ -8,8 +8,8 @@ import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
+import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.Vendor;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS5;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
@@ -40,21 +40,21 @@ class LegacyPEMReader {
             case "RSA PRIVATE KEY": {
                 return new KeyPairRSA.Builder(config)
                         .setPrivateKey(pem.getContent())
-                        .setFormat(Vendor.ASN1)
+                        .setFormat(PrivateKeyEncoding.ASN1)
                         .setDecryptor(createPKDecryptor(pem))
                         .build();
             }
             case "DSA PRIVATE KEY": {
                 return new KeyPairDSA.Builder(config)
                         .setPrivateKey(pem.getContent())
-                        .setFormat(Vendor.ASN1)
+                        .setFormat(PrivateKeyEncoding.ASN1)
                         .setDecryptor(createPKDecryptor(pem))
                         .build();
             }
             case "EC PRIVATE KEY": {
                 return new KeyPairECDSA.Builder(config)
                         .setPrivateKey(pem.getContent())
-                        .setFormat(Vendor.ASN1)
+                        .setFormat(PrivateKeyEncoding.ASN1)
                         .setDecryptor(createPKDecryptor(pem))
                         .build();
             }

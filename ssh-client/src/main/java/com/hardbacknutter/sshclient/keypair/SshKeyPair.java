@@ -50,10 +50,10 @@ public interface SshKeyPair {
      * Decode the blob into the components.
      *
      * @param encodedKey to set/decode
-     * @param keyFormat  of the blob
+     * @param encoding   of the blob
      */
     void setEncodedPublicKey(@Nullable byte[] encodedKey,
-                             @Nullable PublicKeyFormat keyFormat)
+                             @Nullable PublicKeyEncoding encoding)
             throws InvalidKeyException,
                    InvalidKeySpecException,
                    NoSuchAlgorithmException,

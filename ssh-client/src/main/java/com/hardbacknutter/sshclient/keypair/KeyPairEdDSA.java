@@ -66,7 +66,7 @@ public class KeyPairEdDSA
     private KeyPairEdDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+        super(config, builder.privateKeyBlob, builder.privateKeyEncoding,
               builder.encrypted, builder.decryptor);
 
         this.type = builder.type;
@@ -94,10 +94,10 @@ public class KeyPairEdDSA
 
         // parse from encoded... remember, this is BC, you need Java 15 to use JCE with Ed.
         final Key publicKey = keyPair.getPublic();
-        setEncodedPublicKey(publicKey.getEncoded(), PublicKeyFormat.X509);
+        setEncodedPublicKey(publicKey.getEncoded(), PublicKeyEncoding.X509);
 
         final Key privateKey = keyPair.getPrivate();
-        parsePrivateKey(privateKey.getEncoded(), Vendor.PKCS8);
+        parsePrivateKey(privateKey.getEncoded(), PrivateKeyEncoding.PKCS8);
     }
 
     /**
@@ -139,11 +139,11 @@ public class KeyPairEdDSA
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat)
+                                    @Nullable final PublicKeyEncoding encoding)
             throws InvalidKeyException, NoSuchAlgorithmException,
                    InvalidKeySpecException, NoSuchProviderException {
-        if (encodedKey != null && keyFormat != null) {
-            switch (keyFormat) {
+        if (encodedKey != null && encoding != null) {
+            switch (encoding) {
                 case X509: {
                     Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
 
@@ -164,7 +164,7 @@ public class KeyPairEdDSA
                     break;
                 }
                 default:
-                    throw new InvalidKeyException(String.valueOf(keyFormat));
+                    throw new InvalidKeyException(String.valueOf(encoding));
             }
         }
     }
@@ -236,11 +236,11 @@ public class KeyPairEdDSA
 
     @Override
     void parsePrivateKey(@NonNull final byte[] encodedKey,
-                         @NonNull final Vendor keyFormat)
+                         @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
         try {
-            switch (keyFormat) {
+            switch (encoding) {
                 case PUTTY_V3:
                 case PUTTY_V2: {
                     final Buffer buffer = new Buffer(encodedKey);
@@ -316,11 +316,11 @@ public class KeyPairEdDSA
                             subSeq.getObjectAt(0));
                     type = EdKeyType.getByOid(prvKeyAlgOID);
 
-                    parsePrivateKey(privateKeyBlob.getOctets(), Vendor.ASN1);
+                    parsePrivateKey(privateKeyBlob.getOctets(), PrivateKeyEncoding.ASN1);
                     return;
                 }
                 default:
-                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
+                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(encoding));
 
             }
         } catch (@NonNull final GeneralSecurityException e) {
@@ -358,7 +358,7 @@ public class KeyPairEdDSA
         @Nullable
         private byte[] pub_array;
         private byte[] privateKeyBlob;
-        private Vendor privateKeyFormat;
+        private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
         private PKDecryptor decryptor;
@@ -426,8 +426,8 @@ public class KeyPairEdDSA
          *               This is independent from the encryption state.
          */
         @NonNull
-        public Builder setFormat(@NonNull final Vendor format) {
-            this.privateKeyFormat = format;
+        public Builder setFormat(@NonNull final PrivateKeyEncoding format) {
+            this.privateKeyEncoding = format;
             return this;
         }
 

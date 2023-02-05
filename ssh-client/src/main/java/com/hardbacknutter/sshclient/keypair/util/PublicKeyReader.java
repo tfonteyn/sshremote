@@ -3,7 +3,7 @@ package com.hardbacknutter.sshclient.keypair.util;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.keypair.PublicKeyFormat;
+import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 
 import org.bouncycastle.util.io.pem.PemHeader;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -60,7 +60,7 @@ class PublicKeyReader {
                 .findFirst()
                 .orElse("");
 
-        return new PublicKeyAndComment(pem.getContent(), PublicKeyFormat.X509, comment);
+        return new PublicKeyAndComment(pem.getContent(), PublicKeyEncoding.X509, comment);
     }
 
     /**
@@ -102,7 +102,7 @@ class PublicKeyReader {
             }
         }
 
-        return new PublicKeyAndComment(blob, PublicKeyFormat.OPENSSH_V1, comment);
+        return new PublicKeyAndComment(blob, PublicKeyEncoding.OPENSSH_V1, comment);
     }
 
 
@@ -113,19 +113,19 @@ class PublicKeyReader {
         private final String comment;
 
         @Nullable
-        private final PublicKeyFormat format;
+        private final PublicKeyEncoding encoding;
 
         PublicKeyAndComment() {
             blob = null;
-            format = null;
+            encoding = null;
             comment = "";
         }
 
         PublicKeyAndComment(@Nullable final byte[] blob,
-                            @Nullable final PublicKeyFormat format,
+                            @Nullable final PublicKeyEncoding encoding,
                             @Nullable final String comment) {
             this.blob = blob;
-            this.format = format;
+            this.encoding = encoding;
             this.comment = comment != null ? comment : "";
         }
 
@@ -135,8 +135,8 @@ class PublicKeyReader {
         }
 
         @Nullable
-        public PublicKeyFormat getFormat() {
-            return format;
+        public PublicKeyEncoding getEncoding() {
+            return encoding;
         }
 
         @NonNull

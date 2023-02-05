@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.keypair;
 
-public enum Vendor {
+public enum PrivateKeyEncoding {
 
     PKCS8,
     ASN1,

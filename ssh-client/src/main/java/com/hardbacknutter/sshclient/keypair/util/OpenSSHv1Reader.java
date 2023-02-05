@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
-import com.hardbacknutter.sshclient.keypair.PublicKeyFormat;
+import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
@@ -106,7 +106,7 @@ class OpenSSHv1Reader {
                     .build();
         }
 
-        keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyFormat.OPENSSH_V1);
+        keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
         return keyPair;
     }
 }

@@ -102,7 +102,7 @@ public class KeyPairRSA
     private KeyPairRSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyFormat,
+        super(config, builder.privateKeyBlob, builder.privateKeyEncoding,
               builder.encrypted, builder.decryptor);
 
         modulus = builder.modulus;
@@ -174,10 +174,10 @@ public class KeyPairRSA
 
     @Override
     public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyFormat keyFormat)
+                                    @Nullable final PublicKeyEncoding encoding)
             throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
-        if (encodedKey != null && keyFormat != null) {
-            switch (keyFormat) {
+        if (encodedKey != null && encoding != null) {
+            switch (encoding) {
                 case X509: {
                     final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
                     final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -199,7 +199,7 @@ public class KeyPairRSA
                     break;
                 }
                 default:
-                    throw new InvalidKeyException(String.valueOf(keyFormat));
+                    throw new InvalidKeyException(String.valueOf(encoding));
             }
         }
     }
@@ -264,11 +264,11 @@ public class KeyPairRSA
 
     @Override
     void parsePrivateKey(@NonNull final byte[] encodedKey,
-                         @NonNull final Vendor keyFormat)
+                         @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
         try {
-            switch (keyFormat) {
+            switch (encoding) {
                 case PUTTY_V3:
                 case PUTTY_V2: {
                     final Buffer buffer = new Buffer(encodedKey);
@@ -338,7 +338,7 @@ public class KeyPairRSA
                     break;
                 }
                 default:
-                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(keyFormat));
+                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(encoding));
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
@@ -408,7 +408,7 @@ public class KeyPairRSA
         @Nullable
         BigInteger q;
         private byte[] privateKeyBlob;
-        private Vendor privateKeyFormat;
+        private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
         private PKDecryptor decryptor;
@@ -471,8 +471,8 @@ public class KeyPairRSA
          *               This is independent from the encryption state.
          */
         @NonNull
-        public Builder setFormat(@NonNull final Vendor format) {
-            this.privateKeyFormat = format;
+        public Builder setFormat(@NonNull final PrivateKeyEncoding format) {
+            this.privateKeyEncoding = format;
             return this;
         }
 

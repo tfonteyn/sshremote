@@ -191,7 +191,7 @@ public class KeyPairParser {
             final PublicKeyReader.PublicKeyAndComment pkc =
                     new PublicKeyReader().parse(pubKeyReader);
 
-            keyPair.setEncodedPublicKey(pkc.getBlob(), pkc.getFormat());
+            keyPair.setEncodedPublicKey(pkc.getBlob(), pkc.getEncoding());
             keyPair.setPublicKeyComment(pkc.getComment());
         }
         return keyPair;
