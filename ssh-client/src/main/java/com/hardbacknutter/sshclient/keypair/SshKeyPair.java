@@ -176,15 +176,4 @@ public interface SshKeyPair {
      * and the passphrase.
      */
     void dispose();
-
-    /**
-     * Get the UNENCRYPTED encoded key (private/public), in a standard format.
-     *
-     * @return encoded key
-     */
-    @NonNull
-    default byte[] getEncoded()
-            throws InvalidKeyException, IOException {
-        throw new InvalidKeyException("encoding not supported for this key");
-    }
 }

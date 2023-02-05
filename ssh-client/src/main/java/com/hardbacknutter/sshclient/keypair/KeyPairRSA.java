@@ -408,39 +408,6 @@ public class KeyPairRSA
         }
     }
 
-    @NonNull
-    @Override
-    public byte[] getEncoded()
-            throws InvalidKeyException, IOException {
-        if (modulus == null) {
-            throw new InvalidKeyException("No key data");
-        }
-
-        // 0, the version
-        final byte[] versionInt = new byte[1];
-
-        final ASN1EncodableVector rs = new ASN1EncodableVector();
-        rs.add(new ASN1Integer(versionInt));
-        rs.add(new ASN1Integer(modulus));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(publicExponent));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(privateExponent));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(p));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(q));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(primeEP));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(primeEQ));
-        //noinspection ConstantConditions
-        rs.add(new ASN1Integer(coefficient));
-        // version 0, hence no 'otherPrimeInfos' added.
-
-        return new DERSequence(rs).getEncoded();
-    }
-
     public static class Builder {
 
         @NonNull

@@ -349,29 +349,6 @@ public class KeyPairDSA
         setPrivateKeyEncrypted(false);
     }
 
-    @NonNull
-    @Override
-    public byte[] getEncoded()
-            throws InvalidKeyException, IOException {
-
-        if (p == null || q == null || g == null || y == null || x == null) {
-            throw new InvalidKeyException("No key data");
-        }
-
-        // 0, the version
-        final byte[] versionInt = new byte[1];
-
-        final ASN1EncodableVector rs = new ASN1EncodableVector();
-        rs.add(new ASN1Integer(versionInt));
-        rs.add(new ASN1Integer(p));
-        rs.add(new ASN1Integer(q));
-        rs.add(new ASN1Integer(g));
-        rs.add(new ASN1Integer(y));
-        rs.add(new ASN1Integer(x));
-
-        return new DERSequence(rs).getEncoded();
-    }
-
     public static class Builder {
 
         @NonNull

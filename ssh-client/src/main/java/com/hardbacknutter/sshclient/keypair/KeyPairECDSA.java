@@ -333,25 +333,6 @@ public class KeyPairECDSA
         setPrivateKeyEncrypted(false);
     }
 
-    @NonNull
-    @Override
-    public byte[] getEncoded()
-            throws InvalidKeyException, IOException {
-        if (type == null || s == null) {
-            throw new InvalidKeyException("No key data");
-        }
-
-        if (w != null) {
-            return new ECPrivateKey(type.keySize, s,
-                                    new DERBitString(type.encodePoint(w)),
-                                    type.keyOid)
-                    .getEncoded();
-        } else {
-            return new ECPrivateKey(type.keySize, s, null, null)
-                    .getEncoded();
-        }
-    }
-
     public static class Builder {
 
         @NonNull
