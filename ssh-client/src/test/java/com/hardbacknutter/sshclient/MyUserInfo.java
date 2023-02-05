@@ -10,7 +10,17 @@ import java.nio.charset.StandardCharsets;
 public class MyUserInfo
         implements UserInfo {
 
-    private boolean response = true;
+    @Nullable
+    private final String password;
+    @Nullable
+    private final String keyFilesPassphrase;
+
+    public MyUserInfo(@Nullable final String password,
+                      @Nullable final String keyFilesPassphrase) {
+
+        this.password = password;
+        this.keyFilesPassphrase = keyFilesPassphrase;
+    }
 
     @Override
     public void showMessage(@NonNull final String message) {
@@ -21,28 +31,28 @@ public class MyUserInfo
     public boolean promptPassword(@NonNull final String message,
                                   @NonNull final String destination) {
         System.out.println("USER INFO promptPassword: " + String.format(message, destination));
-        System.out.println(response);
-        return response;
+        return password != null;
     }
 
     @Nullable
     @Override
     public byte[] getPassword() {
-        return Constants.PASSWORD.getBytes(StandardCharsets.UTF_8);
+        //noinspection ConstantConditions
+        return password.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
     public boolean promptPassphrase(@NonNull final String message,
                                     @NonNull final String destination) {
         System.out.println("USER INFO promptPassphrase: " + String.format(message, destination));
-        System.out.println(response);
-        return response;
+        return keyFilesPassphrase != null;
     }
 
     @Nullable
     @Override
     public byte[] getPassphrase() {
-        return Constants.KEY_FILES_PASSPHRASE.getBytes(StandardCharsets.UTF_8);
+        //noinspection ConstantConditions
+        return keyFilesPassphrase.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -54,7 +64,6 @@ public class MyUserInfo
         //     int RC_REPLACE_KEY = 3;
         //     int RC_ACCEPT_NON_MATCHING_KEY = 4;
         System.out.println("USER INFO promptYesNo: " + reasonCode + ": " + message);
-        System.out.println(response);
-        return response;
+        return true;
     }
 }
