@@ -9,11 +9,6 @@ import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.sec.ECPrivateKey;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -40,6 +35,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Objects;
 
@@ -275,9 +271,10 @@ public class KeyPairECDSA
                 }
 
                 case ASN1: {
-                    final ECPrivateKey key;
+                    final org.bouncycastle.asn1.sec.ECPrivateKey key;
                     try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                        key = ECPrivateKey.getInstance(stream.readObject());
+                        key = org.bouncycastle.asn1.sec.ECPrivateKey
+                                .getInstance(stream.readObject());
                     }
                     w = ECKeyType.decodePoint(key.getPublicKey().getBytes());
                     s = key.getKey();
@@ -287,29 +284,14 @@ public class KeyPairECDSA
                 }
 
                 case PKCS8: {
-                    // Sequence                                         ==> 'root'
-                    //     Integer(0)                                   ==> version
-                    //     Sequence                                     ==> 'subSeq'
-                    //         ObjectIdentifier(1.2.840.10045.2.1)      ==> 'prvKeyAlgOID'
-                    //         ObjectIdentifier(1.2.840.10045.3.1.7)    ==> curve
-                    //     DER Octet String[109]                        ==> 'privateKey'
-                    //         306b02010...
-                    final ASN1Sequence root;
-                    try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
-                        root = ASN1Sequence.getInstance(stream.readObject());
-                    }
-                    // final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
-                    final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
-                    final ASN1OctetString privateKeyBlob = ASN1OctetString.getInstance(
-                            root.getObjectAt(2));
+                    final KeySpec keySpec = new PKCS8EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance("EC");
+                    final ECPrivateKey key = (ECPrivateKey) keyFactory.generatePrivate(keySpec);
 
-                    // final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier.getInstance(
-                    //        subSeq.getObjectAt(0));
-                    final ASN1ObjectIdentifier primeOid = ASN1ObjectIdentifier.getInstance(
-                            subSeq.getObjectAt(1));
-                    type = ECKeyType.getByOid(primeOid);
-
-                    parsePrivateKey(privateKeyBlob.getOctets(), Vendor.ASN1);
+                    w = key.getParams().getGenerator();
+                    s = key.getS();
+                    type = ECKeyType.getByECPoint(Objects.requireNonNull(w));
+                    ;
                     return;
                 }
                 default:
