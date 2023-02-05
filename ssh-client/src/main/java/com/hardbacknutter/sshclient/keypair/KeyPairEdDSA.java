@@ -149,9 +149,8 @@ public class KeyPairEdDSA
 
                     final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
                     final KeyFactory keyFactory = KeyFactory.getInstance(type.curveName, "BC");
-                    final EdDSAPublicKey publicKey =
-                            (EdDSAPublicKey) keyFactory.generatePublic(keySpec);
-                    pub_array = publicKey.getPointEncoding();
+                    final EdDSAPublicKey key = (EdDSAPublicKey) keyFactory.generatePublic(keySpec);
+                    pub_array = key.getPointEncoding();
                     break;
                 }
                 case OPENSSH_V1: {
