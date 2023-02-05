@@ -156,7 +156,7 @@ public class KeyPairEdDSA
                 case OPENSSH_V1: {
                     try {
                         final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString();
+                        buffer.skipString(/* HostKeyAlgorithm */);
                         pub_array = buffer.getString();
                     } catch (@NonNull final IOException e) {
                         throw new InvalidKeyException(e);

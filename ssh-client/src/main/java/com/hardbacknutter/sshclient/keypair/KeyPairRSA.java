@@ -189,9 +189,8 @@ public class KeyPairRSA
                 }
                 case OPENSSH_V1: {
                     try {
-                        // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
                         final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString();
+                        buffer.skipString(/* hostKeyAlgorithm */);
                         publicExponent = buffer.getBigInteger();
                         modulus = buffer.getBigInteger();
                     } catch (@NonNull final IllegalArgumentException | IOException e) {

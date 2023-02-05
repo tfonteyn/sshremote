@@ -149,20 +149,20 @@ public class KeyPairDSA
                     g = params.getG();
                     break;
                 }
-                    case OPENSSH_V1: {
-                        try {
-                            // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
-                            final Buffer buffer = new Buffer(encodedKey);
-                            buffer.skipString();
-                            p = buffer.getBigInteger();
-                            q = buffer.getBigInteger();
-                            g = buffer.getBigInteger();
-                            y = buffer.getBigInteger();
-                        } catch (@NonNull final IllegalArgumentException | IOException e) {
-                            throw new InvalidKeyException(e);
-                        }
-                        break;
+                case OPENSSH_V1: {
+                    try {
+                        // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
+                        final Buffer buffer = new Buffer(encodedKey);
+                        buffer.skipString(/* hostKeyAlgorithm */);
+                        p = buffer.getBigInteger();
+                        q = buffer.getBigInteger();
+                        g = buffer.getBigInteger();
+                        y = buffer.getBigInteger();
+                    } catch (@NonNull final IllegalArgumentException | IOException e) {
+                        throw new InvalidKeyException(e);
                     }
+                    break;
+                }
                 default:
                     throw new InvalidKeyException(String.valueOf(keyFormat));
             }
@@ -313,6 +313,7 @@ public class KeyPairDSA
                     q = ASN1Integer.getInstance(attr.getObjectAt(1)).getPositiveValue();
                     g = ASN1Integer.getInstance(attr.getObjectAt(2)).getPositiveValue();
                     x = new BigInteger(1, privateKeyBlob.getOctets());
+                    //noinspection ConstantConditions
                     y = g.modPow(x, p);
                     break;
                 }
