@@ -136,12 +136,10 @@ public class KeyPairRSA
         keyPairGenerator.initialize(keySize);
 
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        // JCE provides direct access; no need to use getEncoded() + parse()
         final RSAPrivateCrtKey prvKey = (RSAPrivateCrtKey) keyPair.getPrivate();
-        final RSAPublicKey pubKey = (RSAPublicKey) keyPair.getPublic();
 
         privateExponent = prvKey.getPrivateExponent();
-        publicExponent = pubKey.getPublicExponent();
+        publicExponent = prvKey.getPublicExponent();
 
         modulus = prvKey.getModulus();
         coefficient = prvKey.getCrtCoefficient();
