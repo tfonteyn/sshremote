@@ -207,7 +207,6 @@ public class KeyPairRSA
                 default:
                     throw new InvalidKeyException(String.valueOf(keyFormat));
             }
-
         }
     }
 
