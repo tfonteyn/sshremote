@@ -72,7 +72,7 @@ class CipherTest {
         final byte[] encoded = new byte[20000];
         final byte[] decoded = new byte[10000];
 
-        final byte[] bytes = Constants.getTextBytes();
+        final byte[] bytes = LongText.getBytes();
         System.arraycopy(bytes, 0, input, 0, bytes.length);
 
         cipher.init(Cipher.ENCRYPT_MODE, new byte[32], new byte[64]);

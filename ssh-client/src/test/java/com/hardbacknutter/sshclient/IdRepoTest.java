@@ -46,7 +46,7 @@ class IdRepoTest
         identityRepository.add(id2);
 
         assertTrue(id1.decrypt(null));
-        assertTrue(id2.decrypt(Constants.PASSWORD.getBytes(StandardCharsets.UTF_8)));
+        assertTrue(id2.decrypt(Constants.KEY_FILES_PASSPHRASE.getBytes(StandardCharsets.UTF_8)));
 
         identityRepository.getIdentities().forEach(identity -> {
             System.out.println(identity.getName());

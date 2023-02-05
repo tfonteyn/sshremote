@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgJLogger;
 import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.LongText;
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.keypair.util.KeyPairGen;
 import com.hardbacknutter.sshclient.signature.SshSignature;
@@ -27,14 +27,11 @@ class GenerateKeyPairTest {
     @NonNull
     static Stream<Arguments> readArgs() {
         return Stream.of(
-                Arguments.of("dsa", 1024),
-                Arguments.of("dsa", 2048),
+                Arguments.of("dsa", 0),
 
                 Arguments.of("rsa", 1024),
                 Arguments.of("rsa", 2048),
                 Arguments.of("rsa", 4096),
-                // 8192 is SLOW...
-                // Arguments.of("rsa", 8192),
 
                 Arguments.of("ecdsa", 256),
                 Arguments.of("ecdsa", 384),
@@ -50,17 +47,15 @@ class GenerateKeyPairTest {
     void keyPairTest(@NonNull final String keyType,
                      final int keySize)
             throws GeneralSecurityException, IOException {
-        final byte[] text = Constants.getTextBytes();
 
         final KeyPairGen keyPairGen = new KeyPairGen(SSH_CLIENT.getConfig());
         final SshKeyPair keyPair = keyPairGen.generateKeyPair(keyType, keySize);
 
-        final String hostKeyAlgorithm = keyPair.getHostKeyAlgorithm();
-        final byte[] sig = keyPair.getSignature(text, hostKeyAlgorithm);
-
+        // sign the text-blob and verify
+        final byte[] text = LongText.getBytes();
+        final byte[] sig = keyPair.getSignature(text);
         final SshSignature verifier = keyPair.getVerifier();
         verifier.update(text);
-
         assertTrue(verifier.verify(sig));
     }
 }

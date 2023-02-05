@@ -4,7 +4,10 @@ import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgJLogger;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClient;
+import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.kex.KexProposal;
+import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import java.io.File;
@@ -40,48 +43,52 @@ public class BaseConnectionTest {
     protected static final SecureRandom RANDOM = new SecureRandom();
     private static final Logger LOGGER = new DbgJLogger();
 
-    protected static final String HOST = "172.18.15.121";
-    protected static final String USERNAME = "test";
-    public static final String PASSWORD = "test";
-
-    protected static final int PORT = 22;
     protected static final String[] ZIPPER = {
             KexProposal.COMPRESSION_NONE,
             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
             KexProposal.COMPRESSION_ZLIB
     };
     static final List<String> KEX_ALGS = List.of(
-            Constants.KEX_ALG_CURVE_25519_SHA_256,
-            Constants.KEX_ALG_CURVE_25519_SHA_256_LIBSSH_ORG,
-            Constants.KEX_ALG_ECDH_SHA_2_NISTP_256,
-            Constants.KEX_ALG_ECDH_SHA_2_NISTP_384,
-            Constants.KEX_ALG_ECDH_SHA_2_NISTP_521,
-            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256,
-            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_16_SHA_512,
-            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_18_SHA_512,
-            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_14_SHA_256,
-            Constants.KEX_ALG_DIFFIE_HELLMAN_GROUP_14_SHA_1);
+            KeyExchangeConstants.CURVE_25519_SHA_256,
+            KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG,
+            KeyExchangeConstants.ECDH_SHA_2_NISTP_256,
+            KeyExchangeConstants.ECDH_SHA_2_NISTP_384,
+            KeyExchangeConstants.ECDH_SHA_2_NISTP_521,
+            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256,
+            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512,
+            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512,
+            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256,
+            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1);
     static final List<String> SIG_ALGS = List.of(
-            Constants.SSH_RSA,
-            Constants.RSA_SHA_2_256,
-            Constants.RSA_SHA_2_512,
-            Constants.ECDSA_SHA_2_NISTP_256,
-            Constants.SSH_ED_25519);
+            // 3x "ssh-rsa", but with different (standard) signature algorithms
+            HostKeyAlgorithm.SSH_RSA,
+            HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256,
+            HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512,
+            // still "ssh-rsa" but with non-standard signature algorithms
+//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_224_SSH_COM,
+//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_256_SSH_COM,
+//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_384_SSH_COM,
+//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_512_SSH_COM,
+
+            HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
+            HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
+            HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
+
+            HostKeyAlgorithm.SSH_ED25519,
+
+            //HostKeyAlgorithm.SSH_ED448,
+
+            HostKeyAlgorithm.SSH_DSS
+    );
 
     static final List<String> ENC_ALGS = List.of(
-            Constants.ENC_ALG_CHACHA_20_POLY_1305_OPENSSH_COM,
-            Constants.ENC_ALG_AES_128_CTR,
-            Constants.ENC_ALG_AES_192_CTR,
-            Constants.ENC_ALG_AES_256_CTR,
-            Constants.ENC_ALG_AES_128_GCM_OPENSSH_COM,
-            Constants.ENC_ALG_AES_256_GCM_OPENSSH_COM
+            SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM,
+            SshCipherConstants.AES_128_CTR,
+            SshCipherConstants.AES_192_CTR,
+            SshCipherConstants.AES_256_CTR,
+            SshCipherConstants.AES_128_GCM_OPENSSH_COM,
+            SshCipherConstants.AES_256_GCM_OPENSSH_COM
     );
-
-    static final List<String> MACS = List.of(
-            Constants.HMAC_SHA_1
-    );
-
-    private static final String KNOWN_HOSTS = "C:/tmp/ssh/known_hosts";
 
     protected SshClient sshClient;
 
@@ -98,8 +105,8 @@ public class BaseConnectionTest {
         sshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC, zipper);
 
         //noinspection ResultOfMethodCallIgnored
-        new File(KNOWN_HOSTS).createNewFile();
-        sshClient.setKnownHosts(KNOWN_HOSTS);
+        new File(Constants.KNOWN_HOSTS).createNewFile();
+        sshClient.setKnownHosts(Constants.KNOWN_HOSTS);
         sshClient.setConfig("StrictHostKeyChecking", "no");
     }
 }

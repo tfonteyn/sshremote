@@ -2,6 +2,7 @@ package com.hardbacknutter.sshclient.connections;
 
 import androidx.annotation.NonNull;
 
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.utils.SshException;
@@ -45,8 +46,9 @@ class ConnectionTest
                  @NonNull final String kexAlgorithms)
             throws SshException, GeneralSecurityException, IOException {
 
-        final Session session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        final Session session = sshClient.getSession(Constants.USERNAME,
+                                                     Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.setConfig(HostConfig.HOST_KEY_ALGS, hostKeyAlgorithms);
         session.setConfig(HostConfig.KEX_ALGS, kexAlgorithms);
 

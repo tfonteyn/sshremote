@@ -1,5 +1,6 @@
 package com.hardbacknutter.sshclient.auth;
 
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.MyUserInfo;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
@@ -34,7 +35,7 @@ class PubKeyTest
 
         sshClient.addIdentity(keyFile);
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
         session.connect();
         session.disconnect();
     }
@@ -49,7 +50,7 @@ class PubKeyTest
 
         final UserInfo ui = new MyUserInfo();
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
         session.setUserInfo(ui);
         session.connect();
         session.disconnect();
@@ -63,7 +64,7 @@ class PubKeyTest
 
         sshClient.addIdentity(keyFile);
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
         session.connect();
         session.disconnect();
     }

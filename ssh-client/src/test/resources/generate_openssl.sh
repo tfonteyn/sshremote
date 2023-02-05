@@ -7,10 +7,12 @@ cd ./openssl || exit
 
 openssl dsaparam -out dsa.param 2048
 
+# TODO: use genpkey pkey
 openssl gendsa -out dsa.pem dsa.param
 openssl dsa -in dsa.pem -outform PEM -pubout -out dsa.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in dsa.pem -out dsa.pkcs8
 
+# TODO: use genpkey pkey
 openssl gendsa -out dsa_enc.pem -passout pass:$PASSWORD dsa.param
 openssl dsa -in dsa_enc.pem -outform PEM -pubout -out dsa_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -out dsa_enc.pkcs8
@@ -18,11 +20,12 @@ openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pa
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -scrypt -out dsa_scrypt.pkcs8
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in dsa_enc.pem -scrypt -traditional -out dsa_scrypt.pkcs8_traditional
 
-
+# TODO: use genpkey pkey
 openssl genrsa -out rsa.pem 2048
 openssl rsa -in rsa.pem -outform PEM -pubout -out rsa.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in rsa.pem -out rsa.pkcs8
 
+# TODO: use genpkey pkey
 openssl genrsa -out rsa_enc.pem -passout pass:$PASSWORD 2048
 openssl rsa -in rsa_enc.pem -outform PEM -pubout -out rsa_enc.pub
 openssl pkcs8 -topk8 -inform PEM -outform PEM -passin pass:$PASSWORD -passout pass:$PASSWORD -in rsa_enc.pem -out rsa_enc.pkcs8

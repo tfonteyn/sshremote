@@ -3,6 +3,7 @@ package com.hardbacknutter.sshclient.channels.sftp;
 import androidx.annotation.NonNull;
 
 import com.hardbacknutter.sshclient.ChannelSftp;
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.DbgProgressListener;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
@@ -71,8 +72,8 @@ class PutAndGetTests
                                     final long offset)
             throws SshException, GeneralSecurityException, IOException {
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
@@ -104,8 +105,8 @@ class PutAndGetTests
 //        session.disconnect();
 
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         channel = session.openChannel(ChannelSftp.NAME);
@@ -120,8 +121,8 @@ class PutAndGetTests
     void sftp_get_f_f()
             throws SshException, GeneralSecurityException, IOException {
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
@@ -137,15 +138,15 @@ class PutAndGetTests
     void sftp_get_os()
             throws SshException, GeneralSecurityException, IOException {
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
         channel.connect();
 
         try (FileOutputStream fw = new FileOutputStream("C:\\tmp\\ssh\\"
-                + "f" + RANDOM.nextInt())) {
+                                                                + "f" + RANDOM.nextInt())) {
             channel.get(".bashrc", fw, new DbgProgressListener(session));
         }
 

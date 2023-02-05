@@ -1,6 +1,7 @@
 package com.hardbacknutter.sshclient.channels.exec;
 
 import com.hardbacknutter.sshclient.ChannelExec;
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.utils.SshException;
@@ -32,8 +33,8 @@ class ChannelExecTest
     void exec()
             throws SshException, GeneralSecurityException, IOException {
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         final ChannelExec channel = session.openChannel(ChannelExec.NAME);

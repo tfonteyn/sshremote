@@ -1,6 +1,7 @@
 package com.hardbacknutter.sshclient.channels.sftp;
 
 import com.hardbacknutter.sshclient.ChannelSftp;
+import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.utils.SshException;
@@ -27,8 +28,8 @@ class OtherTest
     void sftp_cd()
             throws SshException, GeneralSecurityException, IOException {
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);
@@ -51,8 +52,8 @@ class OtherTest
     void sftp_ls()
             throws SshException, GeneralSecurityException, IOException {
 
-        session = sshClient.getSession(USERNAME, HOST, PORT);
-        session.setPassword(PASSWORD);
+        session = sshClient.getSession(Constants.USERNAME, Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
         session.connect();
 
         final ChannelSftp channel = session.openChannel(ChannelSftp.NAME);

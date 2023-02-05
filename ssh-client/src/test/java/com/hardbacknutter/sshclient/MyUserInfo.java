@@ -3,7 +3,6 @@ package com.hardbacknutter.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 
 import java.nio.charset.StandardCharsets;
@@ -29,7 +28,7 @@ public class MyUserInfo
     @Nullable
     @Override
     public byte[] getPassword() {
-        return BaseConnectionTest.PASSWORD.getBytes(StandardCharsets.UTF_8);
+        return Constants.PASSWORD.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -43,7 +42,7 @@ public class MyUserInfo
     @Nullable
     @Override
     public byte[] getPassphrase() {
-        return Constants.PASSWORD.getBytes(StandardCharsets.UTF_8);
+        return Constants.KEY_FILES_PASSPHRASE.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
