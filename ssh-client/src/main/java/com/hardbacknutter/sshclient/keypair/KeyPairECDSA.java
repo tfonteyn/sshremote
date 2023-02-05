@@ -162,9 +162,8 @@ public class KeyPairECDSA
                 case X509: {
                     final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
                     final KeyFactory keyFactory = KeyFactory.getInstance("EC");
-                    final ECPublicKey publicKey =
-                            (ECPublicKey) keyFactory.generatePublic(keySpec);
-                    w = publicKey.getW();
+                    final ECPublicKey key = (ECPublicKey) keyFactory.generatePublic(keySpec);
+                    w = key.getW();
                     break;
                 }
                 case OPENSSH_V1: {
