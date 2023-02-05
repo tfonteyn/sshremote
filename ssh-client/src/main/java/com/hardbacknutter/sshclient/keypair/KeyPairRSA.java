@@ -186,11 +186,10 @@ public class KeyPairRSA
                 case X509: {
                     final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
                     final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                    final RSAPublicKey publicKey =
-                            (RSAPublicKey) keyFactory.generatePublic(keySpec);
+                    final RSAPublicKey key = (RSAPublicKey) keyFactory.generatePublic(keySpec);
 
-                    modulus = publicKey.getModulus();
-                    publicExponent = publicKey.getPublicExponent();
+                    modulus = key.getModulus();
+                    publicExponent = key.getPublicExponent();
                     break;
                 }
                 case OPENSSH_V1: {
