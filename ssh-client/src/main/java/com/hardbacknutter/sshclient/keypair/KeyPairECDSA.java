@@ -29,6 +29,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECGenParameterSpec;
@@ -115,9 +116,8 @@ public class KeyPairECDSA
         keyPairGenerator.initialize(params);
 
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        // JCE provides direct access; no need to use getEncoded() + parse()
-        w = ((java.security.interfaces.ECPublicKey) keyPair.getPublic()).getW();
-        s = ((java.security.interfaces.ECPrivateKey) keyPair.getPrivate()).getS();
+        w = ((ECPublicKey) keyPair.getPublic()).getW();
+        s = ((ECPrivateKey) keyPair.getPrivate()).getS();
     }
 
     /**
