@@ -102,17 +102,14 @@ public class KeyPairRSA
     private KeyPairRSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyEncoding,
-              builder.encrypted, builder.decryptor);
-
-        modulus = builder.modulus;
-        publicExponent = builder.publicExponent;
-        privateExponent = builder.privateExponent;
-        coefficient = builder.coefficient;
-        p = builder.p;
-        q = builder.q;
+        super(config,
+              Objects.requireNonNull(builder.privateKeyBlob),
+              Objects.requireNonNull(builder.privateKeyEncoding),
+              builder.encrypted,
+              builder.decryptor);
 
         parse();
+        parsePublicKey(builder.publicKeyBlob, builder.publicKeyEncoding);
     }
 
     /**
@@ -173,38 +170,6 @@ public class KeyPairRSA
     }
 
     @Override
-    public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyEncoding encoding)
-            throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
-        if (encodedKey != null && encoding != null) {
-            switch (encoding) {
-                case X509: {
-                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
-                    final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                    final RSAPublicKey key = (RSAPublicKey) keyFactory.generatePublic(keySpec);
-
-                    modulus = key.getModulus();
-                    publicExponent = key.getPublicExponent();
-                    break;
-                }
-                case OPENSSH_V1: {
-                    try {
-                        final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString(/* hostKeyAlgorithm */);
-                        publicExponent = buffer.getBigInteger();
-                        modulus = buffer.getBigInteger();
-                    } catch (@NonNull final IllegalArgumentException | IOException e) {
-                        throw new InvalidKeyException(e);
-                    }
-                    break;
-                }
-                default:
-                    throw new InvalidKeyException(String.valueOf(encoding));
-            }
-        }
-    }
-
-    @Override
     @NonNull
     public PublicKey getPublicKey()
             throws InvalidKeySpecException, NoSuchAlgorithmException {
@@ -236,9 +201,9 @@ public class KeyPairRSA
 
     @NonNull
     @Override
-    public byte[] forSSHAgent()
+    public byte[] toSshAgentEncodedKeyPair()
             throws KeyManagementException {
-        if (isPrivateKeyEncrypted()) {
+        if (isEncrypted()) {
             throw new KeyManagementException("key is encrypted.");
         }
         Objects.requireNonNull(privateExponent, "privateExponent");
@@ -260,6 +225,40 @@ public class KeyPairRSA
                 .putMPInt(q)
                 .putString(getPublicKeyComment())
                 .getPayload();
+    }
+
+    @Override
+    void parsePublicKey(@Nullable final byte[] encodedKey,
+                        @Nullable final PublicKeyEncoding encoding)
+            throws NoSuchAlgorithmException,
+                   InvalidKeySpecException,
+                   InvalidKeyException {
+        if (encodedKey != null && encoding != null) {
+            switch (encoding) {
+                case X509: {
+                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    final RSAPublicKey key = (RSAPublicKey) keyFactory.generatePublic(keySpec);
+
+                    modulus = key.getModulus();
+                    publicExponent = key.getPublicExponent();
+                    break;
+                }
+                case OPENSSH_V1: {
+                    try {
+                        final Buffer buffer = new Buffer(encodedKey);
+                        buffer.skipString(/* hostKeyAlgorithm */);
+                        publicExponent = buffer.getBigInteger();
+                        modulus = buffer.getBigInteger();
+                    } catch (@NonNull final IllegalArgumentException | IOException e) {
+                        throw new InvalidKeyException(e);
+                    }
+                    break;
+                }
+                default:
+                    throw new InvalidKeyException(String.valueOf(encoding));
+            }
+        }
     }
 
     @Override
@@ -298,6 +297,23 @@ public class KeyPairRSA
                     coefficient = buffer.getBigInteger();
                     p = buffer.getBigInteger();
                     q = buffer.getBigInteger();
+                    setPublicKeyComment(buffer.getJString());
+
+                    calculatePrimeEP();
+                    calculatePrimeEQ();
+                    break;
+                }
+
+                case SSH_AGENT: {
+                    final Buffer buffer = new Buffer(encodedKey);
+                    buffer.skipString(/* "ssh-rsa" */);
+                    modulus = buffer.getBigInteger();
+                    publicExponent = buffer.getBigInteger();
+                    privateExponent = buffer.getBigInteger();
+                    coefficient = buffer.getBigInteger();
+                    p = buffer.getBigInteger();
+                    q = buffer.getBigInteger();
+                    setPublicKeyComment(buffer.getJString());
 
                     calculatePrimeEP();
                     calculatePrimeEQ();
@@ -338,7 +354,7 @@ public class KeyPairRSA
                     break;
                 }
                 default:
-                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(encoding));
+                    throw new UnsupportedKeyBlobEncodingException(encoding);
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
@@ -391,23 +407,17 @@ public class KeyPairRSA
         }
     }
 
-    public static class Builder {
+    public static class Builder implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;
         @Nullable
-        BigInteger modulus;
+        private byte[] publicKeyBlob;
         @Nullable
-        BigInteger publicExponent;
+        private PublicKeyEncoding publicKeyEncoding;
         @Nullable
-        BigInteger privateExponent;
-        @Nullable
-        BigInteger coefficient;
-        @Nullable
-        BigInteger p;
-        @Nullable
-        BigInteger q;
         private byte[] privateKeyBlob;
+        @Nullable
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
@@ -417,70 +427,16 @@ public class KeyPairRSA
             this.config = config;
         }
 
+        @Override
         @NonNull
-        public Builder setModulus(@NonNull final BigInteger modulus) {
-            this.modulus = modulus;
-            return this;
-        }
-
-        @NonNull
-        public Builder setPublicExponent(@NonNull final BigInteger publicExponent) {
-            this.publicExponent = publicExponent;
-            return this;
-        }
-
-        @NonNull
-        public Builder setPrivateExponent(@NonNull final BigInteger privateExponent) {
-            this.privateExponent = privateExponent;
-            return this;
-        }
-
-        @NonNull
-        public Builder setCoefficient(@NonNull final BigInteger coefficient) {
-            this.coefficient = coefficient;
-            return this;
-        }
-
-        @NonNull
-        public Builder setPrimeP(@NonNull final BigInteger p) {
-            this.p = p;
-            return this;
-        }
-
-        @NonNull
-        public Builder setPrimeQ(@NonNull final BigInteger q) {
-            this.q = q;
-            return this;
-        }
-
-        /**
-         * Set the private key blob.
-         *
-         * @param privateKeyBlob The encoded private key
-         */
-        @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+                                     @NonNull final PrivateKeyEncoding encoding) {
             this.privateKeyBlob = privateKeyBlob;
+            this.privateKeyEncoding = encoding;
             return this;
         }
 
-        /**
-         * Set the encoding/format for the private key blob.
-         *
-         * @param format The vendor specific format of the private key
-         *               This is independent from the encryption state.
-         */
-        @NonNull
-        public Builder setFormat(@NonNull final PrivateKeyEncoding format) {
-            this.privateKeyEncoding = format;
-            return this;
-        }
-
-        /**
-         * Set the optional decryptor to use if the key is encrypted.
-         *
-         * @param decryptor (optional) The vendor specific decryptor
-         */
+        @Override
         @NonNull
         public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
             this.decryptor = decryptor;
@@ -488,6 +444,16 @@ public class KeyPairRSA
             return this;
         }
 
+        @Override
+        @NonNull
+        public Builder setPublicKey(@Nullable final byte[] publicKeyBlob,
+                                    @Nullable final PublicKeyEncoding encoding) {
+            this.publicKeyBlob = publicKeyBlob;
+            this.publicKeyEncoding = encoding;
+            return this;
+        }
+
+        @Override
         @NonNull
         public SshKeyPair build()
                 throws GeneralSecurityException {

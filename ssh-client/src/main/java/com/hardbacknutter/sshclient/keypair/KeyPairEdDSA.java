@@ -66,14 +66,15 @@ public class KeyPairEdDSA
     private KeyPairEdDSA(@NonNull final SshClientConfig config,
                          @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyEncoding,
-              builder.encrypted, builder.decryptor);
+        super(config,
+              Objects.requireNonNull(builder.privateKeyBlob),
+              Objects.requireNonNull(builder.privateKeyEncoding),
+              builder.encrypted,
+              builder.decryptor);
 
-        this.type = builder.type;
-        this.prv_array = builder.prv_array;
-        this.pub_array = builder.pub_array;
-
+        this.type = EdKeyType.getByHostKeyAlgorithm(builder.hostKeyAlgorithm);
         parse();
+        parsePublicKey(builder.publicKeyBlob, builder.publicKeyEncoding);
     }
 
     /**
@@ -94,7 +95,7 @@ public class KeyPairEdDSA
 
         // parse from encoded... remember, this is BC, you need Java 15 to use JCE with Ed.
         final Key publicKey = keyPair.getPublic();
-        setEncodedPublicKey(publicKey.getEncoded(), PublicKeyEncoding.X509);
+        parsePublicKey(publicKey.getEncoded(), PublicKeyEncoding.X509);
 
         final Key privateKey = keyPair.getPrivate();
         parsePrivateKey(privateKey.getEncoded(), PrivateKeyEncoding.PKCS8);
@@ -135,38 +136,6 @@ public class KeyPairEdDSA
     public int getKeySize() {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
         return type.keySize;
-    }
-
-    @Override
-    public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyEncoding encoding)
-            throws InvalidKeyException, NoSuchAlgorithmException,
-                   InvalidKeySpecException, NoSuchProviderException {
-        if (encodedKey != null && encoding != null) {
-            switch (encoding) {
-                case X509: {
-                    Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-
-                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
-                    final KeyFactory keyFactory = KeyFactory.getInstance(type.curveName, "BC");
-                    final EdDSAPublicKey key = (EdDSAPublicKey) keyFactory.generatePublic(keySpec);
-                    pub_array = key.getPointEncoding();
-                    break;
-                }
-                case OPENSSH_V1: {
-                    try {
-                        final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString(/* HostKeyAlgorithm */);
-                        pub_array = buffer.getString();
-                    } catch (@NonNull final IOException e) {
-                        throw new InvalidKeyException(e);
-                    }
-                    break;
-                }
-                default:
-                    throw new InvalidKeyException(String.valueOf(encoding));
-            }
-        }
     }
 
     @Override
@@ -212,9 +181,9 @@ public class KeyPairEdDSA
 
     @Override
     @NonNull
-    public byte[] forSSHAgent()
+    public byte[] toSshAgentEncodedKeyPair()
             throws KeyManagementException {
-        if (isPrivateKeyEncrypted()) {
+        if (isEncrypted()) {
             throw new KeyManagementException("Key is encrypted");
         }
         if (prv_array == null || pub_array == null) {
@@ -235,6 +204,40 @@ public class KeyPairEdDSA
     }
 
     @Override
+    void parsePublicKey(@Nullable final byte[] encodedKey,
+                        @Nullable final PublicKeyEncoding encoding)
+            throws NoSuchAlgorithmException,
+                   NoSuchProviderException,
+                   InvalidKeySpecException,
+                   InvalidKeyException {
+        if (encodedKey != null && encoding != null) {
+            switch (encoding) {
+                case X509: {
+                    Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
+
+                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance(type.curveName, "BC");
+                    final EdDSAPublicKey key = (EdDSAPublicKey) keyFactory.generatePublic(keySpec);
+                    pub_array = key.getPointEncoding();
+                    break;
+                }
+                case OPENSSH_V1: {
+                    try {
+                        final Buffer buffer = new Buffer(encodedKey);
+                        buffer.skipString(/* HostKeyAlgorithm */);
+                        pub_array = buffer.getString();
+                    } catch (@NonNull final IOException e) {
+                        throw new InvalidKeyException(e);
+                    }
+                    break;
+                }
+                default:
+                    throw new InvalidKeyException(String.valueOf(encoding));
+            }
+        }
+    }
+
+    @Override
     void parsePrivateKey(@NonNull final byte[] encodedKey,
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
@@ -249,8 +252,6 @@ public class KeyPairEdDSA
                 }
 
                 case OPENSSH_V1: {
-                    Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-
                     final Buffer buffer = new Buffer(encodedKey);
                     // 64-bit dummy checksum  # a random 32-bit int, repeated
                     final int checkInt1 = buffer.getInt();
@@ -258,16 +259,22 @@ public class KeyPairEdDSA
                     if (checkInt1 != checkInt2) {
                         throw new InvalidKeyException("checksum failed");
                     }
-                    buffer.skipString(/* hostKeyAlgorithmName */);
-
+                    type = EdKeyType.getByHostKeyAlgorithm(buffer.getJString());
                     pub_array = buffer.getString();
-
                     // OpenSSH stores private key in first half of string and duplicate copy
                     // of public key in second half of string
-                    final byte[] tmp = buffer.getString(); // secret key (private key + public key)
-                    // extract the first half
-                    prv_array = Arrays.copyOf(tmp, type.keySize);
+                    prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
+                    setPublicKeyComment(buffer.getJString());
+                    break;
+                }
 
+                case SSH_AGENT: {
+                    final Buffer buffer = new Buffer(encodedKey);
+                    type = EdKeyType.getByHostKeyAlgorithm(buffer.getJString());
+                    pub_array = buffer.getString();
+                    // OpenSSH stores private key in first half of string and duplicate copy
+                    // of public key in second half of string. Hence only copy one half.
+                    prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
                     setPublicKeyComment(buffer.getJString());
                     break;
                 }
@@ -320,7 +327,7 @@ public class KeyPairEdDSA
                     return;
                 }
                 default:
-                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(encoding));
+                    throw new UnsupportedKeyBlobEncodingException(encoding);
 
             }
         } catch (@NonNull final GeneralSecurityException e) {
@@ -347,95 +354,51 @@ public class KeyPairEdDSA
         }
     }
 
-    public static class Builder {
+    public static class Builder implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;
+        /** Allowed to be {@code null} for deferred decryption. */
+        @NonNull
+        private final String hostKeyAlgorithm;
         @Nullable
-        private EdKeyType type;
+        private byte[] publicKeyBlob;
         @Nullable
-        private byte[] prv_array;
+        private PublicKeyEncoding publicKeyEncoding;
         @Nullable
-        private byte[] pub_array;
         private byte[] privateKeyBlob;
+        @Nullable
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
         private PKDecryptor decryptor;
 
-        public Builder(@NonNull final SshClientConfig config)
+        public Builder(@NonNull final SshClientConfig config,
+                       @NonNull final String hostKeyAlgorithm)
                 throws NoSuchAlgorithmException {
             this.config = config;
+            this.hostKeyAlgorithm = hostKeyAlgorithm;
         }
 
+        @Override
         @NonNull
-        public Builder setHostKeyAlgorithm(@NonNull final String hostKeyAlgorithm)
-                throws NoSuchAlgorithmException {
-            this.type = EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm);
-            return this;
-        }
-
-        /**
-         * Set the raw 32 byte private key blob.
-         *
-         * @throws InvalidKeyException if the length was not 32
-         */
-        @NonNull
-        public Builder setPrvArray(@NonNull final byte[] bytes) throws InvalidKeyException {
-            Objects.requireNonNull(type, "Set type first");
-            if (bytes.length != type.keySize) {
-                throw new InvalidKeyException("prv_array length must be " + type.keySize
-                                                      + ", but was " + bytes.length);
-            }
-
-            this.prv_array = bytes;
-            return this;
-        }
-
-        /**
-         * Set the raw 32 byte public key blob.
-         *
-         * @throws InvalidKeyException if the length was not 32
-         */
-        @NonNull
-        public Builder setPubArray(@NonNull final byte[] bytes) throws InvalidKeyException {
-            Objects.requireNonNull(type, "Set type first");
-            if (bytes.length != type.keySize) {
-                throw new InvalidKeyException("pub_array length must be " + type.keySize
-                                                      + ", but was " + bytes.length);
-            }
-            this.pub_array = bytes;
-            return this;
-        }
-
-        /**
-         * Set the private key blob.
-         *
-         * @param privateKeyBlob The encoded private key
-         */
-        @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+                                     @NonNull final PrivateKeyEncoding encoding) {
             this.privateKeyBlob = privateKeyBlob;
+            this.privateKeyEncoding = encoding;
             return this;
         }
 
-        /**
-         * Set the encoding/format for the private key blob.
-         *
-         * @param format The vendor specific format of the private key
-         *               This is independent from the encryption state.
-         */
+        @Override
         @NonNull
-        public Builder setFormat(@NonNull final PrivateKeyEncoding format) {
-            this.privateKeyEncoding = format;
+        public Builder setPublicKey(@Nullable final byte[] publicKeyBlob,
+                                    @Nullable final PublicKeyEncoding encoding) {
+            this.publicKeyBlob = publicKeyBlob;
+            this.publicKeyEncoding = encoding;
             return this;
         }
 
-        /**
-         * Set the optional decryptor to use if the key is encrypted.
-         *
-         * @param decryptor (optional) The vendor specific decryptor
-         */
+        @Override
         @NonNull
         public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
             this.decryptor = decryptor;
@@ -443,6 +406,7 @@ public class KeyPairEdDSA
             return this;
         }
 
+        @Override
         @NonNull
         public SshKeyPair build()
                 throws GeneralSecurityException {

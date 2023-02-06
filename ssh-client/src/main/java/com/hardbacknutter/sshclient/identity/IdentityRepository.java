@@ -95,7 +95,7 @@ public interface IdentityRepository {
      */
     default boolean remove(@NonNull final Identity identity)
             throws SshException, GeneralSecurityException {
-        return remove(identity.getPublicKeyBlob());
+        return remove(identity.getSshEncodedPublicKey());
     }
 
     /**

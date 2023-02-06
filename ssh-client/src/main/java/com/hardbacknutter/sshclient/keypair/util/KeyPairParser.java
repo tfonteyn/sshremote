@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
+import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 
 import org.bouncycastle.util.io.pem.PemObject;
@@ -154,27 +156,43 @@ public class KeyPairParser {
             return keyPair;
         }
 
+
         try (PemReader reader = new PemReader(prvKeyReader)) {
             final PemObject pem = reader.readPemObject();
             if (pem != null) {
                 // https://www.rfc-editor.org/rfc/rfc7468.html#section-4
                 switch (pem.getType()) {
                     case "OPENSSH PRIVATE KEY": {
-                        final OpenSSHv1Reader parser = new OpenSSHv1Reader(config);
-                        keyPair = parser.parse(pem);
+                        keyPair = new KeyPairOpenSSHv1.Builder(config)
+                                .setPrivateKey(pem.getContent())
+                                .build();
                         break;
                     }
+                    case "ENCRYPTED PRIVATE KEY": {
+                        keyPair = new KeyPairPKCS8.Builder(config)
+                                .setPrivateKey(pem.getContent(), true)
+                                .build();
+                        break;
+                    }
+                    case "PRIVATE KEY": {
+                        keyPair = new KeyPairPKCS8.Builder(config)
+                                .setPrivateKey(pem.getContent(), false)
+                                .build();
+                        break;
+                    }
+
                     case "RSA PRIVATE KEY":
                     case "DSA PRIVATE KEY":
                     case "EC PRIVATE KEY": {
                         final LegacyPEMReader parser = new LegacyPEMReader(config);
-                        keyPair = parser.parse(pem);
-                        break;
-                    }
-                    case "ENCRYPTED PRIVATE KEY":
-                    case "PRIVATE KEY": {
-                        final PKCS8Reader parser = new PKCS8Reader(config);
-                        keyPair = parser.parse(pem);
+                        if (pubKeyReader != null) {
+                            final PublicKeyReader.PublicKeyAndComment pkc =
+                                    new PublicKeyReader().parse(pubKeyReader);
+                            keyPair = parser.parse(pem, pkc.getBlob(), pkc.getEncoding());
+                            keyPair.setPublicKeyComment(pkc.getComment());
+                        } else {
+                            keyPair = parser.parse(pem, null, null);
+                        }
                         break;
                     }
                     default:
@@ -187,13 +205,6 @@ public class KeyPairParser {
             throw new IOException(INVALID_FORMAT);
         }
 
-        if (pubKeyReader != null) {
-            final PublicKeyReader.PublicKeyAndComment pkc =
-                    new PublicKeyReader().parse(pubKeyReader);
-
-            keyPair.setEncodedPublicKey(pkc.getBlob(), pkc.getEncoding());
-            keyPair.setPublicKeyComment(pkc.getComment());
-        }
         return keyPair;
     }
 }

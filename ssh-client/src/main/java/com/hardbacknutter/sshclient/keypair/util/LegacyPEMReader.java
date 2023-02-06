@@ -5,11 +5,14 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import com.hardbacknutter.sshclient.keypair.KeyPairBuilder;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
+import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.keypair.UnsupportedAlgorithmException;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS5;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
@@ -17,6 +20,7 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import org.bouncycastle.util.io.pem.PemHeader;
 import org.bouncycastle.util.io.pem.PemObject;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -32,35 +36,39 @@ class LegacyPEMReader {
         this.config = config;
     }
 
+
     @NonNull
-    SshKeyPair parse(@NonNull final PemObject pem)
-            throws InvalidKeyException, GeneralSecurityException {
+    SshKeyPair parse(@NonNull final PemObject pem,
+                     @Nullable final byte[] publicKeyBlob,
+                     @Nullable final PublicKeyEncoding publicKeyEncoding)
+            throws InvalidKeyException, GeneralSecurityException, IOException {
+
+        final KeyPairBuilder builder;
 
         switch (pem.getType()) {
             case "RSA PRIVATE KEY": {
-                return new KeyPairRSA.Builder(config)
-                        .setPrivateKey(pem.getContent())
-                        .setFormat(PrivateKeyEncoding.ASN1)
-                        .setDecryptor(createPKDecryptor(pem))
-                        .build();
+                builder = new KeyPairRSA.Builder(config);
+                break;
             }
             case "DSA PRIVATE KEY": {
-                return new KeyPairDSA.Builder(config)
-                        .setPrivateKey(pem.getContent())
-                        .setFormat(PrivateKeyEncoding.ASN1)
-                        .setDecryptor(createPKDecryptor(pem))
-                        .build();
+                builder = new KeyPairDSA.Builder(config);
+                break;
+
             }
             case "EC PRIVATE KEY": {
-                return new KeyPairECDSA.Builder(config)
-                        .setPrivateKey(pem.getContent())
-                        .setFormat(PrivateKeyEncoding.ASN1)
-                        .setDecryptor(createPKDecryptor(pem))
-                        .build();
+                builder = new KeyPairECDSA.Builder(config, null);
+                break;
+
             }
             default:
-                throw new InvalidKeyException("Invalid Legacy PEM format: " + pem.getType());
+                throw new UnsupportedAlgorithmException(pem.getType());
         }
+
+        return builder
+                .setPrivateKey(pem.getContent(), PrivateKeyEncoding.ASN1)
+                .setPublicKey(publicKeyBlob, publicKeyEncoding)
+                .setDecryptor(createPKDecryptor(pem))
+                .build();
     }
 
     @Nullable

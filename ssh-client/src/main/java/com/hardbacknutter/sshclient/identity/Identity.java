@@ -56,7 +56,7 @@ public interface Identity {
      * @return encoded public key
      */
     @Nullable
-    byte[] getPublicKeyBlob()
+    byte[] getSshEncodedPublicKey()
             throws GeneralSecurityException;
 
     /**

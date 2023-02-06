@@ -8,7 +8,6 @@ import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -47,19 +46,6 @@ public interface SshKeyPair {
                    NoSuchProviderException;
 
     /**
-     * Decode the blob into the components.
-     *
-     * @param encodedKey to set/decode
-     * @param encoding   of the blob
-     */
-    void setEncodedPublicKey(@Nullable byte[] encodedKey,
-                             @Nullable PublicKeyEncoding encoding)
-            throws InvalidKeyException,
-                   InvalidKeySpecException,
-                   NoSuchAlgorithmException,
-                   NoSuchProviderException;
-
-    /**
      * Returns the user comment of the public key.
      * Will be {@code ""} if not set.
      *
@@ -76,7 +62,7 @@ public interface SshKeyPair {
      * @return {@code true} if the private key is encrypted,
      * {@code false} if not.
      */
-    boolean isPrivateKeyEncrypted();
+    boolean isEncrypted();
 
     /**
      * Decrypts the private key, using a passphrase.
@@ -84,7 +70,7 @@ public interface SshKeyPair {
      * @return {@code true} if the private key was successfully
      * decrypted, i.e. is now usable, else {@code false}.
      */
-    boolean decryptPrivateKey(@Nullable byte[] passphrase)
+    boolean decrypt(@Nullable byte[] passphrase)
             throws GeneralSecurityException, IOException;
 
     /**
@@ -135,7 +121,7 @@ public interface SshKeyPair {
      * Creates and returns a fingerprint of the public key,
      * i.e. the hexadecimal representation of the hash of the public key.
      * <p>
-     * Uses the configured hash algorithm.
+     * Uses the on the client or session configured hash algorithm.
      */
     @NonNull
     String getFingerPrint()
@@ -157,7 +143,7 @@ public interface SshKeyPair {
      * @return blob of the key pair
      */
     @NonNull
-    byte[] forSSHAgent()
+    byte[] toSshAgentEncodedKeyPair()
             throws GeneralSecurityException;
 
     /**

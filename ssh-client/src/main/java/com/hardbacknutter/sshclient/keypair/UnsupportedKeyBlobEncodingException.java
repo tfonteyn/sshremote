@@ -5,16 +5,17 @@ import androidx.annotation.Nullable;
 
 import java.io.IOException;
 
+@SuppressWarnings("WeakerAccess")
 public class UnsupportedKeyBlobEncodingException extends IOException {
 
-    private static final long serialVersionUID = -7252868695693101557L;
+    private static final long serialVersionUID = 7073487457114722702L;
 
-    public UnsupportedKeyBlobEncodingException(@Nullable final PrivateKeyEncoding format) {
-        super(String.valueOf(format));
+    UnsupportedKeyBlobEncodingException(@Nullable final PrivateKeyEncoding encoding) {
+        super(String.valueOf(encoding));
     }
 
-    public UnsupportedKeyBlobEncodingException(@Nullable final PublicKeyEncoding format) {
-        super(String.valueOf(format));
+    UnsupportedKeyBlobEncodingException(@Nullable final PublicKeyEncoding encoding) {
+        super(String.valueOf(encoding));
     }
 
     public UnsupportedKeyBlobEncodingException(@NonNull final String format) {

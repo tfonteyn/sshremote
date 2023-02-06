@@ -174,7 +174,7 @@ public class ChannelAgentForwarding
                 final IdentityRepository identityRepository = session.getIdentityRepository();
                 synchronized (identityRepository) {
                     for (final Identity _identity : identityRepository.getIdentities()) {
-                        if (Arrays.equals(keyBlob, _identity.getPublicKeyBlob())) {
+                        if (Arrays.equals(keyBlob, _identity.getSshEncodedPublicKey())) {
                             boolean encrypted = _identity.isEncrypted();
                             if (encrypted && userinfo != null) {
                                 try {
@@ -223,7 +223,7 @@ public class ChannelAgentForwarding
                     // (dev note: no stream() as getPublicKeyBlob() can throw)
                     final List<Identity> toSend = new ArrayList<>();
                     for (final Identity identity : identityRepository.getIdentities()) {
-                        if (identity.getPublicKeyBlob() != null) {
+                        if (identity.getSshEncodedPublicKey() != null) {
                             toSend.add(identity);
                         }
                     }
@@ -231,7 +231,7 @@ public class ChannelAgentForwarding
                     responseBuffer.putInt(toSend.size());
                     for (final Identity identity : toSend) {
                         //noinspection ConstantConditions
-                        responseBuffer.putString(identity.getPublicKeyBlob())
+                        responseBuffer.putString(identity.getSshEncodedPublicKey())
                                       // comment
                                       .putString("");
                     }

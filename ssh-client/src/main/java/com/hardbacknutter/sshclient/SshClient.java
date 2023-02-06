@@ -501,17 +501,18 @@ public class SshClient {
 
     /**
      * Adds an identity to be used for public-key authentication.
+     * <p>
+     * If a file with the same name and suffix {@code .pub}.
+     * exists, it will be parsed for the public key.
      *
-     * @param prvKeyFilename the file name of the private key file.
-     *                       This is also used as the identifying name of the key.
-     *                       The corresponding public key is assumed to be in a file
-     *                       with the same name with suffix {@code .pub}.
+     * @param privateKeyFilename the file name of the private key file.
+     *                           This is also used as the identifying name of the key.
      *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
      */
-    public boolean addIdentity(@NonNull final String prvKeyFilename)
+    public boolean addIdentity(@NonNull final String privateKeyFilename)
             throws IOException, GeneralSecurityException {
-        final Identity identity = IdentityImpl.fromFiles(config, prvKeyFilename, null);
+        final Identity identity = IdentityImpl.fromFiles(config, privateKeyFilename);
         return addIdentity(identity, null);
     }
 
@@ -521,21 +522,22 @@ public class SshClient {
      * If a passphrase is provided, decryption wil be attempted
      * before registering it into identityRepository, and if failing this method will throw.
      *
-     * @param prvKeyFilename the file name of the private key file.
-     *                       This is also used as the identifying name of the key.
-     * @param pubKeyFilename the file name of the public key file.
-     * @param passphrase     the passphrase necessary to access the private key.
+     * @param privateKeyFilename the file name of the private key file.
+     *                           This is also used as the identifying name of the key.
+     * @param publicKeyFilename  the file name of the public key file.
+     * @param passphrase         the passphrase necessary to access the private key.
      *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
      *
      * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
      */
     @SuppressWarnings("WeakerAccess")
-    public boolean addIdentity(@NonNull final String prvKeyFilename,
-                               @Nullable final String pubKeyFilename,
+    public boolean addIdentity(@NonNull final String privateKeyFilename,
+                               @Nullable final String publicKeyFilename,
                                @Nullable final byte[] passphrase)
             throws IOException, GeneralSecurityException {
-        final Identity identity = IdentityImpl.fromFiles(config, prvKeyFilename, pubKeyFilename);
+        final Identity identity = IdentityImpl.fromFiles(config, privateKeyFilename,
+                                                         publicKeyFilename);
         return addIdentity(identity, passphrase);
     }
 

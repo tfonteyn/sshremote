@@ -44,11 +44,6 @@ public abstract class KeyPairBase
 
     @NonNull
     final SshClientConfig config;
-    @Nullable
-    PKDecryptor decryptor;
-
-    @NonNull
-    private String publicKeyComment = "";
     /**
      * The private key as a byte[].
      * The binary format is {@link #privateKeyEncoding}.
@@ -56,10 +51,14 @@ public abstract class KeyPairBase
      * If it is, then {@link #decryptor} should be able to decrypt it.
      */
     @Nullable
-    private byte[] privateKeyBlob;
+    protected byte[] privateKeyBlob;
     @Nullable
-    private PrivateKeyEncoding privateKeyEncoding;
-    private boolean privateKeyEncrypted;
+    PKDecryptor decryptor;
+    @Nullable
+    PrivateKeyEncoding privateKeyEncoding;
+    boolean privateKeyEncrypted;
+    @NonNull
+    private String publicKeyComment = "";
 
     /**
      * Constructor.
@@ -78,12 +77,12 @@ public abstract class KeyPairBase
      */
     KeyPairBase(@NonNull final SshClientConfig config,
                 @NonNull final byte[] privateKeyBlob,
-                @NonNull final PrivateKeyEncoding format,
+                @NonNull final PrivateKeyEncoding privateKeyEncoding,
                 final boolean encrypted,
                 @Nullable final PKDecryptor decryptor) {
         this.config = config;
         this.privateKeyBlob = privateKeyBlob;
-        this.privateKeyEncoding = format;
+        this.privateKeyEncoding = privateKeyEncoding;
         this.privateKeyEncrypted = encrypted;
         this.decryptor = decryptor;
     }
@@ -184,7 +183,7 @@ public abstract class KeyPairBase
     }
 
     @Override
-    public boolean isPrivateKeyEncrypted() {
+    public boolean isEncrypted() {
         return privateKeyEncrypted;
     }
 
@@ -218,13 +217,26 @@ public abstract class KeyPairBase
      * </strong>
      *
      * @param encodedKey the unencrypted (plain) key data.
-     * @param encoding  the encoding format
+     * @param encoding   the encoding format
      *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
     abstract void parsePrivateKey(@NonNull byte[] encodedKey,
                                   @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException;
+
+    /**
+     * Decode the public key blob into the components.
+     *
+     * @param encodedKey the key data.
+     * @param encoding   the encoding format
+     */
+    abstract void parsePublicKey(@NonNull byte[] encodedKey,
+                                 @NonNull final PublicKeyEncoding encoding)
+            throws NoSuchAlgorithmException,
+                   NoSuchProviderException,
+                   InvalidKeySpecException,
+                   InvalidKeyException;
 
     /**
      * Decrypts the private key, using a passphrase.
@@ -236,7 +248,7 @@ public abstract class KeyPairBase
      * decrypted, i.e. is now usable, else {@code false}.
      */
     @Override
-    public boolean decryptPrivateKey(@Nullable final byte[] passphrase)
+    public boolean decrypt(@Nullable final byte[] passphrase)
             throws GeneralSecurityException, IOException {
 
         if (!privateKeyEncrypted) {
@@ -250,7 +262,7 @@ public abstract class KeyPairBase
 
         final byte[] plainKey;
         try {
-            plainKey = decrypt(passphrase);
+            plainKey = internalDecrypt(passphrase);
             // be optimistic, assume all went well
             privateKeyEncrypted = false;
         } catch (final GeneralSecurityException e) {
@@ -280,15 +292,17 @@ public abstract class KeyPairBase
     }
 
     /**
+     * Runs the {@link #decryptor}.
+     * <p>
      * If the blob was not encrypted, we return the blob directly.
      * <p>
      * If it was encrypted, we return the decrypted blob.
      * IMPORTANT: the returned byte[] CAN BE GARBAGE if the data/parameters were incorrect.
      * <p>
-     * The returned value MUST be parsed for validity.
+     * The returned blob MUST be parsed for validity.
      */
     @NonNull
-    public byte[] decrypt(@Nullable final byte[] passphrase)
+    byte[] internalDecrypt(@Nullable final byte[] passphrase)
             throws GeneralSecurityException, IOException {
         if (privateKeyBlob == null) {
             throw new InvalidKeyException("No key data");

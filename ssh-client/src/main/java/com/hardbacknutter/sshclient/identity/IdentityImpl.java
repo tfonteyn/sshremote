@@ -34,16 +34,32 @@ public final class IdentityImpl
 
     /**
      * Creates a new Identity from the public and private key file names.
+     * <p>
+     * If a file with the same name and suffix {@code .pub}.
+     * exists, it will be parsed for the public key.
+     *
+     * @param privateKeyFilename the file name of the private key file.
+     *                           This is also used as the identifying name of the key.
      */
     @NonNull
     public static Identity fromFiles(@NonNull final SshClientConfig config,
-                                     @NonNull final String prvKeyFilename,
-                                     @Nullable final String pubKeyFilename)
+                                     @NonNull final String privateKeyFilename)
             throws IOException, GeneralSecurityException {
 
         final KeyPairParser keyPairParser = new KeyPairParser(config);
-        final SshKeyPair keyPair = keyPairParser.parse(prvKeyFilename, pubKeyFilename);
-        return new IdentityImpl(config, prvKeyFilename, keyPair);
+        final SshKeyPair keyPair = keyPairParser.parse(privateKeyFilename);
+        return new IdentityImpl(config, privateKeyFilename, keyPair);
+    }
+
+    @NonNull
+    public static Identity fromFiles(@NonNull final SshClientConfig config,
+                                     @NonNull final String privateKeyFilename,
+                                     @Nullable final String publicKeyFilename)
+            throws IOException, GeneralSecurityException {
+
+        final KeyPairParser keyPairParser = new KeyPairParser(config);
+        final SshKeyPair keyPair = keyPairParser.parse(privateKeyFilename, publicKeyFilename);
+        return new IdentityImpl(config, privateKeyFilename, keyPair);
     }
 
     /**
@@ -74,17 +90,20 @@ public final class IdentityImpl
     @Override
     public boolean decrypt(@Nullable final byte[] passphrase)
             throws GeneralSecurityException, IOException {
-        return sshKeyPair.decryptPrivateKey(passphrase);
+        return sshKeyPair.decrypt(passphrase);
     }
 
     /**
-     * Returns the public-key blob.
+     * Returns the blob of the public key in the <strong>SSH wrapped encoding</strong>.
+     * <p>
+     * string    format identifier
+     * byte[n]   key data
      *
-     * @return the public-key blob
+     * @return blob of the public key
      */
     @Override
     @NonNull
-    public byte[] getPublicKeyBlob() {
+    public byte[] getSshEncodedPublicKey() {
         return sshKeyPair.getSshEncodedPublicKey();
     }
 
@@ -125,7 +144,7 @@ public final class IdentityImpl
      */
     @Override
     public boolean isEncrypted() {
-        return sshKeyPair.isPrivateKeyEncrypted();
+        return sshKeyPair.isEncrypted();
     }
 
     /**
@@ -139,9 +158,9 @@ public final class IdentityImpl
     @Override
     @NonNull
     public String toString() {
-        return "IdentityFile{" +
-                "identity='" + name + '\'' +
-                ", sshKeyPair=" + sshKeyPair +
-                '}';
+        return "IdentityFile{"
+                + "identity='" + name + '\''
+                + ", sshKeyPair=" + sshKeyPair
+                + '}';
     }
 }

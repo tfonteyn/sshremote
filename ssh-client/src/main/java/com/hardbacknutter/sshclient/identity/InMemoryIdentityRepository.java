@@ -55,14 +55,14 @@ public class InMemoryIdentityRepository
             throws GeneralSecurityException {
         if (!identities.contains(identity)) {
 
-            final byte[] blob1 = identity.getPublicKeyBlob();
+            final byte[] blob1 = identity.getSshEncodedPublicKey();
             if (blob1 == null) {
                 identities.add(identity);
                 return true;
             }
 
             for (final Identity idi : identities) {
-                final byte[] blob2 = idi.getPublicKeyBlob();
+                final byte[] blob2 = idi.getSshEncodedPublicKey();
                 if (blob2 != null && Arrays.equals(blob1, blob2)) {
                     if (!identity.isEncrypted() && idi.isEncrypted()) {
                         remove(blob2);
@@ -84,7 +84,7 @@ public class InMemoryIdentityRepository
             identity.clear();
             return true;
         } else {
-            return remove(identity.getPublicKeyBlob());
+            return remove(identity.getSshEncodedPublicKey());
         }
     }
 
@@ -95,7 +95,7 @@ public class InMemoryIdentityRepository
             return false;
         }
         for (final Identity identity : identities) {
-            final byte[] blob = identity.getPublicKeyBlob();
+            final byte[] blob = identity.getSshEncodedPublicKey();
             if (blob != null && Arrays.equals(publicKeyBlob, blob)) {
                 identities.remove(identity);
                 identity.clear();
@@ -126,12 +126,12 @@ public class InMemoryIdentityRepository
         for (int i = 0; i < len; i++) {
             final Identity foo = identities.get(i);
 
-            final byte[] foo_blob = foo.getPublicKeyBlob();
+            final byte[] foo_blob = foo.getSshEncodedPublicKey();
             if (foo_blob != null) {
                 for (int j = i + 1; j < len; j++) {
 
                     final Identity bar = identities.get(j);
-                    final byte[] bar_blob = bar.getPublicKeyBlob();
+                    final byte[] bar_blob = bar.getSshEncodedPublicKey();
                     if (bar_blob != null) {
                         if (Arrays.equals(foo_blob, bar_blob) &&
                                 foo.isEncrypted() == bar.isEncrypted()) {

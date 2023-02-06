@@ -69,16 +69,14 @@ public class KeyPairDSA
     private KeyPairDSA(@NonNull final SshClientConfig config,
                        @NonNull final Builder builder)
             throws GeneralSecurityException {
-        super(config, builder.privateKeyBlob, builder.privateKeyEncoding,
-              builder.encrypted, builder.decryptor);
-
-        p = builder.p;
-        q = builder.q;
-        g = builder.g;
-        y = builder.y;
-        x = builder.x;
+        super(config,
+              Objects.requireNonNull(builder.privateKeyBlob),
+              Objects.requireNonNull(builder.privateKeyEncoding),
+              builder.encrypted,
+              builder.decryptor);
 
         parse();
+        parsePublicKey(builder.publicKeyBlob, builder.publicKeyEncoding);
     }
 
     /**
@@ -131,44 +129,6 @@ public class KeyPairDSA
         return keySize;
     }
 
-
-    @Override
-    public void setEncodedPublicKey(@Nullable final byte[] encodedKey,
-                                    @Nullable final PublicKeyEncoding encoding)
-            throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
-        if (encodedKey != null && encoding != null) {
-            switch (encoding) {
-                case X509: {
-                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
-                    final KeyFactory keyFactory = KeyFactory.getInstance("DSA");
-                    final DSAPublicKey key = (DSAPublicKey) keyFactory.generatePublic(keySpec);
-                    y = key.getY();
-                    final DSAParams params = key.getParams();
-                    p = params.getP();
-                    q = params.getQ();
-                    g = params.getG();
-                    break;
-                }
-                case OPENSSH_V1: {
-                    try {
-                        // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
-                        final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString(/* hostKeyAlgorithm */);
-                        p = buffer.getBigInteger();
-                        q = buffer.getBigInteger();
-                        g = buffer.getBigInteger();
-                        y = buffer.getBigInteger();
-                    } catch (@NonNull final IllegalArgumentException | IOException e) {
-                        throw new InvalidKeyException(e);
-                    }
-                    break;
-                }
-                default:
-                    throw new InvalidKeyException(String.valueOf(encoding));
-            }
-        }
-    }
-
     @Override
     @NonNull
     public PublicKey getPublicKey()
@@ -210,9 +170,9 @@ public class KeyPairDSA
 
     @NonNull
     @Override
-    public byte[] forSSHAgent()
+    public byte[] toSshAgentEncodedKeyPair()
             throws KeyManagementException {
-        if (isPrivateKeyEncrypted()) {
+        if (isEncrypted()) {
             throw new KeyManagementException("key is encrypted.");
         }
         Objects.requireNonNull(x, "x");
@@ -230,6 +190,45 @@ public class KeyPairDSA
                 .putMPInt(x)
                 .putString(getPublicKeyComment())
                 .getPayload();
+    }
+
+    @Override
+    void parsePublicKey(@Nullable final byte[] encodedKey,
+                        @Nullable final PublicKeyEncoding encoding)
+            throws NoSuchAlgorithmException,
+                   InvalidKeySpecException,
+                   InvalidKeyException {
+        if (encodedKey != null && encoding != null) {
+            switch (encoding) {
+                case X509: {
+                    final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
+                    final KeyFactory keyFactory = KeyFactory.getInstance("DSA");
+                    final DSAPublicKey key = (DSAPublicKey) keyFactory.generatePublic(keySpec);
+                    y = key.getY();
+                    final DSAParams params = key.getParams();
+                    p = params.getP();
+                    q = params.getQ();
+                    g = params.getG();
+                    break;
+                }
+                case OPENSSH_V1: {
+                    try {
+                        // https://www.rfc-editor.org/rfc/rfc4253#section-6.6
+                        final Buffer buffer = new Buffer(encodedKey);
+                        buffer.skipString(/* hostKeyAlgorithm */);
+                        p = buffer.getBigInteger();
+                        q = buffer.getBigInteger();
+                        g = buffer.getBigInteger();
+                        y = buffer.getBigInteger();
+                    } catch (@NonNull final IllegalArgumentException | IOException e) {
+                        throw new InvalidKeyException(e);
+                    }
+                    break;
+                }
+                default:
+                    throw new InvalidKeyException(String.valueOf(encoding));
+            }
+        }
     }
 
     @Override
@@ -259,6 +258,18 @@ public class KeyPairDSA
                     q = buffer.getBigInteger();
                     g = buffer.getBigInteger();
 
+                    y = buffer.getBigInteger();
+                    x = buffer.getBigInteger();
+                    setPublicKeyComment(buffer.getJString());
+                    break;
+                }
+
+                case SSH_AGENT: {
+                    final Buffer buffer = new Buffer(encodedKey);
+                    buffer.skipString(/* "ssh-dss" */);
+                    p = buffer.getBigInteger();
+                    q = buffer.getBigInteger();
+                    g = buffer.getBigInteger();
                     y = buffer.getBigInteger();
                     x = buffer.getBigInteger();
                     setPublicKeyComment(buffer.getJString());
@@ -317,8 +328,9 @@ public class KeyPairDSA
                     y = g.modPow(x, p);
                     break;
                 }
+
                 default:
-                    throw new UnsupportedKeyBlobEncodingException(String.valueOf(encoding));
+                    throw new UnsupportedKeyBlobEncodingException(encoding);
             }
         } catch (@NonNull final GeneralSecurityException e) {
             // We have an actual error
@@ -340,21 +352,17 @@ public class KeyPairDSA
         setPrivateKeyEncrypted(false);
     }
 
-    public static class Builder {
+    public static class Builder implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;
         @Nullable
-        private BigInteger x;
+        private byte[] publicKeyBlob;
         @Nullable
-        private BigInteger y;
+        private PublicKeyEncoding publicKeyEncoding;
         @Nullable
-        private BigInteger p;
-        @Nullable
-        private BigInteger q;
-        @Nullable
-        private BigInteger g;
         private byte[] privateKeyBlob;
+        @Nullable
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
@@ -367,67 +375,25 @@ public class KeyPairDSA
             this.config = config;
         }
 
+        @Override
         @NonNull
-        public Builder setPQG(@NonNull final BigInteger p,
-                              @NonNull final BigInteger q,
-                              @NonNull final BigInteger g) {
-            this.p = p;
-            this.q = q;
-            this.g = g;
-
-            // if we have x, then we can calculate y
-            if (y == null && x != null) {
-                this.y = this.g.modPow(this.x, this.p);
-            }
-            return this;
-        }
-
-        /**
-         * Set the value of the private key
-         */
-        @NonNull
-        public Builder setX(@NonNull final BigInteger x) {
-            this.x = x;
-            return this;
-        }
-
-        /**
-         * Set the value of the public key
-         */
-        @NonNull
-        public Builder setY(@NonNull final BigInteger y) {
-            this.y = y;
-            return this;
-        }
-
-        /**
-         * Set the private key blob.
-         *
-         * @param privateKeyBlob The encoded private key
-         */
-        @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+                                     @NonNull final PrivateKeyEncoding encoding) {
             this.privateKeyBlob = privateKeyBlob;
+            this.privateKeyEncoding = encoding;
             return this;
         }
 
-        /**
-         * Set the encoding/format for the private key blob.
-         *
-         * @param format The vendor specific format of the private key
-         *               This is independent from the encryption state.
-         */
+        @Override
         @NonNull
-        public Builder setFormat(@NonNull final PrivateKeyEncoding format) {
-            this.privateKeyEncoding = format;
+        public Builder setPublicKey(@Nullable final byte[] publicKeyBlob,
+                                    @Nullable final PublicKeyEncoding encoding) {
+            this.publicKeyBlob = publicKeyBlob;
+            this.publicKeyEncoding = encoding;
             return this;
         }
 
-        /**
-         * Set the optional decryptor to use if the key is encrypted.
-         *
-         * @param decryptor (optional) The vendor specific decryptor
-         */
+        @Override
         @NonNull
         public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
             this.decryptor = decryptor;
@@ -435,6 +401,7 @@ public class KeyPairDSA
             return this;
         }
 
+        @Override
         @NonNull
         public SshKeyPair build()
                 throws GeneralSecurityException {

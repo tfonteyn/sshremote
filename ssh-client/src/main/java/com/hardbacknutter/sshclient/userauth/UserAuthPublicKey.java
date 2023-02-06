@@ -96,7 +96,7 @@ public class UserAuthPublicKey
                 if (!encrypted) {
                     List<String> allAlgorithms = filterAlgorithms(session, identity);
                     if (allAlgorithms != null) {
-                        final byte[] publicKeyBlob = identity.getPublicKeyBlob();
+                        final byte[] publicKeyBlob = identity.getSshEncodedPublicKey();
 
                         String preAuthAlgorithm = null;
                         if (publicKeyBlob != null) {
@@ -269,7 +269,7 @@ public class UserAuthPublicKey
             throws GeneralSecurityException, IOException, SshPartialAuthException {
 
         if (publicKeyBlob == null) {
-            publicKeyBlob = identity.getPublicKeyBlob();
+            publicKeyBlob = identity.getSshEncodedPublicKey();
             if (publicKeyBlob == null) {
                 return false;
             }

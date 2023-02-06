@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.KeyPairBuilder;
 import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
 import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
@@ -52,7 +53,7 @@ class PuttyReader {
      *
      * @param reader MUST be a BufferedReader as we'll need to use mark/reset.
      *
-     * @return the new KeyPair.
+     * @return the new KeyPair or {@code null} if not a ppk format
      */
     @Nullable
     SshKeyPair parse(@NonNull final BufferedReader reader)
@@ -144,55 +145,39 @@ class PuttyReader {
 
         final Buffer buffer = new Buffer(publicKeyBlob);
         final String hostKeyAlgorithm = buffer.getJString();
+
+        final KeyPairBuilder builder;
         switch (hostKeyAlgorithm) {
             case HostKeyAlgorithm.SSH_RSA: {
-                final SshKeyPair keyPair = new KeyPairRSA.Builder(config)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyEncoding)
-                        .setDecryptor(decryptor)
-                        .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
-                keyPair.setPublicKeyComment(publicKeyComment);
-                return keyPair;
+                builder = new KeyPairRSA.Builder(config);
+                break;
             }
             case HostKeyAlgorithm.SSH_DSS: {
-                final SshKeyPair keyPair = new KeyPairDSA.Builder(config)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyEncoding)
-                        .setDecryptor(decryptor)
-                        .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
-                keyPair.setPublicKeyComment(publicKeyComment);
-                return keyPair;
+                builder = new KeyPairDSA.Builder(config);
+                break;
             }
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521: {
-                final SshKeyPair keyPair = new KeyPairECDSA.Builder(config)
-                        .setHostKeyAlgorithm(hostKeyAlgorithm)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyEncoding)
-                        .setDecryptor(decryptor)
-                        .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
-                keyPair.setPublicKeyComment(publicKeyComment);
-                return keyPair;
+                builder = new KeyPairECDSA.Builder(config, hostKeyAlgorithm);
+                break;
             }
             case HostKeyAlgorithm.SSH_ED25519:
             case HostKeyAlgorithm.SSH_ED448: {
-                final SshKeyPair keyPair = new KeyPairEdDSA.Builder(config)
-                        .setHostKeyAlgorithm(hostKeyAlgorithm)
-                        .setPrivateKey(privateKeyBlob)
-                        .setFormat(privateKeyEncoding)
-                        .setDecryptor(decryptor)
-                        .build();
-                keyPair.setEncodedPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1);
-                keyPair.setPublicKeyComment(publicKeyComment);
-                return keyPair;
+                builder = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm);
+                break;
             }
             default:
                 return null;
         }
+
+        final SshKeyPair keyPair = builder
+                .setPrivateKey(privateKeyBlob, privateKeyEncoding)
+                .setPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1)
+                .setDecryptor(decryptor)
+                .build();
+        keyPair.setPublicKeyComment(publicKeyComment);
+        return keyPair;
     }
 
     @NonNull
