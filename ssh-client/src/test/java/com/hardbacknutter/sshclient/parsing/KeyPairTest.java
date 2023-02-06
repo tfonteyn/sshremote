@@ -184,7 +184,7 @@ class KeyPairTest {
 
         final byte[] pp = password != null ? password.getBytes(StandardCharsets.UTF_8) : null;
 
-        assertTrue(keyPair.decryptPrivateKey(pp), "Failed to decrypt");
+        assertTrue(keyPair.decrypt(pp), "Failed to decrypt");
 
         final String hostKeyAlgorithm = keyPair.getHostKeyAlgorithm();
         assertEquals(keyType, hostKeyAlgorithm);
