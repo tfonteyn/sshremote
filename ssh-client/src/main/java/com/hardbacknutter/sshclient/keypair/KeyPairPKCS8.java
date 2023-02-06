@@ -48,8 +48,8 @@ public final class KeyPairPKCS8
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
-        if (delegate != null) {
-            delegate.parsePrivateKey(encodedKey, encoding);
+        if (getDelegate() != null) {
+            getDelegate().parsePrivateKey(encodedKey, encoding);
             return;
         }
 

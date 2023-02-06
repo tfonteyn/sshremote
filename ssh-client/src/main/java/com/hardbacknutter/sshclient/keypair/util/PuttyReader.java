@@ -5,12 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.KeyPairBuilder;
-import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
+import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
@@ -146,32 +141,8 @@ class PuttyReader {
         final Buffer buffer = new Buffer(publicKeyBlob);
         final String hostKeyAlgorithm = buffer.getJString();
 
-        final KeyPairBuilder builder;
-        switch (hostKeyAlgorithm) {
-            case HostKeyAlgorithm.SSH_RSA: {
-                builder = new KeyPairRSA.Builder(config);
-                break;
-            }
-            case HostKeyAlgorithm.SSH_DSS: {
-                builder = new KeyPairDSA.Builder(config);
-                break;
-            }
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521: {
-                builder = new KeyPairECDSA.Builder(config, hostKeyAlgorithm);
-                break;
-            }
-            case HostKeyAlgorithm.SSH_ED25519:
-            case HostKeyAlgorithm.SSH_ED448: {
-                builder = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm);
-                break;
-            }
-            default:
-                return null;
-        }
-
-        final SshKeyPair keyPair = builder
+        final SshKeyPair keyPair = KeyPairBuilderFactory
+                .byHostKeyAlgorithm(config, hostKeyAlgorithm)
                 .setPrivateKey(privateKeyBlob, privateKeyEncoding)
                 .setPublicKey(publicKeyBlob, PublicKeyEncoding.OPENSSH_V1)
                 .setDecryptor(decryptor)

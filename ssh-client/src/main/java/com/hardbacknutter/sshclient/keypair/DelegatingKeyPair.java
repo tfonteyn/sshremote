@@ -4,14 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -30,13 +26,13 @@ public abstract class DelegatingKeyPair
     private static final String MUST_PARSE_FIRST = "Must call decrypt/parse first";
     /** The wrapped/actual KeyPair. Use a concrete reference as we need access to the internals. */
     @Nullable
-    KeyPairBase delegate;
+    private KeyPairBase delegate;
     /** Holds the public key blob before the delegate is created. */
     @Nullable
-    byte[] publicKeyBlob;
+    private byte[] publicKeyEncodedBlob;
     /** Holds the public key format before the delegate is created. */
     @Nullable
-    PublicKeyEncoding publicKeyBlobFormat;
+    private PublicKeyEncoding publicKeyBlobFormat;
     /** Holds the public key comment before the delegate is created. */
     @NonNull
     private String publicKeyComment = "";
@@ -47,6 +43,11 @@ public abstract class DelegatingKeyPair
                       final boolean encrypted,
                       @Nullable final PKDecryptor decryptor) {
         super(config, privateKeyBlob, privateKeyEncoding, encrypted, decryptor);
+    }
+
+    @Nullable
+    KeyPairBase getDelegate() {
+        return delegate;
     }
 
     @NonNull
@@ -156,8 +157,8 @@ public abstract class DelegatingKeyPair
     @Override
     public byte[] getSshEncodedPublicKey() {
         if (delegate == null) {
-            Objects.requireNonNull(publicKeyBlob, "publicKeyBlob");
-            return publicKeyBlob;
+            Objects.requireNonNull(publicKeyEncodedBlob, "publicKeyBlob");
+            return publicKeyEncodedBlob;
         }
         return delegate.getSshEncodedPublicKey();
     }
@@ -172,7 +173,7 @@ public abstract class DelegatingKeyPair
         if (delegate != null) {
             delegate.parsePublicKey(encodedKey, encoding);
         }
-        publicKeyBlob = encodedKey;
+        publicKeyEncodedBlob = encodedKey;
         publicKeyBlobFormat = encoding;
     }
 
@@ -209,35 +210,10 @@ public abstract class DelegatingKeyPair
             throws GeneralSecurityException, IOException {
         Objects.requireNonNull(privateKeyEncoding, "privateKeyEncoding");
 
-        final KeyPairBuilder builder;
-
-        switch (hostKeyAlgorithm) {
-            case HostKeyAlgorithm.SSH_RSA:
-                builder = new KeyPairRSA.Builder(config);
-                break;
-
-            case HostKeyAlgorithm.SSH_DSS:
-                builder = new KeyPairDSA.Builder(config);
-                break;
-
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                builder = new KeyPairECDSA.Builder(config, hostKeyAlgorithm);
-                break;
-
-            case HostKeyAlgorithm.SSH_ED25519:
-            case HostKeyAlgorithm.SSH_ED448:
-                builder = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm);
-                break;
-
-            default:
-                throw new UnsupportedAlgorithmException(hostKeyAlgorithm);
-        }
-
-        delegate = (KeyPairBase) builder
+        delegate = (KeyPairBase) KeyPairBuilderFactory
+                .byHostKeyAlgorithm(config, hostKeyAlgorithm)
                 .setPrivateKey(plainKey, privateKeyEncoding)
-                .setPublicKey(publicKeyBlob, publicKeyBlobFormat)
+                .setPublicKey(publicKeyEncodedBlob, publicKeyBlobFormat)
                 .setDecryptor(decryptor)
                 .build();
         delegate.setPublicKeyComment(publicKeyComment);
@@ -248,24 +224,10 @@ public abstract class DelegatingKeyPair
             throws GeneralSecurityException, IOException {
         Objects.requireNonNull(privateKeyEncoding, "privateKeyEncoding");
 
-        final KeyPairBuilder builder;
-
-        if (PKCSObjectIdentifiers.rsaEncryption.equals(prvKeyAlgOID)) {
-            builder = new KeyPairRSA.Builder(config);
-        } else if (X9ObjectIdentifiers.id_dsa.equals(prvKeyAlgOID)) {
-            builder = new KeyPairDSA.Builder(config);
-        } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(prvKeyAlgOID)) {
-            builder = new KeyPairECDSA.Builder(config, getHostKeyAlgorithm());
-        } else if (EdECObjectIdentifiers.id_Ed25519.equals(prvKeyAlgOID)
-                || EdECObjectIdentifiers.id_Ed448.equals(prvKeyAlgOID)) {
-            builder = new KeyPairEdDSA.Builder(config, getHostKeyAlgorithm());
-        } else {
-            throw new UnsupportedAlgorithmException(String.valueOf(prvKeyAlgOID));
-        }
-
-        delegate = (KeyPairBase) builder
+        delegate = (KeyPairBase) KeyPairBuilderFactory
+                .byOID(config, prvKeyAlgOID)
                 .setPrivateKey(encodedKey, privateKeyEncoding)
-                .setPublicKey(publicKeyBlob, publicKeyBlobFormat)
+                .setPublicKey(publicKeyEncodedBlob, publicKeyBlobFormat)
                 .setDecryptor(decryptor)
                 .build();
 

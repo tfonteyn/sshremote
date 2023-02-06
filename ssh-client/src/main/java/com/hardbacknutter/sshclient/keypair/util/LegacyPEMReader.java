@@ -5,14 +5,10 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
-import com.hardbacknutter.sshclient.keypair.KeyPairBuilder;
-import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
+import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.UnsupportedAlgorithmException;
 import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS5;
 import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
@@ -43,36 +39,16 @@ class LegacyPEMReader {
                      @Nullable final PublicKeyEncoding publicKeyEncoding)
             throws InvalidKeyException, GeneralSecurityException, IOException {
 
-        final KeyPairBuilder builder;
-
-        switch (pem.getType()) {
-            case "RSA PRIVATE KEY": {
-                builder = new KeyPairRSA.Builder(config);
-                break;
-            }
-            case "DSA PRIVATE KEY": {
-                builder = new KeyPairDSA.Builder(config);
-                break;
-
-            }
-            case "EC PRIVATE KEY": {
-                builder = new KeyPairECDSA.Builder(config, null);
-                break;
-
-            }
-            default:
-                throw new UnsupportedAlgorithmException(pem.getType());
-        }
-
-        return builder
+        return KeyPairBuilderFactory
+                .byPemHeader(config, pem.getType())
                 .setPrivateKey(pem.getContent(), PrivateKeyEncoding.ASN1)
                 .setPublicKey(publicKeyBlob, publicKeyEncoding)
-                .setDecryptor(createPKDecryptor(pem))
+                .setDecryptor(createDecryptor(pem))
                 .build();
     }
 
     @Nullable
-    private PKDecryptor createPKDecryptor(@NonNull final PemObject pem)
+    private PKDecryptor createDecryptor(@NonNull final PemObject pem)
             throws InvalidKeyException, NoSuchAlgorithmException {
         //noinspection unchecked
         for (final PemHeader header : (List<PemHeader>) pem.getHeaders()) {
@@ -97,34 +73,28 @@ class LegacyPEMReader {
     }
 
     @NonNull
-    private String getSshCipherName(@NonNull final String headerValue)
+    private String getSshCipherName(@NonNull final String pemCipher)
             throws InvalidKeyException {
-        final String sshName;
-        switch (headerValue) {
+        switch (pemCipher) {
             case "AES-128-CBC":
-                sshName = "aes128-cbc";
-                break;
+                return "aes128-cbc";
             case "AES-192-CBC":
-                sshName = "aes192-cbc";
-                break;
+                return "aes192-cbc";
             case "AES-256-CBC":
-                sshName = "aes256-cbc";
-                break;
+                return "aes256-cbc";
             case "DES-EDE3-CBC":
-                sshName = "3des-cbc";
-                break;
+                return "3des-cbc";
             default:
-                throw new InvalidKeyException("Invalid cipher");
+                throw new InvalidKeyException("Invalid Cipher");
         }
-        return sshName;
     }
 
     @NonNull
-    private byte[] createIV(@NonNull final String headerValue,
+    private byte[] createIV(@NonNull final String pemIV,
                             final int ivSize) throws InvalidKeyException {
         final byte[] iv = new byte[ivSize];
         try {
-            final byte[] bytes = headerValue.getBytes(StandardCharsets.UTF_8);
+            final byte[] bytes = pemIV.getBytes(StandardCharsets.UTF_8);
             int b = 0;
             for (int i = 0; i < iv.length; i++) {
                 iv[i] = (byte) (((Character.digit(bytes[b++], 16) << 4) & 0xf0)

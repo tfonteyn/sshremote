@@ -72,7 +72,9 @@ public class KeyPairEdDSA
               builder.encrypted,
               builder.decryptor);
 
-        this.type = EdKeyType.getByHostKeyAlgorithm(builder.hostKeyAlgorithm);
+        if (builder.hostKeyAlgorithm != null) {
+            this.type = EdKeyType.getByHostKeyAlgorithm(builder.hostKeyAlgorithm);
+        }
         parse();
         parsePublicKey(builder.publicKeyBlob, builder.publicKeyEncoding);
     }
@@ -316,14 +318,18 @@ public class KeyPairEdDSA
                     }
                     //final ASN1Integer version = ASN1Integer.getInstance(root.getObjectAt(0));
                     final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
-                    final ASN1OctetString privateKeyBlob = ASN1OctetString.getInstance(
+                    final ASN1OctetString embeddedPrvKeyBlob = ASN1OctetString.getInstance(
                             root.getObjectAt(2));
 
                     final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier.getInstance(
                             subSeq.getObjectAt(0));
                     type = EdKeyType.getByOid(prvKeyAlgOID);
 
-                    parsePrivateKey(privateKeyBlob.getOctets(), PrivateKeyEncoding.ASN1);
+                    // REPLACE the blob. THE ASN1Sequence IS NOW INVALID.
+                    privateKeyBlob = embeddedPrvKeyBlob.getOctets();
+                    privateKeyEncoding = PrivateKeyEncoding.ASN1;
+                    // parse the new/embedded blob
+                    parsePrivateKey(privateKeyBlob, privateKeyEncoding);
                     return;
                 }
                 default:
@@ -359,7 +365,7 @@ public class KeyPairEdDSA
         @NonNull
         final SshClientConfig config;
         /** Allowed to be {@code null} for deferred decryption. */
-        @NonNull
+        @Nullable
         private final String hostKeyAlgorithm;
         @Nullable
         private byte[] publicKeyBlob;
@@ -374,7 +380,7 @@ public class KeyPairEdDSA
         private PKDecryptor decryptor;
 
         public Builder(@NonNull final SshClientConfig config,
-                       @NonNull final String hostKeyAlgorithm)
+                       @Nullable final String hostKeyAlgorithm)
                 throws NoSuchAlgorithmException {
             this.config = config;
             this.hostKeyAlgorithm = hostKeyAlgorithm;

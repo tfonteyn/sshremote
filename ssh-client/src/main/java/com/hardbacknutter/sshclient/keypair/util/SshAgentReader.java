@@ -4,15 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.KeyPairBuilder;
-import com.hardbacknutter.sshclient.keypair.KeyPairDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairECDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairEdDSA;
-import com.hardbacknutter.sshclient.keypair.KeyPairRSA;
+import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.UnsupportedAlgorithmException;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import java.io.IOException;
@@ -72,32 +66,8 @@ class SshAgentReader {
         final Buffer buffer = new Buffer(identityBlob);
         final String hostKeyAlgorithm = buffer.getJString();
 
-        final KeyPairBuilder builder;
-        switch (hostKeyAlgorithm) {
-            case HostKeyAlgorithm.SSH_RSA: {
-                builder = new KeyPairRSA.Builder(config);
-                break;
-            }
-            case HostKeyAlgorithm.SSH_DSS: {
-                builder = new KeyPairDSA.Builder(config);
-                break;
-            }
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
-            case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521: {
-                builder = new KeyPairECDSA.Builder(config, hostKeyAlgorithm);
-                break;
-            }
-            case HostKeyAlgorithm.SSH_ED25519:
-            case HostKeyAlgorithm.SSH_ED448: {
-                builder = new KeyPairEdDSA.Builder(config, hostKeyAlgorithm);
-                break;
-            }
-            default:
-                throw new UnsupportedAlgorithmException(hostKeyAlgorithm);
-        }
-
-        return builder
+        return KeyPairBuilderFactory
+                .byHostKeyAlgorithm(config, hostKeyAlgorithm)
                 .setPrivateKey(identityBlob, PrivateKeyEncoding.SSH_AGENT)
                 .build();
     }

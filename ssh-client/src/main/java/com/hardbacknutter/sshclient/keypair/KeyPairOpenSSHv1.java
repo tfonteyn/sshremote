@@ -77,8 +77,8 @@ public final class KeyPairOpenSSHv1
     void parsePrivateKey(@NonNull final byte[] encodedKey,
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
-        if (delegate != null) {
-            delegate.parsePrivateKey(encodedKey, encoding);
+        if (getDelegate() != null) {
+            getDelegate().parsePrivateKey(encodedKey, encoding);
             return;
         }
 
@@ -164,7 +164,7 @@ public final class KeyPairOpenSSHv1
         createDelegate(getHostKeyAlgorithm(plainKey), plainKey);
 
         //noinspection ConstantConditions
-        return !delegate.isEncrypted();
+        return !getDelegate().isEncrypted();
     }
 
     public static class Builder {
