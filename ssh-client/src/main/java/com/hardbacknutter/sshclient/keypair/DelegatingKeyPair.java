@@ -11,7 +11,6 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -29,10 +28,10 @@ public abstract class DelegatingKeyPair
     private KeyPairBase delegate;
     /** Holds the public key blob before the delegate is created. */
     @Nullable
-    private byte[] publicKeyEncodedBlob;
+    byte[] publicKeyEncodedBlob;
     /** Holds the public key format before the delegate is created. */
     @Nullable
-    private PublicKeyEncoding publicKeyBlobFormat;
+    PublicKeyEncoding publicKeyBlobFormat;
     /** Holds the public key comment before the delegate is created. */
     @NonNull
     private String publicKeyComment = "";
@@ -162,21 +161,6 @@ public abstract class DelegatingKeyPair
         }
         return delegate.getSshEncodedPublicKey();
     }
-
-    @Override
-    void parsePublicKey(@NonNull final byte[] encodedKey,
-                        @NonNull final PublicKeyEncoding encoding)
-            throws NoSuchAlgorithmException,
-                   NoSuchProviderException,
-                   InvalidKeySpecException,
-                   InvalidKeyException {
-        if (delegate != null) {
-            delegate.parsePublicKey(encodedKey, encoding);
-        }
-        publicKeyEncodedBlob = encodedKey;
-        publicKeyBlobFormat = encoding;
-    }
-
 
     @Override
     public boolean decrypt(@Nullable final byte[] passphrase)
