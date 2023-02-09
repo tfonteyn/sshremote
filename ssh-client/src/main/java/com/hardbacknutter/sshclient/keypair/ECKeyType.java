@@ -4,9 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.sec.SECObjectIdentifiers;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
@@ -16,22 +13,13 @@ import java.util.Arrays;
 public enum ECKeyType {
 
     ECDSA_SHA2_NISTP256(HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
-                        "secp256r1",
-                        "nistp256",
-                        256,
-                        SECObjectIdentifiers.secp256r1),
+                        "secp256r1", "nistp256", 256),
 
     ECDSA_SHA2_NISTP384(HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
-                        "secp384r1",
-                        "nistp384",
-                        384,
-                        SECObjectIdentifiers.secp384r1),
+                        "secp384r1", "nistp384", 384),
 
     ECDSA_SHA2_NISTP521(HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
-                        "secp521r1",
-                        "nistp521",
-                        521,
-                        SECObjectIdentifiers.secp521r1);
+                        "secp521r1", "nistp521", 521);
 
     /**
      * Flag: (un)compressed.
@@ -44,23 +32,19 @@ public enum ECKeyType {
     public final String hostKeyAlgorithm;
     @NonNull
     public final String curveName;
-    @NonNull
-    final String nistName;
     public final int keySize;
     @NonNull
-    final ASN1ObjectIdentifier keyOid;
+    final String nistName;
 
     ECKeyType(@NonNull final String hostKeyAlgorithm,
               @NonNull final String curveName,
               @NonNull final String nistName,
-              final int keySize,
-              @NonNull final ASN1ObjectIdentifier keyOid) {
+              final int keySize) {
 
         this.hostKeyAlgorithm = hostKeyAlgorithm;
         this.curveName = curveName;
         this.nistName = nistName;
         this.keySize = keySize;
-        this.keyOid = keyOid;
     }
 
     @NonNull
@@ -77,15 +61,6 @@ public enum ECKeyType {
             throws NoSuchAlgorithmException {
         return Arrays.stream(values())
                      .filter(e -> e.keySize == keySize)
-                     .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
-    }
-
-    @NonNull
-    static ECKeyType getByOid(@NonNull final ASN1ObjectIdentifier oid)
-            throws NoSuchAlgorithmException {
-        return Arrays.stream(values())
-                     .filter(e -> e.keyOid.equals(oid))
                      .findFirst()
                      .orElseThrow(NoSuchAlgorithmException::new);
     }
