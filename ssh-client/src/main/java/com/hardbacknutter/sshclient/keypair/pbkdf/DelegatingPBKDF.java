@@ -1,4 +1,4 @@
-package com.hardbacknutter.sshclient.keypair.decryptors;
+package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,8 +12,8 @@ import java.security.KeyException;
 /**
  * Acts as a placeholder for a deferred decryption as used by OpenSSH.
  */
-public class DecryptDeferred
-        implements PKDecryptor {
+public class DelegatingPBKDF
+        implements PBKDF {
 
     @Nullable
     private SshCipher cipher;
@@ -21,7 +21,7 @@ public class DecryptDeferred
     private byte[] cipherIV;
 
     @Nullable
-    private PKDecryptor delegate;
+    private PBKDF delegate;
 
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
@@ -30,7 +30,18 @@ public class DecryptDeferred
         this.cipherIV = cipherIV;
     }
 
-    public void setDelegate(@Nullable final PKDecryptor delegate) {
+    @NonNull
+    @Override
+    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+                                    final int keyLength)
+            throws GeneralSecurityException {
+        if (delegate == null) {
+            throw new KeyException("delegate not set");
+        }
+        return delegate.generateSecretKey(passphrase, keyLength);
+    }
+
+    public void setDelegate(@Nullable final PBKDF delegate) {
         this.delegate = delegate;
     }
 

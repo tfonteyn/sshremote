@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -75,8 +75,8 @@ public class KeyPairDSA
               builder.encrypted,
               builder.decryptor);
 
-        parse();
         parsePublicKey(builder.publicKeyBlob, builder.publicKeyEncoding);
+        parsePrivateKey();
     }
 
     /**
@@ -192,9 +192,14 @@ public class KeyPairDSA
                 .getPayload();
     }
 
-    @Override
-    void parsePublicKey(@Nullable final byte[] encodedKey,
-                        @Nullable final PublicKeyEncoding encoding)
+    /**
+     * Decode the public key blob into the components.
+     *
+     * @param encodedKey the key data.
+     * @param encoding   the encoding format
+     */
+    private void parsePublicKey(@Nullable final byte[] encodedKey,
+                                @Nullable final PublicKeyEncoding encoding)
             throws NoSuchAlgorithmException,
                    InvalidKeySpecException,
                    InvalidKeyException {
@@ -242,6 +247,7 @@ public class KeyPairDSA
                 case PUTTY_V2: {
                     final Buffer buffer = new Buffer(encodedKey);
                     x = buffer.getBigInteger();
+                    // y and params are set during public key parsing
                     break;
                 }
                 case OPENSSH_V1: {
@@ -366,7 +372,7 @@ public class KeyPairDSA
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
-        private PKDecryptor decryptor;
+        private PBKDF decryptor;
 
         /**
          * Constructor.
@@ -395,7 +401,7 @@ public class KeyPairDSA
 
         @Override
         @NonNull
-        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+        public Builder setDecryptor(@Nullable final PBKDF decryptor) {
             this.decryptor = decryptor;
             this.encrypted = decryptor != null;
             return this;

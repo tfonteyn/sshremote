@@ -3,7 +3,7 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -37,7 +37,7 @@ public interface KeyPairBuilder {
      * @param decryptor (optional) The vendor specific decryptor
      */
     @NonNull
-    KeyPairBuilder setDecryptor(@Nullable final PKDecryptor decryptor);
+    KeyPairBuilder setDecryptor(@Nullable final PBKDF decryptor);
 
     @NonNull
     SshKeyPair build()

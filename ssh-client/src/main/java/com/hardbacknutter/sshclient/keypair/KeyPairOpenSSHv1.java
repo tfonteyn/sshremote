@@ -7,8 +7,8 @@ import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptBCrypt;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptDeferred;
+import com.hardbacknutter.sshclient.keypair.pbkdf.DelegatingPBKDF;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFBCrypt;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
@@ -51,8 +51,8 @@ public final class KeyPairOpenSSHv1
               false,
               null);
 
-        parse();
         // public key blob is embedded in the private blob
+        parsePrivateKey();
     }
 
     /**
@@ -99,7 +99,8 @@ public final class KeyPairOpenSSHv1
                                                                       + nrKeys);
             }
             // public key encoded in ssh format
-            parsePublicKey(buffer.getString(), PublicKeyEncoding.OPENSSH_V1);
+            publicKeyEncodedBlob = buffer.getString();
+            publicKeyBlobFormat = PublicKeyEncoding.OPENSSH_V1;
 
             // private key encoded in ssh format
             // REPLACE the blob. THE BUFFER IS NOW INVALID.
@@ -108,7 +109,7 @@ public final class KeyPairOpenSSHv1
             if (!SshCipherConstants.NONE.equals(cipherName) && !KDFNAME_NONE.equals(kdfName)) {
                 // The type can only be determined after decryption.
                 // Set a deferred decryptor which acts a a placeholder for the cipher.
-                decryptor = new DecryptDeferred();
+                decryptor = new DelegatingPBKDF();
                 decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
                 setPrivateKeyEncrypted(true);
             } else {
@@ -150,8 +151,8 @@ public final class KeyPairOpenSSHv1
             final int rounds = opts.getInt();
 
             //noinspection ConstantConditions
-            ((DecryptDeferred) decryptor)
-                    .setDelegate(new DecryptBCrypt().init(salt, rounds));
+            ((DelegatingPBKDF) decryptor)
+                    .setDelegate(new PBKDFBCrypt().init(salt, rounds));
 
             plainKey = internalDecrypt(passphrase);
             // We MUST try parsing first to determine if it decrypted ok, or not!

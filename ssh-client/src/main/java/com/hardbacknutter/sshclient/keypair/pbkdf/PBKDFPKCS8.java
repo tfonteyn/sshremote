@@ -1,12 +1,11 @@
-package com.hardbacknutter.sshclient.keypair.decryptors;
+package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFJCE;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFSCrypt;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -26,20 +25,30 @@ import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import javax.crypto.Cipher;
-
-public class DecryptPKCS8 implements PKDecryptor {
+public class PBKDFPKCS8 implements PBKDF {
 
     @NonNull
     private final SshClientConfig config;
+    @Nullable
+    private PBKDF delegate;
 
-    public DecryptPKCS8(@NonNull final SshClientConfig config) {
+    public PBKDFPKCS8(@NonNull final SshClientConfig config) {
         this.config = config;
     }
 
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
                           @NonNull final byte[] cipherIV) {
+    }
+
+    @NonNull
+    @Override
+    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+                                    final int keyLength) throws GeneralSecurityException {
+        if (delegate == null) {
+            throw new KeyException("delegate not set");
+        }
+        return delegate.generateSecretKey(passphrase, keyLength);
     }
 
     @Override
@@ -78,7 +87,7 @@ public class DecryptPKCS8 implements PKDecryptor {
             }
 
             if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> "~~~ DecryptPKCS8#decrypt ~~~\n" +
+                config.getLogger().log(Logger.DEBUG, () -> "~~~ PBKDFPKCS8#decrypt ~~~\n" +
                         ASN1Dump.dumpAsString(root, true));
             }
 
@@ -143,7 +152,7 @@ public class DecryptPKCS8 implements PKDecryptor {
                                  @NonNull final ASN1Encodable paramSequence,
                                  @NonNull final SshCipher cipher,
                                  @NonNull final byte[] cipherIV)
-            throws GeneralSecurityException {
+            throws GeneralSecurityException, IOException {
         //   scrypt-params ::= SEQUENCE {
         //       salt OCTET STRING,
         //       costParameter INTEGER (1..MAX),
@@ -161,27 +170,14 @@ public class DecryptPKCS8 implements PKDecryptor {
                                          .intValueExact();
         final int parallel = ASN1Integer.getInstance(attributes.getObjectAt(3))
                                         .intValueExact();
-        if (attributes.size() > 4) {
-            final int keyLength = ASN1Integer.getInstance(attributes.getObjectAt(4))
-                                             .intValueExact();
-        }
+//        if (attributes.size() > 4) {
+//            final int keyLength = ASN1Integer.getInstance(attributes.getObjectAt(4))
+//                                             .intValueExact();
+//        }
 
-        byte[] pbeKey = null;
-        final byte[] plainKey = new byte[encryptedPrivateKey.length];
-        try {
-            pbeKey = new PBKDFSCrypt()
-                    .init(salt, cost, blockSize, parallel)
-                    .generateSecretKey(passphrase, cipher.getKeySize());
-
-            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-            cipher.doFinal(encryptedPrivateKey, 0, encryptedPrivateKey.length, plainKey, 0);
-
-        } finally {
-            if (pbeKey != null) {
-                Arrays.fill(pbeKey, (byte) 0);
-            }
-        }
-        return plainKey;
+        delegate = new PBKDFSCrypt().init(salt, cost, blockSize, parallel);
+        delegate.setCipher(cipher, cipherIV);
+        return delegate.decrypt(passphrase, encryptedPrivateKey);
     }
 
     // PKCS5 Params
@@ -191,7 +187,7 @@ public class DecryptPKCS8 implements PKDecryptor {
                                  @NonNull final ASN1Encodable paramSequence,
                                  @NonNull final SshCipher cipher,
                                  @NonNull final byte[] cipherIV)
-            throws GeneralSecurityException {
+            throws GeneralSecurityException, IOException {
         //                 ObjectIdentifier(1.2.840.113549.1.5.12)      ==> 'paramOID'
         //                 Sequence                                     ==> 'parameters'
         //                     DER Octet String[8]                      ==> 'salt'
@@ -202,38 +198,18 @@ public class DecryptPKCS8 implements PKDecryptor {
         //                         NULL                                 ==> no attributes here
 
 
-        //             Sequence
         final ASN1Sequence parameters = ASN1Sequence.getInstance(paramSequence);
-        //                DER Octet String[8]
         final byte[] salt = ASN1OctetString.getInstance(parameters.getObjectAt(0))
                                            .getOctets();
-        //                Integer(2048)
         final int iterations = ASN1Integer.getInstance(parameters.getObjectAt(1))
                                           .intValueExact();
-        //                Sequence
         final ASN1Sequence yaSeq = ASN1Sequence.getInstance(parameters.getObjectAt(2));
-        //                    ObjectIdentifier
         final ASN1ObjectIdentifier pbeOID =
                 ASN1ObjectIdentifier.getInstance(yaSeq.getObjectAt(0));
-        //                    NULL: no attributes
 
-        byte[] pbeKey = null;
-        final byte[] plainKey = new byte[encryptedPrivateKey.length];
-        try {
-            pbeKey = new PBKDFJCE()
-                    .init(getPBEAlgorithm(pbeOID), salt, iterations)
-                    .generateSecretKey(passphrase, cipher.getKeySize());
-
-            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-            cipher.doFinal(encryptedPrivateKey, 0, encryptedPrivateKey.length, plainKey, 0);
-
-        } finally {
-            if (pbeKey != null) {
-                Arrays.fill(pbeKey, (byte) 0);
-            }
-        }
-        return plainKey;
-
+        delegate = new PBKDF2().init(getPBEAlgorithm(pbeOID), salt, iterations);
+        delegate.setCipher(cipher, cipherIV);
+        return delegate.decrypt(passphrase, encryptedPrivateKey);
     }
 
     @NonNull

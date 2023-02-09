@@ -9,8 +9,8 @@ import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS5;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF1;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.util.io.pem.PemHeader;
@@ -48,7 +48,7 @@ class LegacyPEMReader {
     }
 
     @Nullable
-    private PKDecryptor createDecryptor(@NonNull final PemObject pem)
+    private PBKDF createDecryptor(@NonNull final PemObject pem)
             throws InvalidKeyException, NoSuchAlgorithmException {
         //noinspection unchecked
         for (final PemHeader header : (List<PemHeader>) pem.getHeaders()) {
@@ -63,7 +63,7 @@ class LegacyPEMReader {
                             .getCipher(config, getSshCipherName(values[0]));
                     final byte[] iv = createIV(values[1], cipher.getIVSize());
                     // uses the iv as the salt
-                    final PKDecryptor decryptor = new DecryptPKCS5().init("MD5", iv);
+                    final PBKDF decryptor = new PBKDF1().init("MD5", iv);
                     decryptor.setCipher(cipher, iv);
                     return decryptor;
                 }

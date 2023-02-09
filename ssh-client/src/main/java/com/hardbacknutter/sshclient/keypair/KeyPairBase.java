@@ -8,7 +8,7 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityImpl;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
@@ -53,7 +53,7 @@ public abstract class KeyPairBase
     @Nullable
     protected byte[] privateKeyBlob;
     @Nullable
-    PKDecryptor decryptor;
+    PBKDF decryptor;
     @Nullable
     PrivateKeyEncoding privateKeyEncoding;
     boolean privateKeyEncrypted;
@@ -79,7 +79,7 @@ public abstract class KeyPairBase
                 @NonNull final byte[] privateKeyBlob,
                 @NonNull final PrivateKeyEncoding privateKeyEncoding,
                 final boolean encrypted,
-                @Nullable final PKDecryptor decryptor) {
+                @Nullable final PBKDF decryptor) {
         this.config = config;
         this.privateKeyBlob = privateKeyBlob;
         this.privateKeyEncoding = privateKeyEncoding;
@@ -198,7 +198,7 @@ public abstract class KeyPairBase
      *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
-    final void parse()
+    final void parsePrivateKey()
             throws GeneralSecurityException {
         if (privateKeyBlob != null && privateKeyEncoding != null) {
             parsePrivateKey(privateKeyBlob, privateKeyEncoding);
@@ -224,19 +224,6 @@ public abstract class KeyPairBase
     abstract void parsePrivateKey(@NonNull byte[] encodedKey,
                                   @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException;
-
-    /**
-     * Decode the public key blob into the components.
-     *
-     * @param encodedKey the key data.
-     * @param encoding   the encoding format
-     */
-    abstract void parsePublicKey(@NonNull byte[] encodedKey,
-                                 @NonNull final PublicKeyEncoding encoding)
-            throws NoSuchAlgorithmException,
-                   NoSuchProviderException,
-                   InvalidKeySpecException,
-                   InvalidKeyException;
 
     /**
      * Decrypts the private key, using a passphrase.
@@ -317,7 +304,7 @@ public abstract class KeyPairBase
         }
 
         if (decryptor == null) {
-            throw new KeyException("PKDecryptor not set");
+            throw new KeyException("PBKDF not set");
         }
 
         return decryptor.decrypt(passphrase, privateKeyBlob);

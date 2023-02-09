@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPKCS8;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFPKCS8;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -36,10 +36,10 @@ public final class KeyPairPKCS8
               Objects.requireNonNull(builder.privateKeyBlob),
               PrivateKeyEncoding.PKCS8,
               builder.encrypted,
-              new DecryptPKCS8(config));
+              new PBKDFPKCS8(config));
 
-        parse();
         // public key blob is embedded in the private blob
+        parsePrivateKey();
     }
 
 

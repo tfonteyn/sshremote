@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -40,7 +40,7 @@ public abstract class DelegatingKeyPair
                       @NonNull final byte[] privateKeyBlob,
                       @NonNull final PrivateKeyEncoding privateKeyEncoding,
                       final boolean encrypted,
-                      @Nullable final PKDecryptor decryptor) {
+                      @Nullable final PBKDF decryptor) {
         super(config, privateKeyBlob, privateKeyEncoding, encrypted, decryptor);
     }
 

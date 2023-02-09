@@ -1,11 +1,19 @@
 package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.hardbacknutter.sshclient.ciphers.SshCipher;
+
+import java.io.IOException;
 import java.security.DigestException;
+import java.security.GeneralSecurityException;
+import java.security.KeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import javax.crypto.Cipher;
 
 /**
  * pkcs #5 pbkdf2 implementation using the "bcrypt" hash
@@ -44,8 +52,11 @@ public class PBKDFBCrypt
     @NonNull
     private MessageDigest md;
 
+    @Nullable
+    private SshCipher cipher;
+
     /**
-     * Init..
+     * Init.
      *
      * @param salt           the salt.
      * @param iterationCount the iteration count.
@@ -61,6 +72,11 @@ public class PBKDFBCrypt
     }
 
     @Override
+    public void setCipher(@Nullable final SshCipher cipher,
+                          @Nullable final byte[] cipherIV) {
+        this.cipher = cipher;
+    }
+
     @NonNull
     public byte[] generateSecretKey(@NonNull final byte[] passphrase,
                                     final int keyLength)
@@ -69,6 +85,38 @@ public class PBKDFBCrypt
         pbkdf(passphrase, key);
         return key;
     }
+
+    @NonNull
+    @Override
+    public byte[] decrypt(@NonNull final byte[] passphrase,
+                          @NonNull final byte[] blob)
+            throws GeneralSecurityException, IOException {
+        if (cipher == null) {
+            throw new KeyException("Cipher not set");
+        }
+
+        final byte[] plainKey = new byte[blob.length];
+
+        byte[] pbeKey = null;
+        try {
+            pbeKey = generateSecretKey(passphrase, 48);
+            // split into key and IV
+            final byte[] key = Arrays.copyOfRange(pbeKey, 0, 32);
+            final byte[] iv = Arrays.copyOfRange(pbeKey, 32, 48);
+            // and decrypt the blob
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+            cipher.doFinal(blob, 0, blob.length, plainKey, 0);
+
+        } finally {
+            if (pbeKey != null) {
+                Arrays.fill(pbeKey, (byte) 0);
+            }
+            Arrays.fill(passphrase, (byte) 0);
+        }
+
+        return plainKey;
+    }
+
 
     private void pbkdf(@NonNull final byte[] passphrase,
                        @NonNull final byte[] output)
@@ -104,6 +152,7 @@ public class PBKDFBCrypt
                 hash(hpass, hsalt, tmp);
 
                 for (int i = 0; i < tmp.length; i++) {
+                    //noinspection ImplicitNumericConversion
                     out[i] ^= tmp[i];
                 }
             }
@@ -142,13 +191,5 @@ public class PBKDFBCrypt
             output[j++] = (byte) ((buf[i] >> 16) & 0xff);
             output[j++] = (byte) ((buf[i] >> 24) & 0xff);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "PBKDFBCrypt{"
-                + "salt=" + Arrays.toString(salt)
-                + ", iterations=" + iterationCount
-                + '}';
     }
 }

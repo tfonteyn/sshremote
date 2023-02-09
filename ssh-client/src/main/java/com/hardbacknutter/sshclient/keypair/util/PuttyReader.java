@@ -9,9 +9,9 @@ import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty2;
-import com.hardbacknutter.sshclient.keypair.decryptors.DecryptPutty3;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFArgon2;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFPutty2;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
@@ -118,18 +118,18 @@ class PuttyReader {
             return null;
         }
 
-        final PKDecryptor decryptor;
+        final PBKDF decryptor;
         if (AES_256_CBC.equals(encryption)) {
             if (privateKeyEncoding == PrivateKeyEncoding.PUTTY_V3) {
                 // from the Putty docs:
                 // encryption-type is ‘aes256-cbc’,
                 // ... The length of the MAC key is also chosen to be 32 bytes.
-                decryptor = new DecryptPutty3().init(argonKeyDerivation,
-                                                     argonMemory, argonPasses, argonParallelism,
-                                                     argonSalt,
-                                                     32);
+                decryptor = new PBKDFArgon2().init(argonKeyDerivation,
+                                                   argonMemory, argonPasses, argonParallelism,
+                                                   argonSalt,
+                                                   32);
             } else {
-                decryptor = new DecryptPutty2().init();
+                decryptor = new PBKDFPutty2().init();
             }
             final SshCipher cipher = ImplementationFactory.getCipher(config, encryption);
             decryptor.setCipher(cipher);
