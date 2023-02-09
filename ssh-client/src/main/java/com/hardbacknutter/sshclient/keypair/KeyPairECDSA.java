@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.decryptors.PKDecryptor;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.utils.Buffer;
 
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -93,13 +93,8 @@ public class KeyPairECDSA
               builder.encrypted,
               builder.decryptor);
 
-        // Allowed to be {@code null} for deferred decryption.
-        if (builder.hostKeyAlgorithm != null) {
-            this.type = ECKeyType.getByHostKeyAlgorithm(builder.hostKeyAlgorithm);
-        }
-
-        parse();
         parsePublicKey(builder.publicKeyBlob, builder.publicKeyEncoding);
+        parsePrivateKey();
     }
 
     /**
@@ -213,9 +208,14 @@ public class KeyPairECDSA
                 .getPayload();
     }
 
-    @Override
-    void parsePublicKey(@Nullable final byte[] encodedKey,
-                        @Nullable final PublicKeyEncoding encoding)
+    /**
+     * Decode the public key blob into the components.
+     *
+     * @param encodedKey the key data.
+     * @param encoding   the encoding format
+     */
+    private void parsePublicKey(@Nullable final byte[] encodedKey,
+                                @Nullable final PublicKeyEncoding encoding)
             throws NoSuchAlgorithmException,
                    InvalidKeySpecException,
                    InvalidKeyException {
@@ -231,7 +231,7 @@ public class KeyPairECDSA
                 case OPENSSH_V1: {
                     try {
                         final Buffer buffer = new Buffer(encodedKey);
-                        buffer.skipString(/* HostKeyAlgorithm */);
+                        type = ECKeyType.getByHostKeyAlgorithm(buffer.getJString());
                         buffer.skipString(/* nistName */);
                         w = ECKeyType.decodePoint(buffer.getString());
                     } catch (@NonNull final IOException e) {
@@ -256,7 +256,7 @@ public class KeyPairECDSA
                 case PUTTY_V2: {
                     final Buffer buffer = new Buffer(encodedKey);
                     s = buffer.getBigInteger();
-                    // w and type are set by the public key
+                    // w and type are set during public key parsing
                     break;
                 }
 
@@ -335,9 +335,6 @@ public class KeyPairECDSA
         @NonNull
         final SshClientConfig config;
 
-        /** Allowed to be {@code null} for deferred decryption. */
-        @Nullable
-        private final String hostKeyAlgorithm;
         @Nullable
         private byte[] publicKeyBlob;
         @Nullable
@@ -348,13 +345,11 @@ public class KeyPairECDSA
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
         @Nullable
-        private PKDecryptor decryptor;
+        private PBKDF decryptor;
 
-        public Builder(@NonNull final SshClientConfig config,
-                       @Nullable final String hostKeyAlgorithm)
+        public Builder(@NonNull final SshClientConfig config)
                 throws NoSuchAlgorithmException {
             this.config = config;
-            this.hostKeyAlgorithm = hostKeyAlgorithm;
         }
 
         @Override
@@ -377,7 +372,7 @@ public class KeyPairECDSA
 
         @Override
         @NonNull
-        public Builder setDecryptor(@Nullable final PKDecryptor decryptor) {
+        public Builder setDecryptor(@Nullable final PBKDF decryptor) {
             this.decryptor = decryptor;
             this.encrypted = decryptor != null;
             return this;

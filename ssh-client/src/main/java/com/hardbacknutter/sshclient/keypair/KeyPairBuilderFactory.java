@@ -30,7 +30,7 @@ public final class KeyPairBuilderFactory {
                 return new KeyPairDSA.Builder(config);
             }
             case "EC PRIVATE KEY": {
-                return new KeyPairECDSA.Builder(config, null);
+                return new KeyPairECDSA.Builder(config);
             }
             default:
                 throw new UnsupportedAlgorithmException(pemHeader);
@@ -51,11 +51,11 @@ public final class KeyPairBuilderFactory {
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
-                return new KeyPairECDSA.Builder(config, hostKeyAlgorithm);
+                return new KeyPairECDSA.Builder(config);
 
             case HostKeyAlgorithm.SSH_ED25519:
             case HostKeyAlgorithm.SSH_ED448:
-                return new KeyPairEdDSA.Builder(config, hostKeyAlgorithm);
+                return new KeyPairEdDSA.Builder(config);
 
             default:
                 throw new UnsupportedAlgorithmException(hostKeyAlgorithm);
@@ -74,11 +74,11 @@ public final class KeyPairBuilderFactory {
             return new KeyPairDSA.Builder(config);
 
         } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(prvKeyAlgOID)) {
-            return new KeyPairECDSA.Builder(config, null);
+            return new KeyPairECDSA.Builder(config);
 
         } else if (EdECObjectIdentifiers.id_Ed25519.equals(prvKeyAlgOID)
                 || EdECObjectIdentifiers.id_Ed448.equals(prvKeyAlgOID)) {
-            return new KeyPairEdDSA.Builder(config, null);
+            return new KeyPairEdDSA.Builder(config);
 
         } else {
             throw new UnsupportedAlgorithmException(String.valueOf(prvKeyAlgOID));
