@@ -584,6 +584,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      *
      * @deprecated use {@link #getBigInteger()} instead
      */
+    @Deprecated
     @NonNull
     public byte[] getMPIntBits() {
         final int bits = getInt();
