@@ -1,8 +1,9 @@
 package com.hardbacknutter.sshclient;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
 import androidx.annotation.NonNull;
+
+import java.util.stream.Stream;
+import javax.crypto.Cipher;
 
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
@@ -11,14 +12,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.stream.Stream;
-
-import javax.crypto.Cipher;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class CipherTest {
 
     private static final Logger LOGGER = new DbgJLogger();
-    private static final SshClient SSH_CLIENT = new SshClient(LOGGER);
+    private static final SshClient SSH_CLIENT = SshClientFactory.create(LOGGER);
 
     @NonNull
     static Stream<Arguments> readArgs() {

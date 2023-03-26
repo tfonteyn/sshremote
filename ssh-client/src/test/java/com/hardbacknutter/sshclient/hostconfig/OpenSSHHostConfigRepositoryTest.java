@@ -1,10 +1,8 @@
 package com.hardbacknutter.sshclient.hostconfig;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.List;
 
 import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.connections.BaseConnectionTest;
@@ -13,9 +11,11 @@ import com.hardbacknutter.sshclient.kex.KexProposal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test client:
@@ -40,7 +40,7 @@ class OpenSSHHostConfigRepositoryTest
             throws IOException, GeneralSecurityException {
         super.setup(ZIPPER[ZIP]);
 
-        repo = OpenSSHHostConfigRepository.parseFile(configFile);
+        repo = HostConfigRepositoryFactory.parseOpenSSHConfigFile(configFile);
     }
 
     @Test
@@ -163,7 +163,7 @@ class OpenSSHHostConfigRepositoryTest
     @Test
     void appendKexAlgorithms() throws IOException {
         final HostConfigRepository parse =
-                OpenSSHHostConfigRepository.parse(
+                HostConfigRepositoryFactory.parseOpenSSHConfig(
                         "KexAlgorithms +diffie-hellman-group1-sha1");
 
         final HostConfig hostConfig = parse.getHostConfig("");

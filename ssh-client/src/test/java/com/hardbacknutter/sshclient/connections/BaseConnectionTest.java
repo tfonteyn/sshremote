@@ -1,20 +1,21 @@
 package com.hardbacknutter.sshclient.connections;
 
-import com.hardbacknutter.sshclient.Constants;
-import com.hardbacknutter.sshclient.DbgJLogger;
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.kex.KexProposal;
-import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.List;
+
+import com.hardbacknutter.sshclient.Constants;
+import com.hardbacknutter.sshclient.DbgJLogger;
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClient;
+import com.hardbacknutter.sshclient.SshClientFactory;
+import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.kex.KexProposal;
+import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 /**
  * Test server:
@@ -97,7 +98,7 @@ public class BaseConnectionTest {
      */
     protected void setup(final String zipper)
             throws IOException, GeneralSecurityException {
-        sshClient = new SshClient(LOGGER);
+        sshClient = SshClientFactory.create(LOGGER);
 
         sshClient.setConfig(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, "false");
 

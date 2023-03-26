@@ -1,22 +1,7 @@
 package com.hardbacknutter.sshclient.parsing;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.hardbacknutter.sshclient.Constants;
-import com.hardbacknutter.sshclient.DbgJLogger;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-import com.hardbacknutter.sshclient.keypair.util.KeyPairParser;
-
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,10 +10,26 @@ import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.util.stream.Stream;
 
+import com.hardbacknutter.sshclient.Constants;
+import com.hardbacknutter.sshclient.DbgJLogger;
+import com.hardbacknutter.sshclient.SshClient;
+import com.hardbacknutter.sshclient.SshClientFactory;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+import com.hardbacknutter.sshclient.keypair.util.KeyPairParser;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class KeyPairTest {
 
-    private static final SshClient SSH_CLIENT = new SshClient(new DbgJLogger());
+    private static final SshClient SSH_CLIENT = SshClientFactory.create(new DbgJLogger());
 
     @SuppressWarnings("LongLine")
     @NonNull
