@@ -2,8 +2,14 @@ package com.hardbacknutter.sshclient.channels.forward;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
+
 import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.identity.Identity;
@@ -17,13 +23,6 @@ import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 import com.hardbacknutter.sshclient.utils.SshException;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
-
 /**
  * Internal use-only channel.
  *
@@ -34,6 +33,9 @@ import java.util.ResourceBundle;
  */
 public class ChannelAgentForwarding
         extends ForwardingChannel {
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
 
     public static final String NAME = "auth-agent@openssh.com";
 
@@ -322,7 +324,7 @@ public class ChannelAgentForwarding
                                    @NonNull final UserInfo userinfo)
             throws GeneralSecurityException, IOException, SshAuthCancelException {
 
-        final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+        final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
         final String prompt = rb.getString("PROMPT_PASSPHRASE");
 
         // loop to allow the user multiple attempts at entering the passphrase
