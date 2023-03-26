@@ -3,20 +3,19 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
+
+import com.hardbacknutter.sshclient.ciphers.SshCipher;
 
 /**
  * TODO: is this not available using JCE?
  * https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#secretkeyfactory-algorithms
- *
+ * <p>
  * <a href="https://datatracker.ietf.org/doc/html/rfc8018#section-5.1">PBKDF1</a>
  */
 @SuppressWarnings("NotNullFieldNotInitialized")
