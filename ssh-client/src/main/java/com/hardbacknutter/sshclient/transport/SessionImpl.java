@@ -3,6 +3,24 @@ package com.hardbacknutter.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+
 import com.hardbacknutter.sshclient.Channel;
 import com.hardbacknutter.sshclient.ChannelExec;
 import com.hardbacknutter.sshclient.ChannelSession;
@@ -56,24 +74,6 @@ import com.hardbacknutter.sshclient.utils.SshClientConfigImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 import com.hardbacknutter.sshclient.utils.SshException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
-
 /**
  * A Session represents a connection to a SSH server.
  * <p>
@@ -97,7 +97,7 @@ public final class SessionImpl
     @NonNull
     private final SshSessionConfig config;
     @NonNull
-    private final SshClient sshClient;
+    private final SshClientImpl sshClient;
     @Nullable
     private final String username;
     @NonNull
@@ -120,7 +120,7 @@ public final class SessionImpl
 
     /** client version. */
     @NonNull
-    private String clientVersion = SshClient.VERSION;
+    private String clientVersion = SshClientImpl.VERSION;
 
     /** Unique session id, based on the hash from the KeyExchange. */
     @Nullable
@@ -165,7 +165,7 @@ public final class SessionImpl
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
      */
-    private SessionImpl(@NonNull final SshClient sshClient,
+    private SessionImpl(@NonNull final SshClientImpl sshClient,
                         @Nullable final HostConfig hostConfig,
                         @Nullable final String username,
                         @NonNull final String hostnameOrAlias,
@@ -174,7 +174,8 @@ public final class SessionImpl
 
         this.sshClient = sshClient;
         // create a child config
-        this.config = SshClientConfigImpl.createSessionConfig(sshClient.getConfig(), hostConfig);
+        final SshClientConfig parentConfig = sshClient.getConfig();
+        this.config = new SshClientConfigImpl(parentConfig, hostConfig, parentConfig.getLogger());
 
         this.username = resolveUsername(username, hostConfig);
         this.host = resolveHostname(hostnameOrAlias, hostConfig);
@@ -192,16 +193,18 @@ public final class SessionImpl
     }
 
     /**
-     * Called from {@link SshClient#getSession(String, String, int)} ONLY.
+     * INTERNAL USE ONLY.
+     * <p>
+     * Called from {@link SshClientImpl#getSession(String, String, int)}.
      *
      * @return a new Session
      */
     @NonNull
-    public static Session createSession(@NonNull final SshClient sshClient,
-                                        @Nullable final HostConfig hostConfig,
-                                        @Nullable final String username,
-                                        @NonNull final String hostnameOrAlias,
-                                        final int port)
+    static Session createSession(@NonNull final SshClientImpl sshClient,
+                                 @Nullable final HostConfig hostConfig,
+                                 @Nullable final String username,
+                                 @NonNull final String hostnameOrAlias,
+                                 final int port)
             throws GeneralSecurityException, IOException, SshAuthException {
         return new SessionImpl(sshClient, hostConfig, username, hostnameOrAlias, port);
     }
@@ -1184,13 +1187,6 @@ public final class SessionImpl
         clientVersion = version;
     }
 
-    /**
-     * Get the host key of the server.
-     * This is only valid after a successful {@link #connect}.
-     *
-     * @return the HostKey used by the remote host,
-     * or {@code null}, if we are not yet connected.
-     */
     @Nullable
     public HostKey getHostKey() {
         return kexDelegate != null ? kexDelegate.getHostKey() : null;
@@ -1206,7 +1202,6 @@ public final class SessionImpl
     public int getPort() {
         return port;
     }
-
 
     /**
      * Returns setting for the interval to send a keep-alive message.

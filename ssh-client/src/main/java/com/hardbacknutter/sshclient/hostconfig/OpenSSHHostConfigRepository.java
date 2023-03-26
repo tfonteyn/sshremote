@@ -2,14 +2,9 @@ package com.hardbacknutter.sshclient.hostconfig;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.kex.KexProposal;
-import com.hardbacknutter.sshclient.utils.Util;
-
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17,8 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.hardbacknutter.sshclient.kex.KexProposal;
+
 /**
  * This class implements ConfigRepository interface, and parses OpenSSH's configuration file.
+ * Use {@link HostConfigRepositoryFactory} to create an instance.
+ *
  * <p>
  * The following keywords will be recognized:
  * <ul>
@@ -88,43 +87,9 @@ public final class OpenSSHHostConfigRepository
     /**
      * Constructor.
      */
-    private OpenSSHHostConfigRepository(@NonNull final Reader reader)
+    OpenSSHHostConfigRepository(@NonNull final Reader reader)
             throws IOException {
         parse(reader);
-    }
-
-    /**
-     * Parses the given string, and returns an instance of OpenSSHConfig.
-     *
-     * @param s string, which includes OpenSSH's config
-     *
-     * @return instance
-     */
-    @NonNull
-    public static OpenSSHHostConfigRepository parse(@NonNull final String s)
-            throws IOException {
-        try (final Reader r = new StringReader(s)) {
-            return new OpenSSHHostConfigRepository(r);
-        }
-    }
-
-    /**
-     * Parses the given file, and returns an instance of OpenSSHConfig.
-     *
-     * @param filename OpenSSH's config file
-     *
-     * @return instance
-     */
-    @NonNull
-    public static OpenSSHHostConfigRepository parseFile(@NonNull final String filename)
-            throws IOException {
-        //TODO: Android API 26 limitation
-        // try (final Reader r = new FileReader(Util.checkTilde(filename),
-        //                                      StandardCharsets.UTF_8)) {
-        //noinspection ImplicitDefaultCharsetUsage
-        try (final Reader r = new FileReader(Util.checkTilde(filename))) {
-            return new OpenSSHHostConfigRepository(r);
-        }
     }
 
     @NonNull

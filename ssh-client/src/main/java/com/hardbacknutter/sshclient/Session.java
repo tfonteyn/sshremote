@@ -3,16 +3,17 @@ package com.hardbacknutter.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Map;
+
 import com.hardbacknutter.sshclient.channels.SshChannelException;
+import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.hostkey.HostKeyRepository;
 import com.hardbacknutter.sshclient.identity.IdentityRepository;
 import com.hardbacknutter.sshclient.proxy.Proxy;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 import com.hardbacknutter.sshclient.utils.SshException;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Map;
 
 /**
  * 2021-06-02: initial introduction of a Session INTERFACE with the intention of
@@ -148,6 +149,16 @@ public interface Session {
      */
     @Nullable
     byte[] getSessionId();
+
+    /**
+     * Get the host key of the server.
+     * This is only valid after a successful {@link #connect}.
+     *
+     * @return the HostKey used by the remote host,
+     *         or {@code null}, if we are not yet connected.
+     */
+    @Nullable
+    HostKey getHostKey();
 
     /**
      * returns the current session {@link Logger}.

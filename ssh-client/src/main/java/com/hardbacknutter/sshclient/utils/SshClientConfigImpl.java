@@ -100,9 +100,9 @@ public final class SshClientConfigImpl
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
      */
-    private SshClientConfigImpl(@Nullable final SshClientConfig parentConfig,
-                                @Nullable final HostConfig hostConfig,
-                                @Nullable final Logger logger) {
+    public SshClientConfigImpl(@Nullable final SshClientConfig parentConfig,
+                               @Nullable final HostConfig hostConfig,
+                               @Nullable final Logger logger) {
         this.parentConfig = parentConfig;
         this.hostConfig = hostConfig;
         this.logger = Objects.requireNonNullElse(logger, DEV_NULL);
@@ -117,22 +117,6 @@ public final class SshClientConfigImpl
     @NonNull
     public static SshClientConfig createClientConfig(@Nullable final Logger logger) {
         return new SshClientConfigImpl(null, null, logger);
-    }
-
-    /**
-     * Construct a {@link Session} configuration.
-     * It's based on the passed in {@link SshClient} configuration,
-     * overloaded with the optional host-based configuration.
-     *
-     * @param parentConfig the config object from the {@link SshClient}.
-     * @param hostConfig   (optional) host-based configuration.
-     *
-     * @return a {@link SshSessionConfig}
-     */
-    @NonNull
-    public static SshSessionConfig createSessionConfig(@NonNull final SshClientConfig parentConfig,
-                                                       @Nullable final HostConfig hostConfig) {
-        return new SshClientConfigImpl(parentConfig, hostConfig, parentConfig.getLogger());
     }
 
     @NonNull
