@@ -3,6 +3,14 @@ package com.hardbacknutter.sshclient.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Random;
 import com.hardbacknutter.sshclient.Session;
@@ -21,14 +29,6 @@ import com.hardbacknutter.sshclient.userauth.UserAuthNone;
 import com.hardbacknutter.sshclient.userauth.UserAuthPassword;
 import com.hardbacknutter.sshclient.userauth.UserAuthPublicKey;
 import com.hardbacknutter.sshclient.userauth.jgss.UserAuthGSSContextKrb5;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * Each {@link SshClient} has ONE configuration object.

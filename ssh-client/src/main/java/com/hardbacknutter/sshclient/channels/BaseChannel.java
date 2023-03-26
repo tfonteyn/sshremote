@@ -3,6 +3,14 @@ package com.hardbacknutter.sshclient.channels;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.hardbacknutter.sshclient.Channel;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Session;
@@ -13,14 +21,6 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.transport.TransportC2S;
 import com.hardbacknutter.sshclient.utils.SshConstants;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The abstract base class for the different types of channel
@@ -76,7 +76,6 @@ public abstract class BaseChannel
     private final String type;
     /** LOCAL Unique ID for this channel instance. (incremental/generated). */
     private final int id;
-
     /**
      * {@code true} if the OPEN Packet was send to the remote, or in the case of a local
      * channel, the channel is ready for action.
@@ -1090,6 +1089,8 @@ public abstract class BaseChannel
     }
 
     /**
+     * INTERNAL USE ONLY.
+     * <p>
      * Represents a {@link SshConstants#SSH_MSG_CHANNEL_REQUEST} to be sent to the remote side.
      */
     public interface Request {
