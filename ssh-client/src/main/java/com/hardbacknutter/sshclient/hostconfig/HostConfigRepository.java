@@ -9,6 +9,9 @@ import com.hardbacknutter.sshclient.SshClient;
  * host name (or an alias).
  * This can be implemented by an application and passed to
  * {@link SshClient#setHostConfigRepository(HostConfigRepository)}.
+ *
+ * @see HostConfig
+ * @see HostConfigRepositoryFactory
  */
 public interface HostConfigRepository {
 
