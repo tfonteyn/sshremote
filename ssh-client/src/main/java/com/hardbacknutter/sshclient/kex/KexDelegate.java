@@ -3,18 +3,6 @@ package com.hardbacknutter.sshclient.kex;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.hostkey.HostKey;
-import com.hardbacknutter.sshclient.hostkey.HostKeyRepository;
-import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
-import com.hardbacknutter.sshclient.transport.Packet;
-import com.hardbacknutter.sshclient.transport.SessionImpl;
-import com.hardbacknutter.sshclient.userauth.SshAuthException;
-import com.hardbacknutter.sshclient.userauth.UserInfo;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-import com.hardbacknutter.sshclient.utils.SshConstants;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -24,6 +12,17 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.hostkey.HostKey;
+import com.hardbacknutter.sshclient.hostkey.HostKeyRepository;
+import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
+import com.hardbacknutter.sshclient.transport.Packet;
+import com.hardbacknutter.sshclient.transport.SessionImpl;
+import com.hardbacknutter.sshclient.userauth.SshAuthException;
+import com.hardbacknutter.sshclient.userauth.UserInfo;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+import com.hardbacknutter.sshclient.utils.SshConstants;
 
 /**
  * Manages the interaction between the session and the physical {@link KeyExchange}.
@@ -57,6 +56,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * RFC 4253 SSH Transport Layer Protocol, section 7.1. Algorithm Negotiation</a>
  */
 public class KexDelegate {
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
 
     /** Boolean */
     @SuppressWarnings("WeakerAccess")
@@ -460,7 +462,7 @@ public class KexDelegate {
                 }
                 case Revoked: {
                     if (userinfo != null) {
-                        final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+                        final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
                         userinfo.showMessage(String.format(rb.getString("WARNING_KEY_REVOKED"),
                                                            kex.getHostKeyAlgorithm(),
                                                            hostKeyName));
@@ -515,7 +517,7 @@ public class KexDelegate {
                                           final boolean askToReplace)
             throws NoSuchAlgorithmException {
 
-        final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+        final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
         String message = String.format(
                 rb.getString("WARNING_KEY_CHANGED"),
                 kex.getHostKeyAlgorithm(),
@@ -534,7 +536,7 @@ public class KexDelegate {
                                           final boolean askToAdd)
             throws NoSuchAlgorithmException {
 
-        final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+        final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
         String message = String.format(
                 rb.getString("WARNING_KEY_UNKNOWN"),
                 hostKeyName,
