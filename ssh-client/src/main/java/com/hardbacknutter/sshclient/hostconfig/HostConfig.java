@@ -9,7 +9,8 @@ import com.hardbacknutter.sshclient.utils.BaseConfig;
  * A configuration for connections to a remote host name (or alias).
  *
  * @see <a href="https://man.openbsd.org/ssh_config">OpenSSH client configuration file</a>
- * @see OpenSSHHostConfigRepository
+ * @see HostConfigRepository
+ * @see HostConfigRepositoryFactory
  */
 public interface HostConfig
         extends BaseConfig {
