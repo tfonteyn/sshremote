@@ -3,27 +3,29 @@ package com.hardbacknutter.sshclient.userauth;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostconfig.HostConfig;
-import com.hardbacknutter.sshclient.transport.Packet;
-import com.hardbacknutter.sshclient.transport.PacketIO;
-import com.hardbacknutter.sshclient.utils.SshConstants;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostconfig.HostConfig;
+import com.hardbacknutter.sshclient.transport.Packet;
+import com.hardbacknutter.sshclient.transport.PacketIO;
+import com.hardbacknutter.sshclient.utils.SshConstants;
+
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4252#section-8">
- * RFC 4252 SSH Authentication Protocol,
- * section 8. Password Authentication Method: "password"</a>
+ *         RFC 4252 SSH Authentication Protocol,
+ *         section 8. Password Authentication Method: "password"</a>
  */
 public class UserAuthPassword
         implements UserAuth {
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
 
     public static final String METHOD = "password";
 
@@ -81,7 +83,7 @@ public class UserAuthPassword
                     if (userinfo == null) {
                         return false;
                     } else {
-                        final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+                        final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
                         if (!userinfo.promptPassword(rb.getString("PROMPT_PASSWORD"), dest)) {
                             throw new SshAuthCancelException(METHOD);
                         }
@@ -143,8 +145,7 @@ public class UserAuthPassword
                         final byte[] prompt = packet.getString();
                         packet.skipString(/* language_tag */);
                         if (userinfo instanceof UIKeyboardInteractive) {
-                            final ResourceBundle rb = ResourceBundle.getBundle(
-                                    SshClient.USER_MESSAGES);
+                            final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
 
                             final UIKeyboardInteractive kbi = (UIKeyboardInteractive) userinfo;
                             final String[] response = kbi.promptKeyboardInteractive(
@@ -179,8 +180,7 @@ public class UserAuthPassword
                             io.write(packet);
                         } else {
                             if (userinfo != null) {
-                                final ResourceBundle rb =
-                                        ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+                                final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
                                 userinfo.showMessage(rb.getString("PASSWORD_MUST_BE_CHANGED"));
                             }
                             return false;
