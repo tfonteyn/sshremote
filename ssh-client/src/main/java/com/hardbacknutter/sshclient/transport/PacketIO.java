@@ -2,12 +2,14 @@ package com.hardbacknutter.sshclient.transport;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.Session;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
+import com.hardbacknutter.sshclient.Session;
+
 /**
+ * INTERNAL USE ONLY.
+ * <p>
  * This interface is used to decouple the IO methods from the {@link SessionImpl} object
  * for use by user-code. i.e. read/write is NOT provided on the {@link Session} interface
  * as users should not use it.
