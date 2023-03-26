@@ -3,20 +3,6 @@ package com.hardbacknutter.sshclient.userauth;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostconfig.HostConfig;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.identity.Identity;
-import com.hardbacknutter.sshclient.identity.IdentityRepository;
-import com.hardbacknutter.sshclient.transport.Packet;
-import com.hardbacknutter.sshclient.transport.PacketIO;
-import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-import com.hardbacknutter.sshclient.utils.SshConstants;
-
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.security.GeneralSecurityException;
@@ -28,13 +14,29 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostconfig.HostConfig;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.identity.Identity;
+import com.hardbacknutter.sshclient.identity.IdentityRepository;
+import com.hardbacknutter.sshclient.transport.Packet;
+import com.hardbacknutter.sshclient.transport.PacketIO;
+import com.hardbacknutter.sshclient.utils.Buffer;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+import com.hardbacknutter.sshclient.utils.SshConstants;
+
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4252#section-7">
- * RFC 4252 SSH Authentication Protocol,
- * section 7. Public Key Authentication Method: "publickey"</a>
+ *         RFC 4252 SSH Authentication Protocol,
+ *         section 7. Public Key Authentication Method: "publickey"</a>
  */
 public class UserAuthPublicKey
         implements UserAuth {
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
 
     public static final String METHOD = "publickey";
 
@@ -72,7 +74,7 @@ public class UserAuthPublicKey
             }
         }
 
-        final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+        final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
         prompt = rb.getString("PROMPT_PASSPHRASE");
     }
 
