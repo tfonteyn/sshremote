@@ -8,18 +8,6 @@ import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Channel;
-import com.hardbacknutter.sshclient.ChannelExec;
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.channels.SshChannelException;
-import com.hardbacknutter.sshclient.kex.KexProposal;
-import com.hardbacknutter.sshclient.userauth.UserInfo;
-import com.hardbacknutter.sshclient.utils.SshException;
-import com.hardbacknutter.sshremote.db.Command;
-import com.hardbacknutter.sshremote.db.Host;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +19,19 @@ import java.security.GeneralSecurityException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.hardbacknutter.sshclient.Channel;
+import com.hardbacknutter.sshclient.ChannelExec;
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.SshClient;
+import com.hardbacknutter.sshclient.SshClientFactory;
+import com.hardbacknutter.sshclient.channels.SshChannelException;
+import com.hardbacknutter.sshclient.kex.KexProposal;
+import com.hardbacknutter.sshclient.userauth.UserInfo;
+import com.hardbacknutter.sshclient.utils.SshException;
+import com.hardbacknutter.sshremote.db.Command;
+import com.hardbacknutter.sshremote.db.Host;
+
 public class SshHelper {
 
     public static final String PK_SSH_LOG_LEVEL = "global.ssh.log.level";
@@ -39,22 +40,22 @@ public class SshHelper {
     public static final String KNOWN_HOSTS = "known_hosts";
     private static final String CHANNEL_EXEC = "exec";
     @NonNull
-    private final Host mHost;
+    private final Host host;
 
-    private final SshClient mSshClient;
+    private final SshClient sshClient;
 
     public SshHelper(@NonNull final SharedPreferences global,
                      @NonNull final Host host) {
-        mHost = host;
+        this.host = host;
 
         final int logLevel = global.getInt(PK_SSH_LOG_LEVEL, Logger.ERROR);
 
-        mSshClient = new SshClient(new JLogger(logLevel));
+        sshClient = SshClientFactory.create(new JLogger(logLevel));
 
-        mSshClient.setConfig(KexProposal.PROPOSAL_COMP_CTOS,
-                             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
-        mSshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC,
-                             KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
+        sshClient.setConfig(KexProposal.PROPOSAL_COMP_CTOS,
+                            KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
+        sshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC,
+                            KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
     }
 
     /**
@@ -71,17 +72,17 @@ public class SshHelper {
         final File file = new File(context.getFilesDir(), KNOWN_HOSTS);
         //noinspection ResultOfMethodCallIgnored
         file.createNewFile();
-        mSshClient.setKnownHosts(file.getAbsolutePath());
+        sshClient.setKnownHosts(file.getAbsolutePath());
 
         // trim because paranoia
-        final Session session = mSshClient.getSession(mHost.userName.trim(),
-                mHost.hostnameOrIp.trim(),
-                mHost.port);
+        final Session session = sshClient.getSession(host.userName.trim(),
+                                                     host.hostnameOrIp.trim(),
+                                                     host.port);
         if (userInfo != null) {
             session.setUserInfo(userInfo);
         }
-        session.setPassword(mHost.userPassword.trim());
-        session.setConfig(mHost.getOptions());
+        session.setPassword(host.userPassword.trim());
+        session.setConfig(host.getOptions());
         session.connect();
         return session;
     }
