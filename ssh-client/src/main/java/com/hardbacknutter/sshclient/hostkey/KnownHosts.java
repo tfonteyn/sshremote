@@ -3,15 +3,6 @@ package com.hardbacknutter.sshclient.hostkey;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClient;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostconfig.HostConfig;
-import com.hardbacknutter.sshclient.macs.SshMac;
-import com.hardbacknutter.sshclient.userauth.UserInfo;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-import com.hardbacknutter.sshclient.utils.Util;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +25,15 @@ import java.util.StringJoiner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClient;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostconfig.HostConfig;
+import com.hardbacknutter.sshclient.macs.SshMac;
+import com.hardbacknutter.sshclient.userauth.UserInfo;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+import com.hardbacknutter.sshclient.utils.Util;
+
 /**
  * The default implementation of {@link HostKeyRepository}, using
  * an optional local file to persist the keys.
@@ -41,10 +41,13 @@ import java.util.stream.Collectors;
  * @see SshClient#setKnownHosts(String)
  * @see SshClient#setKnownHosts(InputStream)
  * @see <a href="http://manpages.ubuntu.com/manpages/impish/en/man8/sshd.8.html#ssh_known_hosts%20file%20format">
- * Ubuntu man page</a>
+ *         Ubuntu man page</a>
  */
 public class KnownHosts
         implements HostKeyRepository {
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
 
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("[ \t]");
 
@@ -255,7 +258,7 @@ public class KnownHosts
             if (!file.exists()) {
                 sync = false;
                 if (userinfo != null) {
-                    final ResourceBundle rb = ResourceBundle.getBundle(SshClient.USER_MESSAGES);
+                    final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
 
                     sync = userinfo.promptYesNo(UserInfo.RC_CREATE_FILE, String.format(
                             rb.getString("CREATE_FILE"), knownHostsFilename));
