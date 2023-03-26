@@ -7,7 +7,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
-
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
@@ -39,6 +38,8 @@ public class SshCipherImpl
     SecretKeySpec secretKeySpec;
 
     /**
+     * Constructor.
+     *
      * @param algorithm for the cipher
      * @param mode      for the cipher
      * @param padding   for the cipher

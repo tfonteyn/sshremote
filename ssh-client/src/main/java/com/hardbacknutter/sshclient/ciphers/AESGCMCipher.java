@@ -7,7 +7,6 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 
@@ -43,18 +42,20 @@ public class AESGCMCipher
     private long initialCounter;
 
     /**
+     * Constructor.
+     *
      * @param algorithm for the cipher
      * @param mode      for the cipher
      * @param padding   for the cipher
-     * @param blockSize The block size (in bytes) supported by the given algorithm/mode
      * @param keyLength The key size (in bytes) supported by the given algorithm/mode
+     * @param blockSize The block size (in bytes) supported by the given algorithm/mode
      * @param ivSize    the size (in bytes) of the initial vector for the cipher
      */
     public AESGCMCipher(@NonNull final String algorithm,
                         @NonNull final String mode,
                         @NonNull final String padding,
-                        final int blockSize,
                         final int keyLength,
+                        final int blockSize,
                         final int ivSize)
             throws NoSuchPaddingException, NoSuchAlgorithmException {
         super(algorithm, mode, padding, keyLength, blockSize, ivSize);

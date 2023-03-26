@@ -3,6 +3,13 @@ package com.hardbacknutter.sshclient.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Random;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -53,13 +60,6 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
 import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
 public final class ImplementationFactory {
@@ -368,7 +368,7 @@ public final class ImplementationFactory {
                 case SshCipherConstants.AES_128_GCM_OPENSSH_COM:
                     return new AESGCMCipher("AES", "GCM", "NoPadding", 16, 16, 12);
                 case SshCipherConstants.AES_256_GCM_OPENSSH_COM:
-                    return new AESGCMCipher("AES", "GCM", "NoPadding", 16, 32, 12);
+                    return new AESGCMCipher("AES", "GCM", "NoPadding", 32, 16, 12);
 
 
                 case SshCipherConstants.AES_256_CBC:
@@ -419,11 +419,11 @@ public final class ImplementationFactory {
                     return new SshCipherImpl("Blowfish", "CTR", "NoPadding", 32, 8, 8);
 
                 case SshCipherConstants.AR_C_FOUR:
-                    return new RC4Cipher("RC4", "", "", 8, 16, 8, 0);
+                    return new RC4Cipher("RC4", "", "", 16, 8, 8, 0);
                 case SshCipherConstants.AR_C_FOUR_128:
-                    return new RC4Cipher("RC4", "", "", 8, 16, 8, 1536);
+                    return new RC4Cipher("RC4", "", "", 16, 8, 8, 1536);
                 case SshCipherConstants.AR_C_FOUR_256:
-                    return new RC4Cipher("RC4", "", "", 8, 32, 8, 1536);
+                    return new RC4Cipher("RC4", "", "", 32, 8, 8, 1536);
 
                 case SshCipherConstants.NONE:
                     return new NullCipher();
