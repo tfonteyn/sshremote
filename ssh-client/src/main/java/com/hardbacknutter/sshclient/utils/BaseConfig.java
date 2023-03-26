@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * INTERNAL USE ONLY.
+ */
 public interface BaseConfig {
 
     boolean isValueList(@NonNull String key);
