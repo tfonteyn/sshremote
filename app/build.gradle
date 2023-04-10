@@ -107,7 +107,7 @@ dependencies {
     debugImplementation project(path: ':ssh-client')
 
     // https://github.com/google/desugar_jdk_libs
-    coreLibraryDesugaring('com.android.tools:desugar_jdk_libs_nio:2.0.2')
+    coreLibraryDesugaring('com.android.tools:desugar_jdk_libs_nio:2.0.3')
     //
     // https://developer.android.com/jetpack/androidx/versions
     implementation('androidx.activity:activity:1.7.0')
