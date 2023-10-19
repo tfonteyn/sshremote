@@ -23,7 +23,7 @@ public interface ChannelSubsystem {
      * Indicates whether we want a confirmation/error reply to requests on this channel.
      * This will entirely depend on what subsystem is being addressed.
      * <p>
-     * The default is {@link true}.
+     * The default is {@code true}.
      */
     void setWaitForReply(boolean waitForReply);
 }

@@ -54,8 +54,8 @@ public class SshClientImpl
 
     /**
      * Boolean:
-     * If {@link true}, BC is used for all operations;
-     * If {@link false}, the JDK has priority and BC handles only what the JDK cannot.
+     * If {@code true}, BC is used for all operations;
+     * If {@code false}, the JDK has priority and BC handles only what the JDK cannot.
      */
     private static final String PREFER_BOUNCY_CASTLE = "prefer_bouncycastle";
 
