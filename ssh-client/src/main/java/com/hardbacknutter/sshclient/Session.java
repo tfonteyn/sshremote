@@ -65,6 +65,9 @@ public interface Session {
      */
     void setHostKeyAlias(@NonNull String hostKeyAlias);
 
+    /**
+     * Get the current value of the UserInfo object.
+     */
     @Nullable
     UserInfo getUserInfo();
 
@@ -203,7 +206,7 @@ public interface Session {
      * the configuration to become active, like compression or encryption mode.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-9">
-     * RFC 4253 SSH Transport Layer Protocol, section 9.</a>
+     *         RFC 4253 SSH Transport Layer Protocol, section 9.</a>
      */
     void rekey()
             throws IOException, GeneralSecurityException;
@@ -220,7 +223,7 @@ public interface Session {
      * Send a {@code SSH_MSG_IGNORE} message.
      *
      * @see <a href="https://www.rfc-editor.org/rfc/rfc4251.html#section-9.3.1">
-     * RFC 4251 Protocol Architecture, section 9.3.1. (to avoid the Rogaway attack)</a>
+     *         RFC 4251 Protocol Architecture, section 9.3.1. (to avoid the Rogaway attack)</a>
      */
     void sendIgnore()
             throws IOException, GeneralSecurityException;
@@ -229,7 +232,7 @@ public interface Session {
      * Send a global "no-more-sessions@openssh.com" message.
      *
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
-     * SSH protocol version 2 vendor extensions, section 2.2</a>
+     *         SSH protocol version 2 vendor extensions, section 2.2</a>
      */
     void sendNoMoreSessions()
             throws IOException, GeneralSecurityException;
@@ -240,6 +243,13 @@ public interface Session {
      */
     void disconnect();
 
+    /**
+     * retrieves the current timeout setting.
+     *
+     * @return timeout in milliseconds
+     *
+     * @see #setTimeout
+     */
     int getTimeout();
 
     /**

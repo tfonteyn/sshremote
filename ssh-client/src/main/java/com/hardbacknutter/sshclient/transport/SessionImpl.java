@@ -142,6 +142,7 @@ public final class SessionImpl
     private Socket socket;
     @Nullable
     private Proxy proxy;
+    /** milliseconds. */
     private int timeout;
 
     private boolean connected;
@@ -293,10 +294,6 @@ public final class SessionImpl
         }
     }
 
-
-    /**
-     * Get the current value of the UserInfo object.
-     */
     @Nullable
     public UserInfo getUserInfo() {
         return userinfo;
@@ -1150,11 +1147,7 @@ public final class SessionImpl
         return connected;
     }
 
-    /**
-     * retrieves the current timeout setting.
-     *
-     * @see #setTimeout
-     */
+
     @Override
     public int getTimeout() {
         return timeout;
