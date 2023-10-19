@@ -17,7 +17,7 @@ public final class SshClientFactory {
      */
     @NonNull
     public static SshClient create() {
-        return new SshClientImpl();
+        return create(null);
     }
 
     /**

@@ -95,15 +95,6 @@ public class SshClientImpl
      * Constructor.
      * <p>
      * The entry point for user-code.
-     */
-    public SshClientImpl() {
-        this(null);
-    }
-
-    /**
-     * Constructor.
-     * <p>
-     * The entry point for user-code.
      *
      * @param logger to use; can be {@code null} for no logging at all.
      */
