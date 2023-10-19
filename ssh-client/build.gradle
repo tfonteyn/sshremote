@@ -24,11 +24,12 @@ tasks.withType(Test).configureEach {
 
 dependencies {
 
-    implementation("androidx.annotation:annotation:1.6.0")
-//    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
-    implementation("org.bouncycastle:bcprov-debug-jdk18on:1.76")
+    implementation("androidx.annotation:annotation:${androidxAnnotationVersion}")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
+//    implementation("org.bouncycastle:bcprov-debug-jdk18on:1.76")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    // local tests use JUnit5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiterVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${jupiterVersion}")
 }
