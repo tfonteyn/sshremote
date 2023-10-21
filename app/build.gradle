@@ -23,7 +23,7 @@ if (project.hasProperty("SSHRemote.properties")) {
 
 android {
     namespace "com.hardbacknutter.sshremote"
-    compileSdk = 34
+    compileSdk = rootProject.ext.compileSdkVersion
 
     signingConfigs {
         release {

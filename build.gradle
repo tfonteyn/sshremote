@@ -41,6 +41,8 @@ ext {
     // https://github.com/material-components/material-components-android/releases
     googleMaterialVersion = '1.10.0'
 
+    bouncycastleVersion = "1.76"
+
     // https://junit.org/junit5/docs/current/user-guide/#overview
     jupiterVersion = "5.10.0"
 

@@ -25,8 +25,8 @@ tasks.withType(Test).configureEach {
 dependencies {
 
     implementation("androidx.annotation:annotation:${androidxAnnotationVersion}")
-    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
-//    implementation("org.bouncycastle:bcprov-debug-jdk18on:1.76")
+    implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
+//    implementation("org.bouncycastle:bcprov-debug-jdk18on:${bouncycastleVersion}")
 
     // local tests use JUnit5
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiterVersion}")
