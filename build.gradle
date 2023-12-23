@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application") version '8.2.0-rc01' apply false
-    id("com.android.library") version '8.2.0-rc01' apply false
+    id("com.android.application") version '8.2.0' apply false
+    id("com.android.library") version '8.2.0' apply false
     id("org.jetbrains.kotlin.android") version "1.9.10" apply false
 }
 
@@ -18,11 +18,11 @@ ext {
     compileSdkVersion = 34
 
     // https://github.com/google/desugar_jdk_libs
-    desugarVersion = "2.0.3"
+    desugarVersion = '2.0.4'
 
     // https://developer.android.com/jetpack/androidx/versions
-    androidxActivityVersion = '1.8.0'
-    androidxAnnotationVersion = '1.7.0'
+    androidxActivityVersion = '1.8.2'
+    androidxAnnotationVersion = '1.7.1'
     androidxAppcompatVersion = "1.6.1"
     androidxConstraintlayoutVersion = "2.1.4"
     androidxCoordinatorlayoutVersion = "1.2.0"
@@ -30,21 +30,21 @@ ext {
     androidxCustomviewVersion = "1.2.0-alpha02"
     androidxDocumentfileVersion = "1.1.0-alpha01"
     androidxDrawerlayoutVersion = "1.2.0"
-    androidxFragmentVersion = "1.6.1"
+    androidxFragmentVersion = '1.6.2'
     androidxLifecycleVersion = '2.6.2'
-    androidNavigationFragment = "2.7.4"
-    androidNavigationUI = "2.7.4"
+    androidNavigationFragment = '2.7.6'
+    androidNavigationUI = '2.7.6'
     androidxPreferenceVersion = "1.2.1"
     androidxRecyclerviewVersion = '1.3.2'
-    androidRoomVersion = "2.6.0"
+    androidRoomVersion = '2.6.1'
 
     // https://github.com/material-components/material-components-android/releases
-    googleMaterialVersion = '1.10.0'
+    googleMaterialVersion = '1.11.0'
 
-    bouncycastleVersion = "1.76"
+    bouncycastleVersion = '1.77'
 
     // https://junit.org/junit5/docs/current/user-guide/#overview
-    jupiterVersion = "5.10.0"
+    jupiterVersion = '5.10.1'
 
     // https://developer.android.com/jetpack/androidx/releases/test
     androidxTestCoreVersion = "1.5.0"
