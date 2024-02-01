@@ -53,7 +53,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
  * algorithm.  Each name-list MUST contain at least one algorithm name.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7.1">
- * RFC 4253 SSH Transport Layer Protocol, section 7.1. Algorithm Negotiation</a>
+ *         RFC 4253 SSH Transport Layer Protocol, section 7.1. Algorithm Negotiation</a>
  */
 public class KexDelegate {
 
@@ -147,7 +147,7 @@ public class KexDelegate {
 
     public boolean isTimeout(final long timeout) {
         return (timeout > 0)
-                && ((System.currentTimeMillis() - inKeyExchangeStartTime) > timeout);
+               && ((System.currentTimeMillis() - inKeyExchangeStartTime) > timeout);
     }
 
     /**
@@ -242,7 +242,7 @@ public class KexDelegate {
         if (!inKeyExchange.get()) {
             if (session.getLogger().isEnabled(Logger.DEBUG)) {
                 session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent"
-                        + " (client rekey request)");
+                                                            + " (client rekey request)");
             }
             sendKexInit();
         }
@@ -253,7 +253,7 @@ public class KexDelegate {
      * <p>
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7.2">
-     * RFC 4253 SSH Transport Layer Protocol, section 7.2.</a>
+     *         RFC 4253 SSH Transport Layer Protocol, section 7.2.</a>
      */
     public void receiveKexInit(@NonNull final Packet serverPacket,
                                final boolean authenticated)
@@ -295,7 +295,7 @@ public class KexDelegate {
         if (!inKeyExchange.get()) {
             if (session.getLogger().isEnabled(Logger.DEBUG)) {
                 session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent"
-                        + " (re-keying requested by the remote)");
+                                                            + " (re-keying requested by the remote)");
             }
             sendKexInit();
         }
@@ -350,7 +350,7 @@ public class KexDelegate {
      * @return the new keys to use from now on.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7.3">
-     * RFC 4253 SSH Transport Layer Protocol, section 7.3. Taking Keys Into Use</a>
+     *         RFC 4253 SSH Transport Layer Protocol, section 7.3. Taking Keys Into Use</a>
      */
     @NonNull
     public KexKeys sendNewKeys()
@@ -395,7 +395,7 @@ public class KexDelegate {
                                 userinfo.showMessage(getKeyIsUnknownMessage(kex, false));
                             }
                             throw new InvalidKeyException("Rejecting unknown key for: "
-                                                                  + hostKeyName);
+                                                          + hostKeyName);
 
                         case AcceptNew:
                         case No:
@@ -410,12 +410,12 @@ public class KexDelegate {
                                         getKeyIsUnknownMessage(kex, true));
                                 if (!addNewKey) {
                                     throw new InvalidKeyException("User rejected key for: "
-                                                                          + hostKeyName);
+                                                                  + hostKeyName);
                                 }
                             } else {
                                 // can't ask
                                 throw new InvalidKeyException("Rejecting unknown key for: "
-                                                                      + hostKeyName);
+                                                              + hostKeyName);
                             }
                             break;
                     }
@@ -444,12 +444,12 @@ public class KexDelegate {
                                         getKeyIsChangedMessage(kex, true));
                                 if (!addNewKey) {
                                     throw new InvalidKeyException("User rejected key for: "
-                                                                          + hostKeyName);
+                                                                  + hostKeyName);
                                 }
                             } else {
                                 // can't ask
                                 throw new InvalidKeyException("Rejecting changed key for: "
-                                                                      + hostKeyName);
+                                                              + hostKeyName);
                             }
                             break;
                         }
@@ -478,8 +478,8 @@ public class KexDelegate {
                 if (session.getLogger().isEnabled(Logger.WARN)) {
                     session.getLogger().log(Logger.WARN,
                                             () -> "Permanently added '" + hostKeyName + "'"
-                                                    + " (" + kex.getHostKeyAlgorithm() + ")"
-                                                    + " to the list of known hosts.");
+                                                  + " (" + kex.getHostKeyAlgorithm() + ")"
+                                                  + " to the list of known hosts.");
                 }
 
                 synchronized (hkr) {
@@ -488,7 +488,7 @@ public class KexDelegate {
             }
 
             inKeyExchangeStartTime = inKeyExchangeStartTime - startTimeOfCheck
-                    + System.currentTimeMillis();
+                                     + System.currentTimeMillis();
 
             return hostkey;
 
@@ -505,7 +505,7 @@ public class KexDelegate {
      * After a successful connect, the accepted host key is available for informative purposes.
      *
      * @return the HostKey used by the remote host, or {@code null},
-     * if we are not yet connected.
+     *         if we are not yet connected.
      */
     @Nullable
     public HostKey getHostKey() {
