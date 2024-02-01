@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreference;
@@ -62,7 +63,7 @@ public class SettingsFragment
 
     @Override
     public void onSharedPreferenceChanged(@NonNull final SharedPreferences preferences,
-                                          @NonNull final String key) {
+                                          @Nullable final String key) {
 
         if (SshHelper.PK_SSH_LOG_LEVEL.equals(key)) {
             updateLogLevelSummary();
