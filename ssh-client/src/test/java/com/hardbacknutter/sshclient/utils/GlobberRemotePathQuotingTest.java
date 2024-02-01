@@ -1,13 +1,13 @@
 package com.hardbacknutter.sshclient.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import androidx.annotation.NonNull;
-
-import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GlobberRemotePathQuotingTest {
 
@@ -36,7 +36,7 @@ class GlobberRemotePathQuotingTest {
         if (pathBytes.length == uPath.length) {
             return path;
         }
-        return new String(uPath, 0, uPath.length, StandardCharsets.UTF_8);
+        return new String(uPath, StandardCharsets.UTF_8);
     }
 
     @NonNull
@@ -83,7 +83,7 @@ class GlobberRemotePathQuotingTest {
             }
             pathBytes2[j++] = b;
         }
-        return new String(pathBytes2, 0, pathBytes2.length, StandardCharsets.UTF_8);
+        return new String(pathBytes2, StandardCharsets.UTF_8);
     }
 
     @Test

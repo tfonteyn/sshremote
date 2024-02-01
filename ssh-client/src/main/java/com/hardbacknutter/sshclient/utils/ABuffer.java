@@ -2,13 +2,13 @@ package com.hardbacknutter.sshclient.utils;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.transport.Packet;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+
+import com.hardbacknutter.sshclient.transport.Packet;
 
 /**
  * A chunk of bytes together with methods to access them.
@@ -491,7 +491,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     public String getJString()
             throws IOException {
         final byte[] buf = getString();
-        return new String(buf, 0, buf.length, StandardCharsets.UTF_8);
+        return new String(buf, StandardCharsets.UTF_8);
     }
 
     /**

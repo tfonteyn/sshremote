@@ -16,7 +16,7 @@ public class SshPartialAuthException
     SshPartialAuthException(@NonNull final String method,
                             @NonNull final byte[] methods) {
         super(method);
-        this.methods = new String(methods, 0, methods.length, StandardCharsets.UTF_8);
+        this.methods = new String(methods, StandardCharsets.UTF_8);
     }
 
     @NonNull

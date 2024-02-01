@@ -151,8 +151,7 @@ public class UserAuthPassword
                             final String[] response = kbi.promptKeyboardInteractive(
                                     dest,
                                     rb.getString("PASSWORD_CHANGE_REQUIRED"),
-                                    new String(prompt, 0, prompt.length,
-                                               StandardCharsets.UTF_8),
+                                    new String(prompt, StandardCharsets.UTF_8),
                                     new String[]{rb.getString("PROMPT_NEW_PASSWORD")},
                                     new boolean[]{false});
                             if (response == null) {

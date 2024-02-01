@@ -3,9 +3,6 @@ package com.hardbacknutter.sshclient.hostkey;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostconfig.HostConfig;
-
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -14,6 +11,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.StringJoiner;
+
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 
 /**
  * The <strong>public</strong> key of a SSH server.
@@ -234,7 +234,7 @@ public class HostKey {
     @NonNull
     String getEncodedKey() {
         final byte[] str = Base64.getEncoder().encode(key);
-        return new String(str, 0, str.length, StandardCharsets.UTF_8);
+        return new String(str, StandardCharsets.UTF_8);
     }
 
     @NonNull

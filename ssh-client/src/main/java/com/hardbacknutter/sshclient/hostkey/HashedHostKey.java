@@ -3,14 +3,14 @@ package com.hardbacknutter.sshclient.hostkey;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Random;
-import com.hardbacknutter.sshclient.macs.SshMac;
-
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.Base64;
+
+import com.hardbacknutter.sshclient.Random;
+import com.hardbacknutter.sshclient.macs.SshMac;
 
 class HashedHostKey
         extends HostKey {
@@ -44,7 +44,7 @@ class HashedHostKey
         this.mac = mac;
 
         if (hostnames.startsWith(HASH_MAGIC) &&
-                hostnames.substring(HASH_MAGIC.length()).indexOf(HASH_DELIM) > 0) {
+            hostnames.substring(HASH_MAGIC.length()).indexOf(HASH_DELIM) > 0) {
 
             final String data = hostnames.substring(HASH_MAGIC.length());
             final Base64.Decoder decoder = Base64.getDecoder();
@@ -58,7 +58,7 @@ class HashedHostKey
                         .getBytes(StandardCharsets.UTF_8));
 
             if (tmpSalt.length != mac.getDigestLength() ||
-                    tmpHash.length != mac.getDigestLength()) {
+                tmpHash.length != mac.getDigestLength()) {
                 salt = null;
                 hash = null;
                 hashed = false;
@@ -122,8 +122,8 @@ class HashedHostKey
         final Base64.Encoder encoder = Base64.getEncoder();
         final byte[] encHash = encoder.encode(hash);
         final byte[] encSalt = encoder.encode(salt);
-        hostnames = HASH_MAGIC + new String(encSalt, 0, encSalt.length, StandardCharsets.UTF_8) +
-                HASH_DELIM + new String(encHash, 0, encHash.length, StandardCharsets.UTF_8);
+        hostnames = HASH_MAGIC + new String(encSalt, StandardCharsets.UTF_8) +
+                    HASH_DELIM + new String(encHash, StandardCharsets.UTF_8);
 
         hashed = true;
     }

@@ -1,13 +1,6 @@
 package com.hardbacknutter.sshclient.channels.sftp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import androidx.annotation.NonNull;
-
-import com.hardbacknutter.sshclient.utils.Globber;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.hardbacknutter.sshclient.utils.Globber;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LocalPathTest {
 
@@ -88,7 +88,7 @@ class LocalPathTest {
 
         final byte[] tmpBuf = new byte[pathBytes.length - i - 1];
         System.arraycopy(pathBytes, i + 1, tmpBuf, 0, tmpBuf.length);
-        final String pattern = new String(tmpBuf, 0, tmpBuf.length, StandardCharsets.UTF_8);
+        final String pattern = new String(tmpBuf, StandardCharsets.UTF_8);
 
         final String[] children = new File(dir).list();
         if (children != null) {

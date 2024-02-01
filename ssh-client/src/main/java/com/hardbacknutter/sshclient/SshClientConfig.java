@@ -3,6 +3,9 @@ package com.hardbacknutter.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
 import com.hardbacknutter.sshclient.compression.SshDeflater;
 import com.hardbacknutter.sshclient.compression.SshInflater;
@@ -10,9 +13,6 @@ import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
 import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.userauth.UserAuth;
 import com.hardbacknutter.sshclient.utils.BaseConfig;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 /**
  * <h3>Algorithm configuration</h3>

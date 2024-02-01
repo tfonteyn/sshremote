@@ -2,14 +2,14 @@ package com.hardbacknutter.sshclient.keypair.util;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
+
+import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 
 /**
  * To be replaced with a more flexible solution, perhaps Bouncy Castle library calls.
@@ -61,7 +61,7 @@ public class KeyPairWriter {
 
         out.print(keyPair.getHostKeyAlgorithm());
         out.print(' ');
-        out.print(new String(base64blob, 0, base64blob.length, StandardCharsets.UTF_8));
+        out.print(new String(base64blob, StandardCharsets.UTF_8));
         out.print(' ');
         out.println(comment);
     }

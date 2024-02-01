@@ -3,18 +3,6 @@ package com.hardbacknutter.sshclient.channels.sftp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.ChannelSftp;
-import com.hardbacknutter.sshclient.ChannelSubsystem;
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.channels.SshChannelException;
-import com.hardbacknutter.sshclient.channels.io.MyPipedInputStream;
-import com.hardbacknutter.sshclient.channels.session.ChannelSessionImpl;
-import com.hardbacknutter.sshclient.transport.Packet;
-import com.hardbacknutter.sshclient.transport.SessionImpl;
-import com.hardbacknutter.sshclient.utils.Globber;
-import com.hardbacknutter.sshclient.utils.SshConstants;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +23,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.hardbacknutter.sshclient.ChannelSftp;
+import com.hardbacknutter.sshclient.ChannelSubsystem;
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.channels.SshChannelException;
+import com.hardbacknutter.sshclient.channels.io.MyPipedInputStream;
+import com.hardbacknutter.sshclient.channels.session.ChannelSessionImpl;
+import com.hardbacknutter.sshclient.transport.Packet;
+import com.hardbacknutter.sshclient.transport.SessionImpl;
+import com.hardbacknutter.sshclient.utils.Globber;
+import com.hardbacknutter.sshclient.utils.SshConstants;
 
 /**
  * A Channel connected to an sftp server (as a subsystem of the ssh server).
@@ -223,7 +223,7 @@ public class ChannelSftpImpl
      */
     @NonNull
     private String byte2str(@NonNull final byte[] bytes) {
-        return new String(bytes, 0, bytes.length, remoteCharset);
+        return new String(bytes, remoteCharset);
     }
 
     /**
