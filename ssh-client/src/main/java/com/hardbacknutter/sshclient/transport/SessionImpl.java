@@ -189,7 +189,7 @@ public final class SessionImpl
 
         if (getLogger().isEnabled(Logger.INFO)) {
             getLogger().log(Logger.INFO, () -> "Session created for "
-                    + username + "@" + hostnameOrAlias + ":" + port);
+                                               + username + "@" + hostnameOrAlias + ":" + port);
         }
     }
 
@@ -903,10 +903,10 @@ public final class SessionImpl
             // These can/must be send when we're in KeyExchange (but not timed out)
             final byte command = packet.getCommand();
             if (command == SshConstants.SSH_MSG_KEXINIT ||
-                    command == SshConstants.SSH_MSG_NEWKEYS ||
-                    command == SshConstants.SSH_MSG_DISCONNECT ||
-                    // 30-49	Reserved (key exchange method specific)	[RFC4251]
-                    (command >= 30 && command <= 49)) {
+                command == SshConstants.SSH_MSG_NEWKEYS ||
+                command == SshConstants.SSH_MSG_DISCONNECT ||
+                // 30-49	Reserved (key exchange method specific)	[RFC4251]
+                (command >= 30 && command <= 49)) {
                 break;
             }
 
@@ -978,19 +978,19 @@ public final class SessionImpl
                         }
                         case SshConstants.SSH_MSG_CHANNEL_OPEN: {
                             packet.startReadingPayload();
-                            packet.getByte();
+                            packet.getByte(/* command */);
                             final String channelType = packet.getJString();
                             final boolean accept =
                                     ChannelForwardedTCPIP.NAME.equals(channelType)
-                                            || ChannelX11.NAME.equals(channelType)
-                                            && (x11Forwarding >= 0)
-                                            || ChannelAgentForwarding.NAME.equals(channelType)
-                                            && agentForwarding;
+                                    || ChannelX11.NAME.equals(channelType)
+                                       && (x11Forwarding >= 0)
+                                    || ChannelAgentForwarding.NAME.equals(channelType)
+                                       && agentForwarding;
 
                             if (getLogger().isEnabled(Logger.DEBUG)) {
                                 getLogger().log(Logger.DEBUG, () ->
                                         "Remote request to open channel: "
-                                                + channelType + ", accept: " + accept);
+                                        + channelType + ", accept: " + accept);
                             }
 
                             if (accept) {
@@ -1006,7 +1006,7 @@ public final class SessionImpl
                         case SshConstants.SSH_MSG_GLOBAL_REQUEST: {
                             // reject or ignore all global requests coming from the remote
                             packet.startReadingPayload();
-                            packet.getByte();
+                            packet.getByte(/* command */);
                             packet.skipString(/* request name */);
                             final boolean wantReply = packet.getBoolean();
                             if (wantReply) {
@@ -1357,15 +1357,15 @@ public final class SessionImpl
             final String value = hostConfig.getString(HostConfig.REQUEST_TTY);
             final boolean requestTTY =
                     ("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)
-                            || "force".equalsIgnoreCase(value) || "auto".equalsIgnoreCase(value));
+                     || "force".equalsIgnoreCase(value) || "auto".equalsIgnoreCase(value));
             ((ChannelShell) channel).setPty(requestTTY);
         }
 
         // X11: try boolean first; if 'true' set screen number to 0
         final String value = hostConfig.getString(HostConfig.FORWARD_X11);
         enable = value != null
-                ? "yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)
-                : null;
+                 ? "yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)
+                 : null;
         if (enable != null) {
             x11Forwarding = enable ? 0 : -1;
             channel.setXForwarding(x11Forwarding);
@@ -1472,10 +1472,10 @@ public final class SessionImpl
 
         // both session id's are null, compare everything
         return port == session.port
-                && host.equals(session.host)
-                && Objects.equals(username, session.username)
-                && Arrays.equals(password, session.password)
-                && Objects.equals(hostKeyAlias, session.hostKeyAlias);
+               && host.equals(session.host)
+               && Objects.equals(username, session.username)
+               && Arrays.equals(password, session.password)
+               && Objects.equals(hostKeyAlias, session.hostKeyAlias);
     }
 
     @Override
