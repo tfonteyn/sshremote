@@ -230,7 +230,7 @@ public class KexDelegate {
 
         inKeyExchange.set(true);
         startTimer();
-        session.write(kexProposal.getClientPacket());
+        session.write(kexProposal.createClientPacket());
     }
 
     /**
@@ -287,7 +287,7 @@ public class KexDelegate {
 
         // The client's SSH_MSG_KEXINIT payload;
         // Just use payload-start and writeOffset as we read the original/uncompressed Packet
-        final Packet clientPacket = kexProposal.getClientPacket();
+        final Packet clientPacket = kexProposal.createClientPacket();
         final byte[] I_C = Arrays.copyOfRange(clientPacket.data,
                                               Packet.HEADER_LEN,
                                               clientPacket.writeOffset);
@@ -300,7 +300,7 @@ public class KexDelegate {
             sendKexInit();
         }
 
-        agreement = kexProposal.negotiate(serverPacket, authenticated);
+        agreement = kexProposal.negotiate(I_S, authenticated);
 
         kex = ImplementationFactory.getKeyExchange(session.getConfig(),
                                                    agreement.getKeyAlgorithm());
