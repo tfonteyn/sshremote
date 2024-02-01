@@ -2,9 +2,9 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.kex.keyagreements.DH;
-
 import java.math.BigInteger;
+
+import com.hardbacknutter.sshclient.kex.keyagreements.DH;
 
 /**
  * Method: {@code diffie-hellman-group17-sha512}
@@ -13,8 +13,8 @@ import java.math.BigInteger;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc3526#section-6">
  * RFC 3526 MODP Diffie-Hellman groups for Internet Key Exchange (IKE),
  * section 6.  6144-bit MODP Group</a>
- * @see <a href="https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-09.html#rfc.toc">
- * Key Exchange (KEX) Method Updates and Recommendations</a>
+ * @see <a href="https://datatracker.ietf.org/doc/rfc9142/">
+ * RFC 9142, Key Exchange (KEX) Method Updates and Recommendations</a>
  */
 public class KeyExchangeDHGroup17
         extends KeyExchangeDHGroup_n {

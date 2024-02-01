@@ -20,8 +20,8 @@ import java.security.GeneralSecurityException;
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4419">
  * RFC 4419, Diffie-Hellman Group Exchange for the Secure Shell (SSH)</a>
- * @see <a href="https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-09.html#rfc.toc">
- * Key Exchange (KEX) Method Updates and Recommendations</a>
+ * @see <a href="https://datatracker.ietf.org/doc/rfc9142/">
+ * RFC 9142, Key Exchange (KEX) Method Updates and Recommendations</a>
  */
 public class KeyExchangeDHGroupExchange
         extends KeyExchangeBase {

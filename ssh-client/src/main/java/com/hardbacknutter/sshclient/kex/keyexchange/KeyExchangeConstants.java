@@ -3,14 +3,12 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4419">
  * RFC 4419, Diffie-Hellman Group Exchange for the Secure Shell (SSH)</a>
- * @see <a href="https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-09.html#rfc.toc">
- * Key Exchange (KEX) Method Updates and Recommendations</a>
+ * @see <a href="https://datatracker.ietf.org/doc/rfc9142/">
+ * RFC 9142, Key Exchange (KEX) Method Updates and Recommendations</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-8.1">
  * RFC 4253 SSH Transport Layer Protocol, section 8. Diffie-Hellman Key Exchange</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2409#section-6.2">
  * RFC 2409 The Internet Key Exchange (IKE), section 6.2. Second Oakley Group</a>
- * @see <a href="https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-09.html#rfc.toc">
- * Key Exchange (KEX) Method Updates and Recommendations</a>
  */
 public final class KeyExchangeConstants {
 

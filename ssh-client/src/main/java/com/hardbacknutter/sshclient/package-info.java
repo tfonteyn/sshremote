@@ -2,7 +2,6 @@
 /**
  * <a href="https://www.openssh.com/specs.html">openssh.com/specs</a>
  *
- *
  * <a href="https://datatracker.ietf.org/doc/search/?name=SSH&activedrafts=on&rfcs=on">
  * Bookmarks on the ietf site</a>
  *

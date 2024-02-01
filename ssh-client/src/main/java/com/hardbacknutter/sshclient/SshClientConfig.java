@@ -22,7 +22,7 @@ import java.util.Map;
  * from which one will be selected by negotiation during key exchange.
  * These should confirm to the format defined by RFC 4250, and be
  * accompanied by an "implementation" option.
- *
+ * <p>
  * <h4>Key exchange algorithms: {@link KeyExchange}</h4>
  * <h4>User Authentication methods: {@link UserAuth}</h4>
  *
