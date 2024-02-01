@@ -3,6 +3,15 @@ package com.hardbacknutter.sshclient.kex;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Function;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -15,17 +24,9 @@ import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.userauth.SshAuthException;
+import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.SshConstants;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Function;
 
 public class KexProposal {
 
@@ -89,8 +90,6 @@ public class KexProposal {
     private final List<String> language_s2c;
     @SuppressWarnings("FieldNotUsedInToString")
     private final SshClientConfig config;
-    @SuppressWarnings("FieldNotUsedInToString")
-    private final Packet clientPacket;
     private List<String> hostKeyAlgorithms;
 
     /**
@@ -122,7 +121,35 @@ public class KexProposal {
         if (config.getBooleanValue(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, true)) {
             validate();
         }
+    }
 
+    @NonNull
+    private static List<String> getStringList(@NonNull final SshClientConfig config,
+                                              @NonNull final String key,
+                                              @NonNull final String defValue) {
+        final List<String> list = config.getStringList(key);
+        if (list.isEmpty()) {
+            list.add(defValue);
+        }
+        return list;
+    }
+
+    /**
+     * Add a KEX extension to the list of KEX algorithms.
+     * This method must be called before calling {@link #createClientPacket()}
+     * to have any effect.
+     *
+     * @param extension to add
+     */
+    void addKexExtension(@NonNull final String extension) {
+        if (!kexAlgorithms.contains(extension)) {
+            kexAlgorithms.add(extension);
+        }
+    }
+
+    @NonNull
+    Packet createClientPacket()
+            throws NoSuchAlgorithmException {
         // byte      SSH_MSG_KEXINIT(20)
         // byte[16]  cookie (random bytes)
         // string    kex_algorithms
@@ -137,7 +164,7 @@ public class KexProposal {
         // string    languages_server_to_client
         // boolean   first_kex_packet_follows
         // uint32    0 (reserved for future extension)
-        clientPacket = new Packet(SshConstants.SSH_MSG_KEXINIT)
+        return new Packet(SshConstants.SSH_MSG_KEXINIT)
                 .putBytes(config.getRandom().nextBytes(16))
                 .putString(String.join(",", kexAlgorithms))
                 .putString(String.join(",", hostKeyAlgorithms))
@@ -151,23 +178,6 @@ public class KexProposal {
                 .putString(String.join(",", language_s2c))
                 .putBoolean(false)
                 .putInt(0);
-    }
-
-    @NonNull
-    private static List<String> getStringList(@NonNull final SshClientConfig config,
-                                              @NonNull final String key,
-                                              @NonNull final String defValue) {
-        final List<String> list = config.getStringList(key);
-        if (list.isEmpty()) {
-            list.add(defValue);
-        }
-        return list;
-    }
-
-    @NonNull
-    Packet getClientPacket() {
-        // always return a copy as we the caller can/will modify the packet
-        return new Packet(clientPacket);
     }
 
     /**
@@ -188,16 +198,17 @@ public class KexProposal {
      * // string    languages_server_to_client
      */
     @NonNull
-    KexAgreement negotiate(@NonNull final Packet server,
+    KexAgreement negotiate(@NonNull final byte[] I_S,
                            final boolean authenticated)
             throws IOException, SshAuthException {
-        // 22 bytes: packet header(5) + command(1) + cookie(16)
-        server.setReadOffSet(22);
+        final Buffer buffer = new Buffer(I_S);
+        // 17 bytes: command(1) + cookie(16)
+        buffer.setReadOffSet(17);
 
-        final String kex = negotiate("kexAlgorithms", kexAlgorithms, server.getJString());
-        final String key = negotiate("hostKeyAlgorithms", hostKeyAlgorithms, server.getJString());
-        final String c_c2s = negotiate("ciphers_c2s", ciphers_c2s, server.getJString());
-        final String c_s2c = negotiate("ciphers_s2c", ciphers_s2c, server.getJString());
+        final String kex = negotiate("kexAlgorithms", kexAlgorithms, buffer.getJString());
+        final String key = negotiate("hostKeyAlgorithms", hostKeyAlgorithms, buffer.getJString());
+        final String c_c2s = negotiate("ciphers_c2s", ciphers_c2s, buffer.getJString());
+        final String c_s2c = negotiate("ciphers_s2c", ciphers_s2c, buffer.getJString());
 
         if (!authenticated &&
                 (SshCipherConstants.NONE.equals(c_c2s) ||
@@ -207,12 +218,12 @@ public class KexProposal {
 
         return new KexAgreement(
                 kex, key, c_c2s, c_s2c,
-                negotiate("mac_c2s", mac_c2s, server.getJString()),
-                negotiate("mac_s2c", mac_s2c, server.getJString()),
-                negotiate("compression_c2s", compression_c2s, server.getJString()),
-                negotiate("compression_s2c", compression_s2c, server.getJString()),
-                negotiate("language_c2s", language_c2s, server.getJString()),
-                negotiate("language_s2c", language_s2c, server.getJString())
+                negotiate("mac_c2s", mac_c2s, buffer.getJString()),
+                negotiate("mac_s2c", mac_s2c, buffer.getJString()),
+                negotiate("compression_c2s", compression_c2s, buffer.getJString()),
+                negotiate("compression_s2c", compression_s2c, buffer.getJString()),
+                negotiate("language_c2s", language_c2s, buffer.getJString()),
+                negotiate("language_s2c", language_s2c, buffer.getJString())
         );
     }
 
