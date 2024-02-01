@@ -3,6 +3,14 @@ package com.hardbacknutter.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Optional;
+import javax.crypto.Cipher;
+
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.AEADCipher;
@@ -12,15 +20,6 @@ import com.hardbacknutter.sshclient.kex.KexAgreement;
 import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Optional;
-
-import javax.crypto.Cipher;
 
 /**
  * Encapsulate a {@link SshCipher} and {@link SshMac} used for either
@@ -135,6 +134,10 @@ public abstract class Transport {
 
     boolean isEtM() {
         return !(cipher instanceof AEADCipher) && mac != null && mac.isEtm();
+    }
+
+    public int getSeq() {
+        return seq;
     }
 
     /**

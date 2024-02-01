@@ -863,6 +863,11 @@ public final class SessionImpl
         return Objects.requireNonNull(c2s);
     }
 
+    @NonNull
+    public TransportS2C getTransportS2C() {
+        return Objects.requireNonNull(s2c);
+    }
+
     /**
      * Poll the {@link KexDelegate} until it either finishes the KEX, or times out.
      *

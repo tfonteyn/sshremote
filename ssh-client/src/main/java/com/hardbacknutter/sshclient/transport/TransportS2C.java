@@ -3,6 +3,16 @@ package com.hardbacknutter.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
+import javax.crypto.Cipher;
+
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.ciphers.AEADCipher;
 import com.hardbacknutter.sshclient.ciphers.ChaChaCipher;
@@ -12,18 +22,7 @@ import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.Util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
-
-import javax.crypto.Cipher;
-
-class TransportS2C
+public class TransportS2C
         extends Transport {
 
     private static final String ERROR_SOCKET_INPUT_STREAM_IS_NULL =
