@@ -3,14 +3,6 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.utils.Buffer;
-
-import org.bouncycastle.asn1.ASN1InputStream;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -31,6 +23,14 @@ import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Objects;
+
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.utils.Buffer;
+
+import org.bouncycastle.asn1.ASN1InputStream;
 
 /**
  * The KeyPair implementation for an RSA key pair.
@@ -58,7 +58,7 @@ import java.util.Objects;
  * </pre>
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.1.2">
- * RFC 8017, appendix A.1.2 RSA Private Key Syntax</a>
+ *         RFC 8017, appendix A.1.2 RSA Private Key Syntax</a>
  */
 public class KeyPairRSA
         extends KeyPairBase {
@@ -367,9 +367,8 @@ public class KeyPairRSA
             throw e;
 
         } catch (@NonNull final Exception ignore) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
-            }
+            config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+
             // failed due to a key format decoding problem
             setPrivateKeyEncrypted(true);
             return;
@@ -413,7 +412,8 @@ public class KeyPairRSA
         }
     }
 
-    public static class Builder implements KeyPairBuilder {
+    public static class Builder
+            implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;

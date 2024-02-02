@@ -3,17 +3,6 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.utils.Buffer;
-
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -34,6 +23,17 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Objects;
+
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.utils.Buffer;
+
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 
 /**
  * @see <a href="https://www.rfc-editor.org/rfc/rfc5480#appendix-A">rfc5480 ASN.1</a>
@@ -343,9 +343,8 @@ public class KeyPairDSA
             throw e;
 
         } catch (@NonNull final Exception ignore) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
-            }
+            config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+
             // failed due to a key format decoding problem
             setPrivateKeyEncrypted(true);
             return;
@@ -358,7 +357,8 @@ public class KeyPairDSA
         setPrivateKeyEncrypted(false);
     }
 
-    public static class Builder implements KeyPairBuilder {
+    public static class Builder
+            implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;

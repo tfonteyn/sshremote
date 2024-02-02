@@ -27,18 +27,17 @@ import com.hardbacknutter.sshclient.utils.SshException;
  * Internal use-only channel.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-agent-04">
- * SSH Agent Protocol draft-miller-ssh-agent-04</a>
+ *         SSH Agent Protocol draft-miller-ssh-agent-04</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-agent-04#section-5.1">
- * SSH Agent Protocol draft-miller-ssh-agent-04, section 5.1 Message numbers</a>
+ *         SSH Agent Protocol draft-miller-ssh-agent-04, section 5.1 Message numbers</a>
  */
 public class ChannelAgentForwarding
         extends ForwardingChannel {
 
-    /** The standard Java resource bundle with (translated) messages. */
-    private static final String USER_MESSAGES = "msg.usermessages";
-
     public static final String NAME = "auth-agent@openssh.com";
 
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
     // legacy SSH protocol version 1: 1-4, 7-9 and 24 (inclusive).
     private static final byte SSH_AGENTC_REQUEST_RSA_IDENTITIES = 1;
     private static final byte SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES = 9;
@@ -48,7 +47,7 @@ public class ChannelAgentForwarding
     private static final byte SSH_AGENT_FAILURE = 5;
     /**
      * @see <a href="https://github.com/openssh/openssh-portable/blob/master/authfd.h">
-     * Extended failure messages</a>
+     *         Extended failure messages</a>
      */
     private static final byte SSH2_AGENT_FAILURE = 30;
 
@@ -67,7 +66,7 @@ public class ChannelAgentForwarding
      * methods respectively.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-agent-04#section-5.3>
-     * RFC draft 4, section 5.3</a>
+     *         RFC draft 4, section 5.3</a>
      */
     private static final int SSH_AGENT_RSA_SHA2_256 = 2;
     private static final int SSH_AGENT_RSA_SHA2_512 = 4;
@@ -157,9 +156,7 @@ public class ChannelAgentForwarding
 
         responseBuffer.reset();
 
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
-        }
+        session.getLogger().log(Logger.DEBUG, () -> "Agent channel msg: " + messageType);
 
         switch (messageType) {
             case SSH2_AGENTC_SIGN_REQUEST: {

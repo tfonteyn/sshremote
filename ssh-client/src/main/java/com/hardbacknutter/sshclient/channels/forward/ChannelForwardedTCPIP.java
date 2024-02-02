@@ -3,6 +3,10 @@ package com.hardbacknutter.sshclient.channels.forward;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.io.PipedOutputStream;
+import java.net.Socket;
+
 import com.hardbacknutter.sshclient.ForwardedTCPIPDaemon;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.RemoteForwardingHandler;
@@ -11,10 +15,6 @@ import com.hardbacknutter.sshclient.channels.io.PassiveInputStream;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
-
-import java.io.IOException;
-import java.io.PipedOutputStream;
-import java.net.Socket;
 
 /**
  * A Channel created when a forwarded port at the remote side is connected.
@@ -26,7 +26,7 @@ import java.net.Socket;
  *
  * @see RemoteForwardingHandler
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-7.2">
- * RFC 4254 SSH Connection Protocol, section 7.2. TCP/IP Forwarding Channels</a>
+ *         RFC 4254 SSH Connection Protocol, section 7.2. TCP/IP Forwarding Channels</a>
  */
 public class ChannelForwardedTCPIP
         extends ForwardingChannel {
@@ -64,9 +64,7 @@ public class ChannelForwardedTCPIP
 
         if (remoteForwardConfig == null) {
             final String msg = bindAddress + ":" + port + " is not registered.";
-            if (session.getLogger().isEnabled(Logger.ERROR)) {
-                session.getLogger().log(Logger.ERROR, () -> msg);
-            }
+            session.getLogger().log(Logger.ERROR, () -> msg);
             throw new SshChannelException(msg);
         }
     }

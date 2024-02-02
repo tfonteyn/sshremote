@@ -2,13 +2,13 @@ package com.hardbacknutter.sshclient.channels.direct;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.channels.BaseChannel;
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 public abstract class ChannelDirect
         extends BaseChannel {
@@ -45,9 +45,7 @@ public abstract class ChannelDirect
             sendChannelOpen();
 
         } catch (final Exception e) {
-            if (session.getLogger().isEnabled(Logger.ERROR)) {
-                session.getLogger().log(Logger.ERROR, e, () -> "ChannelDirect:" + getType());
-            }
+            session.getLogger().log(Logger.ERROR, e, () -> "ChannelDirect:" + getType());
 
             // Whenever an exception is thrown by sendChannelOpen(),
             // 'connected' is false.

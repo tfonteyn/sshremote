@@ -14,8 +14,8 @@ public class DbgJLogger
 
     @Override
     public void log(final int level,
-                    @NonNull final Supplier<String> message) {
-        System.out.println("SshClientDbg" + level + ": " + message.get());
+                    @NonNull final String message) {
+        System.out.println("SshClientDbg" + level + ": " + message);
     }
 
     @Override

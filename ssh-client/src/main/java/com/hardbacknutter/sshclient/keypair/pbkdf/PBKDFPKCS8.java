@@ -3,6 +3,12 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
@@ -19,13 +25,8 @@ import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-
-public class PBKDFPKCS8 implements PBKDF {
+public class PBKDFPKCS8
+        implements PBKDF {
 
     @NonNull
     private final SshClientConfig config;
@@ -44,7 +45,8 @@ public class PBKDFPKCS8 implements PBKDF {
     @NonNull
     @Override
     public byte[] generateSecretKey(@NonNull final byte[] passphrase,
-                                    final int keyLength) throws GeneralSecurityException {
+                                    final int keyLength)
+            throws GeneralSecurityException {
         if (delegate == null) {
             throw new KeyException("delegate not set");
         }
@@ -86,10 +88,9 @@ public class PBKDFPKCS8 implements PBKDF {
                 root = ASN1Sequence.getInstance(stream.readObject());
             }
 
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> "~~~ PBKDFPKCS8#decrypt ~~~\n" +
-                        ASN1Dump.dumpAsString(root, true));
-            }
+            config.getLogger().log(Logger.DEBUG, () ->
+                    "~~~ PBKDFPKCS8#decrypt ~~~\n" +
+                    ASN1Dump.dumpAsString(root, true));
 
             // Object 0 in root: the parameters as a Sequence
             final ASN1Sequence algorithmHeaderSeq = ASN1Sequence.getInstance(root.getObjectAt(0));

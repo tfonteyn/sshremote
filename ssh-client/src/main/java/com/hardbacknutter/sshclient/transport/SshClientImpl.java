@@ -117,16 +117,12 @@ public class SshClientImpl
             }
 
             if (pos == -1) {
-                if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                    config.getLogger().log(Logger.DEBUG, () ->
-                            "BouncyCastleProvider already installed");
-                }
+                config.getLogger().log(Logger.DEBUG, () ->
+                        "BouncyCastleProvider already installed");
             }
         } catch (final SecurityException e) {
-            if (config.getLogger().isEnabled(Logger.FATAL)) {
-                config.getLogger().log(Logger.FATAL, e, () ->
-                        "BouncyCastleProvider failed to install");
-            }
+            config.getLogger().log(Logger.FATAL, e, () ->
+                    "BouncyCastleProvider failed to install");
         }
     }
 

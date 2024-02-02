@@ -3,16 +3,6 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.hostkey.HostKey;
-import com.hardbacknutter.sshclient.identity.Identity;
-import com.hardbacknutter.sshclient.identity.IdentityImpl;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.signature.SshSignature;
-import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -24,6 +14,16 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.Arrays;
+
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.hostkey.HostKey;
+import com.hardbacknutter.sshclient.identity.Identity;
+import com.hardbacknutter.sshclient.identity.IdentityImpl;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.signature.SshSignature;
+import com.hardbacknutter.sshclient.utils.Buffer;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 /**
  * Base class for a pair of public and private key.
@@ -256,9 +256,7 @@ public abstract class KeyPairBase
             // We have an actual error
             throw e;
         } catch (@NonNull final Exception e) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, e, () -> "decrypt");
-            }
+            config.getLogger().log(Logger.DEBUG, e, () -> "decrypt");
 
             // failed due to a key format decoding problem
             privateKeyEncrypted = true;

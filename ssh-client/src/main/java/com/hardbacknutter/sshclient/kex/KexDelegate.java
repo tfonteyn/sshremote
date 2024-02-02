@@ -165,9 +165,8 @@ public class KexDelegate {
         if (session.getConfig().getBooleanValue(PREFER_KNOWN_HOST_KEY_TYPES, true)) {
             kexProposal.preferKnownHostKeyTypes(hostKeyRepository, hostKeyName);
         }
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent (initial request)");
-        }
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent (initial request)");
+
         sendKexInit();
 
         // Read the response into the buffer
@@ -186,9 +185,8 @@ public class KexDelegate {
             packet = session.read();
             final byte nextCommand = packet.getCommand();
 
-            if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                session.getLogger().log(Logger.DEBUG, () -> "received: " + nextCommand);
-            }
+            session.getLogger().log(Logger.DEBUG, () -> "received: " + nextCommand);
+
             // and if it's what the KeyExchange expected, check its validity
             if (kex.isExpecting(nextCommand)) {
                 startTimer();
@@ -240,10 +238,9 @@ public class KexDelegate {
     public void rekey()
             throws IOException, GeneralSecurityException {
         if (!inKeyExchange.get()) {
-            if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent"
-                                                            + " (client rekey request)");
-            }
+            session.getLogger().log(Logger.DEBUG, () ->
+                    "SSH_MSG_KEXINIT sent (client rekey request)");
+
             sendKexInit();
         }
     }
@@ -260,9 +257,7 @@ public class KexDelegate {
             throws IOException, GeneralSecurityException, SshAuthException {
         Objects.requireNonNull(kexProposal);
 
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT received");
-        }
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT received");
 
         // The server's SSH_MSG_KEXINIT payload.
         // During the initial exchange, it's always uncompressed of course.
@@ -293,10 +288,8 @@ public class KexDelegate {
                                               clientPacket.writeOffset);
 
         if (!inKeyExchange.get()) {
-            if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent"
-                                                            + " (re-keying requested by the remote)");
-            }
+            session.getLogger().log(Logger.DEBUG, () ->
+                    "SSH_MSG_KEXINIT sent (re-keying requested by the remote)");
             sendKexInit();
         }
 
@@ -357,9 +350,7 @@ public class KexDelegate {
             throws IOException, GeneralSecurityException {
         session.write(new Packet(SshConstants.SSH_MSG_NEWKEYS));
 
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS sent");
-        }
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS sent");
 
         return new KexKeys(kex.getK(), kex.getH(), kex.getMessageDigest());
     }
@@ -475,12 +466,10 @@ public class KexDelegate {
             }
 
             if (addNewKey) {
-                if (session.getLogger().isEnabled(Logger.WARN)) {
-                    session.getLogger().log(Logger.WARN,
-                                            () -> "Permanently added '" + hostKeyName + "'"
-                                                  + " (" + kex.getHostKeyAlgorithm() + ")"
-                                                  + " to the list of known hosts.");
-                }
+                session.getLogger().log(Logger.WARN, () ->
+                        "Permanently added '" + hostKeyName + "'"
+                        + " (" + kex.getHostKeyAlgorithm() + ")"
+                        + " to the list of known hosts.");
 
                 synchronized (hkr) {
                     hkr.add(hostkey, userinfo);

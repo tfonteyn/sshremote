@@ -28,7 +28,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
  *
  * @see Session#openChannel
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5">
- * RFC 4254 SSH Connection Protocol, section 5. Channel Mechanism</a>
+ *         RFC 4254 SSH Connection Protocol, section 5. Channel Mechanism</a>
  */
 public abstract class BaseChannel
         implements Channel {
@@ -69,6 +69,9 @@ public abstract class BaseChannel
     protected final IOStreams ioStreams;
 
     protected final int safePacketMargin;
+    /** Session instance this channel belongs to. */
+    @NonNull
+    protected final SessionImpl session;
     @NonNull
     private final TransportC2S transportC2s;
     /** Channel type name. */
@@ -81,10 +84,6 @@ public abstract class BaseChannel
      * channel, the channel is ready for action.
      */
     protected boolean connected;
-    /** Session instance this channel belongs to. */
-    @NonNull
-    protected final SessionImpl session;
-
     /**
      * Default local maximum packet size.
      *
@@ -159,8 +158,8 @@ public abstract class BaseChannel
         transportC2s = session.getTransportC2s();
         this.id = channelIdGenerator.getAndIncrement();
         safePacketMargin = Packet.MAX_PAD_SIZE + Packet.DEFLATER_MARGIN
-                // 20 is the old hardcoded size (64 hardcoded was to eager sometimes)
-                + transportC2s.getMacBlockSize().orElse(20);
+                           // 20 is the old hardcoded size (64 hardcoded was to eager sometimes)
+                           + transportC2s.getMacBlockSize().orElse(20);
 
 
         ioStreams = new IOStreams();
@@ -351,7 +350,7 @@ public abstract class BaseChannel
                     throws IOException {
                 // Protect against being called before remoteMaxPacketSize is set.
                 if (remoteMaxPacketSize < (Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN
-                        + safePacketMargin)) {
+                                           + safePacketMargin)) {
                     throw new IOException("Init failed: remoteMaxPacketSize not set");
                 }
                 packet = new Packet(remoteMaxPacketSize);
@@ -477,7 +476,7 @@ public abstract class BaseChannel
      *
      * @see #getExtInputStream
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5.2">
-     * RFC 4254 SSH Connection Protocol, section 5.2: Data Transfer</a>
+     *         RFC 4254 SSH Connection Protocol, section 5.2: Data Transfer</a>
      */
     @Override
     public void setExtOutputStream(@NonNull final OutputStream out,
@@ -520,7 +519,8 @@ public abstract class BaseChannel
     protected void runDataTransferLoop() {
         final Packet packet = new Packet(remoteMaxPacketSize);
         final int bytesToRead = remoteMaxPacketSize
-                - (Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 1 + safePacketMargin);
+                                - (Packet.HEADER_LEN + CHANNEL_PACKET_HEADER_LEN + 1
+                                   + safePacketMargin);
         int dataLength;
         try {
             while (isConnected() && channelThread != null && ioStreams.hasInputStream()) {
@@ -548,9 +548,7 @@ public abstract class BaseChannel
                 }
             }
         } catch (final Exception e) {
-            if (session.getLogger().isEnabled(Logger.ERROR)) {
-                session.getLogger().log(Logger.ERROR, e, () -> "");
-            }
+            session.getLogger().log(Logger.ERROR, e, () -> "");
         }
 
         disconnect();
@@ -707,7 +705,7 @@ public abstract class BaseChannel
      * string    data (uint32 with the length followed by the data blob)
      *
      * @return the 'offset' which should be passed to
-     * {@link #unshift(Packet packet, byte command, int offset, int dataLength)}
+     *         {@link #unshift(Packet packet, byte command, int offset, int dataLength)}
      */
     private int shift(@NonNull final Packet packet,
                       final int dataLength) {
@@ -864,9 +862,9 @@ public abstract class BaseChannel
 
         synchronized (this) {
             while (recipient == NO_RECIPIENT
-                    && session.isConnected()
-                    && retry > 0
-                    && (timeout <= 0L || (System.currentTimeMillis() - startTime) <= timeout)
+                   && session.isConnected()
+                   && retry > 0
+                   && (timeout <= 0L || (System.currentTimeMillis() - startTime) <= timeout)
             ) {
                 try {
                     notifyMe = 1;
@@ -1032,7 +1030,7 @@ public abstract class BaseChannel
      * Calling this method when the channel is not connected has no effect.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5.3">
-     * RFC 4254 SSH Connection Protocol, section 5.3. Closing a Channel</a>
+     *         RFC 4254 SSH Connection Protocol, section 5.3. Closing a Channel</a>
      */
     @Override
     public void disconnect() {

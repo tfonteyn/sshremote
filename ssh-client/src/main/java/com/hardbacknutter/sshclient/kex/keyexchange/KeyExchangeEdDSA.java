@@ -2,6 +2,9 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.kex.KexProtocolException;
@@ -17,13 +20,10 @@ import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
 import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8731#section-3">
- * RFC 8731 Key Exchange Method Using Curve25519 and Curve448,
- * section 3: Key Exchange Methods</a>
+ *         RFC 8731 Key Exchange Method Using Curve25519 and Curve448,
+ *         section 3: Key Exchange Methods</a>
  */
 public class KeyExchangeEdDSA
         extends KeyExchangeBase {
@@ -101,10 +101,9 @@ public class KeyExchangeEdDSA
                 .putString(agreement.getQ());
         io.write(packet);
 
-        if (getLogger().isEnabled(Logger.DEBUG)) {
-            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_ECDH_INIT(30) sent,"
-                    + " expecting SSH_MSG_KEX_ECDH_REPLY(31)");
-        }
+        getLogger().log(Logger.DEBUG, () ->
+                "SSH_MSG_KEX_ECDH_INIT(30) sent, expecting SSH_MSG_KEX_ECDH_REPLY(31)");
+
         state = SSH_MSG_KEX_ECDH_REPLY;
     }
 

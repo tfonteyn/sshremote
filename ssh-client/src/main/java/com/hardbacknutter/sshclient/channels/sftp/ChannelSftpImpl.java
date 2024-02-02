@@ -55,10 +55,10 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
  * changed by {@link #cd cd(dir)} and {@link #lcd lcd(dir)}.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.5">
- * RFC SSH 4254 Connection Protocol, section 6.5. Starting a Shell or a Command</a>
+ *         RFC SSH 4254 Connection Protocol, section 6.5. Starting a Shell or a Command</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02">
- * Internet Draft "SSH File Transfer Protocol" (version 02 describing
- * version 3 of the protocol)</a>
+ *         Internet Draft "SSH File Transfer Protocol" (version 02 describing
+ *         version 3 of the protocol)</a>
  * @see <a href="https://www.sftp.net/specification">SFTP drafts and extensions</a>
  */
 public class ChannelSftpImpl
@@ -101,11 +101,11 @@ public class ChannelSftpImpl
 
     /** SftpConstants.SSH_FXP_OPEN mode. */
     private static final int OPEN_FOR_WRITE = SftpConstants.SSH_FXF_WRITE
-            | SftpConstants.SSH_FXF_CREAT
-            | SftpConstants.SSH_FXF_TRUNC;
+                                              | SftpConstants.SSH_FXF_CREAT
+                                              | SftpConstants.SSH_FXF_TRUNC;
     /** SftpConstants.SSH_FXP_OPEN mode. */
     private static final int OPEN_FOR_APPEND = SftpConstants.SSH_FXF_WRITE
-            | SftpConstants.SSH_FXF_CREAT /* | SSH_FXF_APPEND */;
+                                               | SftpConstants.SSH_FXF_CREAT /* | SSH_FXF_APPEND */;
     /** SftpConstants.SSH_FXP_OPEN mode. */
     private static final int OPEN_FOR_READ = SftpConstants.SSH_FXF_READ;
     @NonNull
@@ -1520,12 +1520,11 @@ public class ChannelSftpImpl
                                 while (mpIn.available() > 0) {
                                     final int ackId = checkStatus();
                                     if (startSeqId > ackId || ackId > seq - 1) {
-                                        if (session.getLogger().isEnabled(Logger.ERROR)) {
-                                            session.getLogger().log(Logger.ERROR, () -> "ack error:"
-                                                    + " startSeqId=" + startSeqId
-                                                    + ", seq=" + seq
-                                                    + ", ackId=" + ackId);
-                                        }
+                                        session.getLogger().log(Logger.ERROR, () ->
+                                                "ack error:"
+                                                + " startSeqId=" + startSeqId
+                                                + ", seq=" + seq
+                                                + ", ackId=" + ackId);
 
                                         throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
                                                                 ERROR_SEQUENCE_MISMATCH);
@@ -1847,12 +1846,11 @@ public class ChannelSftpImpl
                             final int ackId = checkStatus();
                             if (startSeqId > ackId || ackId > seq - 1) {
 
-                                if (session.getLogger().isEnabled(Logger.ERROR)) {
-                                    session.getLogger().log(Logger.ERROR, () -> "ack error:"
-                                            + " startSeqId=" + startSeqId
-                                            + ", seq=" + seq
-                                            + ", ackId=" + ackId);
-                                }
+                                session.getLogger().log(Logger.ERROR, () ->
+                                        "ack error:"
+                                        + " startSeqId=" + startSeqId
+                                        + ", seq=" + seq
+                                        + ", ackId=" + ackId);
 
                                 if (ackId != seq) {
                                     throw new SftpException(SftpConstants.SSH_FX_BAD_MESSAGE,
@@ -1910,8 +1908,8 @@ public class ChannelSftpImpl
     private void cleanupZeroByteFiles(@Nullable final File currentDestFile) {
 
         if (currentDestFile != null
-                && currentDestFile.exists()
-                && currentDestFile.length() == 0) {
+            && currentDestFile.exists()
+            && currentDestFile.length() == 0) {
             //noinspection ResultOfMethodCallIgnored
             currentDestFile.delete();
         }

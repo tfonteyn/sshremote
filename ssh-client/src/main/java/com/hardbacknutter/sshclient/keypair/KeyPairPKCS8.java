@@ -3,6 +3,9 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.security.GeneralSecurityException;
+import java.util.Objects;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFPKCS8;
@@ -12,16 +15,13 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.util.ASN1Dump;
 
-import java.security.GeneralSecurityException;
-import java.util.Objects;
-
 /**
  * A PKCS#8 KeyPair is a wrapper containing the actual KeyPair.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2898#section-6.2>
- * RFC 2898 PKCS#5 Password-Based Cryptography Specification, section 6.2. PBES2</a>
+ *         RFC 2898 PKCS#5 Password-Based Cryptography Specification, section 6.2. PBES2</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5958">
- * RFC 5958 Asymmetric Key Packages</a> obsoletes 5208
+ *         RFC 5958 Asymmetric Key Packages</a> obsoletes 5208
  */
 public final class KeyPairPKCS8
         extends DelegatingKeyPair {
@@ -59,11 +59,9 @@ public final class KeyPairPKCS8
             try (ASN1InputStream stream = new ASN1InputStream(encodedKey)) {
                 root = ASN1Sequence.getInstance(stream.readObject());
             }
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger()
-                      .log(Logger.DEBUG, () -> "~~~ KeyPairPKCS8#parsePrivateKey ~~~\n" +
-                              ASN1Dump.dumpAsString(root, true));
-            }
+            config.getLogger().log(Logger.DEBUG, () ->
+                    "~~~ KeyPairPKCS8#parsePrivateKey ~~~\n"
+                    + ASN1Dump.dumpAsString(root, true));
 
             final ASN1Sequence subSeq = ASN1Sequence.getInstance(root.getObjectAt(1));
             final ASN1ObjectIdentifier prvKeyAlgOID = ASN1ObjectIdentifier
@@ -77,9 +75,7 @@ public final class KeyPairPKCS8
             throw e;
 
         } catch (@NonNull final Exception ignore) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
-            }
+            config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
         }
     }
 

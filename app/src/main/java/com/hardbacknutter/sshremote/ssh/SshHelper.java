@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.hardbacknutter.sshclient.Channel;
@@ -60,7 +59,9 @@ public class SshHelper {
 
     /**
      * @param context Current context
+     *
      * @return a new Session
+     *
      * @throws IOException if the known-host repo could not be read
      */
     @NonNull
@@ -144,10 +145,8 @@ public class SshHelper {
 
         @Override
         public void log(final int level,
-                        @NonNull final Supplier<String> message) {
-            if (level >= this.level) {
-                Log.d("SSH" + level, message.get());
-            }
+                        @NonNull final String message) {
+            Log.d("SSH" + level, message);
         }
     }
 }

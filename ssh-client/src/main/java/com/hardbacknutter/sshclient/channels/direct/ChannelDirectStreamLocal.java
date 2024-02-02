@@ -12,9 +12,9 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
  * A Channel which allows forwarding a socket-path.
  *
  * @see <a href="https://github.com/openssh/openssh-portable/blob/master/PROTOCOL">
- * openssh-portable/PROTOCOL: 2.4. connection: Unix domain socket forwarding</a>
+ *         openssh-portable/PROTOCOL: 2.4. connection: Unix domain socket forwarding</a>
  * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
- * OpenBSD protocol source</a>
+ *         OpenBSD protocol source</a>
  */
 public class ChannelDirectStreamLocal
         extends ChannelDirect {
@@ -39,9 +39,7 @@ public class ChannelDirectStreamLocal
     protected Packet createChannelOpenPacket() {
 
         if (socketPath == null) {
-            if (session.getLogger().isEnabled(Logger.FATAL)) {
-                session.getLogger().log(Logger.FATAL, () -> ERROR_SOCKET_PATH_MUST_BE_SET);
-            }
+            session.getLogger().log(Logger.FATAL, () -> ERROR_SOCKET_PATH_MUST_BE_SET);
             throw new IllegalStateException(ERROR_SOCKET_PATH_MUST_BE_SET);
         }
 

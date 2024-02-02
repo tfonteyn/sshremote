@@ -211,8 +211,8 @@ public class KexProposal {
         final String c_s2c = negotiate("ciphers_s2c", ciphers_s2c, buffer.getJString());
 
         if (!authenticated &&
-                (SshCipherConstants.NONE.equals(c_c2s) ||
-                        SshCipherConstants.NONE.equals(c_s2c))) {
+            (SshCipherConstants.NONE.equals(c_c2s) ||
+             SshCipherConstants.NONE.equals(c_s2c))) {
             throw new SshAuthException("NONE Cipher cannot be chosen before auth is successful");
         }
 
@@ -250,12 +250,10 @@ public class KexProposal {
                 return clientAlg;
             }
         }
-        if (config.getLogger().isEnabled(Logger.DEBUG)) {
-            config.getLogger().log(Logger.DEBUG, () ->
-                    "KEX failed negotiate: " + type
-                            + "|client=" + String.join(",", client)
-                            + "|server=" + server);
-        }
+        config.getLogger().log(Logger.DEBUG, () ->
+                "KEX failed negotiate: " + type
+                + "|client=" + String.join(",", client)
+                + "|server=" + server);
 
         throw new KexNegotiationException(type, server, client);
     }
@@ -396,17 +394,17 @@ public class KexProposal {
     @Override
     public String toString() {
         return "KexProposal{"
-                + "kexAlgorithms=" + kexAlgorithms
-                + ", hostKeyAlgorithms=" + hostKeyAlgorithms
-                + ", ciphers_c2s=" + ciphers_c2s
-                + ", ciphers_s2c=" + ciphers_s2c
-                + ", mac_c2s=" + mac_c2s
-                + ", mac_s2c=" + mac_s2c
-                + ", compression_c2s=" + compression_c2s
-                + ", compression_s2c=" + compression_s2c
-                + ", language_c2s=" + language_c2s
-                + ", language_s2c=" + language_s2c
-                + '}';
+               + "kexAlgorithms=" + kexAlgorithms
+               + ", hostKeyAlgorithms=" + hostKeyAlgorithms
+               + ", ciphers_c2s=" + ciphers_c2s
+               + ", ciphers_s2c=" + ciphers_s2c
+               + ", mac_c2s=" + mac_c2s
+               + ", mac_s2c=" + mac_s2c
+               + ", compression_c2s=" + compression_c2s
+               + ", compression_s2c=" + compression_s2c
+               + ", language_c2s=" + language_c2s
+               + ", language_s2c=" + language_s2c
+               + '}';
     }
 
     /**
