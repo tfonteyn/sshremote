@@ -306,14 +306,14 @@ public final class SshClientConfigImpl
             putFromSystemProperty(
                     HostConfig.KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
-                            + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
-                            + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
-                            + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
-                            + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
+                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
+                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
+                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
+                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
             );
 
             // These will be tested to see if their implementations CAN be instantiated.
@@ -322,17 +322,17 @@ public final class SshClientConfigImpl
             putFromSystemProperty(
                     KexProposal.CHECK_KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
-                            + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
-                            + ',' + KeyExchangeConstants.CURVE_448_SHA_512
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_15_SHA_512
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_17_SHA_512
-                            + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512
-                            + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
-                            + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
-                            + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
+                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
+                    + ',' + KeyExchangeConstants.CURVE_448_SHA_512
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_15_SHA_512
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_17_SHA_512
+                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512
+                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
+                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
+                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
             );
         }
 
@@ -341,11 +341,11 @@ public final class SshClientConfigImpl
             // The list send to the server
             putFromSystemProperty(HostConfig.HOST_KEY_ALGS,
                                   HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
-                                          + ',' + HostKeyAlgorithm.SSH_ED25519
-                                          + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
-                                          + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
+                                  + ',' + HostKeyAlgorithm.SSH_ED25519
+                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
+                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
             );
 
             // These will be tested to see if their implementations CAN be instantiated.
@@ -353,12 +353,12 @@ public final class SshClientConfigImpl
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(KexProposal.CHECK_SIG_ALGS,
                                   HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
-                                          + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
-                                          + ',' + HostKeyAlgorithm.SSH_ED25519
-                                          + ',' + HostKeyAlgorithm.SSH_ED448
+                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
+                                  + ',' + HostKeyAlgorithm.SSH_ED25519
+                                  + ',' + HostKeyAlgorithm.SSH_ED448
             );
         }
 
@@ -366,11 +366,11 @@ public final class SshClientConfigImpl
         {
             // The list send to the server
             final String ciphers = SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
-                    + ',' + SshCipherConstants.AES_128_CTR
-                    + ',' + SshCipherConstants.AES_192_CTR
-                    + ',' + SshCipherConstants.AES_256_CTR
-                    + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
-                    + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM;
+                                   + ',' + SshCipherConstants.AES_128_CTR
+                                   + ',' + SshCipherConstants.AES_192_CTR
+                                   + ',' + SshCipherConstants.AES_256_CTR
+                                   + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
+                                   + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM;
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_CTOS, ciphers);
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_STOC, ciphers);
 
@@ -379,15 +379,15 @@ public final class SshClientConfigImpl
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(KexProposal.CHECK_CIP_ALGS,
                                   SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
-                                          + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
-                                          + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
-                                          + ',' + SshCipherConstants.AES_128_CTR
-                                          + ',' + SshCipherConstants.AES_192_CTR
-                                          + ',' + SshCipherConstants.AES_256_CTR
-                                          + ',' + SshCipherConstants.AES_128_CBC
-                                          + ',' + SshCipherConstants.AES_192_CBC
-                                          + ',' + SshCipherConstants.AES_256_CBC
-                                          + ',' + SshCipherConstants.TRIPLE_DES_CTR
+                                  + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
+                                  + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
+                                  + ',' + SshCipherConstants.AES_128_CTR
+                                  + ',' + SshCipherConstants.AES_192_CTR
+                                  + ',' + SshCipherConstants.AES_256_CTR
+                                  + ',' + SshCipherConstants.AES_128_CBC
+                                  + ',' + SshCipherConstants.AES_192_CBC
+                                  + ',' + SshCipherConstants.AES_256_CBC
+                                  + ',' + SshCipherConstants.TRIPLE_DES_CTR
             );
         }
 
@@ -395,11 +395,11 @@ public final class SshClientConfigImpl
         {
             // The list send to the server
             final String macs = SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
-                    + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
-                    + ',' + SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM
-                    + ',' + SshMacConstants.HMAC_SHA_2_256
-                    + ',' + SshMacConstants.HMAC_SHA_2_512
-                    + ',' + SshMacConstants.HMAC_SHA_1;
+                                + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
+                                + ',' + SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM
+                                + ',' + SshMacConstants.HMAC_SHA_2_256
+                                + ',' + SshMacConstants.HMAC_SHA_2_512
+                                + ',' + SshMacConstants.HMAC_SHA_1;
             putFromSystemProperty(KexProposal.PROPOSAL_MAC_STOC, macs);
             putFromSystemProperty(KexProposal.PROPOSAL_MAC_CTOS, macs);
 
@@ -408,9 +408,9 @@ public final class SshClientConfigImpl
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(KexProposal.CHECK_MAC_ALGS,
                                   SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
-                                          + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
-                                          + ',' + SshMacConstants.HMAC_SHA_2_256
-                                          + ',' + SshMacConstants.HMAC_SHA_2_512
+                                  + ',' + SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
+                                  + ',' + SshMacConstants.HMAC_SHA_2_256
+                                  + ',' + SshMacConstants.HMAC_SHA_2_512
             );
         }
 
@@ -418,40 +418,40 @@ public final class SshClientConfigImpl
         // + the standard ssh name for the authentication protocol.
         {
             putClass(ImplementationFactory.USERAUTH_CONFIG_PREFIX
-                             + UserAuthNone.METHOD,
+                     + UserAuthNone.METHOD,
                      UserAuthNone.class);
             putClass(ImplementationFactory.USERAUTH_CONFIG_PREFIX
-                             + UserAuthPassword.METHOD,
+                     + UserAuthPassword.METHOD,
                      UserAuthPassword.class);
             putClass(ImplementationFactory.USERAUTH_CONFIG_PREFIX
-                             + UserAuthKeyboardInteractive.METHOD,
+                     + UserAuthKeyboardInteractive.METHOD,
                      UserAuthKeyboardInteractive.class);
             putClass(ImplementationFactory.USERAUTH_CONFIG_PREFIX
-                             + UserAuthPublicKey.METHOD,
+                     + UserAuthPublicKey.METHOD,
                      UserAuthPublicKey.class);
             putClass(ImplementationFactory.USERAUTH_CONFIG_PREFIX
-                             + UserAuthGSSAPIWithMIC.METHOD,
+                     + UserAuthGSSAPIWithMIC.METHOD,
                      UserAuthGSSAPIWithMIC.class);
 
             // The supported 'method' for "userauth.gssapi-with-mic"
             putClass(ImplementationFactory.USERAUTH_CONFIG_PREFIX
-                             + UserAuthGSSContextKrb5.METHOD,
+                     + UserAuthGSSContextKrb5.METHOD,
                      UserAuthGSSContextKrb5.class);
 
             putFromSystemProperty(HostConfig.PREFERRED_AUTHENTICATIONS,
                                   UserAuthGSSAPIWithMIC.METHOD
-                                          + ',' + UserAuthPublicKey.METHOD
-                                          + ',' + UserAuthKeyboardInteractive.METHOD
-                                          + ',' + UserAuthPassword.METHOD
+                                  + ',' + UserAuthPublicKey.METHOD
+                                  + ',' + UserAuthKeyboardInteractive.METHOD
+                                  + ',' + UserAuthPassword.METHOD
             );
 
             putFromSystemProperty(HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS,
                                   HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
-                                          + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
-                                          + ',' + HostKeyAlgorithm.SSH_ED25519
-                                          + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
-                                          + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
+                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
+                                  + ',' + HostKeyAlgorithm.SSH_ED25519
+                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
+                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
             );
         }
     }
