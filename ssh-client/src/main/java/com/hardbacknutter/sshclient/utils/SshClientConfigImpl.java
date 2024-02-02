@@ -19,6 +19,7 @@ import com.hardbacknutter.sshclient.SshSessionConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.kex.KexDelegate;
 import com.hardbacknutter.sshclient.kex.KexProposal;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
 import com.hardbacknutter.sshclient.macs.SshMacConstants;
@@ -453,6 +454,16 @@ public final class SshClientConfigImpl
                                           + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
                                           + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
             );
+        }
+
+        // Custom configuration flags:
+        {
+            putFromSystemProperty(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES,
+                                  "true");
+            putFromSystemProperty(ImplementationFactory.PK_ENABLE_SERVER_SIG_ALGS,
+                                  "true");
+
+
         }
     }
 }

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import com.hardbacknutter.sshclient.Channel;
@@ -162,6 +163,8 @@ public final class SessionImpl
 
     @Nullable
     private KexDelegate kexDelegate;
+    @Nullable
+    private List<String> serverSigAlgs;
 
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
@@ -844,6 +847,14 @@ public final class SessionImpl
     }
 
     @NonNull
+    public Optional<List<String>> getServerSignatureAlgorithms() {
+        if (serverSigAlgs != null && !serverSigAlgs.isEmpty()) {
+            return Optional.of(serverSigAlgs);
+        }
+        return Optional.empty();
+    }
+
+    @NonNull
     public TransportC2S getTransportC2s() {
         return Objects.requireNonNull(c2s);
     }
@@ -945,6 +956,33 @@ public final class SessionImpl
                         case SshConstants.SSH_MSG_NEWKEYS: {
                             final KexKeys keys = kexDelegate.sendNewKeys();
                             takeKeysIntoUse(keys);
+                            break;
+                        }
+                        case SshConstants.SSH_MSG_EXT_INFO: {
+                            if (kexDelegate != null) {
+                                if (kexDelegate.isInKeyExchange()) {
+                                    getLogger().log(Logger.DEBUG, () ->
+                                            "SSH_MSG_EXT_INFO ignored; still in KeyExchange stage");
+                                    break;
+                                }
+                            }
+
+                            if (authenticated) {
+                                getLogger().log(Logger.DEBUG, () ->
+                                        "SSH_MSG_EXT_INFO ignored; already authenticated");
+                                break;
+                            }
+
+                            packet.startReadingPayload();
+                            packet.getByte(/* command */);
+                            final long nrOfExtensions = packet.getUInt();
+                            for (long i = 0; i < nrOfExtensions; i++) {
+                                final String extName = packet.getJString();
+                                final String extValue = packet.getJString();
+                                if ("server-sig-algs".equals(extName)) {
+                                    serverSigAlgs = Arrays.asList(extValue.split(","));
+                                }
+                            }
                             break;
                         }
 
