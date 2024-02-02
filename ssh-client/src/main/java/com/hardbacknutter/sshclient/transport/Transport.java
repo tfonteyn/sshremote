@@ -140,6 +140,10 @@ public abstract class Transport {
         return seq;
     }
 
+    void resetSeq() {
+        seq = 0;
+    }
+
     /**
      * Get the block size used by the cipher.
      *

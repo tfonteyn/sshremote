@@ -9,11 +9,13 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.hostkey.HostKeyRepository;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
@@ -21,6 +23,7 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.userauth.SshAuthException;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
+import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
@@ -57,12 +60,24 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
  */
 public class KexDelegate {
 
-    /** The standard Java resource bundle with (translated) messages. */
-    private static final String USER_MESSAGES = "msg.usermessages";
-
     /** Boolean */
     @SuppressWarnings("WeakerAccess")
     public static final String PREFER_KNOWN_HOST_KEY_TYPES = "prefer_known_host_key_types";
+
+    /**
+     * Configuration flag.
+     * <p>
+     * Default: {@code true}
+     * <p>
+     * Whether to signal the server that we support receiving the SSH2_MSG_EXT_INFO
+     * message during user authentication.
+     *
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     *         OpenSSH protocol deviations
+     *         1.11 transport: SSH2_MSG_EXT_INFO during user authentication</a>
+     */
+    public static final String PK_ENABLE_EXT_INFO_IN_AUTH = "enable_ext_info_in_auth";
+
     /**
      * Configuration flag.
      * <p>
@@ -72,9 +87,11 @@ public class KexDelegate {
      * <strong>NOT RECOMMENDED</strong> to disable.
      *
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
-     *         OpenSSH protocol deviations. section 1.10 transport: strict key exchange extension</a>
+     *         OpenSSH protocol deviations.
+     *         1.10 transport: strict key exchange extension</a>
      */
     public static final String PK_STRICT_KEX_ENABLED = "strict_kex_enabled";
+
     /**
      * Configuration flag.
      * <p>
@@ -85,13 +102,11 @@ public class KexDelegate {
      * <strong>RECOMMENDED</strong> but the server needs to support it.
      *
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
-     *         OpenSSH protocol deviations. section 1.10 transport: strict key exchange extension</a>
+     *         OpenSSH protocol deviations.
+     *         1.10 transport: strict key exchange extension</a>
      */
     public static final String PK_STRICT_KEX_REQUIRED = "strict_kex_required";
 
-    /** The standard Java resource bundle with (translated) messages. */
-    private static final String USER_MESSAGES = "msg.usermessages";
-    private static final String PK_ENABLE_EXT_INFO_IN_AUTH = "enable_ext_info_in_auth";
     private static final String EXT_KEX_STRICT_S_V00 = "kex-strict-s-v00@openssh.com";
     private static final String EXT_KEX_STRICT_C_V00 = "kex-strict-c-v00@openssh.com";
     /**
@@ -110,6 +125,10 @@ public class KexDelegate {
      */
     private static final String EXT_INFO_C = "ext-info-c";
 
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
+
     @NonNull
     private final String serverVersion;
     @NonNull
@@ -123,6 +142,12 @@ public class KexDelegate {
 
     private final AtomicBoolean inKeyExchange = new AtomicBoolean();
     private final AtomicBoolean inHostCheck = new AtomicBoolean();
+
+    private final boolean strictKexEnabled;
+    private final boolean strictKexRequired;
+    /** Flag set when the server is indicating/requesting StrictKex feature support. */
+    private boolean doStrictKex;
+
     private long inKeyExchangeStartTime;
 
     @Nullable
@@ -136,6 +161,11 @@ public class KexDelegate {
     private KexAgreement agreement;
     /** The chosen implementation for the host key exchange. */
     private KeyExchange kex;
+
+    /** Flag set when the server reported it is supporting extensions. */
+    private boolean doExtInfo;
+    /** Flag which is {@code true} during the initial KEX exchange but {@code false} for subrequent rekeying */
+    private boolean initialKex = true;
 
     /**
      * Constructor.
@@ -158,6 +188,10 @@ public class KexDelegate {
         this.serverVersion = serverVersion;
         this.clientVersion = clientVersion;
         this.hostKeyName = hostKeyName;
+
+        final SshClientConfig config = session.getConfig();
+        strictKexEnabled = config.getBooleanValue(PK_STRICT_KEX_ENABLED, true);
+        strictKexRequired = config.getBooleanValue(PK_STRICT_KEX_REQUIRED, false);
     }
 
     /**
@@ -262,6 +296,15 @@ public class KexDelegate {
             throw new KexProtocolException(SshConstants.SSH_MSG_NEWKEYS, confirmation);
         }
 
+        initialKex = false;
+
+        if (doExtInfo) {
+            // https://datatracker.ietf.org/doc/html/rfc8308#section-2.4
+            // MUST send it as the next packet following the client's first
+            // SSH_MSG_NEWKEYS message to the server.
+            sendExtInfo();
+        }
+
         return keys;
     }
 
@@ -269,16 +312,36 @@ public class KexDelegate {
         return initialKex;
     }
 
-    public boolean isDoStrictKex() {
-        return doStrictKex;
+    /**
+     * Check if we're in the initial Key Exchange, and require StrictKex support.
+     *
+     * @return flag
+     */
+    public boolean isInStrictKexKeyExchange() {
+        return isInKeyExchange() && doStrictKex;
+    }
+
+    /**
+     * Check if the transport layer should enforce the "StrictKex" feature.
+     * i.e. if it should reset the packet sequence numbers after sending
+     * or receiving a SSH2_MSG_NEWKEYS message.
+     *
+     * @return flag
+     */
+    public boolean isEnforceStrictKex() {
+        return doStrictKex && (strictKexEnabled || strictKexRequired);
     }
 
     private void sendExtInfo()
             throws IOException, GeneralSecurityException {
-        final Packet packet = new Packet(SshConstants.SSH_MSG_EXT_INFO)
-                .putInt(1)
-                .putString("ext-info-in-auth@openssh.com").putString("0");
-        session.write(packet);
+        // If we support multiple extensions, this check (and similar checks)
+        // must obviously be done on a per-line basis
+        if (session.getConfig().getBooleanValue(PK_ENABLE_EXT_INFO_IN_AUTH, true)) {
+            final Packet packet = new Packet(SshConstants.SSH_MSG_EXT_INFO)
+                    .putInt(1)
+                    .putString("ext-info-in-auth@openssh.com").putString("0");
+            session.write(packet);
+        }
     }
 
     /**
@@ -287,6 +350,16 @@ public class KexDelegate {
     private void sendKexInit()
             throws IOException, GeneralSecurityException {
         Objects.requireNonNull(kexProposal);
+
+        if (initialKex) {
+            // Tell the server we MAY support (some) extensions
+            kexProposal.addKexExtension(EXT_INFO_C);
+
+            // Tell the server we support the StrictKex feature.
+            if (strictKexEnabled || strictKexRequired) {
+                kexProposal.addKexExtension(EXT_KEX_STRICT_C_V00);
+            }
+        }
 
         inKeyExchange.set(true);
         startTimer();
@@ -342,6 +415,34 @@ public class KexDelegate {
                                      serverPacket.writeOffset);
         }
 
+        // Check for extension support
+        final Buffer buffer = new Buffer(I_S);
+        // 17 bytes: command(1) + cookie(16)
+        buffer.setReadOffSet(17);
+        final List<String> serverKexAlgorithms = Arrays.asList(buffer.getJString().split(","));
+        doExtInfo = serverKexAlgorithms.contains(EXT_INFO_S);
+
+        if (initialKex) {
+            // http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
+            // section 1.10 transport: strict key exchange extension
+            if (strictKexEnabled || strictKexRequired) {
+                // Check if the server supports the "strict KEX" feature,
+                doStrictKex = serverKexAlgorithms.contains(EXT_KEX_STRICT_S_V00);
+                if (doStrictKex) {
+                    session.getLogger().log(Logger.DEBUG, () -> "StrictKex from server");
+                    // Terminate the connection if the first
+                    // packet received is not SSH2_MSG_KEXINIT.
+                    if (session.getTransportS2C().getSeq() != 1) {
+                        throw new KexStrictViolationException(
+                                "SSH_MSG_KEXINIT not first packet from server");
+                    }
+                } else if (strictKexRequired) {
+                    throw new KexStrictViolationException(
+                            "StrictKex required, but not supported by server");
+                }
+            }
+        }
+
         // The client's SSH_MSG_KEXINIT payload;
         // Just use payload-start and writeOffset as we read the original/uncompressed Packet
         final Packet clientPacket = kexProposal.createClientPacket();
@@ -359,7 +460,8 @@ public class KexDelegate {
 
         kex = ImplementationFactory.getKeyExchange(session.getConfig(),
                                                    agreement.getKeyAlgorithm());
-        kex.init(session.getConfig(), /* PacketIO */ session,
+        kex.init(session.getConfig(),
+                /* PacketIO */ session,
                  serverVersion.getBytes(StandardCharsets.UTF_8),
                  clientVersion.getBytes(StandardCharsets.UTF_8),
                  I_S, I_C);

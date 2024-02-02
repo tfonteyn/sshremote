@@ -57,6 +57,9 @@ public final class SshClientConfigImpl
         }
     };
 
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
+
     private static final Set<String> KEY_IS_LIST_VALUE = Set.of(
             HostConfig.KEX_ALGS.toLowerCase(Locale.ENGLISH)
             , HostConfig.HOST_KEY_ALGS.toLowerCase(Locale.ENGLISH)
@@ -458,12 +461,13 @@ public final class SshClientConfigImpl
 
         // Custom configuration flags:
         {
-            putFromSystemProperty(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES,
-                                  "true");
-            putFromSystemProperty(ImplementationFactory.PK_ENABLE_SERVER_SIG_ALGS,
-                                  "true");
+            putFromSystemProperty(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, TRUE);
+            putFromSystemProperty(ImplementationFactory.PK_ENABLE_SERVER_SIG_ALGS, TRUE);
 
+            putFromSystemProperty(KexDelegate.PK_ENABLE_EXT_INFO_IN_AUTH, TRUE);
 
+            putFromSystemProperty(KexDelegate.PK_STRICT_KEX_ENABLED, TRUE);
+            putFromSystemProperty(KexDelegate.PK_STRICT_KEX_REQUIRED, FALSE);
         }
     }
 }

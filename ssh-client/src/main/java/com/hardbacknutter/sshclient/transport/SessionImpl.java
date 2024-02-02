@@ -721,6 +721,11 @@ public final class SessionImpl
 
         // all done, release
         kexDelegate.setKeyExchangeDone();
+
+        if (kexDelegate.isEnforceStrictKex()) {
+            getLogger().log(Logger.DEBUG, () -> "StrictKex: reset the s2c sequence number");
+            s2c.resetSeq();
+        }
     }
 
     @Override
@@ -774,6 +779,14 @@ public final class SessionImpl
         while (!done) {
             //noinspection ConstantConditions
             s2c.read(packet);
+
+            if (kexDelegate != null && kexDelegate.isInStrictKexKeyExchange()) {
+                // If we're doing "strict KEX" during the initial kex-exchange
+                // then we MUST ignore all packets which are not strictly required by KEX
+                // So quit the while loop, and return the packet we just read immediately.
+                // If it's unexpected, it will cause the connection to terminate.
+                break;
+            }
 
             // These need to be handled when 'read' is called from anywhere at all.
             switch (packet.getCommand()) {
@@ -911,8 +924,18 @@ public final class SessionImpl
             } catch (final InterruptedException ignore) {
             }
         }
+
         //noinspection ConstantConditions
         c2s.write(packet);
+
+        // We could do this when we call write with the SSH_MSG_NEWKEYS.
+        // But doing it here means both read/write calling .resetSeq() are
+        // done from this class + it's idiot/future proof.
+        if (packet.getCommand() == SshConstants.SSH_MSG_NEWKEYS
+            && kexDelegate.isEnforceStrictKex()) {
+            getLogger().log(Logger.DEBUG, () -> "StrictKex: reset the c2s sequence number");
+            c2s.resetSeq();
+        }
     }
 
     /**
