@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Random;
@@ -52,7 +51,7 @@ public final class SshClientConfigImpl
 
         @Override
         public void log(final int level,
-                        @NonNull final Supplier<String> message) {
+                        @NonNull final String message) {
 
         }
     };

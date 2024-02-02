@@ -2,6 +2,10 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.kex.KexProtocolException;
@@ -11,13 +15,9 @@ import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-8">
- * RFC 4253 SSH Transport Layer Protocol, section 8. Diffie-Hellman Key Exchange</a>
+ *         RFC 4253 SSH Transport Layer Protocol, section 8. Diffie-Hellman Key Exchange</a>
  */
 abstract class KeyExchangeDHGroup_n
         extends KeyExchangeBase {
@@ -91,10 +91,9 @@ abstract class KeyExchangeDHGroup_n
 
         io.write(packet);
 
-        if (getLogger().isEnabled(Logger.DEBUG)) {
-            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXDH_INIT(30) sent,"
-                    + " expecting SSH_MSG_KEXDH_REPLY(31)");
-        }
+        getLogger().log(Logger.DEBUG, () ->
+                "SSH_MSG_KEXDH_INIT(30) sent, expecting SSH_MSG_KEXDH_REPLY(31)");
+
         state = SSH_MSG_KEXDH_REPLY;
     }
 

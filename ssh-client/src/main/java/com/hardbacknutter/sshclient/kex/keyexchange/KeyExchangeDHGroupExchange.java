@@ -19,9 +19,9 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
  * Base class for {@code diffie-hellman-group-exchange-sha*}
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4419">
- * RFC 4419, Diffie-Hellman Group Exchange for the Secure Shell (SSH)</a>
+ *         RFC 4419, Diffie-Hellman Group Exchange for the Secure Shell (SSH)</a>
  * @see <a href="https://datatracker.ietf.org/doc/rfc9142/">
- * RFC 9142, Key Exchange (KEX) Method Updates and Recommendations</a>
+ *         RFC 9142, Key Exchange (KEX) Method Updates and Recommendations</a>
  */
 public class KeyExchangeDHGroupExchange
         extends KeyExchangeBase {
@@ -35,8 +35,8 @@ public class KeyExchangeDHGroupExchange
      * uint32   max, maximal size in bits of an acceptable group
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4419#section-5">
-     * RFC 4419 Diffie-Hellman Group Exchange for SSH Transport Layer Protocol,
-     * section 5. Summary of Message Numbers</a>
+     *         RFC 4419 Diffie-Hellman Group Exchange for SSH Transport Layer Protocol,
+     *         section 5. Summary of Message Numbers</a>
      */
     private static final byte SSH_MSG_KEX_DH_GEX_REQUEST = 34;
     /**
@@ -129,11 +129,10 @@ public class KeyExchangeDHGroupExchange
                 .putInt(maxKeySize);
         io.write(packet);
 
-        if (getLogger().isEnabled(Logger.DEBUG)) {
-            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_DH_GEX_REQUEST(34)("
-                    + minKeySize + "<" + preferredKeySize + "<" + maxKeySize + ") sent,"
-                    + " expecting SSH_MSG_KEX_DH_GEX_GROUP(31)");
-        }
+        getLogger().log(Logger.DEBUG, () ->
+                "SSH_MSG_KEX_DH_GEX_REQUEST(34)("
+                + minKeySize + "<" + preferredKeySize + "<" + maxKeySize + ") sent,"
+                + " expecting SSH_MSG_KEX_DH_GEX_GROUP(31)");
         state = SSH_MSG_KEX_DH_GEX_GROUP;
     }
 
@@ -167,10 +166,10 @@ public class KeyExchangeDHGroupExchange
                         .putMPInt(e);
                 io.write(packet);
 
-                if (getLogger().isEnabled(Logger.DEBUG)) {
-                    getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_DH_GEX_INIT(32) sent,"
-                            + " expecting SSH_MSG_KEX_DH_GEX_REPLY(33)");
-                }
+                getLogger().log(Logger.DEBUG, () ->
+                        "SSH_MSG_KEX_DH_GEX_INIT(32) sent,"
+                        + " expecting SSH_MSG_KEX_DH_GEX_REPLY(33)");
+
                 state = SSH_MSG_KEX_DH_GEX_REPLY;
                 break;
             }

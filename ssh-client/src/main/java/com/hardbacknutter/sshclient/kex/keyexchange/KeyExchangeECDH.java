@@ -2,6 +2,10 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.spec.ECPoint;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.kex.KexProtocolException;
@@ -12,16 +16,12 @@ import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.spec.ECPoint;
-
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5656#section-7">
- * RFC 5656, Elliptic Curve Algorithm Integration</a>
+ *         RFC 5656, Elliptic Curve Algorithm Integration</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5656#section-10.1">
- * RFC 3526 MODP Diffie-Hellman groups for Internet Key Exchange (IKE),
- * section 10.1 Required Curves</a>
+ *         RFC 3526 MODP Diffie-Hellman groups for Internet Key Exchange (IKE),
+ *         section 10.1 Required Curves</a>
  */
 public class KeyExchangeECDH
         extends KeyExchangeBase {
@@ -87,10 +87,9 @@ public class KeyExchangeECDH
                 .putString(agreement.getQ());
         io.write(packet);
 
-        if (getLogger().isEnabled(Logger.DEBUG)) {
-            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEX_ECDH_INIT(30) sent,"
-                    + " expecting SSH_MSG_KEX_ECDH_REPLY(31)");
-        }
+        getLogger().log(Logger.DEBUG, () ->
+                "SSH_MSG_KEX_ECDH_INIT(30) sent, expecting SSH_MSG_KEX_ECDH_REPLY(31)");
+
         state = SSH_MSG_KEX_ECDH_REPLY;
     }
 

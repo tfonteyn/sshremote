@@ -3,6 +3,12 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.util.Objects;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
@@ -12,21 +18,15 @@ import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFBCrypt;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.util.Objects;
-
 /**
  * An OpenSSHv1 KeyPair is a wrapper containing an encrypted KeyPair.
  *
  * @see <a href="https://coolaj86.com/articles/the-openssh-private-key-format/">
- * the-openssh-private-key-format</a>
+ *         the-openssh-private-key-format</a>
  * @see <a href="http://dnaeon.github.io/openssh-private-key-binary-format/">
- * openssh-private-key-binary-format</a>
+ *         openssh-private-key-binary-format</a>
  * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL.key?rev=HEAD">
- * openbsd PROTOCOL</a>
+ *         openbsd PROTOCOL</a>
  */
 public final class KeyPairOpenSSHv1
         extends DelegatingKeyPair {
@@ -96,7 +96,7 @@ public final class KeyPairOpenSSHv1
             final int nrKeys = buffer.getInt();
             if (nrKeys != 1) {
                 throw new UnsupportedKeyBlobEncodingException("Expected 1 key but found: "
-                                                                      + nrKeys);
+                                                              + nrKeys);
             }
             // public key encoded in ssh format
             publicKeyEncodedBlob = buffer.getString();
@@ -121,9 +121,7 @@ public final class KeyPairOpenSSHv1
             throw e;
 
         } catch (@NonNull final Exception ignore) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
-            }
+            config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
         }
     }
 

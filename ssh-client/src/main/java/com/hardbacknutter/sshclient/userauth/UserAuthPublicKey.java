@@ -35,10 +35,10 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
 public class UserAuthPublicKey
         implements UserAuth {
 
+    public static final String METHOD = "publickey";
+
     /** The standard Java resource bundle with (translated) messages. */
     private static final String USER_MESSAGES = "msg.usermessages";
-
-    public static final String METHOD = "publickey";
 
     /**
      * byte      SSH_MSG_USERAUTH_PK_OK
@@ -186,10 +186,9 @@ public class UserAuthPublicKey
                                 .collect(Collectors.toList());
         }
 
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> identityKeyAlgorithm
-                    + " cannot be used as public key type for " + identity.getName());
-        }
+        session.getLogger().log(Logger.DEBUG, () ->
+                identityKeyAlgorithm
+                + " cannot be used as public key type for " + identity.getName());
 
         return null;
     }
@@ -203,7 +202,7 @@ public class UserAuthPublicKey
      * ...
      *
      * @return the algorithm name for which we successfully pre-authenticated,
-     * or {@code null} if pre-auth failed.
+     *         or {@code null} if pre-auth failed.
      */
     @Nullable
     private String preAuth(@NonNull final Session session,
@@ -242,18 +241,14 @@ public class UserAuthPublicKey
                 //       byte      SSH_MSG_USERAUTH_PK_OK
                 //       string    public key algorithm name from the request
                 //       string    public key blob from the request
-                if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                    session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth success");
-                }
+                session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth success");
                 return algorithm;
 
             } else if (command != SshConstants.SSH_MSG_USERAUTH_FAILURE) {
                 // This should never happen
                 throw new ProtocolException("preAuth failure; received command=" + command);
             }
-            if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth failure");
-            }
+            session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth failure");
             // try next algorithm
         }
         // Pre-auth failed
@@ -289,10 +284,7 @@ public class UserAuthPublicKey
 
                 switch (command) {
                     case SshConstants.SSH_MSG_USERAUTH_SUCCESS: {
-                        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                            session.getLogger().log(Logger.DEBUG, () ->
-                                    algorithm + " auth success");
-                        }
+                        session.getLogger().log(Logger.DEBUG, () -> algorithm + " auth success");
                         return true;
                     }
                     case SshConstants.SSH_MSG_USERAUTH_BANNER: {
@@ -319,10 +311,8 @@ public class UserAuthPublicKey
                         return false;
                     }
                     default: {
-                        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                            session.getLogger().log(Logger.DEBUG, () -> algorithm
-                                    + " auth failure; received command=" + command);
-                        }
+                        session.getLogger().log(Logger.DEBUG, () ->
+                                algorithm + " auth failure; received command=" + command);
                         return false;
                     }
                 }
@@ -387,10 +377,7 @@ public class UserAuthPublicKey
 
         } catch (final GeneralSecurityException e) {
             // signing failed; e.g. key length too long,...
-            if (session.getLogger().isEnabled(Logger.DEBUG)) {
-                session.getLogger().log(Logger.DEBUG, () ->
-                        publicKeyAlgorithm + " signature failure");
-            }
+            session.getLogger().log(Logger.DEBUG, () -> publicKeyAlgorithm + " signature failure");
             return false;
         }
     }

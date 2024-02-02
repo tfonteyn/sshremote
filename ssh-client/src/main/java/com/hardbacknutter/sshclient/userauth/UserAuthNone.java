@@ -3,6 +3,12 @@ package com.hardbacknutter.sshclient.userauth;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -10,16 +16,10 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4252#section-5.2">
- * RFC 4252 SSH Authentication Protocol,
- * section 5.2. The "none" Authentication Request</a>
+ *         RFC 4252 SSH Authentication Protocol,
+ *         section 5.2. The "none" Authentication Request</a>
  */
 public class UserAuthNone
         implements UserAuth {
@@ -53,9 +53,7 @@ public class UserAuthNone
                 .putString(UserAuth.SSH_USERAUTH);
         io.write(packet);
 
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
-        }
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
 
         // receive
         // byte      SSH_MSG_SERVICE_ACCEPT(6)
@@ -64,10 +62,8 @@ public class UserAuthNone
         final boolean serviceAccepted =
                 (packet.getCommand() == SshConstants.SSH_MSG_SERVICE_ACCEPT);
 
-        if (session.getLogger().isEnabled(Logger.DEBUG)) {
-            session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_ACCEPT received;"
-                    + " serviceAccepted: " + serviceAccepted);
-        }
+        session.getLogger().log(Logger.DEBUG, () ->
+                "SSH_MSG_SERVICE_ACCEPT received; serviceAccepted: " + serviceAccepted);
 
         if (!serviceAccepted) {
             return false;

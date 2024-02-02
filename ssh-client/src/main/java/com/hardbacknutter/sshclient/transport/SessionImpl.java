@@ -187,10 +187,8 @@ public final class SessionImpl
             applyHostConfig(hostConfig);
         }
 
-        if (getLogger().isEnabled(Logger.INFO)) {
-            getLogger().log(Logger.INFO, () -> "Session created for "
-                                               + username + "@" + hostnameOrAlias + ":" + port);
-        }
+        getLogger().log(Logger.INFO, () ->
+                "Session created for " + username + "@" + hostnameOrAlias + ":" + port);
     }
 
     /**
@@ -368,9 +366,7 @@ public final class SessionImpl
             throw new IOException("Session is already connected");
         }
 
-        if (getLogger().isEnabled(Logger.INFO)) {
-            getLogger().log(Logger.INFO, () -> "Connecting to " + host + ":" + port);
-        }
+        getLogger().log(Logger.INFO, () -> "Connecting to " + host + ":" + port);
 
         try {
             // Setup socket and input/output streams. Use a proxy if so configured.
@@ -441,9 +437,8 @@ public final class SessionImpl
                 }
             }
 
-            if (getLogger().isEnabled(Logger.INFO)) {
-                getLogger().log(Logger.INFO, () -> "Connection established");
-            }
+            getLogger().log(Logger.INFO, () -> "Connection established");
+
         } catch (final GeneralSecurityException | IOException | SshException e) {
             cleanup(e);
             throw e;
@@ -502,9 +497,7 @@ public final class SessionImpl
             kexDelegate.setKeyExchangeDone();
         }
 
-        if (getLogger().isEnabled(Logger.DEBUG)) {
-            getLogger().log(Logger.DEBUG, e, () -> "KEX cleanup");
-        }
+        getLogger().log(Logger.DEBUG, e, () -> "KEX cleanup");
 
         try {
             // If things went wrong, but we are in fact connected, we need to tell the server
@@ -576,7 +569,7 @@ public final class SessionImpl
                     for (int k = nextMethod - 1; k < clientMethods.size(); k++) {
                         sj.add(clientMethods.get(k));
                     }
-                    getLogger().log(Logger.INFO, sj::toString);
+                    getLogger().log(Logger.INFO, sj.toString());
                 }
 
                 try {
@@ -584,9 +577,7 @@ public final class SessionImpl
                     ua.init(config, username, userinfo);
                     auth = ua.authenticate(this, this, password);
                     if (auth) {
-                        if (getLogger().isEnabled(Logger.INFO)) {
-                            getLogger().log(Logger.INFO, () -> "Authentication success: " + method);
-                        }
+                        getLogger().log(Logger.INFO, () -> "Authentication success: " + method);
                         authenticated = true;
                         return;
                     }
@@ -608,10 +599,8 @@ public final class SessionImpl
 
                 } catch (final SshAuthNoSuchMethodException e) {
                     // Don't fail here; loop and try the next method.
-                    if (getLogger().isEnabled(Logger.ERROR)) {
-                        getLogger().log(Logger.ERROR, e, () ->
-                                "failed to load " + method + " method");
-                    }
+                    getLogger().log(Logger.ERROR, e, () ->
+                            "failed to load " + method + " method");
 
                     methodCanceled = null;
 
@@ -619,9 +608,8 @@ public final class SessionImpl
                     throw e;
 
                 } catch (final Exception e) {
-                    if (getLogger().isEnabled(Logger.ERROR)) {
-                        getLogger().log(Logger.ERROR, e, () -> "Authentication failure");
-                    }
+                    getLogger().log(Logger.ERROR, e, () -> "Authentication failure");
+
                     // quit the loop
                     break;
                 }
@@ -662,9 +650,7 @@ public final class SessionImpl
     private void takeKeysIntoUse(@NonNull final KexKeys keys)
             throws GeneralSecurityException, IOException {
 
-        if (getLogger().isEnabled(Logger.DEBUG)) {
-            getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS received");
-        }
+        getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS received");
 
         final byte[] K = keys.getK();
         final byte[] H = keys.getH();
@@ -790,7 +776,7 @@ public final class SessionImpl
             switch (packet.getCommand()) {
                 case SshConstants.SSH_MSG_DISCONNECT: {
                     packet.startReadingPayload();
-                    packet.getByte(); // command
+                    packet.getByte(/* command */);
                     final int reasonCode = packet.getInt();
                     final String description = packet.getJString();
                     packet.skipString(/* language_tag */);
@@ -801,27 +787,26 @@ public final class SessionImpl
                     break;
                 }
                 case SshConstants.SSH_MSG_UNIMPLEMENTED: {
-                    if (getLogger().isEnabled(Logger.DEBUG)) {
-                        getLogger().log(Logger.DEBUG, () -> {
-                            packet.startReadingPayload();
-                            packet.getByte(); // command
-                            final int packetId = packet.getInt();
-                            return "SSH_MSG_UNIMPLEMENTED: " + packetId;
-                        });
-                    }
+                    getLogger().log(Logger.DEBUG, () -> {
+                        packet.startReadingPayload();
+                        packet.getByte(/* command */);
+                        final int packetId = packet.getInt();
+                        return "SSH_MSG_UNIMPLEMENTED: " + packetId;
+                    });
+
                     // loop and get the next packet
                     break;
                 }
                 case SshConstants.SSH_MSG_DEBUG: {
                     if (getLogger().isEnabled(Logger.DEBUG)) {
                         packet.startReadingPayload();
-                        packet.getByte(); // command
-                        final boolean always_display = packet.getBoolean();
+                        packet.getByte(/* command */);
+                        final boolean alwaysDisplay = packet.getBoolean();
                         final String message = packet.getJString();
                         packet.skipString(/* language_tag */);
 
-                        getLogger().log(Logger.DEBUG, () -> "SSH_MSG_DEBUG: " + message);
-                        if (always_display && userinfo != null) {
+                        getLogger().log(Logger.DEBUG, "SSH_MSG_DEBUG: " + message);
+                        if (alwaysDisplay && userinfo != null) {
                             userinfo.showMessage(message);
                         }
                     }
@@ -987,11 +972,9 @@ public final class SessionImpl
                                     || ChannelAgentForwarding.NAME.equals(channelType)
                                        && agentForwarding;
 
-                            if (getLogger().isEnabled(Logger.DEBUG)) {
-                                getLogger().log(Logger.DEBUG, () ->
-                                        "Remote request to open channel: "
-                                        + channelType + ", accept: " + accept);
-                            }
+                            getLogger().log(Logger.DEBUG, () ->
+                                    "Remote request to open channel: "
+                                    + channelType + ", accept: " + accept);
 
                             if (accept) {
                                 ForwardingChannel.openFromRemote(channelType, this, packet);
@@ -1036,13 +1019,9 @@ public final class SessionImpl
             }
 
             if (e instanceof SocketException && !connected) {
-                if (getLogger().isEnabled(Logger.INFO)) {
-                    getLogger().log(Logger.INFO, () -> "Closing Session normally");
-                }
+                getLogger().log(Logger.INFO, () -> "Closing Session normally");
             } else {
-                if (getLogger().isEnabled(Logger.ERROR)) {
-                    getLogger().log(Logger.ERROR, e, () -> "Closing Session with error");
-                }
+                getLogger().log(Logger.ERROR, e, () -> "Closing Session with error");
             }
         }
 
@@ -1073,9 +1052,7 @@ public final class SessionImpl
             return;
         }
 
-        if (getLogger().isEnabled(Logger.INFO)) {
-            getLogger().log(Logger.INFO, () -> "Disconnecting from " + host + ":" + port);
-        }
+        getLogger().log(Logger.INFO, () -> "Disconnecting from " + host + ":" + port);
 
         // Disconnects all channels for the given session.
         // Channel disconnect will also remove from pool, so take a copy of the list first.

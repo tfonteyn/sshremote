@@ -168,10 +168,7 @@ public final class ImplementationFactory {
             // We have a SERIOUS problem...
             final String errMsg = "Failed to instantiate " + defClass.getCanonicalName()
                     + " for " + configKey;
-            if (config.getLogger().isEnabled(Logger.FATAL)) {
-                config.getLogger().log(Logger.FATAL, e, () -> errMsg);
-            }
-
+            config.getLogger().log(Logger.FATAL, e, () -> errMsg);
             throw new IllegalStateException(errMsg, e);
         }
     }

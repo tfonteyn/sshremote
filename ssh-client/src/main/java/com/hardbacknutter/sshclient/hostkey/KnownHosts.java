@@ -201,7 +201,7 @@ public class KnownHosts
             for (final HostKey hostKey : pool) {
                 // type + hostname MUST match
                 if (hostKey.getType().equals(hostToCheck.getType())
-                        && hostKey.isMatching(hostToCheck.getHostnames())) {
+                    && hostKey.isMatching(hostToCheck.getHostnames())) {
 
                     // the key MAY match
                     if (Arrays.equals(hostKey.getKey(), hostToCheck.getKey())) {
@@ -209,7 +209,7 @@ public class KnownHosts
                         final String encKey = hostToCheck.getEncodedKey();
                         for (final HostKey k : getHostKeys(host, type)) {
                             if (k.getEncodedKey().equals(encKey)
-                                    && REVOKED.equals(k.getMarker())) {
+                                && REVOKED.equals(k.getMarker())) {
                                 return KeyIs.Revoked;
                             }
                         }
@@ -289,9 +289,7 @@ public class KnownHosts
                 try {
                     writeToFile();
                 } catch (final Exception e) {
-                    if (config.getLogger().isEnabled(Logger.ERROR)) {
-                        config.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
-                    }
+                    config.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
                 }
             }
         }
@@ -307,13 +305,13 @@ public class KnownHosts
             for (final HostKey hostKey : pool) {
                 if (hostKey.isMatching(host)) {
                     if ((type == null)
-                            || (hostKey.getType().equals(type)
+                        || (hostKey.getType().equals(type)
                             && ((key == null) || Arrays.equals(key, hostKey.getKey())))) {
 
                         // exact match ? completely remove
                         if (hostKey.getHostnames().equals(host)
-                                || hostKey instanceof HashedHostKey
-                                && ((HashedHostKey) hostKey).isHashed()) {
+                            || hostKey instanceof HashedHostKey
+                               && ((HashedHostKey) hostKey).isHashed()) {
                             pool.remove(hostKey);
                         } else {
                             // do NOT expand wildcards!
@@ -332,9 +330,7 @@ public class KnownHosts
             try {
                 writeToFile();
             } catch (final Exception e) {
-                if (config.getLogger().isEnabled(Logger.ERROR)) {
-                    config.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
-                }
+                config.getLogger().log(Logger.ERROR, e, () -> "sync " + knownHostsFilename);
             }
         }
     }
@@ -355,8 +351,8 @@ public class KnownHosts
                                 os.write(marker + ' ');
                             }
                             os.write(hostKey.getHostnames()
-                                             + ' ' + hostKey.getType()
-                                             + ' ' + hostKey.getEncodedKey());
+                                     + ' ' + hostKey.getType()
+                                     + ' ' + hostKey.getEncodedKey());
 
                             final String comment = hostKey.getComment();
                             if (!comment.isBlank()) {

@@ -3,21 +3,6 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.utils.Buffer;
-
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
-import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -37,11 +22,26 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.utils.Buffer;
+
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
+import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
+
 /**
  * Using Bouncy castle; using SunEC requires Java 15
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8032/">
- * RFC 8032 Edwards-Curve Digital Signature Algorithm (EdDSA)</a>
+ *         RFC 8032 Edwards-Curve Digital Signature Algorithm (EdDSA)</a>
  */
 public class KeyPairEdDSA
         extends KeyPairBase {
@@ -344,9 +344,8 @@ public class KeyPairEdDSA
             throw e;
 
         } catch (@NonNull final Exception ignore) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
-            }
+            config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+
             // failed due to a key format decoding problem
             setPrivateKeyEncrypted(true);
             return;
@@ -363,7 +362,8 @@ public class KeyPairEdDSA
         }
     }
 
-    public static class Builder implements KeyPairBuilder {
+    public static class Builder
+            implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;

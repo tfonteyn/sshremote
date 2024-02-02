@@ -3,13 +3,6 @@ package com.hardbacknutter.sshclient.keypair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Logger;
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
-import com.hardbacknutter.sshclient.utils.Buffer;
-
-import org.bouncycastle.asn1.ASN1InputStream;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +32,13 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Objects;
 
+import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
+import com.hardbacknutter.sshclient.utils.Buffer;
+
+import org.bouncycastle.asn1.ASN1InputStream;
+
 /**
  * The KeyPair implementation for an ECDSA key pair.
  * <p>
@@ -55,9 +55,9 @@ import java.util.Objects;
  * </pre>
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5915">
- * RFC 5915  Elliptic Curve Private Key Structure</a>
+ *         RFC 5915  Elliptic Curve Private Key Structure</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5480">
- * RFC 5480 Elliptic Curve Cryptography Subject Public Key Information</a>
+ *         RFC 5480 Elliptic Curve Cryptography Subject Public Key Information</a>
  */
 public class KeyPairECDSA
         extends KeyPairBase {
@@ -319,9 +319,8 @@ public class KeyPairECDSA
             throw e;
 
         } catch (@NonNull final Exception ignore) {
-            if (config.getLogger().isEnabled(Logger.DEBUG)) {
-                config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
-            }
+            config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
+
             // failed due to a key format decoding problem
             setPrivateKeyEncrypted(true);
             return;
@@ -330,7 +329,8 @@ public class KeyPairECDSA
         setPrivateKeyEncrypted(false);
     }
 
-    public static class Builder implements KeyPairBuilder {
+    public static class Builder
+            implements KeyPairBuilder {
 
         @NonNull
         final SshClientConfig config;
