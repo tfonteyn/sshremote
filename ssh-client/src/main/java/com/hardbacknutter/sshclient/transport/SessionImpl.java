@@ -644,7 +644,8 @@ public final class SessionImpl
     @Override
     public void rekey()
             throws IOException, GeneralSecurityException {
-        Objects.requireNonNull(kexDelegate, "rekey() called before 1st kex").rekey();
+        Objects.requireNonNull(kexDelegate, "rekey() called before 1st kex");
+        kexDelegate.rekey();
     }
 
     private void takeKeysIntoUse(@NonNull final KexKeys keys)
