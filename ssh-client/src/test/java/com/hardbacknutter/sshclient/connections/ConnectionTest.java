@@ -3,6 +3,13 @@ package com.hardbacknutter.sshclient.connections;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.MyUserInfo;
 import com.hardbacknutter.sshclient.Session;
@@ -15,17 +22,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
 /**
  * Test all combinations of {@link #SIG_ALGS} and {@link #KEX_ALGS}.
  */
-class ConnectionTest
+public class ConnectionTest
         extends BaseConnectionTest {
 
     private static final int ZIP = 1;
@@ -46,7 +46,7 @@ class ConnectionTest
      * Public keys used here must be added on the server in "~/.ssh/authorized_keys
      */
     @NonNull
-    static Stream<Arguments> withKeys() {
+    public static Stream<Arguments> withKeys() {
         return Stream.of(
                 Arguments.of("id_ecdsa_256", null),
                 Arguments.of("id_ed25519", null),
