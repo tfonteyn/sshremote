@@ -17,28 +17,6 @@ import com.hardbacknutter.sshclient.kex.KexProposal;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
-/**
- * Test server:
- * <p>
- * WLS2 Ubuntu with OpenSSH installed.
- * Edit "/etc/ssh/sshd_config" with:
- * <pre>
- *      PubkeyAuthentication yes
- *      PasswordAuthentication yes
- * </pre>
- * <p>
- * Add a "test" user with password "test" and login as this user
- * <pre>
- * mkdir ~/.ssh
- * cd ~/.ssh
- * touch authorized_keys
- * chmod 600 authorized_keys
- * </pre>
- * Edit "~/.ssh/authorized_keys" and add one or more
- * public keys from the clients ~/.ssh/*.pub file(s)
- * <p>
- * Create "~/long.txt" with more than 4k of text. e.g. "help >long.txt" should do
- */
 public class BaseConnectionTest {
 
     protected static final SecureRandom RANDOM = new SecureRandom();
