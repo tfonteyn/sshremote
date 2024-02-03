@@ -443,13 +443,6 @@ public class KexDelegate {
             }
         }
 
-        // The client's SSH_MSG_KEXINIT payload;
-        // Just use payload-start and writeOffset as we read the original/uncompressed Packet
-        final Packet clientPacket = kexProposal.createClientPacket();
-        final byte[] I_C = Arrays.copyOfRange(clientPacket.data,
-                                              Packet.HEADER_LEN,
-                                              clientPacket.writeOffset);
-
         if (!inKeyExchange.get()) {
             session.getLogger().log(Logger.DEBUG, () ->
                     "SSH_MSG_KEXINIT sent (re-keying requested by the remote)");
@@ -464,7 +457,8 @@ public class KexDelegate {
                 /* PacketIO */ session,
                  serverVersion.getBytes(StandardCharsets.UTF_8),
                  clientVersion.getBytes(StandardCharsets.UTF_8),
-                 I_S, I_C);
+                 I_S,
+                 kexProposal.getIC());
     }
 
     @NonNull
