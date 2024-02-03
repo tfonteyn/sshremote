@@ -63,6 +63,12 @@ public final class SshClientConfigImpl
     private static final Set<String> KEY_IS_LIST_VALUE = Set.of(
             HostConfig.KEX_ALGS.toLowerCase(Locale.ENGLISH)
             , HostConfig.HOST_KEY_ALGS.toLowerCase(Locale.ENGLISH)
+
+            , KexProposal.CHECK_KEX_ALGS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.CHECK_SIG_ALGS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.CHECK_CIP_ALGS.toLowerCase(Locale.ENGLISH)
+            , KexProposal.CHECK_MAC_ALGS.toLowerCase(Locale.ENGLISH)
+
             , KexProposal.PROPOSAL_CIPHER_CTOS.toLowerCase(Locale.ENGLISH)
             , KexProposal.PROPOSAL_CIPHER_STOC.toLowerCase(Locale.ENGLISH)
             , KexProposal.PROPOSAL_MAC_CTOS.toLowerCase(Locale.ENGLISH)
@@ -71,6 +77,7 @@ public final class SshClientConfigImpl
             , KexProposal.PROPOSAL_COMP_STOC.toLowerCase(Locale.ENGLISH)
             , KexProposal.PROPOSAL_LANG_CTOS.toLowerCase(Locale.ENGLISH)
             , KexProposal.PROPOSAL_LANG_STOC.toLowerCase(Locale.ENGLISH)
+
             , HostConfig.PREFERRED_AUTHENTICATIONS.toLowerCase(Locale.ENGLISH)
             , HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS.toLowerCase(Locale.ENGLISH)
             , HostConfig.PUBLIC_KEY_ACCEPTED_KEY_TYPES.toLowerCase(Locale.ENGLISH)
