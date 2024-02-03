@@ -36,28 +36,31 @@ public class BaseConnectionTest {
             KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256,
             KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512,
             KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512,
-            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256,
-            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1);
+            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
+    );
     static final List<String> SIG_ALGS = List.of(
-            // 3x "ssh-rsa", but with different (standard) signature algorithms
-            HostKeyAlgorithm.SSH_RSA,
-            HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256,
-            HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512,
-            // still "ssh-rsa" but with non-standard signature algorithms
-//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_224_SSH_COM,
-//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_256_SSH_COM,
-//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_384_SSH_COM,
-//            HostKeyAlgorithm.SIG_ONLY_RSA_SHA_512_SSH_COM,
+            HostKeyAlgorithm.SSH_ED25519,
 
             HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
             HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
-            HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
+            HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
 
-            HostKeyAlgorithm.SSH_ED25519,
-
+            // 2024-02-03: not yet supported by our test server.
             //HostKeyAlgorithm.SSH_ED448,
 
-            HostKeyAlgorithm.SSH_DSS
+            // 2024-02-03: RSA is switched off on the server!
+            // 3x "ssh-rsa", but with different (standard) signature algorithms
+            //HostKeyAlgorithm.SSH_RSA,
+            //HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256,
+            //HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512,
+            // still "ssh-rsa" but with non-standard signature algorithms
+            // HostKeyAlgorithm.SIG_ONLY_RSA_SHA_224_SSH_COM,
+            // HostKeyAlgorithm.SIG_ONLY_RSA_SHA_256_SSH_COM,
+            // HostKeyAlgorithm.SIG_ONLY_RSA_SHA_384_SSH_COM,
+            // HostKeyAlgorithm.SIG_ONLY_RSA_SHA_512_SSH_COM,
+
+            // 2024-02-03: DSS is switched off on the server!
+            //HostKeyAlgorithm.SSH_DSS
     );
 
     static final List<String> ENC_ALGS = List.of(
