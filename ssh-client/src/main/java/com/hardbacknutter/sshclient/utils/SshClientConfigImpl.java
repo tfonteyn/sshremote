@@ -19,6 +19,7 @@ import com.hardbacknutter.sshclient.SshSessionConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipherConstants;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.kex.KexDelegate;
 import com.hardbacknutter.sshclient.kex.KexProposal;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
 import com.hardbacknutter.sshclient.macs.SshMacConstants;
@@ -55,6 +56,9 @@ public final class SshClientConfigImpl
 
         }
     };
+
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
 
     private static final Set<String> KEY_IS_LIST_VALUE = Set.of(
             HostConfig.KEX_ALGS.toLowerCase(Locale.ENGLISH)
@@ -460,6 +464,17 @@ public final class SshClientConfigImpl
                                   + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
                                   + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
             );
+        }
+
+        // Custom configuration flags:
+        {
+            putFromSystemProperty(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, TRUE);
+            putFromSystemProperty(ImplementationFactory.PK_ENABLE_SERVER_SIG_ALGS, TRUE);
+
+            putFromSystemProperty(KexDelegate.PK_ENABLE_EXT_INFO_IN_AUTH, TRUE);
+
+            putFromSystemProperty(KexDelegate.PK_STRICT_KEX_ENABLED, TRUE);
+            putFromSystemProperty(KexDelegate.PK_STRICT_KEX_REQUIRED, FALSE);
         }
     }
 }

@@ -14,6 +14,9 @@ import com.hardbacknutter.sshclient.Constants;
 import com.hardbacknutter.sshclient.MyUserInfo;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
+import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
+import com.hardbacknutter.sshclient.kex.KexDelegate;
+import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 import com.hardbacknutter.sshclient.utils.SshException;
 
@@ -61,6 +64,23 @@ public class ConnectionTest
         super.setup(ZIPPER[ZIP]);
     }
 
+    @Test
+    void strictKex()
+            throws SshException, GeneralSecurityException, IOException {
+
+        final Session session = sshClient.getSession(Constants.USERNAME,
+                                                     Constants.HOST, Constants.PORT);
+        session.setPassword(Constants.PASSWORD);
+        session.setConfig(HostConfig.HOST_KEY_ALGS, HostKeyAlgorithm.SSH_ED25519);
+        session.setConfig(HostConfig.KEX_ALGS, KeyExchangeConstants.CURVE_25519_SHA_256);
+
+        session.setConfig(KexDelegate.PK_STRICT_KEX_ENABLED, "true");
+        session.setConfig(KexDelegate.PK_STRICT_KEX_REQUIRED, "true");
+
+        session.connect();
+        session.disconnect();
+    }
+
     @ParameterizedTest
     @MethodSource("withAlgorithms")
     void connectWithPassword(@NonNull final String hostKeyAlgorithms,
@@ -83,7 +103,7 @@ public class ConnectionTest
 
         sshClient.addIdentity(keyDir + File.separatorChar + "id_ed25519");
 
-        //sshClient.setConfig(KexDelegate.PK_STRICT_KEX_ENABLED, "false");
+        sshClient.setConfig(KexDelegate.PK_STRICT_KEX_ENABLED, "false");
 
 
         final Session session = sshClient.getSession(Constants.USERNAME,

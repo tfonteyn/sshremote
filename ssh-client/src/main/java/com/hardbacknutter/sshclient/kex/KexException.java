@@ -9,7 +9,7 @@ public class KexException
 
     private static final long serialVersionUID = 4416489243578995154L;
 
-    KexException(@NonNull final String message) {
+    public KexException(@NonNull final String message) {
         super(message);
     }
 
