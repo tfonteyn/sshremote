@@ -44,7 +44,7 @@ ext {
     bouncycastleVersion = '1.77'
 
     // https://junit.org/junit5/docs/current/user-guide/#overview
-    jupiterVersion = '5.10.1'
+    jupiterVersion = '5.10.2'
 
     // https://developer.android.com/jetpack/androidx/releases/test
     androidxTestCoreVersion = "1.5.0"
