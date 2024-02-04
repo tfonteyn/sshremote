@@ -5,7 +5,9 @@ import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
@@ -306,6 +308,14 @@ public interface Session {
      */
     void setRunAsDaemon(boolean enable);
 
+
+    /**
+     * Get the list of signature algorithms the server reported to support.
+     *
+     * @return list, will contain at least one element when available
+     */
+    @NonNull
+    Optional<List<String>> getServerSignatureAlgorithms();
 
     /**
      * Gets the identityRepository.

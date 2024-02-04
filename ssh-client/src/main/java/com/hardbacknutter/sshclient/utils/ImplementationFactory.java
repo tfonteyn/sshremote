@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Random;
+import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.AESGCMCipher;
 import com.hardbacknutter.sshclient.ciphers.ChaCha20Poly1305;
@@ -68,16 +69,27 @@ public final class ImplementationFactory {
     public static final String INFLATER_CONFIG_PREFIX = "inflate.";
     public static final String DEFLATER_CONFIG_PREFIX = "deflate.";
     /**
+     * Configuration flag.
+     * <p>
      * Set to {@code "false"} to DISABLE all algorithm checking for a faster startup
-     * in controlled environments. The default is {@code "true"} - enabled.
+     * in controlled environments.
+     * <p>
+     * Default: {@code "true"} - enabled.
      * <p>
      * Valid for kex proposals + all others places where algorithms or key sizes might
      * not be available; e.g. public key accepted algorithms.
      */
-    public static final String PK_VALIDATE_ALGORITHM_CLASSES =
-            "validate_algorithm_classes";
+    public static final String PK_VALIDATE_ALGORITHM_CLASSES = "validate_algorithm_classes";
     public static final String ERROR_ALGORITHM_NOT_FOUND =
             "Algorithm not found, or failed to instantiate: ";
+    /**
+     * Configuration flag: add/use server reported signature algorithms.
+     * <p>
+     * Set to {@code "false"} to suppress the use of algorithms reported by the server.
+     * <p>
+     * Default: {@code "true"} - enabled.
+     */
+    public static final String PK_ENABLE_SERVER_SIG_ALGS = "enable_server_sig_algs";
 
     private ImplementationFactory() {
     }
@@ -117,7 +129,7 @@ public final class ImplementationFactory {
             return c.getDeclaredConstructor().newInstance();
         } catch (final Exception e) {
             throw new NoSuchAlgorithmException("Failed to instantiate "
-                                                       + className + " for " + configKey, e);
+                                               + className + " for " + configKey, e);
         }
     }
 
@@ -156,7 +168,7 @@ public final class ImplementationFactory {
             final String className = config.getString(configKey);
             if (defClass.getCanonicalName().equals(className)) {
                 throw new NoSuchAlgorithmException("Failed to instantiate "
-                                                           + className + " for " + configKey, e);
+                                                   + className + " for " + configKey, e);
             }
         }
 
@@ -167,7 +179,7 @@ public final class ImplementationFactory {
         } catch (final Exception e) {
             // We have a SERIOUS problem...
             final String errMsg = "Failed to instantiate " + defClass.getCanonicalName()
-                    + " for " + configKey;
+                                  + " for " + configKey;
             config.getLogger().log(Logger.FATAL, e, () -> errMsg);
             throw new IllegalStateException(errMsg, e);
         }
@@ -549,8 +561,8 @@ public final class ImplementationFactory {
                                           @NonNull final String method)
             throws NoSuchAlgorithmException, IOException {
 
-        if (KexProposal.COMPRESSION_ZLIB.equals(method) ||
-                authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
+        if (KexProposal.COMPRESSION_ZLIB.equals(method)
+            || authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
             final SshDeflater instance = loadClassOrDefault(
                     config, DEFLATER_CONFIG_PREFIX + method,
                     SshDeflaterImpl.class, SshDeflater.class);
@@ -581,8 +593,8 @@ public final class ImplementationFactory {
                                           @NonNull final String method)
             throws NoSuchAlgorithmException, IOException {
 
-        if (KexProposal.COMPRESSION_ZLIB.equals(method) ||
-                authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
+        if (KexProposal.COMPRESSION_ZLIB.equals(method)
+            || authenticated && KexProposal.COMPRESSION_ZLIB_OPENSSH_COM.equals(method)) {
 
             final SshInflater instance = loadClassOrDefault(
                     config, INFLATER_CONFIG_PREFIX + method,
@@ -597,14 +609,18 @@ public final class ImplementationFactory {
     /**
      * Construct the list of algorithms we can accept for public key authentication.
      *
+     * @param session the current session
+     *
      * @return the list; will contain at least one algorithm
      *
      * @throws NoSuchAlgorithmException if no algorithm configured/available
      */
     @NonNull
-    public static List<String> getPublicKeyAcceptedAlgorithms(
-            @NonNull final SshClientConfig config)
+    public static List<String> getPublicKeyAcceptedAlgorithms(@NonNull final Session session)
             throws NoSuchAlgorithmException {
+        final SshClientConfig config = session.getConfig();
+
+        // We just add all we have; duplicates are removed before returning.
         final List<String> all = new ArrayList<>();
 
         final List<String> a1 = config.getStringList(HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS);
@@ -614,6 +630,10 @@ public final class ImplementationFactory {
         final List<String> a2 = config.getStringList(HostConfig.PUBLIC_KEY_ACCEPTED_KEY_TYPES);
         if (!a2.isEmpty()) {
             all.addAll(a2);
+        }
+
+        if (config.getBooleanValue(PK_ENABLE_SERVER_SIG_ALGS, true)) {
+            session.getServerSignatureAlgorithms().ifPresent(all::addAll);
         }
 
         if (all.isEmpty()) {

@@ -66,14 +66,6 @@ public class UserAuthPublicKey
         this.username = username;
         this.userinfo = userinfo;
 
-        for (final String name : ImplementationFactory.getPublicKeyAcceptedAlgorithms(config)) {
-            if (HostKeyAlgorithm.isRSA(name)) {
-                rsaMethods.add(name);
-            } else {
-                nonRsaMethods.add(name);
-            }
-        }
-
         final ResourceBundle rb = ResourceBundle.getBundle(USER_MESSAGES);
         prompt = rb.getString("PROMPT_PASSPHRASE");
     }
@@ -84,6 +76,14 @@ public class UserAuthPublicKey
                                 @Nullable final byte[] password)
             throws IOException, GeneralSecurityException, SshAuthCancelException,
                    SshPartialAuthException {
+
+        for (final String name : ImplementationFactory.getPublicKeyAcceptedAlgorithms(session)) {
+            if (HostKeyAlgorithm.isRSA(name)) {
+                rsaMethods.add(name);
+            } else {
+                nonRsaMethods.add(name);
+            }
+        }
 
         final IdentityRepository identityRepository = session.getIdentityRepository();
         synchronized (identityRepository) {

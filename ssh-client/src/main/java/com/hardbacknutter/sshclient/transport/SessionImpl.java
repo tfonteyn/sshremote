@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import com.hardbacknutter.sshclient.Channel;
@@ -162,6 +163,8 @@ public final class SessionImpl
 
     @Nullable
     private KexDelegate kexDelegate;
+    @Nullable
+    private List<String> serverSigAlgs;
 
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
@@ -842,6 +845,14 @@ public final class SessionImpl
 
     public boolean isInKeyExchange() {
         return kexDelegate != null && kexDelegate.isInKeyExchange();
+    }
+
+    @NonNull
+    public Optional<List<String>> getServerSignatureAlgorithms() {
+        if (serverSigAlgs != null && !serverSigAlgs.isEmpty()) {
+            return Optional.of(serverSigAlgs);
+        }
+        return Optional.empty();
     }
 
     @NonNull

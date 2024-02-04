@@ -18,6 +18,7 @@ import com.hardbacknutter.sshclient.userauth.UserInfo;
 import com.hardbacknutter.sshclient.utils.SshException;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -82,7 +83,7 @@ public class ConnectionTest
 
         sshClient.addIdentity(keyDir + File.separatorChar + "id_ed25519");
 
-        sshClient.setConfig(KexDelegate.PK_STRICT_KEX_ENABLED, "false");
+        //sshClient.setConfig(KexDelegate.PK_STRICT_KEX_ENABLED, "false");
 
 
         final Session session = sshClient.getSession(Constants.USERNAME,
