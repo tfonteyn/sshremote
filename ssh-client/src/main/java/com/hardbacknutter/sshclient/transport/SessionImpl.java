@@ -998,16 +998,7 @@ public final class SessionImpl
                                 break;
                             }
 
-                            packet.startReadingPayload();
-                            packet.getByte(/* command */);
-                            final long nrOfExtensions = packet.getUInt();
-                            for (long i = 0; i < nrOfExtensions; i++) {
-                                final String extName = packet.getJString();
-                                final String extValue = packet.getJString();
-                                if ("server-sig-algs".equals(extName)) {
-                                    serverSigAlgs = Arrays.asList(extValue.split(","));
-                                }
-                            }
+                            handleExtInfoPacket(packet);
                             break;
                         }
 
@@ -1089,6 +1080,22 @@ public final class SessionImpl
         }
 
         disconnect();
+    }
+
+    public void handleExtInfoPacket(@NonNull final Packet packet)
+            throws IOException {
+        getLogger().log(Logger.DEBUG, () -> "Received SSH_MSG_EXT_INFO packet");
+
+        packet.startReadingPayload();
+        packet.getByte(/* command */);
+        final long nrOfExtensions = packet.getUInt();
+        for (long i = 0; i < nrOfExtensions; i++) {
+            final String extName = packet.getJString();
+            final String extValue = packet.getJString();
+            if (SshConstants.EXT_INFO_SERVER_SIG_ALGS.equals(extName)) {
+                serverSigAlgs = Arrays.asList(extValue.split(","));
+            }
+        }
     }
 
     /**

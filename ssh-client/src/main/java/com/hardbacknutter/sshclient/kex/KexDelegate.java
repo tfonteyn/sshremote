@@ -129,6 +129,71 @@ public class KexDelegate {
     /** The standard Java resource bundle with (translated) messages. */
     private static final String USER_MESSAGES = "msg.usermessages";
 
+    /**
+     * Configuration flag.
+     * <p>
+     * Default: {@code true}
+     * <p>
+     * Whether to signal the server that we support receiving the SSH2_MSG_EXT_INFO
+     * message during user authentication.
+     *
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     *         OpenSSH protocol deviations
+     *         1.11 transport: SSH2_MSG_EXT_INFO during user authentication</a>
+     */
+    public static final String PK_ENABLE_EXT_INFO_IN_AUTH = "enable_ext_info_in_auth";
+
+    /**
+     * Configuration flag.
+     * <p>
+     * Default: {@code true}
+     * <p>
+     * Set to {@code false} to disable support for strict-kex functionality.
+     * <strong>NOT RECOMMENDED</strong> to disable.
+     *
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     *         OpenSSH protocol deviations.
+     *         1.10 transport: strict key exchange extension</a>
+     */
+    public static final String PK_STRICT_KEX_ENABLED = "strict_kex_enabled";
+
+    /**
+     * Configuration flag.
+     * <p>
+     * Default: {@code false}
+     * <p>
+     * Set to {@code true} to <strong>require</strong> the server to support
+     * strict-kex functionality.
+     * <strong>RECOMMENDED</strong> but the server needs to support it.
+     *
+     * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
+     *         OpenSSH protocol deviations.
+     *         1.10 transport: strict key exchange extension</a>
+     */
+    public static final String PK_STRICT_KEX_REQUIRED = "strict_kex_required";
+
+    private static final String EXT_KEX_STRICT_S_V00 = "kex-strict-s-v00@openssh.com";
+    private static final String EXT_KEX_STRICT_C_V00 = "kex-strict-c-v00@openssh.com";
+    /**
+     * Pseudo KEX algorithm send by the server to report which extensions it supports.
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc8308#section-2.1">
+     *         RFC 8308</a>
+     */
+    private static final String EXT_INFO_S = "ext-info-s";
+    /**
+     * Pseudo KEX algorithm send by this client to the server
+     * to report which extensions we support.
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc8308#section-2.1">
+     *         RFC 8308</a>
+     */
+    private static final String EXT_INFO_C = "ext-info-c";
+
+
+    /** The standard Java resource bundle with (translated) messages. */
+    private static final String USER_MESSAGES = "msg.usermessages";
+
     @NonNull
     private final String serverVersion;
     @NonNull
@@ -163,8 +228,12 @@ public class KexDelegate {
     private KeyExchange kex;
 
     /** Flag set when the server reported it is supporting extensions. */
-    private boolean doExtInfo;
-    /** Flag which is {@code true} during the initial KEX exchange but {@code false} for subrequent rekeying */
+    private boolean serverSupportsExtInfo;
+
+    /**
+     * Flag which is {@code true} during the initial KEX exchange
+     * but {@code false} for subsequent re-keying
+     */
     private boolean initialKex = true;
 
     /**
@@ -296,14 +365,20 @@ public class KexDelegate {
             throw new KexProtocolException(SshConstants.SSH_MSG_NEWKEYS, confirmation);
         }
 
-        initialKex = false;
+        //URGENT: send ext-info packet
+//        if (initialKex && serverSupportsExtInfo) {
+//            // https://datatracker.ietf.org/doc/html/rfc8308#section-2.4
+//            // MUST send it as the next packet following the client's first
+//            // SSH_MSG_NEWKEYS message to the server.
+//            sendExtInfo();
+//            packet = session.read();
+//            if (packet.getCommand() != SshConstants.SSH_MSG_EXT_INFO) {
+//                throw new KexProtocolException(SshConstants.SSH_MSG_EXT_INFO, packet.getCommand());
+//            }
+//            session.handleExtInfoPacket(packet);
+//        }
 
-        if (doExtInfo) {
-            // https://datatracker.ietf.org/doc/html/rfc8308#section-2.4
-            // MUST send it as the next packet following the client's first
-            // SSH_MSG_NEWKEYS message to the server.
-            sendExtInfo();
-        }
+        initialKex = false;
 
         return keys;
     }
@@ -332,6 +407,8 @@ public class KexDelegate {
         // If we support multiple extensions, this check (and similar checks)
         // must obviously be done on a per-line basis
         if (session.getConfig().getBooleanValue(PK_ENABLE_EXT_INFO_IN_AUTH, true)) {
+            session.getLogger().log(Logger.DEBUG, () -> "sending SSH_MSG_EXT_INFO");
+
             final Packet packet = new Packet(SshConstants.SSH_MSG_EXT_INFO)
                     .putInt(1)
                     .putString("ext-info-in-auth@openssh.com").putString("0");
@@ -347,8 +424,9 @@ public class KexDelegate {
         Objects.requireNonNull(kexProposal);
 
         if (initialKex) {
-            // Tell the server we MAY support (some) extensions
-            kexProposal.addKexExtension(EXT_INFO_C);
+            //URGENT: send ext-info support string
+//            // Tell the server we MAY support (some) extensions
+//            kexProposal.addKexExtension(EXT_INFO_C);
 
             // Tell the server we support the StrictKex feature.
             if (strictKexEnabled || strictKexRequired) {
@@ -415,7 +493,7 @@ public class KexDelegate {
         // 17 bytes: command(1) + cookie(16)
         buffer.setReadOffSet(17);
         final List<String> serverKexAlgorithms = Arrays.asList(buffer.getJString().split(","));
-        doExtInfo = serverKexAlgorithms.contains(EXT_INFO_S);
+        serverSupportsExtInfo = serverKexAlgorithms.contains(EXT_INFO_S);
 
         if (initialKex) {
             // http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
