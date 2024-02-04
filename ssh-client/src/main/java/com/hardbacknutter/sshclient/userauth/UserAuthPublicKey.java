@@ -246,7 +246,7 @@ public class UserAuthPublicKey
 
             } else if (command != SshConstants.SSH_MSG_USERAUTH_FAILURE) {
                 // This should never happen
-                throw new ProtocolException("preAuth failure; received command=" + command);
+                throw new ProtocolException("preAuth failure; unexpected command=" + command);
             }
             session.getLogger().log(Logger.DEBUG, () -> algorithm + " preAuth failure");
             // try next algorithm
@@ -304,15 +304,18 @@ public class UserAuthPublicKey
                         packet.getByte(); // command
 
                         final byte[] authMethodsToTryNext = packet.getString();
-                        final boolean partial_success = packet.getBoolean();
-                        if (partial_success) {
+                        final boolean partialSuccess = packet.getBoolean();
+                        if (partialSuccess) {
+                            session.getLogger().log(Logger.DEBUG, () ->
+                                    algorithm + " auth partialSuccess");
                             throw new SshPartialAuthException(METHOD, authMethodsToTryNext);
                         }
+                        session.getLogger().log(Logger.DEBUG, () -> algorithm + " auth failure");
                         return false;
                     }
                     default: {
                         session.getLogger().log(Logger.DEBUG, () ->
-                                algorithm + " auth failure; received command=" + command);
+                                algorithm + " auth failure; unexpected command=" + command);
                         return false;
                     }
                 }
