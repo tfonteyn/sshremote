@@ -110,7 +110,7 @@ public class KexDelegate {
     private static final String EXT_KEX_STRICT_S_V00 = "kex-strict-s-v00@openssh.com";
     private static final String EXT_KEX_STRICT_C_V00 = "kex-strict-c-v00@openssh.com";
     /**
-     * Pseudo KEX algorithm send by the server to report which extensions ir supports.
+     * Pseudo KEX algorithm send by the server to report which extensions it supports.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc8308#section-2.1">
      *         RFC 8308</a>
@@ -163,8 +163,12 @@ public class KexDelegate {
     private KeyExchange kex;
 
     /** Flag set when the server reported it is supporting extensions. */
-    private boolean doExtInfo;
-    /** Flag which is {@code true} during the initial KEX exchange but {@code false} for subrequent rekeying */
+    private boolean serverSupportsExtInfo;
+
+    /**
+     * Flag which is {@code true} during the initial KEX exchange
+     * but {@code false} for subsequent re-keying
+     */
     private boolean initialKex = true;
 
     /**
@@ -325,6 +329,8 @@ public class KexDelegate {
         // If we support multiple extensions, this check (and similar checks)
         // must obviously be done on a per-line basis
         if (session.getConfig().getBooleanValue(PK_ENABLE_EXT_INFO_IN_AUTH, true)) {
+            session.getLogger().log(Logger.DEBUG, () -> "sending SSH_MSG_EXT_INFO");
+
             final Packet packet = new Packet(SshConstants.SSH_MSG_EXT_INFO)
                     .putInt(1)
                     .putString("ext-info-in-auth@openssh.com").putString("0");
@@ -405,7 +411,7 @@ public class KexDelegate {
         // 17 bytes: command(1) + cookie(16)
         buffer.setReadOffSet(17);
         final List<String> serverKexAlgorithms = Arrays.asList(buffer.getJString().split(","));
-        doExtInfo = serverKexAlgorithms.contains(EXT_INFO_S);
+        serverSupportsExtInfo = serverKexAlgorithms.contains(EXT_INFO_S);
 
         if (initialKex) {
             // http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD
