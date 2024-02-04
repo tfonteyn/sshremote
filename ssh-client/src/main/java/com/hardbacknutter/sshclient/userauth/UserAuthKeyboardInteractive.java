@@ -3,17 +3,17 @@ package com.hardbacknutter.sshclient.userauth;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.Locale;
+
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.SshConstants;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.util.Locale;
 
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4256">
@@ -97,7 +97,7 @@ public class UserAuthKeyboardInteractive
 
                 } else if (command == SshConstants.SSH_MSG_USERAUTH_FAILURE) {
                     packet.startReadingPayload();
-                    packet.getByte(); // command
+                    packet.getByte(/* command */);
                     final byte[] authMethodsToTryNext = packet.getString();
                     final boolean partial_success = packet.getBoolean();
                     if (partial_success) {
@@ -113,7 +113,7 @@ public class UserAuthKeyboardInteractive
                 } else if (command == SshConstants.SSH_MSG_USERAUTH_BANNER) {
                     if (userinfo != null) {
                         packet.startReadingPayload();
-                        packet.getByte(); // command
+                        packet.getByte(/* command */);
                         final String message = packet.getJString();
                         packet.skipString(/* language_tag */);
 
@@ -123,14 +123,14 @@ public class UserAuthKeyboardInteractive
                 } else if (command == SshConstants.SSH_MSG_USERAUTH_INFO_REQUEST) {
                     firstTime = false;
                     packet.startReadingPayload();
-                    packet.getByte(); // command
+                    packet.getByte(/* command */);
                     final String name = packet.getJString();
                     final String instruction = packet.getJString();
                     packet.skipString(/* language_tag */);
-                    final int num_prompts = packet.getInt();
-                    final String[] prompt = new String[num_prompts];
-                    final boolean[] echo = new boolean[num_prompts];
-                    for (int i = 0; i < num_prompts; i++) {
+                    final int nrOfPrompts = packet.getInt();
+                    final String[] prompt = new String[nrOfPrompts];
+                    final boolean[] echo = new boolean[nrOfPrompts];
+                    for (int i = 0; i < nrOfPrompts; i++) {
                         prompt[i] = packet.getJString();
                         echo[i] = packet.getBoolean();
                     }
@@ -144,7 +144,7 @@ public class UserAuthKeyboardInteractive
                         response = new byte[1][];
                         response[0] = password;
                         password = null;
-                    } else if (num_prompts > 0
+                    } else if (nrOfPrompts > 0
                             || (!name.isEmpty() || !instruction.isEmpty())) {
                         if (userinfo != null) {
                             final UIKeyboardInteractive kbi = (UIKeyboardInteractive) userinfo;
@@ -169,14 +169,14 @@ public class UserAuthKeyboardInteractive
                     // ...
                     // string    response[num-responses] (ISO-10646 UTF-8)
                     packet.init(SshConstants.SSH_MSG_USERAUTH_INFO_RESPONSE);
-                    if (num_prompts > 0 &&
+                    if (nrOfPrompts > 0 &&
                             (response == null ||  // cancel
-                                    num_prompts != response.length)) {
+                             nrOfPrompts != response.length)) {
 
                         if (response == null) {
                             // working around the bug in OpenSSH ;-<
-                            packet.putInt(num_prompts);
-                            for (int i = 0; i < num_prompts; i++) {
+                            packet.putInt(nrOfPrompts);
+                            for (int i = 0; i < nrOfPrompts; i++) {
                                 packet.putString("");
                             }
                         } else {
@@ -187,8 +187,8 @@ public class UserAuthKeyboardInteractive
                             cancel = true;
                         }
                     } else {
-                        packet.putInt(num_prompts);
-                        for (int i = 0; i < num_prompts; i++) {
+                        packet.putInt(nrOfPrompts);
+                        for (int i = 0; i < nrOfPrompts; i++) {
                             packet.putString(response[i]);
                         }
                     }
