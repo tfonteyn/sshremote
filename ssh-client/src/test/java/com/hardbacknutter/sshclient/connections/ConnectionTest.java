@@ -33,8 +33,8 @@ public class ConnectionTest
         extends BaseConnectionTest {
 
     private static final int ZIP = 1;
-
-    private static final UserInfo ui = new MyUserInfo(Constants.PASSWORD, "qwerty");
+    private static final UserInfo ui = new MyUserInfo(Constants.PASSWORD,
+                                                      Constants.KEY_FILES_PASSPHRASE);
 
     private String keyDir = System.getProperty("user.home") + File.separatorChar + ".ssh";
 
@@ -52,9 +52,9 @@ public class ConnectionTest
     @NonNull
     public static Stream<Arguments> withKeys() {
         return Stream.of(
-                Arguments.of("id_rsa", null),
-                Arguments.of("id_ecdsa", null),
-                Arguments.of("id_rsa_qwerty", ui)
+                Arguments.of("id_ecdsa_256", null),
+                Arguments.of("id_ed25519", null),
+                Arguments.of("id_ed25519_secret", ui)
         );
     }
 
@@ -93,6 +93,22 @@ public class ConnectionTest
         session.setConfig(HostConfig.HOST_KEY_ALGS, hostKeyAlgorithms);
         session.setConfig(HostConfig.KEX_ALGS, kexAlgorithms);
 
+        session.connect();
+        session.disconnect();
+    }
+
+    @Test
+    void connectWithPublicKey1()
+            throws SshException, GeneralSecurityException, IOException {
+
+        sshClient.addIdentity(keyDir + File.separatorChar + "id_ed25519");
+
+        sshClient.setConfig(KexDelegate.PK_STRICT_KEX_ENABLED, "false");
+
+
+        final Session session = sshClient.getSession(Constants.USERNAME,
+                                                     Constants.HOST, Constants.PORT);
+        session.setUserInfo(null);
         session.connect();
         session.disconnect();
     }
