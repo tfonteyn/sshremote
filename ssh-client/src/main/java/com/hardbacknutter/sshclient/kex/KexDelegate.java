@@ -312,13 +312,8 @@ public class KexDelegate {
         return initialKex;
     }
 
-    /**
-     * Check if we're in the initial Key Exchange, and require StrictKex support.
-     *
-     * @return flag
-     */
-    public boolean isInStrictKexKeyExchange() {
-        return isInKeyExchange() && doStrictKex;
+    public boolean isDoStrictKex() {
+        return doStrictKex;
     }
 
     /**

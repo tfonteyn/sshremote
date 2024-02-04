@@ -781,11 +781,12 @@ public final class SessionImpl
             //noinspection ConstantConditions
             s2c.read(packet);
 
-            if (kexDelegate != null && kexDelegate.isInStrictKexKeyExchange()) {
+            if (kexDelegate != null && kexDelegate.isInitialKex() && kexDelegate.isDoStrictKex()) {
                 // If we're doing "strict KEX" during the initial kex-exchange
                 // then we MUST ignore all packets which are not strictly required by KEX
                 // So quit the while loop, and return the packet we just read immediately.
                 // If it's unexpected, it will cause the connection to terminate.
+                getLogger().log(Logger.DEBUG, () -> "read() during initial/strict KEX");
                 break;
             }
 
