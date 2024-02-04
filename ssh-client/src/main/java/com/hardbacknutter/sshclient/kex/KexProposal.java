@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 
 import com.hardbacknutter.sshclient.Logger;
@@ -80,6 +81,7 @@ public class KexProposal {
     public static final String COMPRESSION_LEVEL = "compression_level";
 
     private final List<String> kexAlgorithms;
+    private final List<String> hostKeyAlgorithms;
     private final List<String> ciphers_c2s;
     private final List<String> ciphers_s2c;
     private final List<String> mac_c2s;
@@ -90,7 +92,9 @@ public class KexProposal {
     private final List<String> language_s2c;
     @SuppressWarnings("FieldNotUsedInToString")
     private final SshClientConfig config;
-    private List<String> hostKeyAlgorithms;
+    @SuppressWarnings("FieldNotUsedInToString")
+    @Nullable
+    private byte[] I_C;
 
     /**
      * Constructor.
@@ -103,8 +107,9 @@ public class KexProposal {
 
         this.config = session.getConfig();
 
-        kexAlgorithms = config.getStringList(HostConfig.KEX_ALGS);
-        hostKeyAlgorithms = config.getStringList(HostConfig.HOST_KEY_ALGS);
+        // new ArrayList's: we need to be able to modify these
+        kexAlgorithms = new ArrayList<>(config.getStringList(HostConfig.KEX_ALGS));
+        hostKeyAlgorithms = new ArrayList<>(config.getStringList(HostConfig.HOST_KEY_ALGS));
 
         ciphers_c2s = config.getStringList(PROPOSAL_CIPHER_CTOS);
         ciphers_s2c = config.getStringList(PROPOSAL_CIPHER_STOC);
@@ -147,9 +152,18 @@ public class KexProposal {
         }
     }
 
+    /**
+     * Create the client packet to use for the KEX proposal.
+     *
+     * @return packet to send to the server
+     */
     @NonNull
     Packet createClientPacket()
             throws NoSuchAlgorithmException {
+        if (I_C != null) {
+            throw new IllegalStateException("Do NOT call this method twice!");
+        }
+
         // byte      SSH_MSG_KEXINIT(20)
         // byte[16]  cookie (random bytes)
         // string    kex_algorithms
@@ -164,7 +178,7 @@ public class KexProposal {
         // string    languages_server_to_client
         // boolean   first_kex_packet_follows
         // uint32    0 (reserved for future extension)
-        return new Packet(SshConstants.SSH_MSG_KEXINIT)
+        final Packet packet = new Packet(SshConstants.SSH_MSG_KEXINIT)
                 .putBytes(config.getRandom().nextBytes(16))
                 .putString(String.join(",", kexAlgorithms))
                 .putString(String.join(",", hostKeyAlgorithms))
@@ -178,6 +192,19 @@ public class KexProposal {
                 .putString(String.join(",", language_s2c))
                 .putBoolean(false)
                 .putInt(0);
+
+        I_C = Arrays.copyOfRange(packet.data, Packet.HEADER_LEN, packet.writeOffset);
+        return packet;
+    }
+
+    /**
+     * Get the {@code I_C} from the previously created client-packet.
+     *
+     * @return I_C
+     */
+    @NonNull
+    byte[] getIC() {
+        return Objects.requireNonNull(I_C);
     }
 
     /**
@@ -288,7 +315,8 @@ public class KexProposal {
                 }
             }
 
-            hostKeyAlgorithms = new ArrayList<>(preferred);
+            hostKeyAlgorithms.clear();
+            hostKeyAlgorithms.addAll(preferred);
             hostKeyAlgorithms.addAll(others);
         }
     }
