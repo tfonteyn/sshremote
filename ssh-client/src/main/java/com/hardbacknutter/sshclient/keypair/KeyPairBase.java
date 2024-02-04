@@ -37,10 +37,14 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 public abstract class KeyPairBase
         implements SshKeyPair {
 
-    // This is NOT an error; it will happen when we try parsing an encrypted key blob
-    // The parser will be called twice, and will succeed the 2nd time (providing the user
-    // gives ut the correct passphrase obviously)
-    static final String DEBUG_KEY_PARSING_FAILED = "Parsing failed, key is likely encrypted";
+    /**
+     * This is NOT an error; it's a DEBUG message only!
+     * It will happen when we try parsing an encrypted key blob.
+     * The parser will be called twice, and will succeed the 2nd time (providing the user
+     * gives us the correct passphrase obviously)
+     */
+    static final String DEBUG_KEY_PARSING_FAILED =
+            "[debug] Parsing failed, key is likely encrypted. Will try again.";
 
     @NonNull
     final SshClientConfig config;
@@ -232,7 +236,7 @@ public abstract class KeyPairBase
      * Hence passing in a {@code null} passphrase is valid.
      *
      * @return {@code true} if the private key was successfully
-     * decrypted, i.e. is now usable, else {@code false}.
+     *         decrypted, i.e. is now usable, else {@code false}.
      */
     @Override
     public boolean decrypt(@Nullable final byte[] passphrase)
@@ -319,9 +323,9 @@ public abstract class KeyPairBase
     @NonNull
     public String toString() {
         return "KeyPairBase{"
-                + "privateKeyBlob=" + Arrays.toString(privateKeyBlob)
-                + ", publicKeyComment='" + publicKeyComment + '\''
-                + "}";
+               + "privateKeyBlob=" + Arrays.toString(privateKeyBlob)
+               + ", publicKeyComment='" + publicKeyComment + '\''
+               + "}";
     }
 
     /**
