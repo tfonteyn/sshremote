@@ -340,6 +340,17 @@ public final class SshConstants {
     public static final int SSH_DISCONNECT_NO_MORE_AUTH_METHODS_AVAILABLE = 14;
     public static final int SSH_DISCONNECT_ILLEGAL_USER_NAME = 15;
 
+    /**
+     * {@link #SSH_MSG_EXT_INFO} supported extension:
+     * <p>
+     * string      "server-sig-algs"
+     * name-list   public-key-algorithms-accepted
+     * <p>
+     * <a href="https://datatracker.ietf.org/doc/html/rfc8308#section-3.1">
+     * RFC 8308 Extension Negotiation,
+     * Section 3.1. "server-sig-algs"</a>
+     */
+    public static final String EXT_INFO_SERVER_SIG_ALGS = "server-sig-algs";
 
     private SshConstants() {
     }

@@ -983,6 +983,24 @@ public final class SessionImpl
                             takeKeysIntoUse(keys);
                             break;
                         }
+                        case SshConstants.SSH_MSG_EXT_INFO: {
+                            if (kexDelegate != null) {
+                                if (kexDelegate.isInKeyExchange()) {
+                                    getLogger().log(Logger.DEBUG, () ->
+                                            "SSH_MSG_EXT_INFO ignored; still in KeyExchange stage");
+                                    break;
+                                }
+                            }
+
+                            if (authenticated) {
+                                getLogger().log(Logger.DEBUG, () ->
+                                        "SSH_MSG_EXT_INFO ignored; already authenticated");
+                                break;
+                            }
+
+                            handleExtInfoPacket(packet);
+                            break;
+                        }
 
                         case SshConstants.SSH_MSG_CHANNEL_REQUEST:
                         case SshConstants.SSH_MSG_CHANNEL_DATA:
@@ -1062,6 +1080,22 @@ public final class SessionImpl
         }
 
         disconnect();
+    }
+
+    public void handleExtInfoPacket(@NonNull final Packet packet)
+            throws IOException {
+        getLogger().log(Logger.DEBUG, () -> "Received SSH_MSG_EXT_INFO packet");
+
+        packet.startReadingPayload();
+        packet.getByte(/* command */);
+        final long nrOfExtensions = packet.getUInt();
+        for (long i = 0; i < nrOfExtensions; i++) {
+            final String extName = packet.getJString();
+            final String extValue = packet.getJString();
+            if (SshConstants.EXT_INFO_SERVER_SIG_ALGS.equals(extName)) {
+                serverSigAlgs = Arrays.asList(extValue.split(","));
+            }
+        }
     }
 
     /**
