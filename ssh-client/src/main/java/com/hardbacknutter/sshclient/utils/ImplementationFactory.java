@@ -241,14 +241,14 @@ public final class ImplementationFactory {
                 case KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG:
                     return new KeyExchangeEdDSA("SHA-256",
                                                 XDHParameterSpec.X25519,
-                                                EdECObjectIdentifiers.id_X25519,
-                                                X25519PublicKeyParameters.KEY_SIZE);
+                                                X25519PublicKeyParameters.KEY_SIZE,
+                                                EdECObjectIdentifiers.id_X25519);
 
                 case KeyExchangeConstants.CURVE_448_SHA_512:
                     return new KeyExchangeEdDSA("SHA-512",
                                                 XDHParameterSpec.X448,
-                                                EdECObjectIdentifiers.id_X448,
-                                                X448PublicKeyParameters.KEY_SIZE);
+                                                X448PublicKeyParameters.KEY_SIZE,
+                                                EdECObjectIdentifiers.id_X448);
 
                 case KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_1:
                     return new KeyExchangeDHGroupExchange("SHA-1");

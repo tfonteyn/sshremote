@@ -2,6 +2,19 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.spec.ECPoint;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
+import javax.crypto.KeyAgreement;
+
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
@@ -16,17 +29,6 @@ import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.ECPoint;
-
-import javax.crypto.KeyAgreement;
-
 /**
  * Abstract base class for key exchange algorithms.
  * <p>
@@ -34,11 +36,11 @@ import javax.crypto.KeyAgreement;
  * and on the negotiation between client and server.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7">
- * RFC 4253 SSH Transport Layer Protocol, 7. Key Exchange</a>
+ *         RFC 4253 SSH Transport Layer Protocol, 7. Key Exchange</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-8">
- * RFC 4253 SSH Transport Layer Protocol, 8. Diffie-Hellman Key Exchange</a>
+ *         RFC 4253 SSH Transport Layer Protocol, 8. Diffie-Hellman Key Exchange</a>
  * @see <a href="https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-09.html#rfc.section.3">
- * Key Exchange (KEX) Method Updates and Recommendations</a>
+ *         Key Exchange (KEX) Method Updates and Recommendations</a>
  */
 abstract class KeyExchangeBase
         implements KeyExchange {
@@ -55,8 +57,12 @@ abstract class KeyExchangeBase
     byte[] I_S;
     /** string   K_S, server's public host key. */
     byte[] K_S;
-    /** mpint    K,   shared secret. */
+
+    /** shared secret; pre-encoded as a raw byte[]. */
     byte[] K;
+    /** The hash H. */
+    byte[] H;
+
     /** The NEXT packet we expect. i.e. the reply to our send. */
     byte state;
     PacketIO io;
@@ -64,8 +70,7 @@ abstract class KeyExchangeBase
     private SshClientConfig config;
     /** The hash generator. */
     private MessageDigest md;
-    /** The hash H is computed by {@link MessageDigest#digest()}. */
-    private byte[] H;
+
     @NonNull
     private String hostKeyAlgorithm = "";
 
@@ -76,6 +81,18 @@ abstract class KeyExchangeBase
      */
     KeyExchangeBase(@NonNull final String digestAlgorithm) {
         this.digestAlgorithm = digestAlgorithm;
+    }
+
+    static byte[] encodeAsMPInt(@NonNull final byte[] bytes) {
+        final Buffer buffer = new Buffer();
+        buffer.putMPInt(bytes);
+        return buffer.getPayload();
+    }
+
+    static byte[] encodeAsString(@NonNull final byte[] bytes) {
+        final Buffer buffer = new Buffer();
+        buffer.putString(bytes);
+        return buffer.getPayload();
     }
 
     @SuppressWarnings("OverlyBroadThrowsClause")
@@ -148,16 +165,35 @@ abstract class KeyExchangeBase
         return K_S;
     }
 
-    void verify(@NonNull final byte[] hash,
-                @NonNull final byte[] sig_of_H)
-            throws GeneralSecurityException, IOException {
-
+    void verifyHashSignature(@NonNull final byte[] sig_of_H)
+            throws IOException, GeneralSecurityException {
         final String sshSignatureAlgorithm = new Buffer(sig_of_H).getJString();
         final SshSignature sig = ImplementationFactory.getSignature(config, sshSignatureAlgorithm);
         sig.init(sshSignatureAlgorithm);
 
-        // Extract the PublicKey from the server key blob
-        final PublicKey publicKey;
+        sig.initVerify(getServerPublicKey());
+        sig.update(H);
+
+        if (!sig.verify(sig_of_H)) {
+            throw new InvalidKeyException("KeyExchange#verify failed"
+                                          + ", hostKeyAlg=" + hostKeyAlgorithm
+                                          + ", sshSigAlg=" + sshSignatureAlgorithm);
+        }
+    }
+
+    /**
+     * Extract the PublicKey from the server's {@link #K_S} blob.
+     *
+     * @return PublicKey
+     */
+    @NonNull
+    private PublicKey getServerPublicKey()
+            throws IOException,
+                   InvalidKeySpecException,
+                   NoSuchAlgorithmException,
+                   InvalidParameterSpecException,
+                   NoSuchProviderException {
+
         final Buffer buffer = new Buffer(K_S);
         hostKeyAlgorithm = buffer.getJString();
         switch (hostKeyAlgorithm) {
@@ -165,8 +201,7 @@ abstract class KeyExchangeBase
                 final BigInteger publicExponent = buffer.getBigInteger();
                 final BigInteger modulus = buffer.getBigInteger();
 
-                publicKey = KeyPairRSA.createPublicKey(publicExponent, modulus);
-                break;
+                return KeyPairRSA.createPublicKey(publicExponent, modulus);
             }
             case HostKeyAlgorithm.SSH_DSS: {
                 final BigInteger p = buffer.getBigInteger();
@@ -174,40 +209,25 @@ abstract class KeyExchangeBase
                 final BigInteger g = buffer.getBigInteger();
                 final BigInteger y = buffer.getBigInteger();
 
-                publicKey = KeyPairDSA.createPublicKey(y, p, q, g);
-                break;
+                return KeyPairDSA.createPublicKey(y, p, q, g);
             }
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384:
             case HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256: {
                 buffer.skipString(/* nistName */);
                 final ECPoint w = ECKeyType.decodePoint(buffer.getString());
-                publicKey = KeyPairECDSA.createPublicKey(
+                return KeyPairECDSA.createPublicKey(
                         ECKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm).curveName, w);
-                break;
             }
             case HostKeyAlgorithm.SSH_ED25519:
             case HostKeyAlgorithm.SSH_ED448: {
                 final byte[] key = buffer.getString();
-                publicKey = KeyPairEdDSA.createPublicKey(
+                return KeyPairEdDSA.createPublicKey(
                         EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm).curveName, key);
-                break;
             }
             default: {
                 throw new NoSuchAlgorithmException(hostKeyAlgorithm);
             }
-        }
-
-        md.update(hash, 0, hash.length);
-        H = md.digest();
-
-        sig.initVerify(publicKey);
-        sig.update(H);
-
-        if (!sig.verify(sig_of_H)) {
-            throw new InvalidKeyException("KeyExchange#verify failed"
-                                                  + ", hostKeyAlg=" + hostKeyAlgorithm
-                                                  + ", sshSigAlg=" + sshSignatureAlgorithm);
         }
     }
 

@@ -2,13 +2,13 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.transport.Packet;
-import com.hardbacknutter.sshclient.transport.PacketIO;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.transport.Packet;
+import com.hardbacknutter.sshclient.transport.PacketIO;
 
 public interface KeyExchange {
 
@@ -36,9 +36,9 @@ public interface KeyExchange {
      * @param I_C the client's SSH_MSG_KEXINIT payload.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7">
-     * RFC 4253 SSH Transport Layer Protocol, 7. Key Exchange</a>
+     *         RFC 4253 SSH Transport Layer Protocol, 7. Key Exchange</a>
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-8">
-     * RFC 4253 SSH Transport Layer Protocol, 8. Diffie-Hellman Key Exchange</a>
+     *         RFC 4253 SSH Transport Layer Protocol, 8. Diffie-Hellman Key Exchange</a>
      */
     void init(@NonNull SshClientConfig config,
               @NonNull PacketIO io,
@@ -76,7 +76,7 @@ public interface KeyExchange {
     boolean isExpecting(byte command);
 
     /**
-     * Returns K_S, the server's public host key.
+     * Get K_S, the server's public host key.
      *
      * @return an ssh string
      */
@@ -84,19 +84,29 @@ public interface KeyExchange {
     byte[] getK_S();
 
     /**
-     * Returns K, the shared secret:
+     * Get K, the shared secret; as a raw byte[].
+     * <p>
+     * The format may be different (mpint, ssh-string,...) in individual implementations,
+     * but <strong>MUST</strong> be returned as a raw byte[].
      *
-     * @return an ssh mpint
+     * @return the shared secret; as a raw byte[].
      */
     @NonNull
     byte[] getK();
 
     /**
-     * Returns H, the hash.
+     * Get H, the hash, as a raw byte[].
+     *
+     * @return H
      */
     @NonNull
     byte[] getH();
 
+    /**
+     * Get the hash generator as used during KEX.
+     *
+     * @return MessageDigest
+     */
     @NonNull
     MessageDigest getMessageDigest();
 

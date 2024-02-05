@@ -510,7 +510,7 @@ public class KexDelegate {
 
         session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_NEWKEYS sent");
 
-        return new KexKeys(kex.getK(), kex.getH(), kex.getMessageDigest());
+        return new KexKeys(kex.getMessageDigest(), kex.getK(), kex.getH());
     }
 
     @NonNull

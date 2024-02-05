@@ -65,7 +65,7 @@ public class KexProposal {
     public static final String PROPOSAL_LANG_STOC = "lang.s2c";
 
     /**
-     * KeyExchange implementations to use for DH and ECDH
+     * KeyExchange implementations to use.
      */
     public static final String KEY_AGREEMENT_DH = "dh";
     public static final String KEY_AGREEMENT_ECDH = "ecdh-sha2-nistp";

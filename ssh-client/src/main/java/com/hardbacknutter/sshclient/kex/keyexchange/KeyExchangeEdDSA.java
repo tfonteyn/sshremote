@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -55,19 +56,22 @@ public class KeyExchangeEdDSA
 
     private XDH agreement;
 
+    /** Q_C, client's ephemeral public key octet string. */
+    private byte[] Q_C;
+
     /**
      * @param digestAlgorithm standard JDK digest algorithm name
      * @param xdhCurveName    {@link XDHParameterSpec#X25519} or
      *                        {@link XDHParameterSpec#X448}
-     * @param oid             {@link EdECObjectIdentifiers#id_X25519} or
-     *                        {@link EdECObjectIdentifiers#id_X448}
      * @param keySize         {@link X25519PublicKeyParameters#KEY_SIZE} or
      *                        {@link X448PublicKeyParameters#KEY_SIZE}
+     * @param oid             {@link EdECObjectIdentifiers#id_X25519} or
+     *                        {@link EdECObjectIdentifiers#id_X448}
      */
     public KeyExchangeEdDSA(@NonNull final String digestAlgorithm,
                             @NonNull final String xdhCurveName,
-                            @NonNull final ASN1ObjectIdentifier oid,
-                            final int keySize) {
+                            final int keySize,
+                            @NonNull final ASN1ObjectIdentifier oid) {
         super(digestAlgorithm);
         this.xdhCurveName = xdhCurveName;
         this.oid = oid;
@@ -95,10 +99,12 @@ public class KeyExchangeEdDSA
             initKeyAgreement(config);
         }
 
+        Q_C = agreement.getQ();
+
         // byte     SSH_MSG_KEX_ECDH_INIT
         // string   Q_C, client's ephemeral public key octet string
         final Packet packet = new Packet(SSH_MSG_KEX_ECDH_INIT)
-                .putString(agreement.getQ());
+                .putString(Q_C);
         io.write(packet);
 
         getLogger().log(Logger.DEBUG, () ->
@@ -130,8 +136,7 @@ public class KeyExchangeEdDSA
 
             agreement.validate(q_s);
 
-            K = agreement.getSharedSecret(q_s);
-            K = trimZeroes(K);
+            K = encodeAsMPInt(trimZeroes(agreement.getSharedSecret(q_s)));
 
             //The hash H is computed as the HASH hash of the concatenation of the
             //following:
@@ -149,12 +154,17 @@ public class KeyExchangeEdDSA
                     .putString(I_C)
                     .putString(I_S)
                     .putString(K_S)
-                    .putString(agreement.getQ())
+                    .putString(Q_C)
                     .putString(q_s)
-                    .putMPInt(K)
+                    // pre-encoded as a raw byte[]
+                    .putBytes(K)
                     .getPayload();
 
-            verify(exchangeHash, sig_of_H);
+            final MessageDigest md = getMessageDigest();
+            md.update(exchangeHash, 0, exchangeHash.length);
+            H = md.digest();
+
+            verifyHashSignature(sig_of_H);
 
         } else {
             throw new KexProtocolException(state, command);

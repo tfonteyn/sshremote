@@ -674,7 +674,7 @@ public final class SessionImpl
           Integrity key server to client:  HASH (K || H || "F" || session_id)
         */
         final Buffer buffer = new Buffer()
-                .putMPInt(K)
+                .putBytes(K)
                 .putBytes(H);
 
         // The location for the 'A', 'B', ... character used

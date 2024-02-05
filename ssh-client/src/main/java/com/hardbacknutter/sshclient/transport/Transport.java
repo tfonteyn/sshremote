@@ -66,8 +66,12 @@ public abstract class Transport {
      * ...
      * key = K1 || K2 || K3 || ...
      *
+     * @param md the hash generator as used during KEX.
+     * @param K  the shared secret; pre-encoded as a raw byte[]
+     * @param H  the hash; pre-encoded as a raw byte[]
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7.2">
-     * RFC 4253 SSH Transport Layer Protocol, section 7.2. Output from Key Exchange</a>
+     *         RFC 4253 SSH Transport Layer Protocol, section 7.2. Output from Key Exchange</a>
      */
     private static byte[] expandKey(@NonNull final MessageDigest md,
                                     @NonNull final byte[] K,
@@ -79,7 +83,7 @@ public abstract class Transport {
 
         while (result.length < requiredLength) {
             buffer.reset()
-                  .putMPInt(K)
+                  .putBytes(K)
                   .putBytes(H)
                   .putBytes(result);
             md.update(buffer.data, 0, buffer.writeOffset);
@@ -98,6 +102,10 @@ public abstract class Transport {
 
     /**
      * Initialise cipher and MAC.
+     *
+     * @param md the hash generator as used during KEX.
+     * @param K  the shared secret; pre-encoded as a raw byte[]
+     * @param H  the hash; pre-encoded as a raw byte[]
      */
     void initEncryption(@NonNull final KexAgreement agreement,
                         @NonNull final MessageDigest md,

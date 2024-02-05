@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -185,8 +186,8 @@ public class KeyExchangeDHGroupExchange
                 final byte[] sig_of_H = receivedPacket.getString();
 
                 agreement.validate(e, f);
-                K = agreement.getSharedSecret(f);
-                K = trimZeroes(K);
+
+                K = encodeAsMPInt(trimZeroes(agreement.getSharedSecret(f)));
 
                 // https://datatracker.ietf.org/doc/html/rfc4419#section-3
                 //The hash H is computed as the HASH hash of the concatenation of the
@@ -217,10 +218,15 @@ public class KeyExchangeDHGroupExchange
                         .putMPInt(g)
                         .putMPInt(e)
                         .putMPInt(f)
-                        .putMPInt(K)
+                        // pre-encoded as a raw byte[]
+                        .putBytes(K)
                         .getPayload();
 
-                verify(exchangeHash, sig_of_H);
+                final MessageDigest md = getMessageDigest();
+                md.update(exchangeHash, 0, exchangeHash.length);
+                H = md.digest();
+
+                verifyHashSignature(sig_of_H);
                 break;
             }
 

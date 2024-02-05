@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.security.spec.ECPoint;
 
 import com.hardbacknutter.sshclient.Logger;
@@ -48,6 +49,9 @@ public class KeyExchangeECDH
     private final ECKeyType ecType;
     private ECDH agreement;
 
+    /** Q_C, client's ephemeral public key octet string. */
+    private byte[] Q_C;
+
     /**
      * Constructor.
      *
@@ -81,10 +85,12 @@ public class KeyExchangeECDH
             initKeyAgreement(config);
         }
 
+        Q_C = agreement.getQ();
+
         // byte     SSH_MSG_KEX_ECDH_INIT
         // string   Q_C, client's ephemeral public key octet string
         final Packet packet = new Packet(SSH_MSG_KEX_ECDH_INIT)
-                .putString(agreement.getQ());
+                .putString(Q_C);
         io.write(packet);
 
         getLogger().log(Logger.DEBUG, () ->
@@ -114,16 +120,17 @@ public class KeyExchangeECDH
             final byte[] q_s = receivedPacket.getString();
             final byte[] sig_of_H = receivedPacket.getString();
 
+            final ECPoint w = ECKeyType.decodePoint(q_s);
+
             // RFC 5656,
             // 4. ECDH Key Exchange
             //   All elliptic curve public keys MUST be validated after they are
             //   received.  An example of a validation algorithm can be found in
             //   Section 3.2.2 of [SEC1].  If a key fails validation,
             //   the key exchange MUST fail.
-            final ECPoint w = ECKeyType.decodePoint(q_s);
             agreement.validate(w);
-            K = agreement.getSharedSecret(w);
-            K = trimZeroes(K);
+
+            K = encodeAsMPInt(trimZeroes(agreement.getSharedSecret(w)));
 
             //The hash H is computed as the HASH hash of the concatenation of the
             //following:
@@ -141,12 +148,17 @@ public class KeyExchangeECDH
                     .putString(I_C)
                     .putString(I_S)
                     .putString(K_S)
-                    .putString(agreement.getQ())
+                    .putString(Q_C)
                     .putString(q_s)
-                    .putMPInt(K)
+                    // pre-encoded as a raw byte[]
+                    .putBytes(K)
                     .getPayload();
 
-            verify(exchangeHash, sig_of_H);
+            final MessageDigest md = getMessageDigest();
+            md.update(exchangeHash, 0, exchangeHash.length);
+            H = md.digest();
+
+            verifyHashSignature(sig_of_H);
 
         } else {
             throw new KexProtocolException(state, command);
