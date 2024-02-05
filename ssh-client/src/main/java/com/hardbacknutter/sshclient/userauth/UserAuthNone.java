@@ -55,18 +55,16 @@ public class UserAuthNone
 
         session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_SERVICE_REQUEST sent");
 
-        // receive
+        // If the server supports the service (and permits the client to use it),
+        // it MUST respond with the following:
+        //
         // byte      SSH_MSG_SERVICE_ACCEPT(6)
         // string    service name
         packet = io.read();
-        final boolean serviceAccepted =
-                (packet.getCommand() == SshConstants.SSH_MSG_SERVICE_ACCEPT);
 
-        session.getLogger().log(Logger.DEBUG, () ->
-                "SSH_MSG_SERVICE_ACCEPT received; serviceAccepted: " + serviceAccepted);
-
-        if (!serviceAccepted) {
-            return false;
+        if (packet.getCommand() != SshConstants.SSH_MSG_SERVICE_ACCEPT) {
+            throw new SshAuthException("UserAuthNone received unexpected command="
+                                       + packet.getCommand());
         }
 
         // byte      SSH_MSG_USERAUTH_REQUEST(50)
