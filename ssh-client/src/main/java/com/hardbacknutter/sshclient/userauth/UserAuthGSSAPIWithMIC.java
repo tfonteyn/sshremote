@@ -3,6 +3,12 @@ package com.hardbacknutter.sshclient.userauth;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.transport.Packet;
@@ -10,12 +16,6 @@ import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.SshConstants;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * Implements the User Authentication method {@code gssapi-with-mic}
@@ -265,10 +265,10 @@ public class UserAuthGSSAPIWithMIC
 
         } else if (command == SshConstants.SSH_MSG_USERAUTH_FAILURE) {
             packet.startReadingPayload();
-            packet.getByte(); // command
-            final byte[] authMethodsToTryNext = packet.getString();
-            final boolean partial_success = packet.getBoolean();
-            if (partial_success) {
+            packet.getByte(/* command */);
+            final String authMethodsToTryNext = packet.getJString();
+            final boolean partialSuccess = packet.getBoolean();
+            if (partialSuccess) {
                 throw new SshPartialAuthException(METHOD, authMethodsToTryNext);
             }
         }

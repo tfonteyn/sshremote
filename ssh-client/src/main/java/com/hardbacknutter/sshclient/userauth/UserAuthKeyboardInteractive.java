@@ -98,9 +98,9 @@ public class UserAuthKeyboardInteractive
                 } else if (command == SshConstants.SSH_MSG_USERAUTH_FAILURE) {
                     packet.startReadingPayload();
                     packet.getByte(/* command */);
-                    final byte[] authMethodsToTryNext = packet.getString();
-                    final boolean partial_success = packet.getBoolean();
-                    if (partial_success) {
+                    final String authMethodsToTryNext = packet.getJString();
+                    final boolean partialSuccess = packet.getBoolean();
+                    if (partialSuccess) {
                         throw new SshPartialAuthException(METHOD, authMethodsToTryNext);
                     }
 

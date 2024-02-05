@@ -304,8 +304,8 @@ public class UserAuthPublicKey
                     }
                     case SshConstants.SSH_MSG_USERAUTH_FAILURE: {
                         packet.startReadingPayload();
-                        packet.getByte(); // command
-                        final byte[] authMethodsToTryNext = packet.getString();
+                        packet.getByte(/* command */);
+                        final String authMethodsToTryNext = packet.getJString();
                         final boolean partialSuccess = packet.getBoolean();
                         if (partialSuccess) {
                             session.getLogger().log(Logger.DEBUG, () ->

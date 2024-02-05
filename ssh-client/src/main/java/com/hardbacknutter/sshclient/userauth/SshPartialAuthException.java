@@ -2,25 +2,24 @@ package com.hardbacknutter.sshclient.userauth;
 
 import androidx.annotation.NonNull;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 public class SshPartialAuthException
         extends SshAuthException {
 
-    private static final long serialVersionUID = 7869541420233336760L;
+    private static final long serialVersionUID = 4651271794882031392L;
     @NonNull
-    private final String methods;
+    private final List<String> methods;
 
     SshPartialAuthException(@NonNull final String method,
-                            @NonNull final byte[] methods) {
+                            @NonNull final String methods) {
         super(method);
-        this.methods = new String(methods, StandardCharsets.UTF_8);
+        this.methods = Arrays.asList(methods.split(","));
     }
 
     @NonNull
     public List<String> getMethods() {
-        return Arrays.asList(methods.split(","));
+        return methods;
     }
 }
