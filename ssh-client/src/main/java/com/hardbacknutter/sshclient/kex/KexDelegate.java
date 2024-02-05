@@ -352,9 +352,8 @@ public class KexDelegate {
         Objects.requireNonNull(kexProposal);
 
         if (initialKex) {
-            //URGENT: send ext-info support string
-//            // Tell the server we MAY support (some) extensions
-//            kexProposal.addKexExtension(EXT_INFO_C);
+            // Tell the server we MAY support (some) extensions
+            kexProposal.addKexExtension(EXT_INFO_C);
 
             // Tell the server we support the StrictKex feature.
             if (strictKexEnabled || strictKexRequired) {
