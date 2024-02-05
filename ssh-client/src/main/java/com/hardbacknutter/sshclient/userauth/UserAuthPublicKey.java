@@ -201,6 +201,9 @@ public class UserAuthPublicKey
      * byte      SSH_MSG_USERAUTH_REQUEST
      * ...
      *
+     * @param algorithms the public-key algorithms we support
+     * @param publicKeyBlob our public key to send to the remote
+     *
      * @return the algorithm name for which we successfully pre-authenticated,
      *         or {@code null} if pre-auth failed.
      */
@@ -302,7 +305,6 @@ public class UserAuthPublicKey
                     case SshConstants.SSH_MSG_USERAUTH_FAILURE: {
                         packet.startReadingPayload();
                         packet.getByte(); // command
-
                         final byte[] authMethodsToTryNext = packet.getString();
                         final boolean partialSuccess = packet.getBoolean();
                         if (partialSuccess) {
