@@ -781,6 +781,18 @@ public final class SessionImpl
             //noinspection ConstantConditions
             s2c.read(packet);
 
+            //noinspection SwitchStatementWithoutDefaultBranch
+            switch (packet.getCommand()) {
+                case SshConstants.SSH_MSG_DISCONNECT: {
+                    packet.startReadingPayload();
+                    packet.getByte(/* command */);
+                    final int reasonCode = packet.getInt();
+                    final String description = packet.getJString();
+                    packet.skipString(/* language_tag */);
+                    throw new DisconnectException(reasonCode, description);
+                }
+            }
+
             if (kexDelegate != null && kexDelegate.isInitialKex() && kexDelegate.isDoStrictKex()) {
                 // If we're doing "strict KEX" during the initial kex-exchange
                 // then we MUST ignore all packets which are not strictly required by KEX
@@ -794,14 +806,6 @@ public final class SessionImpl
 
             // These need to be handled when 'read' is called from anywhere at all.
             switch (packet.getCommand()) {
-                case SshConstants.SSH_MSG_DISCONNECT: {
-                    packet.startReadingPayload();
-                    packet.getByte(/* command */);
-                    final int reasonCode = packet.getInt();
-                    final String description = packet.getJString();
-                    packet.skipString(/* language_tag */);
-                    throw new DisconnectException(reasonCode, description);
-                }
                 case SshConstants.SSH_MSG_IGNORE: {
                     // loop and get the next packet
                     break;
