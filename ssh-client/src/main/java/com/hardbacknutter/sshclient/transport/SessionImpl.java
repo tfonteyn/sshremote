@@ -786,7 +786,9 @@ public final class SessionImpl
                 // then we MUST ignore all packets which are not strictly required by KEX
                 // So quit the while loop, and return the packet we just read immediately.
                 // If it's unexpected, it will cause the connection to terminate.
-                getLogger().log(Logger.DEBUG, () -> "read() during initial/strict KEX");
+                getLogger().log(Logger.DEBUG, () ->
+                        "read() during initial/strict KEX: command=" + packet.getCommand());
+                // quit the 'while(!done)' loop
                 break;
             }
 
@@ -811,7 +813,6 @@ public final class SessionImpl
                         final int packetId = packet.getInt();
                         return "SSH_MSG_UNIMPLEMENTED: " + packetId;
                     });
-
                     // loop and get the next packet
                     break;
                 }
@@ -848,6 +849,7 @@ public final class SessionImpl
                     break;
                 }
                 default:
+                    // quit the 'while(!done)' loop
                     done = true;
                     break;
             }
@@ -1082,7 +1084,12 @@ public final class SessionImpl
         disconnect();
     }
 
-    public void handleExtInfoPacket(@NonNull final Packet packet)
+    /**
+     * Parse the {@link SshConstants#SSH_MSG_EXT_INFO} package.
+     *
+     * @param packet to process
+     */
+    private void handleExtInfoPacket(@NonNull final Packet packet)
             throws IOException {
         getLogger().log(Logger.DEBUG, () -> "Received SSH_MSG_EXT_INFO packet");
 
@@ -1092,6 +1099,7 @@ public final class SessionImpl
         for (long i = 0; i < nrOfExtensions; i++) {
             final String extName = packet.getJString();
             final String extValue = packet.getJString();
+
             if (SshConstants.EXT_INFO_SERVER_SIG_ALGS.equals(extName)) {
                 serverSigAlgs = Arrays.asList(extValue.split(","));
             }
