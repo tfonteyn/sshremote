@@ -28,6 +28,7 @@ import com.hardbacknutter.sshclient.compression.SshInflaterImpl;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.kex.KexProposal;
+import com.hardbacknutter.sshclient.kex.SNTRUP761;
 import com.hardbacknutter.sshclient.kex.keyagreements.DH;
 import com.hardbacknutter.sshclient.kex.keyagreements.DHImpl;
 import com.hardbacknutter.sshclient.kex.keyagreements.ECDH;
@@ -44,6 +45,7 @@ import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHGroup17;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHGroup18;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHGroupExchange;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeECDH;
+import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeECDHKEM;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeEdDSA;
 import com.hardbacknutter.sshclient.keypair.ECKeyType;
 import com.hardbacknutter.sshclient.macs.SshMac;
@@ -237,6 +239,13 @@ public final class ImplementationFactory {
                 case KeyExchangeConstants.ECDH_SHA_2_NISTP_521:
                     return new KeyExchangeECDH("SHA-512", ECKeyType.ECDSA_SHA2_NISTP521);
 
+                case KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM: {
+                    return new KeyExchangeECDHKEM("SHA-512",
+                                                  XDHParameterSpec.X25519,
+                                                  X25519PublicKeyParameters.KEY_SIZE,
+                                                  EdECObjectIdentifiers.id_X25519,
+                                                  new SNTRUP761());
+                }
                 case KeyExchangeConstants.CURVE_25519_SHA_256:
                 case KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG:
                     return new KeyExchangeEdDSA("SHA-256",
