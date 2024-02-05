@@ -300,21 +300,14 @@ public class KexDelegate {
             throw new KexProtocolException(SshConstants.SSH_MSG_NEWKEYS, confirmation);
         }
 
-        //URGENT: send ext-info packet
-//        if (initialKex && serverSupportsExtInfo) {
-//            // https://datatracker.ietf.org/doc/html/rfc8308#section-2.4
-//            // MUST send it as the next packet following the client's first
-//            // SSH_MSG_NEWKEYS message to the server.
-//            sendExtInfo();
-//            packet = session.read();
-//            if (packet.getCommand() != SshConstants.SSH_MSG_EXT_INFO) {
-//                throw new KexProtocolException(SshConstants.SSH_MSG_EXT_INFO, packet.getCommand());
-//            }
-//            session.handleExtInfoPacket(packet);
-//        }
+        if (initialKex && serverSupportsExtInfo) {
+            // https://datatracker.ietf.org/doc/html/rfc8308#section-2.4
+            // MUST send it as the next packet following the client's first
+            // SSH_MSG_NEWKEYS message to the server.
+            sendExtInfo();
+        }
 
         initialKex = false;
-
         return keys;
     }
 
