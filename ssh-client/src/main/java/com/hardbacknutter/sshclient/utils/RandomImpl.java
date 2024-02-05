@@ -2,9 +2,9 @@ package com.hardbacknutter.sshclient.utils;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.Random;
-
 import java.security.SecureRandom;
+
+import com.hardbacknutter.sshclient.Random;
 
 public class RandomImpl
         implements Random {
@@ -19,15 +19,17 @@ public class RandomImpl
     }
 
     @Override
-    public void fill(@NonNull final byte[] buf,
-                     final int start,
-                     final int len) {
+    @NonNull
+    public byte[] nextBytes(final int length) {
+        final byte[] buf = new byte[length];
         synchronized (random) {
-            if (len > tmp.length) {
-                tmp = new byte[len];
+            if (buf.length > tmp.length) {
+                tmp = new byte[buf.length];
             }
             random.nextBytes(tmp);
-            System.arraycopy(tmp, 0, buf, start, len);
+            System.arraycopy(tmp, 0, buf, 0, buf.length);
         }
+        return buf;
     }
+
 }

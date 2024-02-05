@@ -37,23 +37,5 @@ public interface Random {
      * @return a <strong>new</strong> byte array with random data
      */
     @NonNull
-    default byte[] nextBytes(final int length) {
-        final byte[] buf = new byte[length];
-        fill(buf, 0, buf.length);
-        return buf;
-    }
-
-    /**
-     * Fills a segment of a byte array with random bits.
-     * Implementations <strong>must</strong> be thread safe.
-     *
-     * @param buf    the array to put the random data into.
-     * @param start  the position in the array from where on the random data
-     *               should be put.
-     * @param length the length of the segment to be filled with random data,
-     *               in bytes. There will be {@code 8 * length} random bits generated.
-     */
-    void fill(@NonNull byte[] buf,
-              int start,
-              int length);
+    byte[] nextBytes(final int length);
 }
