@@ -847,13 +847,30 @@ public final class SessionImpl
                     done = true;
                     break;
                 }
+                case SshConstants.SSH_MSG_EXT_INFO: {
+                    if (kexDelegate != null && kexDelegate.isInKeyExchange()) {
+                        getLogger().log(Logger.DEBUG, () ->
+                                "SSH_MSG_EXT_INFO ignored; still in KeyExchange stage");
+                        break;
+                    }
+
+                    if (authenticated) {
+                        getLogger().log(Logger.DEBUG, () ->
+                                "SSH_MSG_EXT_INFO ignored; already authenticated");
+                        break;
+                    }
+
+                    handleExtInfoPacket(packet);
+                    // loop and get the next packet
+                    break;
+                }
                 case SshConstants.SSH_MSG_CHANNEL_WINDOW_ADJUST: {
                     handleChannelPacket(packet);
                     // loop and get the next packet
                     break;
                 }
                 default:
-                    // quit the 'while(!done)' loop
+                    // quit the 'while(!done)' loop and let the caller handle the Packet
                     done = true;
                     break;
             }
@@ -989,25 +1006,6 @@ public final class SessionImpl
                             takeKeysIntoUse(keys);
                             break;
                         }
-                        case SshConstants.SSH_MSG_EXT_INFO: {
-                            if (kexDelegate != null) {
-                                if (kexDelegate.isInKeyExchange()) {
-                                    getLogger().log(Logger.DEBUG, () ->
-                                            "SSH_MSG_EXT_INFO ignored; still in KeyExchange stage");
-                                    break;
-                                }
-                            }
-
-                            if (authenticated) {
-                                getLogger().log(Logger.DEBUG, () ->
-                                        "SSH_MSG_EXT_INFO ignored; already authenticated");
-                                break;
-                            }
-
-                            handleExtInfoPacket(packet);
-                            break;
-                        }
-
                         case SshConstants.SSH_MSG_CHANNEL_REQUEST:
                         case SshConstants.SSH_MSG_CHANNEL_DATA:
                         case SshConstants.SSH_MSG_CHANNEL_EXTENDED_DATA:
