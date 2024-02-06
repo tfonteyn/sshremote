@@ -28,7 +28,7 @@ import com.hardbacknutter.sshclient.compression.SshInflaterImpl;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.kex.KexProposal;
-import com.hardbacknutter.sshclient.kex.SNTRUP761;
+import com.hardbacknutter.sshclient.kex.kem.SNTRUP761;
 import com.hardbacknutter.sshclient.kex.keyagreements.DH;
 import com.hardbacknutter.sshclient.kex.keyagreements.DHImpl;
 import com.hardbacknutter.sshclient.kex.keyagreements.ECDH;

@@ -1,6 +1,11 @@
-package com.hardbacknutter.sshclient.kex;
+package com.hardbacknutter.sshclient.kex.kem;
 
-public interface SNTRU {
+import androidx.annotation.NonNull;
+
+/**
+ * Key Encapsulation Mechanism.
+ */
+public interface KEM {
 
     void init();
 
@@ -10,5 +15,6 @@ public interface SNTRU {
 
     int getEncapsulationLength();
 
+    @NonNull
     byte[] extractSecret(byte[] encapsulation);
 }

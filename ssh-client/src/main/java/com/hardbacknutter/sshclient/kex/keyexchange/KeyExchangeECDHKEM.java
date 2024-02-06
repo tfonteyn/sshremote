@@ -10,7 +10,7 @@ import java.security.MessageDigest;
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.kex.KexProtocolException;
-import com.hardbacknutter.sshclient.kex.SNTRU;
+import com.hardbacknutter.sshclient.kex.kem.KEM;
 import com.hardbacknutter.sshclient.kex.keyagreements.XDH;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.PacketIO;
@@ -25,11 +25,7 @@ import org.bouncycastle.jcajce.spec.XDHParameterSpec;
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-josefsson-ntruprime-ssh-02">
  *         draft-josefsson-ntruprime-ssh-02</a>
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc5656#section-7">
- *         RFC 5656, Elliptic Curve Algorithm Integration</a>
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc5656#section-10.1">
- *         RFC 3526 MODP Diffie-Hellman groups for Internet Key Exchange (IKE),
- *         section 10.1 Required Curves</a>
+ * @see KeyExchangeECDH
  */
 public class KeyExchangeECDHKEM
         extends KeyExchangeBase {
@@ -57,7 +53,7 @@ public class KeyExchangeECDHKEM
     private final ASN1ObjectIdentifier oid;
     private final int keySize;
     @NonNull
-    private final SNTRU sntru;
+    private final KEM kem;
     private XDH agreement;
 
     /** Q_C, client's ephemeral public key octet string. */
@@ -73,18 +69,18 @@ public class KeyExchangeECDHKEM
      * @param xdhCurveName    {@link XDHParameterSpec#X25519}
      * @param keySize         {@link X25519PublicKeyParameters#KEY_SIZE}
      * @param oid             {@link EdECObjectIdentifiers#id_X25519}
-     * @param sntru           new instance
+     * @param kem             new instance
      */
     public KeyExchangeECDHKEM(@NonNull final String digestAlgorithm,
                               @NonNull final String xdhCurveName,
                               final int keySize,
                               @NonNull final ASN1ObjectIdentifier oid,
-                              @NonNull final SNTRU sntru) {
+                              @NonNull final KEM kem) {
         super(digestAlgorithm);
         this.xdhCurveName = xdhCurveName;
         this.keySize = keySize;
         this.oid = oid;
-        this.sntru = sntru;
+        this.kem = kem;
     }
 
     @Override
@@ -94,7 +90,7 @@ public class KeyExchangeECDHKEM
         agreement = ImplementationFactory.getXDHKeyAgreement(config);
         agreement.init(xdhCurveName, oid, keySize);
 
-        sntru.init();
+        kem.init();
     }
 
     @Override
@@ -110,11 +106,11 @@ public class KeyExchangeECDHKEM
             initKeyAgreement(config);
         }
 
-        // Q_C is the concatenation of SNTRU and XDH Q_C
-        final int sntruPublicKeyLength = sntru.getPublicKeyLength();
-        Q_C = new byte[sntruPublicKeyLength + keySize];
-        System.arraycopy(sntru.getPublicKey(), 0, Q_C, 0, sntruPublicKeyLength);
-        System.arraycopy(agreement.getQ(), 0, Q_C, sntruPublicKeyLength, keySize);
+        // Q_C is the concatenation of KEM and XDH Q_C
+        final int kemPublicKeyLength = kem.getPublicKeyLength();
+        Q_C = new byte[kemPublicKeyLength + keySize];
+        System.arraycopy(kem.getPublicKey(), 0, Q_C, 0, kemPublicKeyLength);
+        System.arraycopy(agreement.getQ(), 0, Q_C, kemPublicKeyLength, keySize);
 
         // byte     SSH_MSG_KEX_ECDH_INIT
         // string   Q_C, client's ephemeral public key octet string
@@ -141,7 +137,7 @@ public class KeyExchangeECDHKEM
         if (command == SSH_MSG_KEX_ECDH_REPLY) {
             state = STATE_END;
 
-            final int encapsulationLength = sntru.getEncapsulationLength();
+            final int encapsulationLength = kem.getEncapsulationLength();
 
             // byte     SSH_MSG_KEX_ECDH_REPLY
             // string   K_S, server's public host key
@@ -150,16 +146,16 @@ public class KeyExchangeECDHKEM
             K_S = receivedPacket.getString();
             final byte[] q_s = receivedPacket.getString();
             if (q_s.length != encapsulationLength + keySize) {
-                throw new InvalidKeyException("q_s length mismatch");
+                throw new InvalidKeyException("Q_S length mismatch");
             }
 
             final byte[] sig_of_H = receivedPacket.getString();
 
-            // split the q_s blob into its components
-            final byte[] encapsulation = new byte[encapsulationLength];
-            final byte[] xecPublicKey = new byte[keySize];
-            System.arraycopy(q_s, 0, encapsulation, 0, encapsulationLength);
-            System.arraycopy(q_s, encapsulationLength, xecPublicKey, 0, keySize);
+            // split the Q_S blob into its components
+            final byte[] kemPublicKey = new byte[encapsulationLength];
+            final byte[] xdhPublicKey = new byte[keySize];
+            System.arraycopy(q_s, 0, kemPublicKey, 0, encapsulationLength);
+            System.arraycopy(q_s, encapsulationLength, xdhPublicKey, 0, keySize);
 
             // RFC 5656,
             // 4. ECDH Key Exchange
@@ -167,13 +163,13 @@ public class KeyExchangeECDHKEM
             //   received.  An example of a validation algorithm can be found in
             //   Section 3.2.2 of [SEC1].  If a key fails validation,
             //   the key exchange MUST fail.
-            agreement.validate(xecPublicKey);
+            agreement.validate(xdhPublicKey);
 
             final MessageDigest md = getMessageDigest();
-            // Create the shared secret based on SNTRU and XDC
-            byte[] tmp = sntru.extractSecret(encapsulation);
+            // Create the shared secret based on KEM and XDC
+            byte[] tmp = kem.extractSecret(kemPublicKey);
             md.update(tmp, 0, tmp.length);
-            tmp = trimZeroes(agreement.getSharedSecret(xecPublicKey));
+            tmp = trimZeroes(agreement.getSharedSecret(xdhPublicKey));
             md.update(tmp, 0, tmp.length);
             tmp = md.digest();
 
