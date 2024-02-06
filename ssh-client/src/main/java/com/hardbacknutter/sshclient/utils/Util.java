@@ -19,9 +19,7 @@ public final class Util {
     }
 
     /**
-     * Replacement for {@code Arrays.equals(a,b);}
-     * <p>
-     * The need for speed (might) matters for MAC.
+     * Timing safe replacement for {@code Arrays.equals(a,b);}
      */
     public static boolean arraysEquals(@NonNull final byte[] a,
                                        @NonNull final byte[] b) {
