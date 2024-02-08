@@ -12,7 +12,7 @@ using proper Java JDK and [Bouncycastle](https://bouncycastle.org) API's.
 
 [Ciphers](https://github.com/tfonteyn/sshremote/blob/dev/ssh-client/src/main/java/com/hardbacknutter/sshclient/ciphers/SshCipherConstants.java)
 
-**Compression**:  none, zlib, zlib\@openssh.com
+**Compression**:  none, zlib, zlib&#064;openssh.com
 
 [Hostkey formats](https://github.com/tfonteyn/sshremote/blob/dev/ssh-client/src/main/java/com/hardbacknutter/sshclient/hostkey/HostKeyAlgorithm.java)
 
