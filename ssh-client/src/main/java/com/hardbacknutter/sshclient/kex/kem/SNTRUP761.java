@@ -73,7 +73,8 @@ public class SNTRUP761
     }
 
     @Override
-    public byte @NonNull [] extractSecret(final byte[] encapsulation) {
+    @NonNull
+    public byte[] extractSecret(final byte[] encapsulation) {
         return extractor.extractSecret(encapsulation);
     }
 }
