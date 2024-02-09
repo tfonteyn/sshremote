@@ -1,6 +1,7 @@
 <!--suppress LongLine -->
 <resources>
     <string name="app_name">SSH Remote</string>
+    <string name="library_name">ssh-client</string>
 
     <!-- Strings used for fragment navigation -->
     <string name="lbl_fragment_main">SSH Remote</string>
