@@ -38,12 +38,12 @@
     <fragment
         android:id="@+id/editHostFragment"
         android:name="com.hardbacknutter.sshremote.EditHostFragment"
-        android:label="@string/lbl_fragment_edit_host"></fragment>
+        android:label="@string/lbl_fragment_edit_host" />
 
     <fragment
         android:id="@+id/editCommandFragment"
         android:name="com.hardbacknutter.sshremote.EditCommandFragment"
-        android:label="@string/lbl_fragment_edit_command"></fragment>
+        android:label="@string/lbl_fragment_edit_command" />
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.hardbacknutter.sshremote.SettingsFragment"
