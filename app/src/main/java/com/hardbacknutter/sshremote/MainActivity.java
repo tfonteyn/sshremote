@@ -1,5 +1,7 @@
 package com.hardbacknutter.sshremote;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +20,8 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import com.hardbacknutter.sshclient.SshClientFactory;
 import com.hardbacknutter.sshremote.databinding.ActivityMainBinding;
 
 public class MainActivity
@@ -62,9 +66,22 @@ public class MainActivity
         final int itemId = item.getItemId();
 
         if (itemId == R.id.MENU_ABOUT) {
+            String message;
+            try {
+                final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                message = getString(R.string.app_name) + ": "
+                          + pInfo.versionName
+                          + '\n'
+                          + getString(R.string.library_name) + ": "
+                          + SshClientFactory.getVersionName();
+
+            } catch (@NonNull final PackageManager.NameNotFoundException e) {
+                message = "";
+            }
+
             new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.app_name)
-                    .setMessage(R.string.menu_about)
+                    .setMessage(message)
                     .create()
                     .show();
             return true;
@@ -76,22 +93,22 @@ public class MainActivity
     @Override
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(mNavController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+               || super.onSupportNavigateUp();
     }
 
-    public FloatingActionButton getFab() {
+    FloatingActionButton getFab() {
         return mVb.scrollUp;
     }
 
-    public BottomSheetBehavior<ConstraintLayout> getBottomSheetBehavior() {
+    BottomSheetBehavior<ConstraintLayout> getBottomSheetBehavior() {
         return mBottomSheetBehavior;
     }
 
-    public Button getBottomSheetButtonSave() {
+    Button getBottomSheetButtonSave() {
         return mVb.btnSave;
     }
 
-    public Button getBottomSheetButtonUndo() {
+    Button getBottomSheetButtonUndo() {
         return mVb.btnUndo;
     }
 }
