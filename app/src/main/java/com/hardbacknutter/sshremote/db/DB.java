@@ -21,7 +21,7 @@ public abstract class DB
 
     private static volatile DB instance;
 
-    private final Executor mExecutor = Executors.newSingleThreadExecutor();
+    private final Executor executor = Executors.newSingleThreadExecutor();
 
     @NonNull
     public static synchronized DB getInstance(@NonNull final Context context) {
@@ -41,7 +41,7 @@ public abstract class DB
 
     @NonNull
     public Executor getExecutor() {
-        return mExecutor;
+        return executor;
     }
 
     public abstract HostDao getHostDao();
