@@ -2,7 +2,6 @@ package com.hardbacknutter.sshremote;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,59 +20,58 @@ public class EditCommandViewModel
 
     static final String ARGS_ID = "id";
 
-    private final MutableLiveData<Command> mCommandLoaded = new MutableLiveData<>();
+    private final MutableLiveData<Command> commandLoaded = new MutableLiveData<>();
 
-    private Command mCommand;
-    private DB mDb;
+    private Command command;
+    private DB db;
 
     void init(@NonNull final Context context,
               @Nullable final Bundle args) {
-        if (mDb == null) {
-            mDb = DB.getInstance(context);
+        if (db == null) {
+            db = DB.getInstance(context);
 
             final int id = args == null ? 0 : args.getInt(ARGS_ID, 0);
-            Log.d("command", "id=" + id);
             if (id > 0) {
-                mDb.getExecutor().execute(() -> {
-                    mCommand = mDb.getCommandDao().findById(id);
-                    mCommandLoaded.postValue(mCommand);
+                db.getExecutor().execute(() -> {
+                    command = db.getCommandDao().findById(id);
+                    commandLoaded.postValue(command);
                 });
             } else {
-                mCommand = new Command();
-                mCommandLoaded.setValue(mCommand);
+                command = new Command();
+                commandLoaded.setValue(command);
             }
         }
     }
 
     @NonNull
     LiveData<Command> onConfigLoaded() {
-        return mCommandLoaded;
+        return commandLoaded;
     }
 
     void setSudo(final boolean isSudo) {
-        mCommand.isSudo = isSudo;
+        command.isSudo = isSudo;
     }
 
     void setSudoPassword(@NonNull final String password) {
-        mCommand.sudoPassword = password;
+        command.sudoPassword = password;
     }
 
     void setCommand(@NonNull final String cmd) {
-        mCommand.cmd = cmd;
+        command.cmd = cmd;
     }
 
     void setLabel(@NonNull final String label) {
-        mCommand.label = label;
+        command.label = label;
     }
 
     void save(@NonNull final ViewModelStoreOwner owner) {
         final EditConfigViewModel cvm = new ViewModelProvider(owner)
                 .get(EditConfigViewModel.class);
-        mDb.getExecutor().execute(() -> {
-            if (mCommand.id == 0) {
-                cvm.setCommand((int) mDb.getCommandDao().insert(mCommand));
+        db.getExecutor().execute(() -> {
+            if (command.id == 0) {
+                cvm.setCommand((int) db.getCommandDao().insert(command));
             } else {
-                mDb.getCommandDao().update(mCommand);
+                db.getCommandDao().update(command);
             }
         });
     }
@@ -81,8 +79,8 @@ public class EditCommandViewModel
     void delete(@NonNull final ViewModelStoreOwner owner) {
         final EditConfigViewModel cvm = new ViewModelProvider(owner)
                 .get(EditConfigViewModel.class);
-        mDb.getExecutor().execute(() -> {
-            mDb.getCommandDao().delete(mCommand);
+        db.getExecutor().execute(() -> {
+            db.getCommandDao().delete(command);
             cvm.setCommand(0);
         });
     }
