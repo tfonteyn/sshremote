@@ -10,77 +10,77 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.preference.PreferenceManager;
 
-import com.hardbacknutter.sshclient.utils.SshException;
-import com.hardbacknutter.sshremote.db.DB;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hardbacknutter.sshclient.utils.SshException;
+import com.hardbacknutter.sshremote.db.DB;
+
 @SuppressWarnings("WeakerAccess")
 public class MainViewModel
         extends ViewModel {
 
-    private final MutableLiveData<List<UserButton>> mUserButtons = new MutableLiveData<>();
+    private final MutableLiveData<List<UserButton>> userButtons = new MutableLiveData<>();
     private final MutableLiveData<FinishedMessage<UserButton>>
-            mFinished = new MutableLiveData<>();
+            finished = new MutableLiveData<>();
     private final MutableLiveData<Pair<FinishedMessage<UserButton>, Exception>>
-            mFailed = new MutableLiveData<>();
+            failed = new MutableLiveData<>();
 
-    private DB mDb;
+    private DB db;
 
-    private int mButtonsPerPage;
+    private int buttonsPerPage;
 
     void init(@NonNull final Context context) {
-        if (mDb == null) {
-            mDb = DB.getInstance(context);
+        if (db == null) {
+            db = DB.getInstance(context);
         }
 
         final SharedPreferences global = PreferenceManager
                 .getDefaultSharedPreferences(context);
-        mButtonsPerPage = global.getInt(SettingsFragment.PK_BUTTONS_PER_PAGE,
-                SettingsFragment.DEF_BUTTONS_PER_PAGE);
+        buttonsPerPage = global.getInt(SettingsFragment.PK_BUTTONS_PER_PAGE,
+                                       SettingsFragment.DEF_BUTTONS_PER_PAGE);
         // always refresh
-        mDb.getExecutor().execute(() -> {
+        db.getExecutor().execute(() -> {
             final List<UserButton> list = new ArrayList<>();
-            for (int i = 0; i < mButtonsPerPage; i++) {
-                list.add(new UserButton(mDb, i));
+            for (int i = 0; i < buttonsPerPage; i++) {
+                list.add(new UserButton(db, i));
             }
-            mUserButtons.postValue(list);
+            userButtons.postValue(list);
         });
     }
 
     @NonNull
     LiveData<List<UserButton>> onConfigLoaded() {
-        return mUserButtons;
+        return userButtons;
     }
 
     void execute(@NonNull final Context context,
                  @NonNull final UserButton userButton) {
 
         final Context appContext = context.getApplicationContext();
-        mDb.getExecutor().execute(() -> {
+        db.getExecutor().execute(() -> {
             try {
                 userButton.exec(appContext);
-                mFinished.postValue(new FinishedMessage<>(0, userButton));
+                finished.postValue(new FinishedMessage<>(0, userButton));
             } catch (final SshException | IOException | GeneralSecurityException e) {
-                mFailed.postValue(new Pair<>(new FinishedMessage<>(0, userButton), e));
+                failed.postValue(new Pair<>(new FinishedMessage<>(0, userButton), e));
             }
         });
     }
 
     @NonNull
     LiveData<FinishedMessage<UserButton>> onFinished() {
-        return mFinished;
+        return finished;
     }
 
     @NonNull
     LiveData<Pair<FinishedMessage<UserButton>, Exception>> onFailed() {
-        return mFailed;
+        return failed;
     }
 
     public void saveButtonOrder(@NonNull final List<UserButton> list) {
-        mDb.getExecutor().execute(() -> list.forEach(userButton -> userButton.update(mDb)));
+        db.getExecutor().execute(() -> list.forEach(userButton -> userButton.update(db)));
     }
 }
