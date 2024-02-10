@@ -34,54 +34,54 @@ public class FinishedMessage<Result>
 
     private static final String MISSING_TASK_RESULTS = "message.result";
 
-    private final int mTaskId;
+    private final int taskId;
 
     /**
      * The result object from the task.
      * It can be {@code null} regardless of the task implementation.
      */
     @Nullable
-    private final Result mResult;
+    private final Result result;
 
     /**
      * {@link LiveDataEvent}.
      */
-    private boolean mHasBeenHandled;
+    private boolean hasBeenHandled;
 
     public FinishedMessage(final int taskId,
                            @Nullable final Result result) {
-        mTaskId = taskId;
-        mResult = result;
+        this.taskId = taskId;
+        this.result = result;
     }
 
     @Override
     public boolean isNewEvent() {
-        final boolean isNew = !mHasBeenHandled;
-        mHasBeenHandled = true;
+        final boolean isNew = !hasBeenHandled;
+        hasBeenHandled = true;
         return isNew;
     }
 
     public int getTaskId() {
-        return mTaskId;
+        return taskId;
     }
 
     @Nullable
     public Result getResult() {
-        return mResult;
+        return result;
     }
 
     @NonNull
     public Result requireResult() {
-        return Objects.requireNonNull(mResult, MISSING_TASK_RESULTS);
+        return Objects.requireNonNull(result, MISSING_TASK_RESULTS);
     }
 
     @Override
     @NonNull
     public String toString() {
         return "FinishedMessage{"
-                + "mHasBeenHandled=" + mHasBeenHandled
-                + ", taskId=" + mTaskId
-                + ", result=" + mResult
-                + '}';
+               + "mHasBeenHandled=" + hasBeenHandled
+               + ", taskId=" + taskId
+               + ", result=" + result
+               + '}';
     }
 }
