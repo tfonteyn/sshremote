@@ -21,63 +21,63 @@ public class EditHostViewModel
 
     static final String ARGS_ID = "id";
 
-    private final MutableLiveData<Host> mHostLoaded = new MutableLiveData<>();
+    private final MutableLiveData<Host> hostLoaded = new MutableLiveData<>();
 
-    private Host mHost;
-    private DB mDb;
+    private Host host;
+    private DB db;
 
     void init(@NonNull final Context context,
               @Nullable final Bundle args) {
-        if (mDb == null) {
-            mDb = DB.getInstance(context);
+        if (db == null) {
+            db = DB.getInstance(context);
 
             final int id = args == null ? 0 : args.getInt(ARGS_ID, 0);
             Log.d("host", "id=" + id);
             if (id > 0) {
-                mDb.getExecutor().execute(() -> {
-                    mHost = mDb.getHostDao().findById(id);
-                    mHostLoaded.postValue(mHost);
+                db.getExecutor().execute(() -> {
+                    host = db.getHostDao().findById(id);
+                    hostLoaded.postValue(host);
                 });
             } else {
-                mHost = new Host();
-                mHostLoaded.setValue(mHost);
+                host = new Host();
+                hostLoaded.setValue(host);
             }
         }
     }
 
     @NonNull
     LiveData<Host> onConfigLoaded() {
-        return mHostLoaded;
+        return hostLoaded;
     }
 
     void setLabel(@NonNull final String label) {
-        mHost.label = label;
+        host.label = label;
     }
 
     void setHost(@NonNull final String hostname) {
-        mHost.hostnameOrIp = hostname;
+        host.hostnameOrIp = hostname;
     }
 
     void setPort(final int port) {
-        mHost.port = port;
+        host.port = port;
     }
 
     void setUserName(@NonNull final String userName) {
-        mHost.userName = userName;
+        host.userName = userName;
     }
 
     void setUserPassword(@NonNull final String userPassword) {
-        mHost.userPassword = userPassword;
+        host.userPassword = userPassword;
     }
 
     void save(@NonNull final ViewModelStoreOwner owner) {
         final EditConfigViewModel cvm = new ViewModelProvider(owner)
                 .get(EditConfigViewModel.class);
-        mDb.getExecutor().execute(() -> {
-            if (mHost.id == 0) {
-                cvm.setHost((int) mDb.getHostDao().insert(mHost));
+        db.getExecutor().execute(() -> {
+            if (host.id == 0) {
+                cvm.setHost((int) db.getHostDao().insert(host));
             } else {
-                mDb.getHostDao().update(mHost);
+                db.getHostDao().update(host);
             }
         });
     }
@@ -85,8 +85,8 @@ public class EditHostViewModel
     void delete(@NonNull final ViewModelStoreOwner owner) {
         final EditConfigViewModel cvm = new ViewModelProvider(owner)
                 .get(EditConfigViewModel.class);
-        mDb.getExecutor().execute(() -> {
-            mDb.getHostDao().delete(mHost);
+        db.getExecutor().execute(() -> {
+            db.getHostDao().delete(host);
             cvm.setHost(0);
         });
     }
