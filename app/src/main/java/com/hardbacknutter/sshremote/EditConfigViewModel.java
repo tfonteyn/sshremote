@@ -9,12 +9,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.List;
+
 import com.hardbacknutter.sshremote.db.Command;
 import com.hardbacknutter.sshremote.db.Config;
 import com.hardbacknutter.sshremote.db.DB;
 import com.hardbacknutter.sshremote.db.Host;
-
-import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public class EditConfigViewModel
@@ -22,87 +22,87 @@ public class EditConfigViewModel
 
     static final String ARGS_BUTTON_POSITION = "pos";
 
-    private final MutableLiveData<Config> mConfigLoaded = new MutableLiveData<>();
+    private final MutableLiveData<Config> configLoaded = new MutableLiveData<>();
 
-    private DB mDb;
+    private DB db;
 
     private int currentButton = -1;
 
-    private Config mConfig;
-    private List<Host> mHostList;
-    private List<Command> mCommandList;
+    private Config config;
+    private List<Host> hostList;
+    private List<Command> commandList;
 
     void init(@NonNull final Context context,
               @Nullable final Bundle args) {
 
-        if (mDb == null) {
-            mDb = DB.getInstance(context);
+        if (db == null) {
+            db = DB.getInstance(context);
         }
 
         // Always refresh the lists
-        mDb.getExecutor().execute(() -> {
-            mHostList = mDb.getHostDao().getAll();
-            mCommandList = mDb.getCommandDao().getAll();
+        db.getExecutor().execute(() -> {
+            hostList = db.getHostDao().getAll();
+            commandList = db.getCommandDao().getAll();
         });
 
         // this vm is owned by the activity, so we need to keep track and replace data as needed
         final int position = args == null ? 0 : args.getInt(ARGS_BUTTON_POSITION, 0);
         if (currentButton != position) {
             currentButton = position;
-            mDb.getExecutor().execute(() -> {
+            db.getExecutor().execute(() -> {
                 //noinspection ConstantConditions
-                mConfig = mDb.getConfigDao().findByPosition(position);
-                if (mConfig == null) {
-                    mConfig = new Config(position);
+                config = db.getConfigDao().findByPosition(position);
+                if (config == null) {
+                    config = new Config(position);
                 }
-                mConfigLoaded.postValue(mConfig);
+                configLoaded.postValue(config);
             });
         }
     }
 
     @NonNull
     LiveData<Config> onConfigLoaded() {
-        return mConfigLoaded;
+        return configLoaded;
     }
 
     void setLabel(@NonNull final String label) {
-        mConfig.label = label;
+        config.label = label;
     }
 
     int getHost() {
-        return mConfig.hostId;
+        return config.hostId;
     }
 
     void setHost(final int id) {
-        mConfig.hostId = id;
+        config.hostId = id;
     }
 
     int getCommand() {
-        return mConfig.commandId;
+        return config.commandId;
     }
 
     void setCommand(final int id) {
-        mConfig.commandId = id;
+        config.commandId = id;
     }
 
     @NonNull
     List<Host> getHostList() {
-        return mHostList;
+        return hostList;
     }
 
     @NonNull
     List<Command> getCommandList() {
-        return mCommandList;
+        return commandList;
     }
 
     boolean save() {
         // can only save if both set
-        if (mConfig.commandId != 0 && mConfig.hostId != 0) {
-            mDb.getExecutor().execute(() -> {
-                if (mConfig.id == 0) {
-                    mDb.getConfigDao().insert(mConfig);
+        if (config.commandId != 0 && config.hostId != 0) {
+            db.getExecutor().execute(() -> {
+                if (config.id == 0) {
+                    db.getConfigDao().insert(config);
                 } else {
-                    mDb.getConfigDao().update(mConfig);
+                    db.getConfigDao().update(config);
                 }
             });
             return true;
@@ -112,8 +112,8 @@ public class EditConfigViewModel
     }
 
     void delete() {
-        if (mConfig.id != 0) {
-            mDb.getExecutor().execute(() -> mDb.getConfigDao().delete(mConfig));
+        if (config.id != 0) {
+            db.getExecutor().execute(() -> db.getConfigDao().delete(config));
         }
     }
 }
