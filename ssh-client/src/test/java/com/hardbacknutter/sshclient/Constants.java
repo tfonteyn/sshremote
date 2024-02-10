@@ -31,7 +31,7 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  * <p>
  * Content of "ssh4j.conf":
  * The port must match {@link #PORT}.
- *
+ * <p>
  * Make sure none of these are already set in "/etc/ssh/sshd_config" !
  * <pre>
  *  Port 2222

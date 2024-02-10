@@ -73,7 +73,7 @@ public class KeyPairWriter {
      * @param filename file name
      * @param comment  comment
      */
-    @SuppressWarnings({"unused"})
+    @SuppressWarnings("unused")
     public void writeSECSHPublicKey(@NonNull final SshKeyPair keyPair,
                                     @NonNull final String filename,
                                     @NonNull final String comment)
