@@ -7,9 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 
-import com.hardbacknutter.sshclient.hostkey.HostKey;
-import com.hardbacknutter.sshremote.ssh.SshHelper;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -24,13 +21,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.hardbacknutter.sshclient.hostkey.HostKey;
+import com.hardbacknutter.sshremote.ssh.SshHelper;
+
 public class KeyManagementViewModel
         extends ViewModel {
 
-    private List<KeyManagementViewModel.HostLine> mList;
+    private List<KeyManagementViewModel.HostLine> list;
 
     private String fingerPrintAlgorithm;
-    private boolean mImportIsAppend;
+    private boolean importIsAppend;
 
     public void init(@NonNull final Context context) {
         if (fingerPrintAlgorithm == null) {
@@ -38,16 +38,16 @@ public class KeyManagementViewModel
             fingerPrintAlgorithm = "MD5";
 
             try {
-                mList = readFile(context.openFileInput(SshHelper.KNOWN_HOSTS));
+                list = readFile(context.openFileInput(SshHelper.KNOWN_HOSTS));
             } catch (final IOException | NoSuchAlgorithmException ignore) {
-                mList = new ArrayList<>();
+                list = new ArrayList<>();
             }
         }
     }
 
     @NonNull
     List<HostLine> getHostList() {
-        return mList;
+        return list;
     }
 
     public void save(@NonNull final Context context)
@@ -58,7 +58,7 @@ public class KeyManagementViewModel
     }
 
     void setImportIsAppend(final boolean append) {
-        mImportIsAppend = append;
+        importIsAppend = append;
     }
 
     void startImport(@NonNull final Context context,
@@ -68,14 +68,14 @@ public class KeyManagementViewModel
         try (final InputStream is = context.getContentResolver().openInputStream(uri)) {
             tmp = readFile(is);
         }
-        if (!mImportIsAppend) {
-            mList.clear();
+        if (!importIsAppend) {
+            list.clear();
         }
-        mList.addAll(tmp);
+        list.addAll(tmp);
 
-        tmp = mList.stream().distinct().collect(Collectors.toList());
-        mList.clear();
-        mList.addAll(tmp);
+        tmp = list.stream().distinct().collect(Collectors.toList());
+        list.clear();
+        list.addAll(tmp);
     }
 
     void startExport(@NonNull final Context context,
@@ -89,7 +89,7 @@ public class KeyManagementViewModel
     @NonNull
     private List<HostLine> readFile(@NonNull final InputStream is)
             throws IOException, NoSuchAlgorithmException {
-        final List<KeyManagementViewModel.HostLine> list = new ArrayList<>();
+        final List<KeyManagementViewModel.HostLine> hostLines = new ArrayList<>();
 
         //noinspection ImplicitDefaultCharsetUsage
         try (final InputStreamReader isr = new InputStreamReader(is);
@@ -101,13 +101,13 @@ public class KeyManagementViewModel
                     if (parts.length == 3) {
                         final byte[] key = Base64.getDecoder().decode(parts[2]);
                         final String fp = HostKey.getFingerPrint(fingerPrintAlgorithm, key);
-                        list.add(new HostLine(parts[0], parts[1], fp, line));
+                        hostLines.add(new HostLine(parts[0], parts[1], fp, line));
                     }
                 }
             }
         }
 
-        return list;
+        return hostLines;
     }
 
     private void writeFile(@NonNull final OutputStream os)
@@ -115,7 +115,7 @@ public class KeyManagementViewModel
         //noinspection ImplicitDefaultCharsetUsage
         try (final OutputStreamWriter osr = new OutputStreamWriter(os);
              BufferedWriter bw = new BufferedWriter(osr)) {
-            for (final HostLine hostLine : mList) {
+            for (final HostLine hostLine : list) {
                 bw.write(hostLine.fullLine);
                 bw.write("\n");
             }
