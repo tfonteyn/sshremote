@@ -5,7 +5,7 @@
     <SwitchPreference
         android:defaultValue="false"
         android:key="global.buttons.flow"
-        android:title="Buttons flow" />
+        android:title="@string/lbl_buttons_flow" />
 
     <SeekBarPreference
         android:defaultValue="8"

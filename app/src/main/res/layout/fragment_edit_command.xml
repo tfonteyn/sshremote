@@ -1,79 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/top_scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EditConfigFragment">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_command_label"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_command_label"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".EditButtonFragment">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/command_label"
-            style="@style/TIE"
-            android:maxEms="@integer/button_max_ems"
-            android:maxLines="1"
-            tools:text="label for command" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_command_label"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_command_label"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/command_label"
+                style="@style/TIE"
+                android:maxEms="@integer/button_max_ems"
+                android:maxLines="1"
+                tools:text="label for command" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_command_line"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_command_line"
-        android:paddingTop="@dimen/til_vert_spacer"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_command_label">
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/command_line"
-            style="@style/TIE"
-            tools:text="ls -la" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_command_line"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_command_line"
+            android:paddingTop="@dimen/til_vert_spacer"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_command_label">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/command_line"
+                style="@style/TIE"
+                tools:text="ls -la" />
 
-    <CheckBox
-        android:id="@+id/cbx_sudo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/til_field_margin"
-        android:text="@string/lbl_sudo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_command_line" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <CheckBox
-        android:id="@+id/cbx_sudo_use_user_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:checked="true"
-        android:text="@string/lbl_sudo_use_user_password"
-        app:layout_constraintStart_toEndOf="@id/cbx_sudo"
-        app:layout_constraintTop_toBottomOf="@id/lbl_command_line" />
+        <CheckBox
+            android:id="@+id/cbx_sudo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/til_field_margin"
+            android:text="@string/lbl_sudo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_command_line" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_sudo_password"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_sudo_password"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cbx_sudo_use_user_password">
+        <CheckBox
+            android:id="@+id/cbx_sudo_use_user_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:checked="true"
+            android:text="@string/lbl_sudo_use_user_password"
+            app:layout_constraintStart_toEndOf="@id/cbx_sudo"
+            app:layout_constraintTop_toBottomOf="@id/lbl_command_line" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/sudo_password"
-            style="@style/TIE.password"
-            tools:text="secret password" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_sudo_password"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_sudo_password"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cbx_sudo_use_user_password">
 
-    </com.google.android.material.textfield.TextInputLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sudo_password"
+                style="@style/TIE.password"
+                tools:text="secret password" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

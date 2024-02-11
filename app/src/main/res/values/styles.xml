@@ -8,6 +8,23 @@
         <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
 
+    <!-- An Activity primary/top toolbar -->
+    <style name="Toolbar.Activity"
+           parent="Widget.Material3.Toolbar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?attr/actionBarSize</item>
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="layout_scrollFlags">scroll|enterAlways|snap</item>
+    </style>
+
+    <style name="Widget.App.FloatingActionButton"
+           parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:layout_margin">@dimen/fab_margin</item>
+    </style>
+
     <!-- Button (icon only) positioned 'after' an EditText; serving as a extended edit action. -->
     <style name="TIL.EditText.Button" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:enabled">true</item>

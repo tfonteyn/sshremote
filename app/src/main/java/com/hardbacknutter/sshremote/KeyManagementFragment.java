@@ -1,5 +1,6 @@
 package com.hardbacknutter.sshremote;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,54 +15,56 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
 import com.hardbacknutter.sshremote.databinding.FragmentKeyManagementBinding;
 import com.hardbacknutter.sshremote.databinding.RowSshKeyBinding;
 import com.hardbacknutter.sshremote.ddsupport.ItemTouchHelperAdapter;
 import com.hardbacknutter.sshremote.ddsupport.SimpleItemTouchHelperCallback;
 import com.hardbacknutter.sshremote.ssh.SshHelper;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
 public class KeyManagementFragment
         extends BaseFragment {
 
+    static final String TAG = "KeyManagementFragment";
+
     private static final String MIME_TYPES = "*/*";
 
-    private FragmentKeyManagementBinding mVb;
-    private KeyManagementViewModel mVm;
+    private FragmentKeyManagementBinding vb;
+    private KeyManagementViewModel vm;
 
     /**
      * The launcher for picking a Uri to write to.
      */
-    private final ActivityResultLauncher<String> mCreateDocumentLauncher =
-            registerForActivityResult(new ActivityResultContracts.CreateDocument(),
+    private final ActivityResultLauncher<String> createDocumentLauncher =
+            registerForActivityResult(new ActivityResultContracts.CreateDocument("*/*"),
                                       this::exportToUri);
-    private NavController mNavController;
-    private HostKeyAdapter mAdapter;
+    private HostKeyAdapter adapter;
     /**
      * The launcher for picking a Uri to read from.
      */
-    private final ActivityResultLauncher<String> mOpenUriLauncher =
+    private final ActivityResultLauncher<String> openUriLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), this::onOpenUri);
-    private ItemTouchHelper mItemTouchHelper;
+    @SuppressWarnings("FieldCanBeLocal")
+    private ItemTouchHelper itemTouchHelper;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
-        mVb = FragmentKeyManagementBinding.inflate(inflater, container, false);
-        return mVb.getRoot();
+        vb = FragmentKeyManagementBinding.inflate(inflater, container, false);
+        return vb.getRoot();
     }
 
     @Override
@@ -71,33 +74,33 @@ public class KeyManagementFragment
 
         final Context context = view.getContext();
 
-        mNavController = NavHostFragment.findNavController(this);
+        vm = new ViewModelProvider(this).get(KeyManagementViewModel.class);
+        vm.init(context);
 
-        mVm = new ViewModelProvider(this).get(KeyManagementViewModel.class);
-        mVm.init(context);
-
-        mAdapter = new HostKeyAdapter(context);
-        mVb.keyList.setAdapter(mAdapter);
-        mVb.keyList.addItemDecoration(
+        adapter = new HostKeyAdapter(context);
+        vb.keyList.setAdapter(adapter);
+        vb.keyList.addItemDecoration(
                 new DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL));
 
         final SimpleItemTouchHelperCallback sitHelperCallback =
-                new SimpleItemTouchHelperCallback(mAdapter);
+                new SimpleItemTouchHelperCallback(adapter);
         sitHelperCallback.setItemViewSwipeEnabled(true);
-        mItemTouchHelper = new ItemTouchHelper(sitHelperCallback);
-        mItemTouchHelper.attachToRecyclerView(mVb.keyList);
+        itemTouchHelper = new ItemTouchHelper(sitHelperCallback);
+        itemTouchHelper.attachToRecyclerView(vb.keyList);
 
-        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
+        final Toolbar toolbar = initToolbar(new ToolbarMenuProvider());
+        toolbar.setSubtitle(R.string.lbl_key_management);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void onOpenUri(@Nullable final Uri uri) {
         if (uri != null) {
             try {
                 //noinspection ConstantConditions
-                mVm.startImport(getContext(), uri);
-                mAdapter.notifyDataSetChanged();
+                vm.startImport(getContext(), uri);
+                adapter.notifyDataSetChanged();
             } catch (final IOException | NoSuchAlgorithmException e) {
-                Snackbar.make(mVb.getRoot(), R.string.error_import_failed, Snackbar.LENGTH_LONG)
+                Snackbar.make(vb.getRoot(), R.string.error_import_failed, Snackbar.LENGTH_LONG)
                         .show();
             }
         }
@@ -107,23 +110,23 @@ public class KeyManagementFragment
         if (uri != null) {
             try {
                 //noinspection ConstantConditions
-                mVm.startExport(getContext(), uri);
+                vm.startExport(getContext(), uri);
             } catch (final IOException e) {
-                Snackbar.make(mVb.getRoot(), R.string.error_export_failed, Snackbar.LENGTH_LONG)
+                Snackbar.make(vb.getRoot(), R.string.error_export_failed, Snackbar.LENGTH_LONG)
                         .show();
             }
         }
     }
 
-    private static class Holder
+    public static class Holder
             extends RecyclerView.ViewHolder {
 
         @NonNull
-        private final RowSshKeyBinding mVb;
+        private final RowSshKeyBinding vb;
 
         Holder(@NonNull final View itemView) {
             super(itemView);
-            mVb = RowSshKeyBinding.bind(itemView);
+            vb = RowSshKeyBinding.bind(itemView);
         }
     }
 
@@ -132,38 +135,38 @@ public class KeyManagementFragment
             implements ItemTouchHelperAdapter {
 
         @NonNull
-        private final LayoutInflater mLayoutInflater;
+        private final LayoutInflater layoutInflater;
 
         HostKeyAdapter(@NonNull final Context context) {
-            mLayoutInflater = LayoutInflater.from(context);
+            layoutInflater = LayoutInflater.from(context);
         }
 
         @NonNull
         @Override
         public Holder onCreateViewHolder(@NonNull final ViewGroup parent,
                                          final int viewType) {
-            final View view = mLayoutInflater.inflate(R.layout.row_ssh_key, parent, false);
+            final View view = layoutInflater.inflate(R.layout.row_ssh_key, parent, false);
             return new Holder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull final Holder holder,
                                      final int position) {
-            final KeyManagementViewModel.HostLine line = mVm.getHostList().get(position);
+            final KeyManagementViewModel.HostLine line = vm.getHostList().get(position);
 
-            holder.mVb.host.setText(line.host);
-            holder.mVb.type.setText(line.type);
-            holder.mVb.fingerprint.setText(line.fingerprint);
+            holder.vb.host.setText(line.host);
+            holder.vb.type.setText(line.type);
+            holder.vb.fingerprint.setText(line.fingerprint);
         }
 
         @Override
         public int getItemCount() {
-            return mVm.getHostList().size();
+            return vm.getHostList().size();
         }
 
         @Override
         public void onItemSwiped(final int position) {
-            mVm.getHostList().remove(position);
+            vm.getHostList().remove(position);
             notifyItemRemoved(position);
         }
     }
@@ -183,26 +186,26 @@ public class KeyManagementFragment
             if (itemId == R.id.MENU_SAVE) {
                 try {
                     //noinspection ConstantConditions
-                    mVm.save(getContext());
-                    mNavController.popBackStack();
+                    vm.save(getContext());
+                    getParentFragmentManager().popBackStack();
                 } catch (final IOException e) {
-                    Snackbar.make(mVb.getRoot(), R.string.error_save_failed, Snackbar.LENGTH_LONG)
+                    Snackbar.make(vb.getRoot(), R.string.error_save_failed, Snackbar.LENGTH_LONG)
                             .show();
                 }
                 return true;
 
             } else if (itemId == R.id.MENU_IMPORT) {
-                mVm.setImportIsAppend(false);
-                mOpenUriLauncher.launch(MIME_TYPES);
+                vm.setImportIsAppend(false);
+                openUriLauncher.launch(MIME_TYPES);
                 return true;
 
             } else if (itemId == R.id.MENU_IMPORT_APPEND) {
-                mVm.setImportIsAppend(true);
-                mOpenUriLauncher.launch(MIME_TYPES);
+                vm.setImportIsAppend(true);
+                openUriLauncher.launch(MIME_TYPES);
                 return true;
 
             } else if (itemId == R.id.MENU_EXPORT) {
-                mCreateDocumentLauncher.launch(SshHelper.KNOWN_HOSTS);
+                createDocumentLauncher.launch(SshHelper.KNOWN_HOSTS);
             }
             return false;
         }

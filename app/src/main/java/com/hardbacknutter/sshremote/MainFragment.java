@@ -1,7 +1,10 @@
 package com.hardbacknutter.sshremote;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,25 +15,20 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.util.Pair;
 import androidx.core.view.MenuProvider;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.hardbacknutter.sshclient.ChannelSession;
-import com.hardbacknutter.sshclient.userauth.SshTooManyAuthAttemptException;
-import com.hardbacknutter.sshremote.databinding.ButtonBinding;
-import com.hardbacknutter.sshremote.databinding.FragmentMainBinding;
-import com.hardbacknutter.sshremote.ddsupport.ItemTouchHelperAdapter;
-import com.hardbacknutter.sshremote.ddsupport.SimpleItemTouchHelperCallback;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -38,33 +36,44 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.hardbacknutter.sshclient.ChannelSession;
+import com.hardbacknutter.sshclient.SshClientFactory;
+import com.hardbacknutter.sshclient.userauth.SshTooManyAuthAttemptException;
+import com.hardbacknutter.sshremote.databinding.ButtonBinding;
+import com.hardbacknutter.sshremote.databinding.FragmentMainBinding;
+import com.hardbacknutter.sshremote.ddsupport.ItemTouchHelperAdapter;
+import com.hardbacknutter.sshremote.ddsupport.SimpleItemTouchHelperCallback;
+
 public class MainFragment
-        extends BaseFragment {
+        extends Fragment {
 
-    private final List<UserButton> mList = new ArrayList<>();
-    private FragmentMainBinding mVb;
-    private MainViewModel mVm;
-    private NavController mNavController;
-    private FloatingActionButton mFab;
-    private ButtonAdapter mAdapter;
-    private ItemTouchHelper mItemTouchHelper;
+    static final String TAG = "MainFragment";
 
-    private boolean mMovingButtons;
-    private BottomSheetBehavior<ConstraintLayout> mBottomSheetBehavior;
+    private final List<UserButton> list = new ArrayList<>();
+    private FragmentMainBinding vb;
+    private MainViewModel vm;
+    private FloatingActionButton fab;
+    private ButtonAdapter adapter;
+    private ItemTouchHelper itemTouchHelper;
+
+    private boolean movingButtons;
+    private BottomSheetBehavior<ConstraintLayout> bottomSheetBehavior;
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
-        mVb = FragmentMainBinding.inflate(inflater, container, false);
+        vb = FragmentMainBinding.inflate(inflater, container, false);
 
-        final GridLayoutManager lm = (GridLayoutManager) mVb.buttonFlow.getLayoutManager();
+        final GridLayoutManager lm = (GridLayoutManager) vb.buttonFlow.getLayoutManager();
         Objects.requireNonNull(lm);
 
         final Context context = inflater.getContext();
-        final SharedPreferences global = PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences preferences =
+                PreferenceManager.getDefaultSharedPreferences(context);
 
-        final boolean flowHorizontal = global.getBoolean(SettingsFragment.PK_BUTTONS_FLOW, false);
+        final boolean flowHorizontal = preferences
+                .getBoolean(SettingsFragment.PK_BUTTONS_FLOW, false);
         if (flowHorizontal) {
             // android:orientation="horizontal"
             // app:spanCount="@integer/btn_list_column_count"
@@ -81,7 +90,7 @@ public class MainFragment
             lm.setSpanCount(context.getResources().getInteger(R.integer.btn_list_row_count));
         }
 
-        return mVb.getRoot();
+        return vb.getRoot();
     }
 
     @Override
@@ -90,126 +99,137 @@ public class MainFragment
         super.onViewCreated(view, savedInstanceState);
         final Context context = view.getContext();
 
-        mNavController = NavHostFragment.findNavController(this);
+        vm = new ViewModelProvider(this).get(MainViewModel.class);
+        vm.init(context);
+        vm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
+        vm.onFinished().observe(getViewLifecycleOwner(), this::onFinished);
+        vm.onFailed().observe(getViewLifecycleOwner(), this::onFailed);
 
-        mVm = new ViewModelProvider(this).get(MainViewModel.class);
-        mVm.init(context);
-        mVm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
-        mVm.onFinished().observe(getViewLifecycleOwner(), this::onFinished);
-        mVm.onFailed().observe(getViewLifecycleOwner(), this::onFailed);
-
-        mAdapter = new ButtonAdapter(context);
-        mVb.buttonFlow.setAdapter(mAdapter);
+        adapter = new ButtonAdapter(context);
+        vb.buttonFlow.setAdapter(adapter);
 
         final SimpleItemTouchHelperCallback sitHelperCallback =
-                new SimpleItemTouchHelperCallback(mAdapter);
-        mItemTouchHelper = new ItemTouchHelper(sitHelperCallback);
-        mItemTouchHelper.attachToRecyclerView(mVb.buttonFlow);
+                new SimpleItemTouchHelperCallback(adapter);
+        itemTouchHelper = new ItemTouchHelper(sitHelperCallback);
+        itemTouchHelper.attachToRecyclerView(vb.buttonFlow);
 
-        mVb.clearOutput.setOnClickListener(v -> clearOutput());
+        vb.clearOutput.setOnClickListener(v -> clearOutput());
 
         final MainActivity activity = (MainActivity) getActivity();
         //noinspection ConstantConditions
-        mBottomSheetBehavior = activity.getBottomSheetBehavior();
+        bottomSheetBehavior = activity.getBottomSheetBehavior();
         activity.getBottomSheetButtonSave().setOnClickListener(v -> setButtonOrder(true));
         activity.getBottomSheetButtonUndo().setOnClickListener(v -> setButtonOrder(false));
 
-        mFab = activity.getFab();
-        mFab.setOnClickListener(v -> mVb.topScroller.scrollTo(0, 0));
+        fab = activity.getFab();
+        fab.setOnClickListener(v -> vb.topScroller.scrollTo(0, 0));
 
-        mVb.topScroller.setOnScrollChangeListener(
+        vb.topScroller.setOnScrollChangeListener(
                 (View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY)
-                        -> mFab.setVisibility(scrollY == 0 ? View.INVISIBLE : View.VISIBLE));
+                        -> fab.setVisibility(scrollY == 0 ? View.INVISIBLE : View.VISIBLE));
 
-        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
+        final Toolbar toolbar = activity.getToolbar();
+        toolbar.addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
+        toolbar.setTitle(R.string.app_name);
+        toolbar.setSubtitle("");
+        toolbar.setNavigationIcon(null);
+        toolbar.setNavigationOnClickListener(null);
     }
 
     private void setButtonOrder(final boolean save) {
-        mMovingButtons = false;
-        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        movingButtons = false;
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         if (save) {
-            mVm.saveButtonOrder(mList);
+            vm.saveButtonOrder(list);
         } else {
             //noinspection ConstantConditions
-            mVm.init(getContext());
+            vm.init(getContext());
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void onConfigLoaded(@NonNull final List<UserButton> userButtons) {
-        mList.clear();
-        mList.addAll(userButtons);
-        mAdapter.notifyDataSetChanged();
+        list.clear();
+        list.addAll(userButtons);
+        adapter.notifyDataSetChanged();
     }
 
     private void clearOutput() {
-        mVb.lastButton.setText("");
-        mVb.lastExitCode.setText("");
-        mVb.output.setText("");
-        mVb.clearOutput.setVisibility(View.INVISIBLE);
+        vb.lastButton.setText("");
+        vb.lastExitCode.setText("");
+        vb.output.setText("");
+        vb.clearOutput.setVisibility(View.INVISIBLE);
     }
 
     private void edit(final int buttonId) {
         final Bundle args = new Bundle();
-        args.putInt(EditConfigViewModel.ARGS_BUTTON_POSITION, buttonId);
-        mNavController.navigate(R.id.action_MainFragment_to_EditConfigFragment, args);
+        args.putInt(EditButtonViewModel.ARGS_BUTTON_POSITION, buttonId);
+        final EditButtonFragment fragment = new EditButtonFragment();
+        fragment.setArguments(args);
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .addToBackStack(EditButtonFragment.TAG)
+                .replace(R.id.main_fragment, fragment, EditButtonFragment.TAG)
+                .commit();
     }
 
     private void onFinished(@NonNull final FinishedMessage<UserButton> result) {
-        mVb.progress.setVisibility(View.GONE);
+        vb.progress.setVisibility(View.GONE);
 
         if (result.isNewEvent()) {
             final UserButton userButton = result.getResult();
             //noinspection ConstantConditions
             final ChannelSession.ExitStatus exitStatus = userButton.getExitStatus();
             if (exitStatus == null) {
-                mVb.lastExitCode.setVisibility(View.INVISIBLE);
+                vb.lastExitCode.setVisibility(View.INVISIBLE);
             } else {
                 if (exitStatus.getStatus() == -1) {
-                    mVb.lastExitCode.setVisibility(View.INVISIBLE);
+                    vb.lastExitCode.setVisibility(View.INVISIBLE);
                 } else if (exitStatus.getStatus() == 0) {
-                    mVb.lastExitCode.setVisibility(View.INVISIBLE);
+                    vb.lastExitCode.setVisibility(View.INVISIBLE);
                 } else {
-                    mVb.lastExitCode.setVisibility(View.VISIBLE);
+                    vb.lastExitCode.setVisibility(View.VISIBLE);
                     String s = "(" + exitStatus.getStatus() + ")";
                     if (exitStatus.getMessage() != null) {
                         s += exitStatus.getMessage();
                     }
-                    mVb.lastExitCode.setText(s);
+                    vb.lastExitCode.setText(s);
                 }
             }
-            mVb.lastButton.setText(userButton.getLabel());
-            mVb.output.setText(userButton.getOutput());
-            mVb.clearOutput.setVisibility(View.VISIBLE);
+            vb.lastButton.setText(userButton.getLabel());
+            vb.output.setText(userButton.getOutput());
+            vb.clearOutput.setVisibility(View.VISIBLE);
         }
     }
 
     private void onFailed(@NonNull final Pair<FinishedMessage<UserButton>, Exception> result) {
-        mVb.progress.setVisibility(View.GONE);
+        vb.progress.setVisibility(View.GONE);
 
         if (result.first.isNewEvent()) {
             final UserButton userButton = result.first.getResult();
             final Exception e = result.second;
 
             //noinspection ConstantConditions
-            mVb.lastButton.setText(userButton.getLabel());
-            mVb.lastExitCode.setVisibility(View.INVISIBLE);
+            vb.lastButton.setText(userButton.getLabel());
+            vb.lastExitCode.setVisibility(View.INVISIBLE);
 
-            mVb.clearOutput.setVisibility(View.VISIBLE);
+            vb.clearOutput.setVisibility(View.VISIBLE);
 
             if (e instanceof UnknownHostException) {
-                mVb.output.setText(R.string.error_ping_failed);
+                vb.output.setText(R.string.error_ping_failed);
 
             }
             if (e instanceof SshTooManyAuthAttemptException) {
-                mVb.output.setText(getString(R.string.error_to_many_auth,
-                        ((SshTooManyAuthAttemptException) e).getAuthTries()));
+                vb.output.setText(getString(R.string.error_to_many_auth,
+                                            ((SshTooManyAuthAttemptException) e).getAuthTries()));
             } else {
-                mVb.output.setText(e.getMessage());
+                vb.output.setText(e.getMessage());
             }
         }
     }
 
-    private static class Holder
+    public static class Holder
             extends RecyclerView.ViewHolder {
 
         @NonNull
@@ -244,7 +264,7 @@ public class MainFragment
         @Override
         public void onBindViewHolder(@NonNull final Holder holder,
                                      final int position) {
-            final UserButton userButton = mList.get(position);
+            final UserButton userButton = list.get(position);
             final String label = userButton.getLabel();
             if (label.isEmpty()) {
                 holder.mVb.action.setText(R.string.button_not_set);
@@ -255,16 +275,16 @@ public class MainFragment
             holder.mVb.action.setOnClickListener(v -> {
                 if (userButton.isPersisted()) {
                     clearOutput();
-                    mVb.progress.setVisibility(View.VISIBLE);
+                    vb.progress.setVisibility(View.VISIBLE);
                     //noinspection ConstantConditions
-                    mVm.execute(getContext(), userButton);
+                    vm.execute(getContext(), userButton);
                 } else {
                     edit(userButton.getPosition());
                 }
             });
             holder.mVb.action.setOnLongClickListener(v -> {
-                if (mMovingButtons) {
-                    mItemTouchHelper.startDrag(holder);
+                if (movingButtons) {
+                    itemTouchHelper.startDrag(holder);
                 } else {
                     edit(userButton.getPosition());
                 }
@@ -274,7 +294,7 @@ public class MainFragment
 
         @Override
         public int getItemCount() {
-            return mList.size();
+            return list.size();
         }
 
         /**
@@ -283,24 +303,26 @@ public class MainFragment
          *
          * @param fromPosition The start position of the moved item.
          * @param toPosition   The resolved position of the moved item.
+         *
          * @return {@code true} if a move was done, {@code false} if not.
          */
         @Override
         public boolean onItemMove(final int fromPosition,
                                   final int toPosition) {
-            final UserButton userButtonFrom = mList.get(fromPosition);
-            final UserButton userButtonTo = mList.get(toPosition);
+            final UserButton userButtonFrom = list.get(fromPosition);
+            final UserButton userButtonTo = list.get(toPosition);
 
             userButtonFrom.setPosition(toPosition);
             userButtonTo.setPosition(fromPosition);
 
-            Collections.swap(mList, fromPosition, toPosition);
+            Collections.swap(list, fromPosition, toPosition);
             notifyItemMoved(fromPosition, toPosition);
             return true;
         }
     }
 
-    private class ToolbarMenuProvider implements MenuProvider {
+    private class ToolbarMenuProvider
+            implements MenuProvider {
 
         @Override
         public void onCreateMenu(@NonNull final Menu menu,
@@ -313,17 +335,54 @@ public class MainFragment
             final int itemId = menuItem.getItemId();
 
             if (itemId == R.id.MENU_GLOBAL_SETTINGS) {
-                mNavController.navigate(R.id.action_mainFragment_to_settingsFragment);
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .addToBackStack(SettingsFragment.TAG)
+                        .replace(R.id.main_fragment, new SettingsFragment(), SettingsFragment.TAG)
+                        .commit();
                 return true;
 
             } else if (itemId == R.id.MENU_KEY_MANAGEMENT) {
-                mNavController.navigate(R.id.action_mainFragment_to_keyManagementFragment);
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .addToBackStack(KeyManagementFragment.TAG)
+                        .replace(R.id.main_fragment,
+                                 new KeyManagementFragment(),
+                                 KeyManagementFragment.TAG)
+                        .commit();
                 return true;
 
             } else if (itemId == R.id.MENU_EDIT_BUTTON_ORDER) {
-                mMovingButtons = true;
-                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                movingButtons = true;
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+            } else if (itemId == R.id.MENU_ABOUT) {
+                final Context context = requireContext();
+
+                String message;
+                try {
+                    final PackageInfo pInfo = context.getPackageManager().getPackageInfo(
+                            context.getPackageName(), 0);
+                    message = getString(R.string.app_name) + ": "
+                              + pInfo.versionName
+                              + '\n'
+                              + getString(R.string.library_name) + ": "
+                              + SshClientFactory.getVersionName();
+
+                } catch (@NonNull final PackageManager.NameNotFoundException e) {
+                    message = "";
+                }
+
+                new MaterialAlertDialogBuilder(context)
+                        .setTitle(R.string.app_name)
+                        .setMessage(message)
+                        .create()
+                        .show();
+                return true;
             }
+
             return false;
         }
     }

@@ -1,101 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/top_scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="4dp"
-    tools:context=".EditConfigFragment">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_button_label"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_button_label"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="4dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".EditButtonFragment">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/button_label"
-            style="@style/TIE"
-            android:maxEms="@integer/button_max_ems"
-            android:maxLines="1"
-            tools:text="label for button" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_button_label"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_button_label"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/button_label"
+                style="@style/TIE"
+                android:maxEms="@integer/button_max_ems"
+                android:maxLines="1"
+                tools:text="label for button" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_host"
-        style="@style/TIL.ExposedDropdownMenu"
-        android:hint="@string/lbl_host"
-        app:layout_constraintEnd_toStartOf="@id/btn_host_edit"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_button_label">
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_host"
+            style="@style/TIL.ExposedDropdownMenu"
+            android:hint="@string/lbl_host"
+            app:layout_constraintEnd_toStartOf="@id/btn_host_edit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_button_label">
 
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/host"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="none"
-            tools:ignore="LabelFor"
-            tools:text="localhost" />
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/host"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                tools:ignore="LabelFor"
+                tools:text="localhost" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/btn_host_edit"
-        style="@style/TIL.EditText.Button"
-        app:icon="@drawable/ic_twotone_edit_24"
-        app:layout_constraintBottom_toBottomOf="@id/lbl_host"
-        app:layout_constraintEnd_toStartOf="@id/btn_host_new"
-        app:layout_constraintStart_toEndOf="@id/lbl_host"
-        app:layout_constraintTop_toTopOf="@id/lbl_host" />
+        <Button
+            android:id="@+id/btn_host_edit"
+            style="@style/TIL.EditText.Button"
+            app:icon="@drawable/ic_twotone_edit_24"
+            app:layout_constraintBottom_toBottomOf="@id/lbl_host"
+            app:layout_constraintEnd_toStartOf="@id/btn_host_new"
+            app:layout_constraintStart_toEndOf="@id/lbl_host"
+            app:layout_constraintTop_toTopOf="@id/lbl_host" />
 
-    <Button
-        android:id="@+id/btn_host_new"
-        style="@style/TIL.EditText.Button"
-        app:icon="@drawable/ic_twotone_add_24"
-        app:layout_constraintBottom_toBottomOf="@id/lbl_host"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btn_host_edit"
-        app:layout_constraintTop_toTopOf="@id/lbl_host" />
+        <Button
+            android:id="@+id/btn_host_new"
+            style="@style/TIL.EditText.Button"
+            app:icon="@drawable/ic_twotone_add_24"
+            app:layout_constraintBottom_toBottomOf="@id/lbl_host"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_host_edit"
+            app:layout_constraintTop_toTopOf="@id/lbl_host" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_command"
-        style="@style/TIL.ExposedDropdownMenu"
-        android:hint="@string/lbl_command"
-        app:layout_constraintEnd_toStartOf="@id/btn_command_edit"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_host">
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_command"
+            style="@style/TIL.ExposedDropdownMenu"
+            android:hint="@string/lbl_command"
+            app:layout_constraintEnd_toStartOf="@id/btn_command_edit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_host">
 
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/command"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="none"
-            tools:ignore="LabelFor"
-            tools:text="name of command" />
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/command"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                tools:ignore="LabelFor"
+                tools:text="name of command" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/btn_command_edit"
-        style="@style/TIL.EditText.Button"
-        app:icon="@drawable/ic_twotone_edit_24"
-        app:layout_constraintBottom_toBottomOf="@id/lbl_command"
-        app:layout_constraintEnd_toStartOf="@id/btn_command_new"
-        app:layout_constraintStart_toEndOf="@id/lbl_command"
-        app:layout_constraintTop_toTopOf="@id/lbl_command" />
+        <Button
+            android:id="@+id/btn_command_edit"
+            style="@style/TIL.EditText.Button"
+            app:icon="@drawable/ic_twotone_edit_24"
+            app:layout_constraintBottom_toBottomOf="@id/lbl_command"
+            app:layout_constraintEnd_toStartOf="@id/btn_command_new"
+            app:layout_constraintStart_toEndOf="@id/lbl_command"
+            app:layout_constraintTop_toTopOf="@id/lbl_command" />
 
-    <Button
-        android:id="@+id/btn_command_new"
-        style="@style/TIL.EditText.Button"
-        app:icon="@drawable/ic_twotone_add_24"
-        app:layout_constraintBottom_toBottomOf="@id/lbl_command"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btn_command_edit"
-        app:layout_constraintTop_toTopOf="@id/lbl_command" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/btn_command_new"
+            style="@style/TIL.EditText.Button"
+            app:icon="@drawable/ic_twotone_add_24"
+            app:layout_constraintBottom_toBottomOf="@id/lbl_command"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_command_edit"
+            app:layout_constraintTop_toTopOf="@id/lbl_command" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

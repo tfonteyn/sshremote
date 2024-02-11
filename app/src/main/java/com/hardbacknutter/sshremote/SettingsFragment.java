@@ -2,9 +2,12 @@ package com.hardbacknutter.sshremote;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreference;
@@ -16,17 +19,26 @@ public class SettingsFragment
         extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    public static final String TAG = "SettingsFragment";
+
     public static final int DEF_BUTTONS_PER_PAGE = 8;
     public static final String PK_BUTTONS_FLOW = "global.buttons.flow";
 
     public static final String PK_BUTTONS_PER_PAGE = "global.buttons.amount";
 
     private SeekBarPreference logLevelPref;
+    private final OnBackPressedCallback backPressedCallback =
+            new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    getParentFragmentManager().popBackStack();
+                }
+            };
 
     @Override
     public void onCreatePreferences(final Bundle savedInstanceState,
                                     final String rootKey) {
-        setPreferencesFromResource(R.xml.global, rootKey);
+        setPreferencesFromResource(R.xml.preferences, rootKey);
 
         final SwitchPreference buttonsFlow = findPreference(PK_BUTTONS_FLOW);
 
@@ -78,5 +90,27 @@ public class SettingsFragment
         } else {
             logLevelPref.setSummary(getString(R.string.error_import_failed));
         }
+    }
+
+    @Override
+    public void onViewCreated(@NonNull final View view,
+                              @Nullable final Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        final Toolbar toolbar = initToolbar();
+        toolbar.setSubtitle(R.string.lbl_settings);
+    }
+
+    @NonNull
+    private Toolbar initToolbar() {
+        final MainActivity activity = (MainActivity) getActivity();
+        //noinspection DataFlowIssue
+        final Toolbar toolbar = activity.getToolbar();
+        toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
+        toolbar.setNavigationOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        activity.getOnBackPressedDispatcher()
+                .addCallback(getViewLifecycleOwner(), backPressedCallback);
+        return toolbar;
     }
 }

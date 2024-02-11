@@ -1,92 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/top_scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EditConfigFragment">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_host_label"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_host_label"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".EditButtonFragment">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/host_label"
-            style="@style/TIE"
-            tools:text="label for host" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_host_label"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_host_label"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/host_label"
+                style="@style/TIE"
+                tools:text="label for host" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_hostname_or_ip"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_hostname_or_ip"
-        android:paddingTop="@dimen/til_vert_spacer"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_host_label">
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/hostname_or_ip"
-            style="@style/TIE"
-            android:maxEms="@integer/button_max_ems"
-            android:maxLines="1"
-            tools:text="localhost" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_hostname_or_ip"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_hostname_or_ip"
+            android:paddingTop="@dimen/til_vert_spacer"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_host_label">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/hostname_or_ip"
+                style="@style/TIE"
+                android:maxEms="@integer/button_max_ems"
+                android:maxLines="1"
+                tools:text="localhost" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_port"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_port"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_hostname_or_ip">
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/port"
-            style="@style/TIE" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_port"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_port"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_hostname_or_ip">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/port"
+                style="@style/TIE" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_username"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_username"
-        android:paddingTop="@dimen/til_vert_spacer"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_port">
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/user_name"
-            style="@style/TIE"
-            tools:text="user" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_username"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_username"
+            android:paddingTop="@dimen/til_vert_spacer"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_port">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/user_name"
+                style="@style/TIE"
+                tools:text="user" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/lbl_password"
-        style="@style/TIL.EditText"
-        android:hint="@string/lbl_password"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lbl_username">
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/password"
-            style="@style/TIE.password"
-            tools:text="secret password" />
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/lbl_password"
+            style="@style/TIL.EditText"
+            android:hint="@string/lbl_password"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lbl_username">
 
-    </com.google.android.material.textfield.TextInputLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/password"
+                style="@style/TIE.password"
+                tools:text="secret password" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

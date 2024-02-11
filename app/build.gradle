@@ -128,8 +128,6 @@ dependencies {
     implementation("androidx.fragment:fragment:${androidxFragmentVersion}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${androidxLifecycleVersion}")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:${androidxLifecycleVersion}")
-    implementation("androidx.navigation:navigation-fragment:${androidNavigationFragment}")
-    implementation("androidx.navigation:navigation-ui:${androidNavigationUI}")
     implementation("androidx.preference:preference:${androidxPreferenceVersion}")
     implementation("androidx.recyclerview:recyclerview:${androidxRecyclerviewVersion}")
     implementation("androidx.room:room-runtime:${androidRoomVersion}")

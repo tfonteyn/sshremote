@@ -71,8 +71,8 @@ public class EditHostViewModel
     }
 
     void save(@NonNull final ViewModelStoreOwner owner) {
-        final EditConfigViewModel cvm = new ViewModelProvider(owner)
-                .get(EditConfigViewModel.class);
+        final EditButtonViewModel cvm = new ViewModelProvider(owner)
+                .get(EditButtonViewModel.class);
         db.getExecutor().execute(() -> {
             if (host.id == 0) {
                 cvm.setHost((int) db.getHostDao().insert(host));
@@ -83,8 +83,8 @@ public class EditHostViewModel
     }
 
     void delete(@NonNull final ViewModelStoreOwner owner) {
-        final EditConfigViewModel cvm = new ViewModelProvider(owner)
-                .get(EditConfigViewModel.class);
+        final EditButtonViewModel cvm = new ViewModelProvider(owner)
+                .get(EditButtonViewModel.class);
         db.getExecutor().execute(() -> {
             db.getHostDao().delete(host);
             cvm.setHost(0);

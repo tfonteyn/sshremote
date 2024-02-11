@@ -6,19 +6,25 @@
     <item
         android:id="@id/MENU_KEY_MANAGEMENT"
         android:orderInCategory="600"
-        android:title="@string/menu_key_management"
+        android:title="@string/lbl_key_management"
         app:showAsAction="never" />
 
     <item
         android:id="@id/MENU_EDIT_BUTTON_ORDER"
         android:orderInCategory="800"
-        android:title="@string/menu_edit_button_order"
+        android:title="@string/lbl_edit_button_order"
         app:showAsAction="never" />
 
     <item
         android:id="@id/MENU_GLOBAL_SETTINGS"
         android:orderInCategory="900"
-        android:title="@string/menu_settings"
+        android:title="@string/lbl_settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@id/MENU_ABOUT"
+        android:orderInCategory="999"
+        android:title="@string/lbl_about"
         app:showAsAction="never" />
 
 </menu>

@@ -11,10 +11,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.hardbacknutter.sshremote.databinding.FragmentEditCommandBinding;
 import com.hardbacknutter.sshremote.db.Command;
@@ -23,19 +22,19 @@ import com.hardbacknutter.sshremote.widgets.ExtTextWatcher;
 public class EditCommandFragment
         extends BaseFragment {
 
-    private FragmentEditCommandBinding mVb;
+    static final String TAG = "EditCommandFragment";
 
-    private EditCommandViewModel mVm;
+    private FragmentEditCommandBinding vb;
 
-    private NavController mNavController;
+    private EditCommandViewModel vm;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
-        mVb = FragmentEditCommandBinding.inflate(inflater, container, false);
-        return mVb.getRoot();
+        vb = FragmentEditCommandBinding.inflate(inflater, container, false);
+        return vb.getRoot();
     }
 
     @Override
@@ -45,43 +44,43 @@ public class EditCommandFragment
 
         final Context context = view.getContext();
 
-        mNavController = NavHostFragment.findNavController(this);
+        vm = new ViewModelProvider(this).get(EditCommandViewModel.class);
+        vm.init(context, getArguments());
+        vm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
 
-        mVm = new ViewModelProvider(this).get(EditCommandViewModel.class);
-        mVm.init(context, getArguments());
-        mVm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
-
-        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
+        final Toolbar toolbar = initToolbar(new ToolbarMenuProvider());
+        toolbar.setSubtitle(R.string.lbl_edit_command);
     }
 
     private void onConfigLoaded(@NonNull final Command command) {
-        mVb.commandLabel.setText(command.label);
-        mVb.commandLabel.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setLabel(s.toString().trim()));
+        vb.commandLabel.setText(command.label);
+        vb.commandLabel.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setLabel(s.toString().trim()));
 
-        mVb.commandLine.setText(command.cmd);
-        mVb.commandLine.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setCommand(s.toString().trim()));
+        vb.commandLine.setText(command.cmd);
+        vb.commandLine.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setCommand(s.toString().trim()));
 
-        mVb.sudoPassword.setEnabled(!command.sudoPassword.isEmpty());
-        mVb.sudoPassword.setText(command.sudoPassword);
-        mVb.sudoPassword.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setSudoPassword(s.toString().trim()));
+        vb.sudoPassword.setEnabled(!command.sudoPassword.isEmpty());
+        vb.sudoPassword.setText(command.sudoPassword);
+        vb.sudoPassword.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setSudoPassword(s.toString().trim()));
 
-        mVb.cbxSudo.setChecked(command.isSudo);
-        mVb.cbxSudo.setOnCheckedChangeListener((v, isChecked) -> mVm.setSudo(isChecked));
+        vb.cbxSudo.setChecked(command.isSudo);
+        vb.cbxSudo.setOnCheckedChangeListener((v, isChecked) -> vm.setSudo(isChecked));
 
-        mVb.cbxSudoUseUserPassword.setChecked(command.sudoPassword.isEmpty());
-        mVb.cbxSudoUseUserPassword.setOnCheckedChangeListener((v, isChecked) -> {
+        vb.cbxSudoUseUserPassword.setChecked(command.sudoPassword.isEmpty());
+        vb.cbxSudoUseUserPassword.setOnCheckedChangeListener((v, isChecked) -> {
             if (isChecked) {
-                mVm.setSudoPassword("");
-                mVb.sudoPassword.setText("");
+                vm.setSudoPassword("");
+                vb.sudoPassword.setText("");
             }
-            mVb.sudoPassword.setEnabled(!isChecked);
+            vb.sudoPassword.setEnabled(!isChecked);
         });
     }
 
-    private class ToolbarMenuProvider implements MenuProvider {
+    private class ToolbarMenuProvider
+            implements MenuProvider {
 
         @Override
         public void onCreateMenu(@NonNull final Menu menu,
@@ -95,14 +94,14 @@ public class EditCommandFragment
 
             if (itemId == R.id.MENU_SAVE) {
                 //noinspection ConstantConditions
-                mVm.save(getActivity());
-                mNavController.popBackStack();
+                vm.save(getActivity());
+                getParentFragmentManager().popBackStack();
                 return true;
 
             } else if (itemId == R.id.MENU_DELETE) {
                 //noinspection ConstantConditions
-                mVm.delete(getActivity());
-                mNavController.popBackStack();
+                vm.delete(getActivity());
+                getParentFragmentManager().popBackStack();
                 return true;
             }
             return false;

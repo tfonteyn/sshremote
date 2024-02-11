@@ -11,10 +11,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.hardbacknutter.sshremote.databinding.FragmentEditHostBinding;
 import com.hardbacknutter.sshremote.db.Host;
@@ -23,19 +22,18 @@ import com.hardbacknutter.sshremote.widgets.ExtTextWatcher;
 public class EditHostFragment
         extends BaseFragment {
 
-    private FragmentEditHostBinding mVb;
+    static final String TAG = "EditHostFragment";
+    private FragmentEditHostBinding vb;
 
-    private EditHostViewModel mVm;
-
-    private NavController mNavController;
+    private EditHostViewModel vm;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
-        mVb = FragmentEditHostBinding.inflate(inflater, container, false);
-        return mVb.getRoot();
+        vb = FragmentEditHostBinding.inflate(inflater, container, false);
+        return vb.getRoot();
     }
 
     @Override
@@ -45,53 +43,53 @@ public class EditHostFragment
 
         final Context context = view.getContext();
 
-        mNavController = NavHostFragment.findNavController(this);
+        vm = new ViewModelProvider(this).get(EditHostViewModel.class);
+        vm.init(context, getArguments());
+        vm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
 
-        mVm = new ViewModelProvider(this).get(EditHostViewModel.class);
-        mVm.init(context, getArguments());
-        mVm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
-
-        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
+        final Toolbar toolbar = initToolbar(new ToolbarMenuProvider());
+        toolbar.setSubtitle(R.string.lbl_edit_host);
     }
 
     private void onConfigLoaded(@NonNull final Host host) {
-        mVb.hostLabel.setText(host.label);
-        mVb.hostLabel.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setLabel(s.toString()));
+        vb.hostLabel.setText(host.label);
+        vb.hostLabel.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setLabel(s.toString()));
 
-        mVb.hostnameOrIp.setText(host.hostnameOrIp);
-        mVb.hostnameOrIp.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setHost(s.toString().trim()));
+        vb.hostnameOrIp.setText(host.hostnameOrIp);
+        vb.hostnameOrIp.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setHost(s.toString().trim()));
 
         if (host.port == Host.DEFAULT_PORT) {
-            mVb.port.setText("");
+            vb.port.setText("");
         } else {
-            mVb.port.setText(String.valueOf(host.port));
+            vb.port.setText(String.valueOf(host.port));
         }
-        mVb.port.addTextChangedListener((ExtTextWatcher) s -> {
+        vb.port.addTextChangedListener((ExtTextWatcher) s -> {
             try {
                 final String p = s.toString().trim();
                 if (p.isEmpty()) {
-                    mVm.setPort(Host.DEFAULT_PORT);
+                    vm.setPort(Host.DEFAULT_PORT);
                 } else {
-                    mVm.setPort(Integer.parseInt(p));
+                    vm.setPort(Integer.parseInt(p));
                 }
             } catch (@NonNull final NumberFormatException e) {
-                mVm.setPort(Host.DEFAULT_PORT);
-                mVb.port.setText(String.valueOf(Host.DEFAULT_PORT));
+                vm.setPort(Host.DEFAULT_PORT);
+                vb.port.setText(String.valueOf(Host.DEFAULT_PORT));
             }
         });
 
-        mVb.userName.setText(host.userName);
-        mVb.userName.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setUserName(s.toString().trim()));
+        vb.userName.setText(host.userName);
+        vb.userName.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setUserName(s.toString().trim()));
 
-        mVb.password.setText(host.userPassword);
-        mVb.password.addTextChangedListener(
-                (ExtTextWatcher) s -> mVm.setUserPassword(s.toString().trim()));
+        vb.password.setText(host.userPassword);
+        vb.password.addTextChangedListener(
+                (ExtTextWatcher) s -> vm.setUserPassword(s.toString().trim()));
     }
 
-    private class ToolbarMenuProvider implements MenuProvider {
+    private class ToolbarMenuProvider
+            implements MenuProvider {
 
         @Override
         public void onCreateMenu(@NonNull final Menu menu,
@@ -105,14 +103,14 @@ public class EditHostFragment
 
             if (itemId == R.id.MENU_SAVE) {
                 //noinspection ConstantConditions
-                mVm.save(getActivity());
-                mNavController.popBackStack();
+                vm.save(getActivity());
+                getParentFragmentManager().popBackStack();
                 return true;
 
             } else if (itemId == R.id.MENU_DELETE) {
                 //noinspection ConstantConditions
-                mVm.delete(getActivity());
-                mNavController.popBackStack();
+                vm.delete(getActivity());
+                getParentFragmentManager().popBackStack();
                 return true;
             }
             return false;

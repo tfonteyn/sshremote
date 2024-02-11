@@ -17,7 +17,7 @@ import com.hardbacknutter.sshremote.db.DB;
 import com.hardbacknutter.sshremote.db.Host;
 
 @SuppressWarnings("WeakerAccess")
-public class EditConfigViewModel
+public class EditButtonViewModel
         extends ViewModel {
 
     static final String ARGS_BUTTON_POSITION = "pos";

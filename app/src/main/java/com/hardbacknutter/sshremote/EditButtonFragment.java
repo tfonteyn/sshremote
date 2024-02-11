@@ -11,12 +11,14 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuProvider;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.List;
+
 import com.hardbacknutter.sshremote.databinding.FragmentEditButtonBinding;
 import com.hardbacknutter.sshremote.db.Command;
 import com.hardbacknutter.sshremote.db.Config;
@@ -24,25 +26,23 @@ import com.hardbacknutter.sshremote.db.Host;
 import com.hardbacknutter.sshremote.widgets.ExtArrayAdapter;
 import com.hardbacknutter.sshremote.widgets.ExtTextWatcher;
 
-import java.util.List;
-
-public class EditConfigFragment
+public class EditButtonFragment
         extends BaseFragment {
 
-    private NavController mNavController;
+    static final String TAG = "EditButtonFragment";
 
-    private FragmentEditButtonBinding mVb;
+    private FragmentEditButtonBinding vb;
 
-    private EditConfigViewModel mVm;
-    private CommandAdapter mCommandAdapter;
-    private HostAdapter mHostAdapter;
+    private EditButtonViewModel vm;
+    private CommandAdapter commandAdapter;
+    private HostAdapter hostAdapter;
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
-        mVb = FragmentEditButtonBinding.inflate(inflater, container, false);
-        return mVb.getRoot();
+        vb = FragmentEditButtonBinding.inflate(inflater, container, false);
+        return vb.getRoot();
     }
 
     @Override
@@ -52,74 +52,87 @@ public class EditConfigFragment
 
         final Context context = view.getContext();
 
-        mNavController = NavHostFragment.findNavController(this);
-
         //noinspection ConstantConditions
-        mVm = new ViewModelProvider(getActivity()).get(EditConfigViewModel.class);
-        mVm.init(context, getArguments());
-        mVm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
+        vm = new ViewModelProvider(getActivity()).get(EditButtonViewModel.class);
+        vm.init(context, getArguments());
+        vm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
 
-        getToolbar().addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
+        final Toolbar toolbar = initToolbar(new ToolbarMenuProvider());
+        toolbar.setSubtitle(R.string.lbl_edit_button);
     }
 
     private void onConfigLoaded(@NonNull final Config config) {
-        mVb.buttonLabel.setText(config.label);
-        mVb.buttonLabel.addTextChangedListener((ExtTextWatcher) s -> mVm.setLabel(s.toString()));
+        vb.buttonLabel.setText(config.label);
+        vb.buttonLabel.addTextChangedListener((ExtTextWatcher) s -> vm.setLabel(s.toString()));
 
         initHostViews(config);
         initCommandViews(config);
     }
 
     private void initHostViews(@NonNull final Config config) {
-        final List<Host> hostList = mVm.getHostList();
+        final List<Host> hostList = vm.getHostList();
         //noinspection ConstantConditions
-        mHostAdapter = new HostAdapter(getContext(), hostList);
-        mVb.host.setAdapter(mHostAdapter);
+        hostAdapter = new HostAdapter(getContext(), hostList);
+        vb.host.setAdapter(hostAdapter);
         final Host host = hostList
                 .stream()
                 .filter(h -> h.id == config.hostId)
                 .findFirst()
                 .orElse(new Host());
-        mVb.host.setText(host.label, false);
+        vb.host.setText(host.label, false);
 
         //noinspection ConstantConditions
-        mVb.host.setOnItemClickListener((av, v, position, id) -> mVm
-                .setHost(mHostAdapter.getItem(position).id));
+        vb.host.setOnItemClickListener((av, v, position, id) -> vm
+                .setHost(hostAdapter.getItem(position).id));
 
-        mVb.btnHostNew.setOnClickListener(v -> editHost(0));
-        mVb.btnHostEdit.setOnClickListener(v -> editHost(mVm.getHost()));
+        vb.btnHostNew.setOnClickListener(v -> editHost(0));
+        vb.btnHostEdit.setOnClickListener(v -> editHost(vm.getHost()));
     }
 
     private void initCommandViews(@NonNull final Config config) {
-        final List<Command> commandList = mVm.getCommandList();
+        final List<Command> commandList = vm.getCommandList();
         //noinspection ConstantConditions
-        mCommandAdapter = new CommandAdapter(getContext(), commandList);
-        mVb.command.setAdapter(mCommandAdapter);
+        commandAdapter = new CommandAdapter(getContext(), commandList);
+        vb.command.setAdapter(commandAdapter);
         final Command command = commandList
                 .stream()
                 .filter(c -> c.id == config.commandId)
                 .findFirst()
                 .orElse(new Command());
-        mVb.command.setText(command.label, false);
+        vb.command.setText(command.label, false);
 
         //noinspection ConstantConditions
-        mVb.command.setOnItemClickListener((av, v, position, id) -> mVm
-                .setCommand(mCommandAdapter.getItem(position).id));
+        vb.command.setOnItemClickListener((av, v, position, id) -> vm
+                .setCommand(commandAdapter.getItem(position).id));
 
-        mVb.btnCommandNew.setOnClickListener(v -> editCommand(0));
-        mVb.btnCommandEdit.setOnClickListener(v -> editCommand(mVm.getCommand()));
+        vb.btnCommandNew.setOnClickListener(v -> editCommand(0));
+        vb.btnCommandEdit.setOnClickListener(v -> editCommand(vm.getCommand()));
     }
 
     private void editHost(final int id) {
         final Bundle args = new Bundle();
         args.putInt(EditHostViewModel.ARGS_ID, id);
-        mNavController.navigate(R.id.action_EditConfigFragment_to_editHostFragment, args);
+        final EditHostFragment fragment = new EditHostFragment();
+        fragment.setArguments(args);
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .addToBackStack(EditHostFragment.TAG)
+                .replace(R.id.main_fragment, fragment, EditHostFragment.TAG)
+                .commit();
     }
 
     private void editCommand(final int id) {
         final Bundle args = new Bundle();
         args.putInt(EditCommandViewModel.ARGS_ID, id);
-        mNavController.navigate(R.id.action_editConfigFragment_to_editCommandFragment, args);
+        final EditCommandFragment fragment = new EditCommandFragment();
+        fragment.setArguments(args);
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .addToBackStack(EditCommandFragment.TAG)
+                .replace(R.id.main_fragment, fragment, EditCommandFragment.TAG)
+                .commit();
     }
 
     private static class HostAdapter
@@ -164,7 +177,8 @@ public class EditConfigFragment
         }
     }
 
-    private class ToolbarMenuProvider implements MenuProvider {
+    private class ToolbarMenuProvider
+            implements MenuProvider {
 
         @Override
         public void onCreateMenu(@NonNull final Menu menu,
@@ -177,17 +191,17 @@ public class EditConfigFragment
             final int itemId = menuItem.getItemId();
 
             if (itemId == R.id.MENU_SAVE) {
-                if (mVm.save()) {
-                    mNavController.popBackStack();
+                if (vm.save()) {
+                    getParentFragmentManager().popBackStack();
                 } else {
-                    Snackbar.make(mVb.getRoot(), R.string.button_not_set, Snackbar.LENGTH_SHORT)
+                    Snackbar.make(vb.getRoot(), R.string.button_not_set, Snackbar.LENGTH_SHORT)
                             .show();
                 }
                 return true;
 
             } else if (itemId == R.id.MENU_DELETE) {
-                mVm.delete();
-                mNavController.popBackStack();
+                vm.delete();
+                getParentFragmentManager().popBackStack();
                 return true;
             }
             return false;

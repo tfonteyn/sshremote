@@ -48,8 +48,8 @@ public class FinishedMessage<Result>
      */
     private boolean hasBeenHandled;
 
-    public FinishedMessage(final int taskId,
-                           @Nullable final Result result) {
+    FinishedMessage(final int taskId,
+                    @Nullable final Result result) {
         this.taskId = taskId;
         this.result = result;
     }

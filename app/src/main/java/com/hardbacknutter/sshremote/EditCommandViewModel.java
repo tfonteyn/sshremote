@@ -65,8 +65,8 @@ public class EditCommandViewModel
     }
 
     void save(@NonNull final ViewModelStoreOwner owner) {
-        final EditConfigViewModel cvm = new ViewModelProvider(owner)
-                .get(EditConfigViewModel.class);
+        final EditButtonViewModel cvm = new ViewModelProvider(owner)
+                .get(EditButtonViewModel.class);
         db.getExecutor().execute(() -> {
             if (command.id == 0) {
                 cvm.setCommand((int) db.getCommandDao().insert(command));
@@ -77,8 +77,8 @@ public class EditCommandViewModel
     }
 
     void delete(@NonNull final ViewModelStoreOwner owner) {
-        final EditConfigViewModel cvm = new ViewModelProvider(owner)
-                .get(EditConfigViewModel.class);
+        final EditButtonViewModel cvm = new ViewModelProvider(owner)
+                .get(EditButtonViewModel.class);
         db.getExecutor().execute(() -> {
             db.getCommandDao().delete(command);
             cvm.setCommand(0);

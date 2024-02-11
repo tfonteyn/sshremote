@@ -3,32 +3,29 @@
     <string name="app_name">SSH Remote</string>
     <string name="library_name">ssh-client</string>
 
-    <!-- Strings used for fragment navigation -->
-    <string name="lbl_fragment_main">SSH Remote</string>
-    <string name="lbl_fragment_edit_button">Edit Button</string>
-    <string name="lbl_fragment_edit_host">Edit host</string>
-    <string name="lbl_fragment_edit_command">Edit command line</string>
+    <string name="lbl_edit_button">Edit Button</string>
+    <string name="lbl_edit_host">Edit Host</string>
+    <string name="lbl_edit_command">Edit Command</string>
 
-    <!-- lbl_fragment_edit_button -->
+    <!-- EditButtonFragment -->
     <string name="lbl_button_label">Label</string>
     <string name="lbl_host">Host</string>
     <string name="lbl_command">Command</string>
 
-    <!-- lbl_fragment_edit_host -->
+    <!-- EditHostFragment -->
     <string name="lbl_host_label">Label</string>
     <string name="lbl_hostname_or_ip">Hostname or ip address</string>
     <string name="lbl_port">Port (default is 22)</string>
     <string name="lbl_username">Username</string>
     <string name="lbl_password">Password</string>
 
-    <!-- lbl_fragment_edit_command -->
+    <!-- EditCommandFragment -->
     <string name="lbl_command_label">Label</string>
     <string name="lbl_command_line">Command line</string>
     <string name="lbl_sudo">Run with sudo</string>
     <string name="lbl_sudo_use_user_password">sudo uses user password</string>
     <string name="lbl_sudo_password">Sudo password</string>
 
-    <!-- Button or menu -->
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
     <string name="action_undo">Undo</string>
@@ -40,10 +37,10 @@
     <string name="button_not_set">(Not Set)</string>
     <string name="lbl_clear">Clear</string>
 
-    <string name="menu_key_management">Key management</string>
-    <string name="menu_settings">Settings</string>
-    <string name="menu_edit_button_order">Edit button order</string>
-    <string name="menu_about">About</string>
+    <string name="lbl_key_management">Key management</string>
+    <string name="lbl_settings">Settings</string>
+    <string name="lbl_edit_button_order">Edit button order</string>
+    <string name="lbl_about">About</string>
 
     <string name="lbl_total_nr_of_buttons">Number of buttons</string>
 
@@ -57,13 +54,14 @@
     <string name="error_import_failed">Import failed</string>
     <string name="error_save_failed">Save failed</string>
 
-    <string name="lbl_confirm_button_position">Long-press buttons and drag/drop them into the desired order.</string>
+    <string name="lbl_confirm_button_position">Drag and drop buttons into the desired order.</string>
     <string name="lbl_strict_host_key_checking">Strict host key checking</string>
 
     <string name="vertical">vertical</string>
     <string name="horizontal">horizontal</string>
 
     <string name="lbl_log_level">Log level</string>
+    <string name="lbl_buttons_flow">Buttons flow</string>
     <string-array name="log_levels">
         <item>None</item>
         <item>Fatal errors</item>
