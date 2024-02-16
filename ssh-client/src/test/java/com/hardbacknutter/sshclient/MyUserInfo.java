@@ -3,9 +3,9 @@ package com.hardbacknutter.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.userauth.UserInfo;
-
 import java.nio.charset.StandardCharsets;
+
+import com.hardbacknutter.sshclient.userauth.UserInfo;
 
 public class MyUserInfo
         implements UserInfo {
@@ -37,7 +37,7 @@ public class MyUserInfo
     @Nullable
     @Override
     public byte[] getPassword() {
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         return password.getBytes(StandardCharsets.UTF_8);
     }
 
@@ -51,7 +51,7 @@ public class MyUserInfo
     @Nullable
     @Override
     public byte[] getPassphrase() {
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         return keyFilesPassphrase.getBytes(StandardCharsets.UTF_8);
     }
 
