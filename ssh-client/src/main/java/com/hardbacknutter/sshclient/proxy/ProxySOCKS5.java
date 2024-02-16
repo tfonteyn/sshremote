@@ -8,11 +8,11 @@ package com.hardbacknutter.sshclient.proxy;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.SocketFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+
+import com.hardbacknutter.sshclient.SocketFactory;
 
 /**
  * A {@link Proxy} implementation using a SOCKS V5 proxy.
@@ -97,7 +97,7 @@ public class ProxySOCKS5
             buf[index++] = 0;           // NO AUTHENTICATION REQUIRED
             buf[index++] = 2;           // USERNAME/PASSWORD
 
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             out.write(buf, 0, index);
 
 /*
@@ -110,7 +110,7 @@ public class ProxySOCKS5
                          | 1  |   1    |
                          +----+--------+
 */
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             fill(in, buf, 2);
 
             boolean check = false;

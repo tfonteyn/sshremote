@@ -709,14 +709,14 @@ public final class SessionImpl
         md.update(buffer.data, 0, buffer.writeOffset);
         final byte[] macKey_s2c = md.digest();
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         final KexAgreement agreement = kexDelegate.getAgreement();
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         s2c.initEncryption(agreement, md, K, H, encKey_s2c, iv_s2c, macKey_s2c);
         s2c.initCompression(agreement, authenticated);
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         c2s.initEncryption(agreement, md, K, H, encKey_c2s, iv_c2s, macKey_c2s);
         c2s.initCompression(agreement, authenticated);
 
@@ -778,7 +778,7 @@ public final class SessionImpl
         final Packet packet = new Packet();
         boolean done = false;
         while (!done) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             s2c.read(packet);
 
             //noinspection SwitchStatementWithoutDefaultBranch
@@ -839,9 +839,8 @@ public final class SessionImpl
                 case SshConstants.SSH_MSG_USERAUTH_SUCCESS: {
                     authenticated = true;
                     // enable delayed compression if needed
-                    //noinspection ConstantConditions
                     s2c.initCompression(kexDelegate.getAgreement(), authenticated);
-                    //noinspection ConstantConditions
+                    //noinspection DataFlowIssue
                     c2s.initCompression(kexDelegate.getAgreement(), authenticated);
 
                     done = true;
@@ -911,7 +910,7 @@ public final class SessionImpl
             throws KexTimeoutException {
         final long t = timeout;
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         while (kexDelegate.isInKeyExchange()) {
             if (kexDelegate.isTimeout(t) && !kexDelegate.isHostChecking()) {
                 throw new KexTimeoutException();
@@ -928,7 +927,7 @@ public final class SessionImpl
             throws IOException, GeneralSecurityException {
 
         final long t = timeout;
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         while (kexDelegate.isInKeyExchange()) {
             if (kexDelegate.isTimeout(t) && !kexDelegate.isHostChecking()) {
                 throw new KexTimeoutException();
@@ -950,7 +949,7 @@ public final class SessionImpl
             }
         }
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         c2s.write(packet);
 
         // We could do this when we call write with the SSH_MSG_NEWKEYS.
@@ -978,7 +977,7 @@ public final class SessionImpl
                     command = packet.getCommand();
                     stimeout = 0;
                 } catch (final InterruptedIOException /* SocketTimeoutException */ ee) {
-                    //noinspection ConstantConditions
+                    //noinspection DataFlowIssue
                     if (!kexDelegate.isInKeyExchange() && stimeout < serverAliveCountMax) {
                         sendKeepAlive();
                         stimeout++;
@@ -991,7 +990,7 @@ public final class SessionImpl
                 }
 
                 // If the kex process is expecting another packet, redirect it.
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 if (kexDelegate.isExpecting(command)) {
                     kexDelegate.next(packet);
 
@@ -1060,7 +1059,7 @@ public final class SessionImpl
                         case SshConstants.SSH_MSG_REQUEST_SUCCESS: {
                             // The only SSH_MSG_GLOBAL_REQUEST we send expecting a reply
                             // if for creating remote forwards
-                            //noinspection ConstantConditions
+                            //noinspection DataFlowIssue
                             remoteForwardingHandler.handleRemoteReply(packet);
                             break;
                         }

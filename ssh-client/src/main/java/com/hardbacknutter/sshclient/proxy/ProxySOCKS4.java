@@ -8,12 +8,12 @@ package com.hardbacknutter.sshclient.proxy;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.SocketFactory;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+
+import com.hardbacknutter.sshclient.SocketFactory;
 
 /*
  This file depends on following documents,
@@ -117,7 +117,7 @@ public class ProxySOCKS4
                 index += user.length();
             }
             buf[index++] = 0;
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             out.write(buf, 0, index);
 
 /*
@@ -150,7 +150,7 @@ public class ProxySOCKS4
             final int len = 8;
             int s = 0;
             while (s < len) {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 final int i = in.read(buf, s, len - s);
                 if (i <= 0) {
                     close();

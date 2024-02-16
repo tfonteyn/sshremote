@@ -3,21 +3,20 @@ package com.hardbacknutter.sshclient.transport;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.ciphers.AEADCipher;
-import com.hardbacknutter.sshclient.ciphers.ChaChaCipher;
-import com.hardbacknutter.sshclient.compression.SshDeflater;
-import com.hardbacknutter.sshclient.kex.KexAgreement;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
-
 import javax.crypto.Cipher;
+
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.ciphers.AEADCipher;
+import com.hardbacknutter.sshclient.ciphers.ChaChaCipher;
+import com.hardbacknutter.sshclient.compression.SshDeflater;
+import com.hardbacknutter.sshclient.kex.KexAgreement;
+import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 public class TransportC2S
         extends Transport {
@@ -48,7 +47,7 @@ public class TransportC2S
     void writeVersion(@NonNull final String clientVersion)
             throws IOException {
         final byte[] C_V = (clientVersion + "\r\n").getBytes(StandardCharsets.UTF_8);
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         socketOutputStream.write(C_V, 0, C_V.length);
         socketOutputStream.flush();
     }
@@ -133,7 +132,7 @@ public class TransportC2S
         // First Encrypt
         cipher.update(packet.data, 4, packet.writeOffset - 4, packet.data, 4);
         // then Mac
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         mac.update(seq);
         mac.update(packet.data, 0, packet.writeOffset);
         mac.doFinal(packet.data, packet.writeOffset);

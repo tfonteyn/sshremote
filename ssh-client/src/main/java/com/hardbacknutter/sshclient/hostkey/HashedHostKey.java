@@ -84,7 +84,7 @@ class HashedHostKey
         // If it is hashed, then the salt will already be initialized.
         try {
             synchronized (mac) {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 mac.init(salt);
                 final byte[] in = host.getBytes(StandardCharsets.UTF_8);
                 mac.update(in, 0, in.length);

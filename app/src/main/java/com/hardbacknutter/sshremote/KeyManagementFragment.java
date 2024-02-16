@@ -96,7 +96,7 @@ public class KeyManagementFragment
     private void onOpenUri(@Nullable final Uri uri) {
         if (uri != null) {
             try {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 vm.startImport(getContext(), uri);
                 adapter.notifyDataSetChanged();
             } catch (final IOException | NoSuchAlgorithmException e) {
@@ -109,7 +109,7 @@ public class KeyManagementFragment
     private void exportToUri(@Nullable final Uri uri) {
         if (uri != null) {
             try {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 vm.startExport(getContext(), uri);
             } catch (final IOException e) {
                 Snackbar.make(vb.getRoot(), R.string.error_export_failed, Snackbar.LENGTH_LONG)
@@ -185,7 +185,7 @@ public class KeyManagementFragment
 
             if (itemId == R.id.MENU_SAVE) {
                 try {
-                    //noinspection ConstantConditions
+                    //noinspection DataFlowIssue
                     vm.save(getContext());
                     getParentFragmentManager().popBackStack();
                 } catch (final IOException e) {

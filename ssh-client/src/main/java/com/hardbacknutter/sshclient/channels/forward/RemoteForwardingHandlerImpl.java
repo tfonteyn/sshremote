@@ -3,6 +3,12 @@ package com.hardbacknutter.sshclient.channels.forward;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.hardbacknutter.sshclient.RemoteForwardingHandler;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SocketFactory;
@@ -12,12 +18,6 @@ import com.hardbacknutter.sshclient.forwarding.PortForwardException;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Handles all remote port forwarding.
@@ -106,7 +106,7 @@ public class RemoteForwardingHandlerImpl
         if (lfc.socketPath == null) {
             // Note we must reverse the meaning of the 'f' port/hostport parameters here
             final int allocated = sendForwardRequest(lfc.bindAddress, lfc.port);
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             add(lfc.bindAddress, lfc.port, allocated, lfc.host, lfc.hostPort, null);
             return allocated;
 

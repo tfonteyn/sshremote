@@ -63,7 +63,7 @@ public class TransportS2C
     String readVersion()
             throws IOException {
         // Read the response; don't close the stream....
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(socketInputStream, StandardCharsets.UTF_8));
 

@@ -52,7 +52,7 @@ public class EditButtonFragment
 
         final Context context = view.getContext();
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         vm = new ViewModelProvider(getActivity()).get(EditButtonViewModel.class);
         vm.init(context, getArguments());
         vm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
@@ -71,7 +71,7 @@ public class EditButtonFragment
 
     private void initHostViews(@NonNull final Config config) {
         final List<Host> hostList = vm.getHostList();
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         hostAdapter = new HostAdapter(getContext(), hostList);
         vb.host.setAdapter(hostAdapter);
         final Host host = hostList
@@ -81,7 +81,7 @@ public class EditButtonFragment
                 .orElse(new Host());
         vb.host.setText(host.label, false);
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         vb.host.setOnItemClickListener((av, v, position, id) -> vm
                 .setHost(hostAdapter.getItem(position).id));
 
@@ -91,7 +91,7 @@ public class EditButtonFragment
 
     private void initCommandViews(@NonNull final Config config) {
         final List<Command> commandList = vm.getCommandList();
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         commandAdapter = new CommandAdapter(getContext(), commandList);
         vb.command.setAdapter(commandAdapter);
         final Command command = commandList
@@ -101,7 +101,7 @@ public class EditButtonFragment
                 .orElse(new Command());
         vb.command.setText(command.label, false);
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         vb.command.setOnItemClickListener((av, v, position, id) -> vm
                 .setCommand(commandAdapter.getItem(position).id));
 
@@ -145,7 +145,7 @@ public class EditButtonFragment
 
         @Override
         public long getItemId(final int position) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             return getItem(position).id;
         }
 
@@ -166,7 +166,7 @@ public class EditButtonFragment
 
         @Override
         public long getItemId(final int position) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             return getItem(position).id;
         }
 

@@ -116,7 +116,7 @@ public class MainFragment
         vb.clearOutput.setOnClickListener(v -> clearOutput());
 
         final MainActivity activity = (MainActivity) getActivity();
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         bottomSheetBehavior = activity.getBottomSheetBehavior();
         activity.getBottomSheetButtonSave().setOnClickListener(v -> setButtonOrder(true));
         activity.getBottomSheetButtonUndo().setOnClickListener(v -> setButtonOrder(false));
@@ -142,7 +142,7 @@ public class MainFragment
         if (save) {
             vm.saveButtonOrder(list);
         } else {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             vm.init(getContext());
         }
     }
@@ -179,7 +179,7 @@ public class MainFragment
 
         if (result.isNewEvent()) {
             final UserButton userButton = result.getResult();
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             final ChannelSession.ExitStatus exitStatus = userButton.getExitStatus();
             if (exitStatus == null) {
                 vb.lastExitCode.setVisibility(View.INVISIBLE);
@@ -210,7 +210,7 @@ public class MainFragment
             final UserButton userButton = result.first.getResult();
             final Exception e = result.second;
 
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             vb.lastButton.setText(userButton.getLabel());
             vb.lastExitCode.setVisibility(View.INVISIBLE);
 
@@ -276,7 +276,7 @@ public class MainFragment
                 if (userButton.isPersisted()) {
                     clearOutput();
                     vb.progress.setVisibility(View.VISIBLE);
-                    //noinspection ConstantConditions
+                    //noinspection DataFlowIssue
                     vm.execute(getContext(), userButton);
                 } else {
                     edit(userButton.getPosition());

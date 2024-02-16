@@ -333,7 +333,7 @@ public class ChannelSftpImpl
     public void cd(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             final String absPath = resolveRemotePath(path);
@@ -377,7 +377,7 @@ public class ChannelSftpImpl
             throws SftpException {
         if (home == null) {
             try {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 mpIn.updateReadSide();
 
                 sendREALPATH("");
@@ -396,7 +396,7 @@ public class ChannelSftpImpl
     public void mkdir(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             sendMKDIR(getAbsoluteRemotePath(path), null);
@@ -412,7 +412,7 @@ public class ChannelSftpImpl
     public void rmdir(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -430,7 +430,7 @@ public class ChannelSftpImpl
     public void rm(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -449,7 +449,7 @@ public class ChannelSftpImpl
                        @NonNull final String newPath)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             final String absOldPath = resolveRemotePath(oldPath);
@@ -502,7 +502,7 @@ public class ChannelSftpImpl
                    @NonNull final LsEntry.Selector selector)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             final String absPath = getAbsoluteRemotePath(path);
@@ -598,7 +598,7 @@ public class ChannelSftpImpl
         }
 
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             final String absTargetPath = resolveRemotePath(targetPath);
@@ -628,7 +628,7 @@ public class ChannelSftpImpl
     public SftpATTRS stat(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             sendSTAT(resolveRemotePath(path));
@@ -646,7 +646,7 @@ public class ChannelSftpImpl
     public SftpATTRS lstat(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             sendLSTAT(resolveRemotePath(path));
@@ -670,7 +670,7 @@ public class ChannelSftpImpl
         }
 
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             sendSTATVFS(resolveRemotePath(path));
@@ -688,7 +688,7 @@ public class ChannelSftpImpl
                         @NonNull final SftpATTRS attr)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -707,7 +707,7 @@ public class ChannelSftpImpl
                       @NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -730,7 +730,7 @@ public class ChannelSftpImpl
                       @NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -753,7 +753,7 @@ public class ChannelSftpImpl
                       @NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -776,7 +776,7 @@ public class ChannelSftpImpl
                                     @NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             for (final String absPath : globRemotePath(path)) {
@@ -799,7 +799,7 @@ public class ChannelSftpImpl
     public String readlink(@NonNull final String path)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             sendREADLINK(resolveRemotePath(path));
@@ -834,7 +834,7 @@ public class ChannelSftpImpl
                            final long initialOffset)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             final String srcFilename = resolveRemotePath(srcPath);
@@ -1119,7 +1119,7 @@ public class ChannelSftpImpl
 
         File currentDestFile = null;
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             // The destination MUST be a single name (i.e. no wildcards)
@@ -1210,7 +1210,7 @@ public class ChannelSftpImpl
                     final long skip)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             final String srcFilename = resolveRemotePath(srcPath);
@@ -1299,7 +1299,7 @@ public class ChannelSftpImpl
                     requestOffset += maxRequestLen;
                 }
 
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 fxpBuffer.readHeader(mpIn);
                 // the remaining number of bytes we can/should read from the current packet.
                 int remainingData = fxpBuffer.getFxpLength();
@@ -1423,7 +1423,7 @@ public class ChannelSftpImpl
                             final long offset)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             // There is no local filename to use (as its a Stream) so we cannot use
@@ -1605,7 +1605,7 @@ public class ChannelSftpImpl
                     @NonNull final Mode mode)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             // The destination MUST be a single name (i.e. no wildcards)
@@ -1706,7 +1706,7 @@ public class ChannelSftpImpl
                     @NonNull final Mode mode)
             throws SftpException {
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             // There is no local filename to use (as its a Stream) so we cannot use
@@ -1763,7 +1763,7 @@ public class ChannelSftpImpl
         final int maxRequests = requestQueue.getMaxSize();
 
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
             // The offset in the file(stream); updated as we send packets with data to the server
@@ -2270,7 +2270,7 @@ public class ChannelSftpImpl
 
         final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
         try {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             fxpBuffer.readHeader(mpIn);
             fxpBuffer.readPayload(mpIn);
         } catch (final IOException e) {
@@ -2355,7 +2355,7 @@ public class ChannelSftpImpl
     private void skip(long n)
             throws IOException {
         while (n > 0) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             final long bytesSkipped = mpIn.skip(n);
             if (bytesSkipped > 0) {
                 n -= bytesSkipped;
@@ -2473,7 +2473,7 @@ public class ChannelSftpImpl
         boolean keepReading = true;
         while (keepReading) {
             sendREADDIR(handle);
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             int nrOfEntries = namePacket.readNrOfEntries(mpIn);
             keepReading = nrOfEntries > 0;
 
@@ -2601,7 +2601,7 @@ public class ChannelSftpImpl
                 // Remove all outstanding data from the input stream
                 final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
                 for (int i = 0; i < count; i++) {
-                    //noinspection ConstantConditions
+                    //noinspection DataFlowIssue
                     fxpBuffer.readHeader(mpIn);
                     skip(fxpBuffer.getFxpLength());
                 }

@@ -42,7 +42,7 @@ public class SettingsFragment
 
         final SwitchPreference buttonsFlow = findPreference(PK_BUTTONS_FLOW);
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         buttonsFlow.setSummaryProvider(p -> {
             if (((SwitchPreference) p).isChecked()) {
                 return getString(R.string.vertical);
@@ -51,7 +51,7 @@ public class SettingsFragment
             }
         });
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         logLevelPref = findPreference(SshHelper.PK_SSH_LOG_LEVEL);
         updateLogLevelSummary();
     }
@@ -60,14 +60,14 @@ public class SettingsFragment
     public void onStart() {
         super.onStart();
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         getPreferenceScreen().getSharedPreferences()
                              .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onStop() {
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         getPreferenceScreen().getSharedPreferences()
                              .unregisterOnSharedPreferenceChangeListener(this);
         super.onStop();

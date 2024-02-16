@@ -407,7 +407,7 @@ public abstract class BaseChannel
                 if (dataLength == 0) {
                     return;
                 }
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 packet.init(SshConstants.SSH_MSG_CHANNEL_DATA)
                       .putInt(recipient)
                       .putInt(dataLength)

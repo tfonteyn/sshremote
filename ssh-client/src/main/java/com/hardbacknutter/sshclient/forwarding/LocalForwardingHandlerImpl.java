@@ -3,18 +3,17 @@ package com.hardbacknutter.sshclient.forwarding;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.LocalForwardingHandler;
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.transport.SessionImpl;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.net.ServerSocketFactory;
+
+import com.hardbacknutter.sshclient.LocalForwardingHandler;
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.transport.SessionImpl;
 
 /**
  * Handles all local port forwarding.
@@ -89,7 +88,7 @@ public class LocalForwardingHandlerImpl
 
         final LocalForwardConfig lfc = LocalForwardConfig.parse(connectionString);
         if (lfc.socketPath == null) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             return add(lfc.bindAddress, lfc.port, null, 0, lfc.host, lfc.hostPort);
         } else {
             return add(lfc.bindAddress, lfc.port, null, 0, lfc.socketPath);

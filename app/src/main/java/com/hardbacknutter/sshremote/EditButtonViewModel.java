@@ -50,7 +50,7 @@ public class EditButtonViewModel
         if (currentButton != position) {
             currentButton = position;
             db.getExecutor().execute(() -> {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 config = db.getConfigDao().findByPosition(position);
                 if (config == null) {
                     config = new Config(position);

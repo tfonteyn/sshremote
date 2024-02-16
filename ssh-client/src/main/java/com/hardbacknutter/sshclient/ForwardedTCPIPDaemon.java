@@ -3,10 +3,10 @@ package com.hardbacknutter.sshclient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.channels.forward.ChannelForwardedTCPIP;
-
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import com.hardbacknutter.sshclient.channels.forward.ChannelForwardedTCPIP;
 
 /**
  * A local daemon <em>{@link Runnable}</em> executed when a host connects to
@@ -57,7 +57,7 @@ public interface ForwardedTCPIPDaemon {
                     @NonNull InputStream in,
                     @NonNull OutputStream out);
 
-    /*
+    /**
      * Does the actual connection handling. This method will be run in
      * an own thread (the others will be called from the channel's
      * {@link Channel#connect()}) and should close the channel

@@ -374,7 +374,7 @@ public class KeyPairRSA
             return;
         }
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         keySize = modulus.bitLength();
 
         setPrivateKeyEncrypted(false);
@@ -386,28 +386,28 @@ public class KeyPairRSA
      */
     private void calculatePrimeEP() {
         if (primeEP == null) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             primeEP = privateExponent.mod(p.subtract(BigInteger.ONE));
         }
     }
 
     private void calculatePrimeEQ() {
         if (primeEQ == null) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             primeEQ = privateExponent.mod(q.subtract(BigInteger.ONE));
         }
     }
 
     private void calculateCoefficient() {
         if (coefficient == null) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             coefficient = q.modInverse(p);
         }
     }
 
     private void calculateModulus() {
         if (modulus == null) {
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             modulus = p.multiply(q);
         }
     }

@@ -2,28 +2,28 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+
+import com.hardbacknutter.sshclient.ciphers.SshCipher;
 
 /**
  * JCE based standard PBKDF2 using a salt and iteration-count.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2898">
- * RFC 2898 PKCS #5: Password-Based Cryptography Specification</a>
+ *         RFC 2898 PKCS #5: Password-Based Cryptography Specification</a>
  * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#secretkeyfactory-algorithms">
- * Standard algorithm names</a>
+ *         Standard algorithm names</a>
  */
-public class PBKDF2 implements PBKDF {
+public class PBKDF2
+        implements PBKDF {
 
     private SshCipher cipher;
     private byte[] cipherIV;
@@ -31,7 +31,6 @@ public class PBKDF2 implements PBKDF {
     private byte[] salt;
     private int iterationCount;
 
-    @SuppressWarnings("FieldNotUsedInToString")
     private SecretKeyFactory skf;
 
 

@@ -3,8 +3,6 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import java.io.IOException;
 import java.security.DigestException;
 import java.security.GeneralSecurityException;
@@ -12,8 +10,9 @@ import java.security.KeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
+
+import com.hardbacknutter.sshclient.ciphers.SshCipher;
 
 /**
  * pkcs #5 pbkdf2 implementation using the "bcrypt" hash
@@ -48,7 +47,6 @@ public class PBKDFBCrypt
     private byte[] salt;
     private int iterationCount;
 
-    @SuppressWarnings("FieldNotUsedInToString")
     @NonNull
     private MessageDigest md;
 

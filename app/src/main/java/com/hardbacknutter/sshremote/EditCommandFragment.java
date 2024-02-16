@@ -93,13 +93,13 @@ public class EditCommandFragment
             final int itemId = menuItem.getItemId();
 
             if (itemId == R.id.MENU_SAVE) {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 vm.save(getActivity());
                 getParentFragmentManager().popBackStack();
                 return true;
 
             } else if (itemId == R.id.MENU_DELETE) {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 vm.delete(getActivity());
                 getParentFragmentManager().popBackStack();
                 return true;

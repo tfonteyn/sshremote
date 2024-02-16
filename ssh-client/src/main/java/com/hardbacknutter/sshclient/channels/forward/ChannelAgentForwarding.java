@@ -229,7 +229,7 @@ public class ChannelAgentForwarding
 
                     responseBuffer.putInt(toSend.size());
                     for (final Identity identity : toSend) {
-                        //noinspection ConstantConditions
+                        //noinspection DataFlowIssue
                         responseBuffer.putString(identity.getSshEncodedPublicKey())
                                       // comment
                                       .putString("");

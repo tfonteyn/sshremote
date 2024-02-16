@@ -3,11 +3,11 @@ package com.hardbacknutter.sshclient.channels.io;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.utils.SshConstants;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import com.hardbacknutter.sshclient.utils.SshConstants;
 
 /**
  * Bundles the 3 streams used by a Channel.
@@ -51,7 +51,7 @@ public class IOStreams {
                     @SuppressWarnings("SameParameterValue") final int offset,
                     final int length)
             throws IOException {
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         return in.read(bytes, offset, length);
     }
 
@@ -62,7 +62,7 @@ public class IOStreams {
                       final int offset,
                       final int length)
             throws IOException {
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         out.write(bytes, offset, length);
         out.flush();
     }

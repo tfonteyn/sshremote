@@ -330,7 +330,7 @@ public class KeyPairDSA
                     q = ASN1Integer.getInstance(attr.getObjectAt(1)).getPositiveValue();
                     g = ASN1Integer.getInstance(attr.getObjectAt(2)).getPositiveValue();
                     x = new BigInteger(1, privateKeyBlob.getOctets());
-                    //noinspection ConstantConditions
+                    //noinspection DataFlowIssue
                     y = g.modPow(x, p);
                     break;
                 }

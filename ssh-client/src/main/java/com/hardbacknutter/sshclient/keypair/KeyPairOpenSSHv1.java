@@ -148,7 +148,7 @@ public final class KeyPairOpenSSHv1
             final byte[] salt = opts.getString();
             final int rounds = opts.getInt();
 
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             ((DelegatingPBKDF) decryptor)
                     .setDelegate(new PBKDFBCrypt().init(salt, rounds));
 
@@ -162,7 +162,7 @@ public final class KeyPairOpenSSHv1
 
         createDelegate(getHostKeyAlgorithm(plainKey), plainKey);
 
-        //noinspection ConstantConditions
+        //noinspection DataFlowIssue
         return !getDelegate().isEncrypted();
     }
 

@@ -3,14 +3,13 @@ package com.hardbacknutter.sshclient.forwarding;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.Session;
-import com.hardbacknutter.sshclient.transport.SessionImpl;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-
 import javax.net.ServerSocketFactory;
+
+import com.hardbacknutter.sshclient.Session;
+import com.hardbacknutter.sshclient.transport.SessionImpl;
 
 abstract class LocalForwardWorker {
 
@@ -90,7 +89,7 @@ abstract class LocalForwardWorker {
         thread = null;
         try {
             ss.close();
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             ss = null;
         } catch (final Exception ignore) {
         }

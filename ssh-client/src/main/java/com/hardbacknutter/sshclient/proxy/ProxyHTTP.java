@@ -2,11 +2,11 @@ package com.hardbacknutter.sshclient.proxy;
 
 import androidx.annotation.NonNull;
 
-import com.hardbacknutter.sshclient.SocketFactory;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import com.hardbacknutter.sshclient.SocketFactory;
 
 /**
  * A {@link Proxy} implementation using a HTTP proxy.
@@ -65,7 +65,7 @@ public class ProxyHTTP
         try {
             initIO(socketFactory, timeout);
 
-            //noinspection ConstantConditions
+            //noinspection DataFlowIssue
             out.write(("CONNECT " + host + ":" + port + " HTTP/1.0\r\n")
                               .getBytes(StandardCharsets.UTF_8));
 
@@ -84,7 +84,7 @@ public class ProxyHTTP
 
             final StringBuilder sb = new StringBuilder();
             while (c >= 0) {
-                //noinspection ConstantConditions
+                //noinspection DataFlowIssue
                 c = in.read();
                 if (c == 13) {
                     c = in.read();
