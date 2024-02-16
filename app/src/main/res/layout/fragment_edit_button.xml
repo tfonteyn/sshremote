@@ -55,7 +55,7 @@
         <Button
             android:id="@+id/btn_host_edit"
             style="@style/TIL.EditText.Button"
-            app:icon="@drawable/ic_twotone_edit_24"
+            app:icon="@drawable/ic_baseline_edit_24"
             app:layout_constraintBottom_toBottomOf="@id/lbl_host"
             app:layout_constraintEnd_toStartOf="@id/btn_host_new"
             app:layout_constraintStart_toEndOf="@id/lbl_host"
@@ -64,7 +64,7 @@
         <Button
             android:id="@+id/btn_host_new"
             style="@style/TIL.EditText.Button"
-            app:icon="@drawable/ic_twotone_add_24"
+            app:icon="@drawable/ic_baseline_add_24"
             app:layout_constraintBottom_toBottomOf="@id/lbl_host"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/btn_host_edit"
@@ -91,7 +91,7 @@
         <Button
             android:id="@+id/btn_command_edit"
             style="@style/TIL.EditText.Button"
-            app:icon="@drawable/ic_twotone_edit_24"
+            app:icon="@drawable/ic_baseline_edit_24"
             app:layout_constraintBottom_toBottomOf="@id/lbl_command"
             app:layout_constraintEnd_toStartOf="@id/btn_command_new"
             app:layout_constraintStart_toEndOf="@id/lbl_command"
@@ -100,7 +100,7 @@
         <Button
             android:id="@+id/btn_command_new"
             style="@style/TIL.EditText.Button"
-            app:icon="@drawable/ic_twotone_add_24"
+            app:icon="@drawable/ic_baseline_add_24"
             app:layout_constraintBottom_toBottomOf="@id/lbl_command"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/btn_command_edit"

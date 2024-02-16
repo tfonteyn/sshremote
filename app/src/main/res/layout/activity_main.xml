@@ -73,7 +73,7 @@
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/scroll_up"
         style="@style/Widget.App.FloatingActionButton"
-        android:src="@drawable/ic_twotone_arrow_upward_24"
+        android:src="@drawable/ic_baseline_arrow_upward_24"
         android:visibility="invisible"
         tools:ignore="ContentDescription" />
 

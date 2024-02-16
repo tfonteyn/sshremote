@@ -9,7 +9,7 @@
 
     <SeekBarPreference
         android:defaultValue="8"
-        android:icon="@drawable/ic_twotone_smart_button_24"
+        android:icon="@drawable/ic_baseline_smart_button_24"
         android:key="global.buttons.amount"
         android:max="24"
         android:title="@string/lbl_total_nr_of_buttons"
@@ -18,7 +18,7 @@
 
     <SwitchPreference
         android:defaultValue="true"
-        android:icon="@drawable/ic_outline_vpn_key_24"
+        android:icon="@drawable/ic_baseline_vpn_key_24"
         android:key="global.ssh.strictHostKeyChecking"
         android:title="@string/lbl_strict_host_key_checking" />
 

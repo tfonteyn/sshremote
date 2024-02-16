@@ -4,7 +4,7 @@
       tools:context="com.hardbacknutter.sshremote.MainActivity">
     <item
         android:id="@id/MENU_SAVE"
-        android:icon="@drawable/ic_twotone_save_24"
+        android:icon="@drawable/ic_baseline_save_24"
         android:orderInCategory="10"
         android:title="@string/action_save"
         app:showAsAction="always" />
