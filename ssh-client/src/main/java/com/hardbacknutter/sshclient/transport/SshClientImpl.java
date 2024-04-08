@@ -37,7 +37,7 @@ public class SshClientImpl
         implements SshClient {
 
     /**
-     * client version: {code SSH-protoversion-softwareversion SP comments CR LF}
+     * client version: {@code SSH-protoversion-softwareversion SP comments CR LF}
      * The CR+LF is added when the version is send to the server.
      * <ul>
      * <li>protoversion is always "2.0"</li>

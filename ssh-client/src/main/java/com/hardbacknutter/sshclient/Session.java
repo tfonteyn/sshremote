@@ -382,7 +382,7 @@ public interface Session {
     /**
      * Set the host for the local X11 server.
      * <p>
-     * The default value is {code "127.0.0.1"}, i.e. the localhost
+     * The default value is {@code "127.0.0.1"}, i.e. the localhost
      * <p>
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
