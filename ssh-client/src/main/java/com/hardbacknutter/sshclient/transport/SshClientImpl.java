@@ -50,7 +50,7 @@ public class SshClientImpl
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-4.2">
      *         RFC 4253, section4.2</a>
      */
-    static final String VERSION = "SSH-2.0-JSCH_2.0";
+    static final String VERSION = "SSH-2.0-JSSHC_2.0";
 
     /**
      * Boolean:

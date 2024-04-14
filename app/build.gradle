@@ -20,6 +20,9 @@ if (project.hasProperty("SSHRemote.properties")) {
         props.load(new FileInputStream(file))
     }
 }
+kotlin {
+    jvmToolchain rootProject.ext.toolChain
+}
 
 android {
     namespace "com.hardbacknutter.sshremote"
@@ -35,9 +38,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = rootProject.ext.applicationId
-        versionCode = rootProject.ext.applicationVersionCode
-        versionName = rootProject.ext.applicationVersionName
+        applicationId = "com.hardbacknutter.sshremote"
+        versionCode = 5
+        versionName = "1.3"
 
         minSdk = rootProject.ext.minSdkVersion
         targetSdk = rootProject.ext.targetSdkVersion
@@ -66,14 +69,14 @@ android {
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_17
 
         // https://developer.android.com/studio/releases/#4-0-0-desugar
         coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = 11
+        jvmTarget = rootProject.ext.toolChain
     }
 
     buildFeatures {
@@ -103,7 +106,7 @@ android {
     applicationVariants.all {
         final variant ->
             variant.outputs.all {
-                outputFileName = "${rootProject.name}-${rootProject.ext.applicationVersionName}-${variant.name}.apk"
+                outputFileName = "${rootProject.name}-${defaultConfig.versionName}-${variant.name}.apk"
             }
     }
 }
