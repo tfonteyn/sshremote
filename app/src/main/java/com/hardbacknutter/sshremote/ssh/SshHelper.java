@@ -98,6 +98,15 @@ public class SshHelper {
         return channel;
     }
 
+    /**
+     * Read <strong>ALL</strong> of the data from the given channel.
+     *
+     * @param channel to read from
+     *
+     * @return a single String with all of the output
+     *
+     * @throws IOException on any error (including 'too much output')
+     */
     @NonNull
     public String read(@NonNull final Channel channel)
             throws IOException {
@@ -106,6 +115,12 @@ public class SshHelper {
              final BufferedReader reader = new BufferedReader(isr)) {
 
             return reader.lines().collect(Collectors.joining("\n"));
+        } catch (@NonNull final OutOfMemoryError oom) {
+            // this is due to the user running some command which returns a LOT of output.
+            // The code above is simple/stupid and cannot cope with this.
+            // Hope for the best... there is no guarantee this call will force a gc though
+            System.gc();
+            throw new IOException("Too much output");
         }
     }
 

@@ -53,6 +53,9 @@
     <string name="error_export_failed">Export failed</string>
     <string name="error_import_failed">Import failed</string>
     <string name="error_save_failed">Save failed</string>
+    <!-- Displayed in the command output section. -->
+    <string name="error_output_too_large">ERROR: Output too large.</string>
+
 
     <string name="lbl_confirm_button_position">Drag and drop buttons into the desired order.</string>
     <string name="lbl_strict_host_key_checking">Strict host key checking</string>
@@ -62,6 +65,7 @@
 
     <string name="lbl_log_level">Log level</string>
     <string name="lbl_buttons_flow">Buttons flow</string>
+
     <string-array name="log_levels">
         <item>None</item>
         <item>Fatal errors</item>
