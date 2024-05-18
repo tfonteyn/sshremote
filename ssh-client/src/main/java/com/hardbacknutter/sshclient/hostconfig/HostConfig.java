@@ -50,12 +50,12 @@ public interface HostConfig
     String BIND_ADDRESS = "BindAddress";
 
     /**
-     * int
+     * int, in seconds
      */
     String CONNECT_TIMEOUT = "ConnectTimeout";
 
     /**
-     * int
+     * int, in seconds
      */
     String SERVER_ALIVE_INTERVAL = "ServerAliveInterval";
 

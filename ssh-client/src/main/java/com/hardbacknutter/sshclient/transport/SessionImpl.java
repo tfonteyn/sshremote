@@ -1356,14 +1356,16 @@ public final class SessionImpl
         // The server alive interval value is also set as the timeout!
         tmpIntValue = hostConfig.getIntValue(HostConfig.SERVER_ALIVE_INTERVAL, -1);
         if (tmpIntValue > -1) {
-            setServerAliveInterval(tmpIntValue);
+            // value is in seconds, convert to ms!
+            setServerAliveInterval(tmpIntValue * 1_000);
         }
 
         // see above, any specific timeout MUST be applied AFTER
         // the server alive interval is applied
         tmpIntValue = hostConfig.getIntValue(HostConfig.CONNECT_TIMEOUT, -1);
         if (tmpIntValue > -1) {
-            setTimeout(tmpIntValue);
+            // value is in seconds, convert to ms!
+            setTimeout(tmpIntValue * 1_000);
         }
 
         // Overrule the global known-hosts.
