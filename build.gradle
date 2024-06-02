@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application") version '8.4.0' apply false
-    id("com.android.library") version '8.4.0' apply false
+    id("com.android.application") version '8.4.1' apply false
+    id("com.android.library") version '8.4.1' apply false
     id("org.jetbrains.kotlin.android") version "1.9.23" apply false
 }
 
@@ -20,7 +20,7 @@ ext {
     // https://developer.android.com/jetpack/androidx/versions
     androidxActivityVersion = '1.9.0'
     androidxAnnotationVersion = '1.8.0'
-    androidxAppcompatVersion = "1.6.1"
+    androidxAppcompatVersion = '1.7.0'
     androidxConstraintlayoutVersion = "2.1.4"
     androidxCoordinatorlayoutVersion = "1.2.0"
     androidxCoreVersion = '1.13.1'
@@ -28,7 +28,7 @@ ext {
     androidxDocumentfileVersion = "1.1.0-alpha01"
     androidxDrawerlayoutVersion = "1.2.0"
     androidxFragmentVersion = '1.7.1'
-    androidxLifecycleVersion = '2.8.0'
+    androidxLifecycleVersion = '2.8.1'
     androidxPreferenceVersion = "1.2.1"
     androidxRecyclerviewVersion = '1.3.2'
     androidRoomVersion = '2.6.1'
