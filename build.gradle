@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application") version '8.5.0' apply false
-    id("com.android.library") version '8.5.0' apply false
+    id("com.android.application") version '8.5.1' apply false
+    id("com.android.library") version '8.5.1' apply false
     id("org.jetbrains.kotlin.android") version "1.9.23" apply false
 }
 
@@ -27,8 +27,8 @@ ext {
     androidxCustomviewVersion = "1.2.0-alpha02"
     androidxDocumentfileVersion = "1.1.0-alpha01"
     androidxDrawerlayoutVersion = "1.2.0"
-    androidxFragmentVersion = '1.8.0'
-    androidxLifecycleVersion = '2.8.2'
+    androidxFragmentVersion = '1.8.1'
+    androidxLifecycleVersion = '2.8.3'
     androidxPreferenceVersion = "1.2.1"
     androidxRecyclerviewVersion = '1.3.2'
     androidRoomVersion = '2.6.1'
@@ -40,10 +40,10 @@ ext {
     bouncycastleVersion = '1.78.1'
 
     // https://junit.org/junit5/docs/current/user-guide/#overview
-    jupiterVersion = '5.10.2'
+    jupiterVersion = '5.10.3'
 
     // https://developer.android.com/jetpack/androidx/releases/test
-    androidxTestCoreVersion = "1.5.0"
-    androidxTestRunnerVersion = "1.5.2"
-    androidxTestRulesVersion = "1.5.0"
+    androidxTestCoreVersion = '1.6.1'
+    androidxTestRunnerVersion = '1.6.1'
+    androidxTestRulesVersion = '1.6.1'
 }
