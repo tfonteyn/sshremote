@@ -23,7 +23,7 @@ public abstract class BaseFragment
         //noinspection DataFlowIssue
         final Toolbar toolbar = activity.getToolbar();
         toolbar.addMenuProvider(toolbarMenuProvider, getViewLifecycleOwner());
-        toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
+        toolbar.setNavigationIcon(R.drawable.arrow_back_24px);
         toolbar.setNavigationOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         activity.getOnBackPressedDispatcher()

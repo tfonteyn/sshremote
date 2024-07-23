@@ -106,7 +106,7 @@ public class SettingsFragment
         final MainActivity activity = (MainActivity) getActivity();
         //noinspection DataFlowIssue
         final Toolbar toolbar = activity.getToolbar();
-        toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);
+        toolbar.setNavigationIcon(R.drawable.arrow_back_24px);
         toolbar.setNavigationOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         activity.getOnBackPressedDispatcher()
