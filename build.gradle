@@ -19,7 +19,7 @@ ext {
 
     // https://developer.android.com/jetpack/androidx/versions
     androidxActivityVersion = '1.9.1'
-    androidxAnnotationVersion = '1.8.1'
+    androidxAnnotationVersion = '1.8.2'
     androidxAppcompatVersion = '1.7.0'
     androidxConstraintlayoutVersion = "2.1.4"
     androidxCoordinatorlayoutVersion = "1.2.0"
@@ -40,10 +40,10 @@ ext {
     bouncycastleVersion = '1.78.1'
 
     // https://junit.org/junit5/docs/current/user-guide/#overview
-    jupiterVersion = '5.10.3'
+    jupiterVersion = '5.11.0'
 
     // https://developer.android.com/jetpack/androidx/releases/test
     androidxTestCoreVersion = '1.6.1'
-    androidxTestRunnerVersion = '1.6.1'
+    androidxTestRunnerVersion = '1.6.2'
     androidxTestRulesVersion = '1.6.1'
 }
