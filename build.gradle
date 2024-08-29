@@ -15,7 +15,7 @@ ext {
     compileSdkVersion = 34
 
     // https://github.com/google/desugar_jdk_libs
-    desugarVersion = '2.0.4'
+    desugarVersion = '2.1.1'
 
     // https://developer.android.com/jetpack/androidx/versions
     androidxActivityVersion = '1.9.1'
