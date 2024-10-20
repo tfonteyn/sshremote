@@ -15,7 +15,9 @@ ext {
     compileSdkVersion = 35
 
     // https://github.com/google/desugar_jdk_libs
-    desugarVersion = '2.1.2'
+    // DO NOT UPGRADE BEYOND 2.0.4
+    // https://issuetracker.google.com/issues/362339872
+    desugarVersion = '2.0.4'
 
     // https://developer.android.com/jetpack/androidx/versions
     androidxActivityVersion = '1.9.3'
