@@ -11,8 +11,8 @@ tasks.register("clean", Delete) {
 ext {
     toolChain = 17
     minSdkVersion = 26
-    targetSdkVersion = 34
-    compileSdkVersion = 34
+    targetSdkVersion = 35
+    compileSdkVersion = 35
 
     // https://github.com/google/desugar_jdk_libs
     desugarVersion = '2.1.2'
