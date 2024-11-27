@@ -53,18 +53,22 @@ public class MainActivity
         }
     }
 
+    @NonNull
     FloatingActionButton getFab() {
         return vb.scrollUp;
     }
 
+    @NonNull
     BottomSheetBehavior<ConstraintLayout> getBottomSheetBehavior() {
         return bottomSheetBehavior;
     }
 
+    @NonNull
     Button getBottomSheetButtonSave() {
         return vb.btnSave;
     }
 
+    @NonNull
     Button getBottomSheetButtonUndo() {
         return vb.btnUndo;
     }
