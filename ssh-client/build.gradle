@@ -1,5 +1,5 @@
 plugins {
-    id("java-library")
+    alias libs.plugins.java.library
 }
 
 // The library version, must be kept in sync with
@@ -27,13 +27,11 @@ tasks.withType(Test).configureEach {
 }
 
 dependencies {
+    implementation(libs.androidx.annotation)
+    implementation(libs.bouncycastle.bcprov)
+    implementation(libs.bouncycastle.bcutil)
 
-    implementation("androidx.annotation:annotation:${androidxAnnotationVersion}")
-    implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
-    implementation "org.bouncycastle:bcutil-jdk18on:$bouncycastleVersion"
-
-    // local tests use JUnit5
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiterVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:${jupiterVersion}")
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
 }
