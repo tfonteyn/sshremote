@@ -101,6 +101,12 @@ class KeyPairTest {
                 Arguments.of("opensshv1/ecdsa521", "opensshv1/ecdsa521.pub", null, HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521),
                 Arguments.of("opensshv1/ecdsa521", "opensshv1/ecdsa521.pub_ssh2", null, HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521),
                 Arguments.of("opensshv1/ecdsa521_enc", "opensshv1/ecdsa521_enc.pub", Constants.KEY_FILES_PASSPHRASE, HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521),
+                Arguments.of("opensshv1/ed25519", "opensshv1/ed25519.pub", null,
+                             HostKeyAlgorithm.SSH_ED25519),
+                Arguments.of("opensshv1/ed25519", "opensshv1/ed25519.pub_ssh2", null,
+                             HostKeyAlgorithm.SSH_ED25519),
+                Arguments.of("opensshv1/ed25519_enc", "opensshv1/ed25519_enc.pub",
+                             Constants.KEY_FILES_PASSPHRASE, HostKeyAlgorithm.SSH_ED25519),
 
 
                 Arguments.of("openssl/dsa.pem", "openssl/dsa.pub", null, HostKeyAlgorithm.SSH_DSS),
