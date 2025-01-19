@@ -1,11 +1,11 @@
 [versions]
-androidGradlePlugin = "8.9.0-alpha08"
+androidGradlePlugin = "8.9.0-alpha09"
 # https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
 androidKotlinPlugin = "2.1.0"
 
 # https://developer.android.com/jetpack/androidx/versions
 
-androidxActivity = '1.9.3'
+androidxActivity = "1.10.0"
 androidxAnnotation = '1.9.1'
 androidxAppcompat = '1.7.0'
 androidxConstraintlayout = '2.2.0'
@@ -17,7 +17,7 @@ androidxDrawerlayout = "1.2.0"
 androidxFragment = '1.8.5'
 androidxLifecycle = '2.8.7'
 androidxPreference = "1.2.1"
-androidxRecyclerview = '1.3.2'
+androidxRecyclerview = "1.4.0"
 androidxRoom = "2.6.1"
 
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
@@ -27,7 +27,7 @@ desugar = "2.1.4"
 material = '1.12.0'
 
 # https://bouncycastle.org
-bouncycastle = '1.79'
+bouncycastle = "1.80"
 
 # https://junit.org/junit5/docs/current/user-guide/#overview
 jupiter = "5.11.4"
