@@ -318,6 +318,7 @@ public final class SshClientConfigImpl
                     HostConfig.KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
                     + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
+                    + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384

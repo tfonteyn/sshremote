@@ -239,6 +239,7 @@ public final class ImplementationFactory {
                 case KeyExchangeConstants.ECDH_SHA_2_NISTP_521:
                     return new KeyExchangeECDH("SHA-512", ECKeyType.ECDSA_SHA2_NISTP521);
 
+                case KeyExchangeConstants.SNTRUP761X25519_SHA512:
                 case KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM: {
                     return new KeyExchangeECDHKEM("SHA-512",
                                                   XDHParameterSpec.X25519,
