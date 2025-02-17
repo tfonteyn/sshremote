@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "8.9.0-alpha09"
+androidGradlePlugin = "8.10.0-alpha05"
 # https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
 androidKotlinPlugin = "2.1.0"
 
@@ -14,7 +14,7 @@ androidxCore = '1.15.0'
 androidxCustomview = "1.2.0-alpha02"
 androidxDocumentfile = "1.1.0-alpha01"
 androidxDrawerlayout = "1.2.0"
-androidxFragment = '1.8.5'
+androidxFragment = "1.8.6"
 androidxLifecycle = '2.8.7'
 androidxPreference = "1.2.1"
 androidxRecyclerview = "1.4.0"
