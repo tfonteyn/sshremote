@@ -183,8 +183,10 @@ public final class SessionImpl
 
         this.username = resolveUsername(username, hostConfig);
         this.host = resolveHostname(hostnameOrAlias, hostConfig);
-        this.hostKeyAlias = hostnameOrAlias;
         this.port = resolvePort(port, hostConfig);
+        // only set the hostKeyAlias if the given (parameter) hostnameOrAlias was not
+        // the real hostname.
+        this.hostKeyAlias = hostnameOrAlias.equals(this.host) ? null : hostnameOrAlias;
 
         if (hostConfig != null) {
             applyHostConfig(hostConfig);
