@@ -416,6 +416,7 @@ public final class SessionImpl
 
             final KexKeys keys = kexDelegate.startExchange(getHostKeyRepository(), userinfo);
             takeKeysIntoUse(keys);
+            kexDelegate.sendExtInfo();
 
             // Step 3: the user must authenticate by a mutually agreed method
             doAuthentication();
@@ -653,6 +654,14 @@ public final class SessionImpl
         kexDelegate.rekey();
     }
 
+    /**
+     * Take the keys we received in-use.
+     * <p>
+     * Once this method finishes, the kex exchange is completed.
+     * We call {@link KexDelegate#setKeyExchangeDone()}.
+     *
+     * @param keys to use
+     */
     private void takeKeysIntoUse(@NonNull final KexKeys keys)
             throws GeneralSecurityException, IOException {
 

@@ -300,13 +300,6 @@ public class KexDelegate {
             throw new KexProtocolException(SshConstants.SSH_MSG_NEWKEYS, confirmation);
         }
 
-        if (initialKex && serverSupportsExtInfo) {
-            // https://datatracker.ietf.org/doc/html/rfc8308#section-2.4
-            // MUST send it as the next packet following the client's first
-            // SSH_MSG_NEWKEYS message to the server.
-            sendExtInfo();
-        }
-
         initialKex = false;
         return keys;
     }
@@ -330,17 +323,27 @@ public class KexDelegate {
         return doStrictKex && (strictKexEnabled || strictKexRequired);
     }
 
-    private void sendExtInfo()
+    /**
+     * SSH_MSG_EXT_INFO <strong>MUST</strong>
+     * be send as the next packet following the client's first
+     * SSH_MSG_NEWKEYS message to the server.
+     *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc8308#section-2.4">
+     *         https://datatracker.ietf.org/doc/html/rfc8308#section-2.4</a>
+     */
+    public void sendExtInfo()
             throws IOException, GeneralSecurityException {
-        // If we support multiple extensions, this check (and similar checks)
-        // must obviously be done on a per-line basis
-        if (session.getConfig().getBooleanValue(PK_ENABLE_EXT_INFO_IN_AUTH, true)) {
-            session.getLogger().log(Logger.DEBUG, () -> "sending SSH_MSG_EXT_INFO");
+        if (serverSupportsExtInfo) {
+            // If we support multiple extensions, this check (and similar checks)
+            // must obviously be done on a per-line basis
+            if (session.getConfig().getBooleanValue(PK_ENABLE_EXT_INFO_IN_AUTH, true)) {
+                session.getLogger().log(Logger.DEBUG, () -> "sending SSH_MSG_EXT_INFO");
 
-            final Packet packet = new Packet(SshConstants.SSH_MSG_EXT_INFO)
-                    .putInt(1)
-                    .putString("ext-info-in-auth@openssh.com").putString("0");
-            session.write(packet);
+                final Packet packet = new Packet(SshConstants.SSH_MSG_EXT_INFO)
+                        .putInt(1)
+                        .putString("ext-info-in-auth@openssh.com").putString("0");
+                session.write(packet);
+            }
         }
     }
 
@@ -477,7 +480,7 @@ public class KexDelegate {
         try {
             kex.next(packet);
         } catch (final GeneralSecurityException | IOException e) {
-            setKeyExchangeDone();
+            inKeyExchange.set(false);
             throw e;
         }
     }
