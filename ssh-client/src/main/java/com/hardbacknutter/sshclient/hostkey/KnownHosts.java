@@ -195,20 +195,47 @@ public class KnownHosts
                          @NonNull final byte[] key)
             throws InvalidKeyException {
 
+        final KeyIs status = internalIsKnown2(host, type, key);
+        if (status != KeyIs.Unknown) {
+            return status;
+        }
+
+        // Is it of the form "[ip]:port" ?
+        // FIXME: dropping the port from hostname matching is not insecure as such,
+        //  as the key will still need to be a match.
+        //  BUT in theory we could have a man-in-the-middle type of attack.
+        //  This test should be made optional with a config setting.
+        if (host.startsWith("[") && host.indexOf("]:") > 1) {
+            // strip the brackets and port number, and try again
+            return internalIsKnown2(host.substring(1, host.indexOf("]:")), type, key);
+        }
+
+        return KeyIs.Unknown;
+    }
+
+    @NonNull
+    private KeyIs internalIsKnown2(@NonNull final String host,
+                                   @NonNull final String type,
+                                   @NonNull final byte[] key)
+            throws InvalidKeyException {
+        final List<HostKey> hostKeys = getHostKeys(host, type);
+
         final HostKey hostToCheck = new HostKey(host, key);
+        final String checkHostnames = hostToCheck.getHostnames();
+        final String checkType = hostToCheck.getType();
+        final byte[] checkKey = hostToCheck.getKey();
+        final String checkEncodedKey = hostToCheck.getEncodedKey();
 
         synchronized (pool) {
             for (final HostKey hostKey : pool) {
                 // type + hostname MUST match
-                if (hostKey.getType().equals(hostToCheck.getType())
-                    && hostKey.isMatching(hostToCheck.getHostnames())) {
+                if (hostKey.getType().equals(checkType)
+                    && hostKey.isMatching(checkHostnames)) {
 
                     // the key MAY match
-                    if (Arrays.equals(hostKey.getKey(), hostToCheck.getKey())) {
-
-                        final String encKey = hostToCheck.getEncodedKey();
-                        for (final HostKey k : getHostKeys(host, type)) {
-                            if (k.getEncodedKey().equals(encKey)
+                    if (Arrays.equals(hostKey.getKey(), checkKey)) {
+                        for (final HostKey k : hostKeys) {
+                            if (k.getEncodedKey().equals(checkEncodedKey)
                                 && REVOKED.equals(k.getMarker())) {
                                 return KeyIs.Revoked;
                             }
@@ -221,11 +248,6 @@ public class KnownHosts
                 }
             }
         }
-
-        if (host.startsWith("[") && host.indexOf("]:") > 1) {
-            return isKnown(host.substring(1, host.indexOf("]:")), type, key);
-        }
-
         return KeyIs.Unknown;
     }
 
