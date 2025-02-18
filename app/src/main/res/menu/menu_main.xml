@@ -4,6 +4,20 @@
       tools:context="com.hardbacknutter.sshremote.MainActivity">
 
     <item
+        android:id="@id/MENU_CLEAR"
+        android:orderInCategory="500"
+        android:title="@string/lbl_clear"
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@id/MENU_WRAP_OUTPUT"
+        android:checkable="true"
+        android:icon="@drawable/wrap_text_24px"
+        android:orderInCategory="500"
+        android:title="@string/toggle_output_wrap"
+        app:showAsAction="ifRoom"
+        />
+    <item
         android:id="@id/MENU_KEY_MANAGEMENT"
         android:orderInCategory="600"
         android:title="@string/lbl_key_management"

@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,6 +59,7 @@ public class MainFragment
 
     private boolean movingButtons;
     private BottomSheetBehavior<ConstraintLayout> bottomSheetBehavior;
+    private TextView outputView;
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
@@ -90,7 +92,34 @@ public class MainFragment
             lm.setSpanCount(context.getResources().getInteger(R.integer.btn_list_row_count));
         }
 
+        selectOutputView();
         return vb.getRoot();
+    }
+
+    /**
+     * Flip visibility between wrapped and scrollable view.
+     * <p>
+     * There are "solutions" on the internet which make a TextView scroll,
+     * and others which make a HorizontalScrollView not-scroll.
+     * They have in common that none of them work properly....
+     * So, we just swap two views instead, easy, reliable.
+     */
+    private void selectOutputView() {
+        final CharSequence text;
+        if (isWrap()) {
+            vb.outputWrapped.setVisibility(View.VISIBLE);
+            vb.horScroll.setVisibility(View.GONE);
+            text = vb.outputScrollable.getText();
+            vb.outputScrollable.setText(null);
+            outputView = vb.outputWrapped;
+        } else {
+            vb.outputWrapped.setVisibility(View.GONE);
+            vb.horScroll.setVisibility(View.VISIBLE);
+            text = vb.outputWrapped.getText();
+            vb.outputWrapped.setText(null);
+            outputView = vb.outputScrollable;
+        }
+        outputView.setText(text);
     }
 
     @Override
@@ -113,8 +142,6 @@ public class MainFragment
         itemTouchHelper = new ItemTouchHelper(sitHelperCallback);
         itemTouchHelper.attachToRecyclerView(vb.buttonFlow);
 
-        vb.clearOutput.setOnClickListener(v -> clearOutput());
-
         final MainActivity activity = (MainActivity) getActivity();
         //noinspection DataFlowIssue
         bottomSheetBehavior = activity.getBottomSheetBehavior();
@@ -128,6 +155,10 @@ public class MainFragment
                 (View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY)
                         -> fab.setVisibility(scrollY == 0 ? View.INVISIBLE : View.VISIBLE));
 
+        initToolbar(activity);
+    }
+
+    private void initToolbar(@NonNull final MainActivity activity) {
         final Toolbar toolbar = activity.getToolbar();
         toolbar.addMenuProvider(new ToolbarMenuProvider(), getViewLifecycleOwner());
         toolbar.setTitle(R.string.app_name);
@@ -157,8 +188,7 @@ public class MainFragment
     private void clearOutput() {
         vb.lastButton.setText("");
         vb.lastExitCode.setText("");
-        vb.output.setText("");
-        vb.clearOutput.setVisibility(View.INVISIBLE);
+        outputView.setText("");
     }
 
     private void edit(final int buttonId) {
@@ -198,8 +228,7 @@ public class MainFragment
                 }
             }
             vb.lastButton.setText(userButton.getLabel());
-            vb.output.setText(userButton.getOutput());
-            vb.clearOutput.setVisibility(View.VISIBLE);
+            outputView.setText(userButton.getOutput());
         }
     }
 
@@ -214,19 +243,33 @@ public class MainFragment
             vb.lastButton.setText(userButton.getLabel());
             vb.lastExitCode.setVisibility(View.INVISIBLE);
 
-            vb.clearOutput.setVisibility(View.VISIBLE);
-
             if (e instanceof UnknownHostException) {
-                vb.output.setText(R.string.error_ping_failed);
+                outputView.setText(R.string.error_ping_failed);
 
             }
             if (e instanceof SshTooManyAuthAttemptException) {
-                vb.output.setText(getString(R.string.error_to_many_auth,
-                                            ((SshTooManyAuthAttemptException) e).getAuthTries()));
+                outputView.setText(getString(R.string.error_to_many_auth,
+                                             ((SshTooManyAuthAttemptException) e).getAuthTries()));
             } else {
-                vb.output.setText(e.getMessage());
+                outputView.setText(e.getMessage());
             }
         }
+    }
+
+    private boolean isWrap() {
+        //noinspection DataFlowIssue
+        return PreferenceManager.getDefaultSharedPreferences(
+                getContext()).getBoolean(SettingsFragment.PK_WRAP_OUTPUT, true);
+    }
+
+    private void toggleWrap() {
+        //noinspection DataFlowIssue
+        final SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(getContext());
+        final boolean current = !prefs.getBoolean(SettingsFragment.PK_WRAP_OUTPUT, true);
+        prefs.edit()
+             .putBoolean(SettingsFragment.PK_WRAP_OUTPUT, current)
+             .apply();
     }
 
     public static class Holder
@@ -328,13 +371,30 @@ public class MainFragment
         public void onCreateMenu(@NonNull final Menu menu,
                                  @NonNull final MenuInflater menuInflater) {
             menuInflater.inflate(R.menu.menu_main, menu);
+
+            final MenuItem item = menu.findItem(R.id.MENU_WRAP_OUTPUT);
+            setWrapIcon(item);
+        }
+
+        private void setWrapIcon(@NonNull final MenuItem item) {
+            item.setIcon(isWrap() ? R.drawable.notes_24px : R.drawable.wrap_text_24px);
         }
 
         @Override
         public boolean onMenuItemSelected(@NonNull final MenuItem menuItem) {
             final int itemId = menuItem.getItemId();
 
-            if (itemId == R.id.MENU_GLOBAL_SETTINGS) {
+            if (itemId == R.id.MENU_CLEAR) {
+                clearOutput();
+                return true;
+
+            } else if (itemId == R.id.MENU_WRAP_OUTPUT) {
+                toggleWrap();
+                setWrapIcon(menuItem);
+                selectOutputView();
+                return true;
+
+            } else if (itemId == R.id.MENU_GLOBAL_SETTINGS) {
                 getParentFragmentManager()
                         .beginTransaction()
                         .setReorderingAllowed(true)

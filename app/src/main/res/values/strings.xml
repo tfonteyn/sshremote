@@ -65,6 +65,7 @@
 
     <string name="lbl_log_level">Log level</string>
     <string name="lbl_buttons_flow">Buttons flow</string>
+    <string name="toggle_output_wrap">Wrap output</string>
 
     <string-array name="log_levels">
         <item>None</item>

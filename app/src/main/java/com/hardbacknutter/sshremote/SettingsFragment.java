@@ -26,6 +26,8 @@ public class SettingsFragment
 
     public static final String PK_BUTTONS_PER_PAGE = "global.buttons.amount";
 
+    public static final String PK_WRAP_OUTPUT = "global.output.wrap";
+
     private SeekBarPreference logLevelPref;
     private final OnBackPressedCallback backPressedCallback =
             new OnBackPressedCallback(true) {

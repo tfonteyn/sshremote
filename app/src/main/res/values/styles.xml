@@ -8,6 +8,13 @@
         <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
 
+    <style name="Output"
+           parent="Widget.MaterialComponents.TextView">
+        <item name="android:layout_margin">@dimen/output_padding</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+
     <!-- An Activity primary/top toolbar -->
     <style name="Toolbar.Activity"
            parent="Widget.Material3.Toolbar">
