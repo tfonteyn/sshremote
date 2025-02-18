@@ -3,6 +3,9 @@ package com.hardbacknutter.sshclient.userauth.jgss;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import com.hardbacknutter.sshclient.userauth.SshAuthException;
 import com.hardbacknutter.sshclient.userauth.UserAuthGSSContext;
 
@@ -13,9 +16,6 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.MessageProp;
 import org.ietf.jgss.Oid;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class UserAuthGSSContextKrb5
         implements UserAuthGSSContext {
@@ -57,7 +57,12 @@ public class UserAuthGSSContextKrb5
             // RFC 1964
             final Oid krb5 = new Oid("1.2.840.113554.1.2.2");
             // Kerberos Principal Name Form
-            final Oid principalName = new Oid("1.2.840.113554.1.2.2.1");
+            // TODO: setup a kerberos/windows server
+            //  and test if we should use the
+            //     // KERBEROS_V5_PRINCIPAL_NAME
+            //     new Oid("1.2.840.113554.1.2.2.1"),
+            //  or if we should use
+            final Oid principalName = GSSName.NT_HOSTBASED_SERVICE;
 
             final GSSManager mgr = GSSManager.getInstance();
 
