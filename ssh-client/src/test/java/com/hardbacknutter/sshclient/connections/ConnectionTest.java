@@ -36,7 +36,7 @@ public class ConnectionTest
     private static final UserInfo ui = new MyUserInfo(Constants.PASSWORD,
                                                       Constants.KEY_FILES_PASSPHRASE);
 
-    private String keyDir = System.getProperty("user.home") + File.separatorChar + ".ssh";
+    private final String keyDir = System.getProperty("user.home") + File.separatorChar + ".ssh";
 
     @NonNull
     static Stream<Arguments> withAlgorithms() {
