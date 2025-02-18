@@ -248,13 +248,12 @@ public class HostKey {
     public boolean isMatching(@NonNull final String host) {
         for (final String hostname : hostnames.split(",")) {
             if (hostname.contains("*") || hostname.contains("?")) {
-                // wildcards which are not regex... urg...
+                // replace the wildcards with standard regex, and try a match
                 if (host.matches(hostname.replace(".", "\\.")
                                          .replace("*", ".*")
                                          .replace("?", "."))) {
                     return true;
                 }
-
             } else if (hostname.equalsIgnoreCase(host)) {
                 return true;
             }
