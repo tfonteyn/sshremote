@@ -3,9 +3,6 @@ package com.hardbacknutter.sshclient.hostconfig;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.hardbacknutter.sshclient.kex.KexProposal;
-import com.hardbacknutter.sshclient.utils.Globber;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +14,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.hardbacknutter.sshclient.kex.KexProposal;
+import com.hardbacknutter.sshclient.utils.Globber;
 
 final class OpenSSHHostConfig
         implements HostConfig {
@@ -75,7 +75,7 @@ final class OpenSSHHostConfig
         this.hostOrAlias = hostOrAlias;
 
         // sanity check to see if there are actual entries beside the globals
-        if (repo.keySet().size() > 1) {
+        if (repo.size() > 1) {
             repo.forEach((hostKey, hostOptions) -> {
                 // skip globals for now
                 if (!hostKey.isBlank()) {

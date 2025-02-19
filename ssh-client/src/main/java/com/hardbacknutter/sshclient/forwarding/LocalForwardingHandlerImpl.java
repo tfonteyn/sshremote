@@ -53,7 +53,7 @@ public class LocalForwardingHandlerImpl
         synchronized (pool) {
             final List<LocalForwardWorker> list =
                     pool.stream()
-                        .filter(pw -> ((Session) session).equals(pw.getSession()))
+                        .filter(pw -> session.equals(pw.getSession()))
                         .collect(Collectors.toList());
 
             list.forEach(pw -> {
