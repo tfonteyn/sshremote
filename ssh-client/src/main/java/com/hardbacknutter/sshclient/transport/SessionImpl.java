@@ -168,8 +168,11 @@ public final class SessionImpl
     @Nullable
     private List<String> serverSigAlgs;
 
-    /** cached after first retrieval from config. */
+    /** Cached after first retrieval from config. */
     private List<String> clientPublicKeyAcceptedAlgorithms;
+    /** Cached after first use until a config change is made. */
+    @Nullable
+    private KexProposalConfig kexProposalConfig;
 
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
@@ -324,6 +327,7 @@ public final class SessionImpl
             for (final Map.Entry<String, String> entry : newConf.entrySet()) {
                 config.putString(entry.getKey(), entry.getValue());
             }
+            onConfigChange();
         }
     }
 
@@ -332,7 +336,12 @@ public final class SessionImpl
                           @NonNull final String value) {
         synchronized (config) {
             config.putString(key, value);
+            onConfigChange();
         }
+    }
+
+    private void onConfigChange() {
+        kexProposalConfig = null;
     }
 
     @Override
@@ -415,7 +424,9 @@ public final class SessionImpl
             serverVersion = s2c.readVersion();
 
             // Using the *current* configuration, load and check all algorithms.
-            final KexProposalConfig kexProposalConfig = new KexProposalConfig(config);
+            if (kexProposalConfig == null) {
+                kexProposalConfig = new KexProposalConfig(config);
+            }
 
             // Step 2: the full KeyExchange to agree on
             kexDelegate = new KexDelegate(this, serverVersion, clientVersion,
