@@ -145,6 +145,8 @@ public class KexDelegate {
 
     private final boolean strictKexEnabled;
     private final boolean strictKexRequired;
+    @NonNull
+    private final KexProposalConfig kexProposalConfig;
     /** Flag set when the server is indicating/requesting StrictKex feature support. */
     private boolean doStrictKex;
 
@@ -181,17 +183,20 @@ public class KexDelegate {
      *     <li>"[" + hostname + "]:" + port</li>
      * </ul>
      *
-     * @param hostKeyName the hostname/alias for use in host key lookup etc..
+     * @param hostKeyName       the hostname/alias for use in host key lookup etc..
+     * @param kexProposalConfig pre-validated read-only configuration
      */
     public KexDelegate(@NonNull final SessionImpl session,
                        @NonNull final String serverVersion,
                        @NonNull final String clientVersion,
-                       @NonNull final String hostKeyName)
+                       @NonNull final String hostKeyName,
+                       @NonNull final KexProposalConfig kexProposalConfig)
             throws NoSuchAlgorithmException {
         this.session = session;
         this.serverVersion = serverVersion;
         this.clientVersion = clientVersion;
         this.hostKeyName = hostKeyName;
+        this.kexProposalConfig = kexProposalConfig;
 
         final SshClientConfig config = session.getConfig();
         strictKexEnabled = config.getBooleanValue(PK_STRICT_KEX_ENABLED, true);
@@ -244,8 +249,8 @@ public class KexDelegate {
                                  @Nullable final UserInfo userinfo)
             throws IOException, GeneralSecurityException, SshAuthException {
 
-        // Using the *current* configuration, load and check all algorithms.
-        kexProposal = new KexProposal(session);
+        kexProposal = new KexProposal(session, kexProposalConfig);
+
         if (session.getConfig().getBooleanValue(PREFER_KNOWN_HOST_KEY_TYPES, true)) {
             kexProposal.preferKnownHostKeyTypes(hostKeyRepository, hostKeyName);
         }

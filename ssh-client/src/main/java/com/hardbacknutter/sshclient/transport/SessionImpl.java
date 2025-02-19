@@ -61,6 +61,7 @@ import com.hardbacknutter.sshclient.kex.KexAgreement;
 import com.hardbacknutter.sshclient.kex.KexDelegate;
 import com.hardbacknutter.sshclient.kex.KexException;
 import com.hardbacknutter.sshclient.kex.KexKeys;
+import com.hardbacknutter.sshclient.kex.KexProposalConfig;
 import com.hardbacknutter.sshclient.kex.KexTimeoutException;
 import com.hardbacknutter.sshclient.proxy.Proxy;
 import com.hardbacknutter.sshclient.userauth.SshAuthCancelException;
@@ -413,9 +414,13 @@ public final class SessionImpl
             c2s.writeVersion(clientVersion);
             serverVersion = s2c.readVersion();
 
+            // Using the *current* configuration, load and check all algorithms.
+            final KexProposalConfig kexProposalConfig = new KexProposalConfig(config);
+
             // Step 2: the full KeyExchange to agree on
             kexDelegate = new KexDelegate(this, serverVersion, clientVersion,
-                                          createHostKeyName());
+                                          createHostKeyName(),
+                                          kexProposalConfig);
 
             final KexKeys keys = kexDelegate.startExchange(getHostKeyRepository(), userinfo);
             takeKeysIntoUse(keys);

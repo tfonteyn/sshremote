@@ -4,14 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.Function;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Session;
@@ -21,8 +19,6 @@ import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.hostkey.HostKeyRepository;
-import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
-import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.userauth.SshAuthException;
 import com.hardbacknutter.sshclient.utils.Buffer;
@@ -80,17 +76,29 @@ public class KexProposal {
     /** Compression level. */
     public static final String COMPRESSION_LEVEL = "compression_level";
 
+    @NonNull
     private final List<String> kexAlgorithms;
+    @NonNull
     private final List<String> hostKeyAlgorithms;
+    @NonNull
     private final List<String> ciphers_c2s;
+    @NonNull
     private final List<String> ciphers_s2c;
+    @NonNull
     private final List<String> mac_c2s;
+    @NonNull
     private final List<String> mac_s2c;
+    @NonNull
     private final List<String> compression_c2s;
+    @NonNull
     private final List<String> compression_s2c;
+    @NonNull
     private final List<String> language_c2s;
+    @NonNull
     private final List<String> language_s2c;
+
     @SuppressWarnings("FieldNotUsedInToString")
+    @NonNull
     private final SshClientConfig config;
     @SuppressWarnings("FieldNotUsedInToString")
     @Nullable
@@ -102,41 +110,26 @@ public class KexProposal {
      * @throws NoSuchAlgorithmException if a deliberately configured algorithm
      *                                  is not available (i.e. we can't run without it)
      */
-    public KexProposal(@NonNull final Session session)
+    public KexProposal(@NonNull final Session session,
+                       @NonNull final KexProposalConfig kpc)
             throws NoSuchAlgorithmException {
 
         this.config = session.getConfig();
 
-        // new ArrayList's: we need to be able to modify these
-        kexAlgorithms = new ArrayList<>(config.getStringList(HostConfig.KEX_ALGS));
-        hostKeyAlgorithms = new ArrayList<>(config.getStringList(HostConfig.HOST_KEY_ALGS));
+        kexAlgorithms = kpc.getKexAlgorithms();
+        hostKeyAlgorithms = kpc.getHostKeyAlgorithms();
 
-        ciphers_c2s = config.getStringList(PROPOSAL_CIPHER_CTOS);
-        ciphers_s2c = config.getStringList(PROPOSAL_CIPHER_STOC);
+        ciphers_c2s = kpc.getCiphers_c2s();
+        ciphers_s2c = kpc.getCiphers_s2c();
 
-        mac_c2s = config.getStringList(PROPOSAL_MAC_CTOS);
-        mac_s2c = config.getStringList(PROPOSAL_MAC_STOC);
+        mac_c2s = kpc.getMac_c2s();
+        mac_s2c = kpc.getMac_s2c();
 
-        compression_c2s = getStringList(config, PROPOSAL_COMP_CTOS, COMPRESSION_NONE);
-        compression_s2c = getStringList(config, PROPOSAL_COMP_STOC, COMPRESSION_NONE);
+        compression_c2s = kpc.getCompression_c2s();
+        compression_s2c = kpc.getCompression_s2c();
 
-        language_c2s = getStringList(config, PROPOSAL_LANG_CTOS, "");
-        language_s2c = getStringList(config, PROPOSAL_LANG_STOC, "");
-
-        if (config.getBooleanValue(ImplementationFactory.PK_VALIDATE_ALGORITHM_CLASSES, true)) {
-            validate();
-        }
-    }
-
-    @NonNull
-    private static List<String> getStringList(@NonNull final SshClientConfig config,
-                                              @NonNull final String key,
-                                              @NonNull final String defValue) {
-        final List<String> list = config.getStringList(key);
-        if (list.isEmpty()) {
-            list.add(defValue);
-        }
-        return list;
+        language_c2s = kpc.getLanguage_c2s();
+        language_s2c = kpc.getLanguage_s2c();
     }
 
     /**
@@ -318,104 +311,6 @@ public class KexProposal {
             hostKeyAlgorithms.clear();
             hostKeyAlgorithms.addAll(preferred);
             hostKeyAlgorithms.addAll(others);
-        }
-    }
-
-    public void validate()
-            throws NoSuchAlgorithmException {
-
-        validateKexAlgorithms();
-        validateServerHostKeyAlgorithms();
-
-        validateAlgorithmPair(ciphers_c2s, ciphers_s2c, CHECK_CIP_ALGS,
-                              "cipher", name -> {
-                    try {
-                        ImplementationFactory.getCipher(config, name);
-                        return true;
-                    } catch (final NoSuchAlgorithmException e) {
-                        return false;
-                    }
-                });
-
-        validateAlgorithmPair(mac_c2s, mac_s2c, CHECK_MAC_ALGS, "mac", name -> {
-            try {
-                ImplementationFactory.getMac(config, name);
-                return true;
-            } catch (final NoSuchAlgorithmException e) {
-                return false;
-            }
-        });
-    }
-
-    private void validateKexAlgorithms()
-            throws NoSuchAlgorithmException {
-
-        if (kexAlgorithms.isEmpty()) {
-            throw new NoSuchAlgorithmException("Kex algorithms not configured");
-        }
-
-        // Try to instantiate the class, if that fails, remove the algorithm from the list
-        for (final String name : config.getStringList(CHECK_KEX_ALGS)) {
-            try {
-
-                final KeyExchange kex = ImplementationFactory.getKeyExchange(config, name);
-                kex.initKeyAgreement(config);
-            } catch (final GeneralSecurityException e) {
-                kexAlgorithms.remove(name);
-            }
-        }
-
-        if (kexAlgorithms.isEmpty()) {
-            throw new NoSuchAlgorithmException("No Kex algorithms available");
-        }
-    }
-
-    // checkSignatures
-    private void validateServerHostKeyAlgorithms()
-            throws NoSuchAlgorithmException {
-
-        if (hostKeyAlgorithms.isEmpty()) {
-            throw new NoSuchAlgorithmException("HostKey(Signature) algorithms not configured");
-        }
-
-        // Try to instantiate the class, if that fails, remove the algorithm from the list
-        for (final String name : config.getStringList(CHECK_SIG_ALGS)) {
-            try {
-                final SshSignature sig = ImplementationFactory.getSignature(config, name);
-                sig.init(name);
-            } catch (final GeneralSecurityException e) {
-                hostKeyAlgorithms.remove(name);
-            }
-        }
-
-        if (hostKeyAlgorithms.isEmpty()) {
-            throw new NoSuchAlgorithmException("No HostKey(Signature) algorithms available");
-        }
-    }
-
-    private void validateAlgorithmPair(@NonNull final List<String> c2s,
-                                       @NonNull final List<String> s2c,
-                                       @NonNull final String listToCheck,
-                                       @NonNull final String errMsg,
-                                       @NonNull final Function<String, Boolean> instantiate)
-            throws NoSuchAlgorithmException {
-
-        if (c2s.isEmpty() || s2c.isEmpty()) {
-            throw new NoSuchAlgorithmException(errMsg + " algorithms not configured");
-        }
-
-        // Try to instantiate the class, if that fails, remove the algorithm from the list
-        for (final String name : config.getStringList(listToCheck)) {
-            if (s2c.contains(name) || c2s.contains(name)) {
-                if (!instantiate.apply(name)) {
-                    c2s.remove(name);
-                    s2c.remove(name);
-                }
-            }
-        }
-
-        if (c2s.isEmpty() || s2c.isEmpty()) {
-            throw new NoSuchAlgorithmException(errMsg + " algorithms: none available");
         }
     }
 
