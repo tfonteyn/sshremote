@@ -22,8 +22,6 @@ package com.hardbacknutter.sshremote;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.Objects;
-
 /**
  * Value class holding Result data.
  *
@@ -31,8 +29,6 @@ import java.util.Objects;
  */
 public class FinishedMessage<Result>
         implements LiveDataEvent {
-
-    private static final String MISSING_TASK_RESULTS = "message.result";
 
     private final int taskId;
 
@@ -61,18 +57,9 @@ public class FinishedMessage<Result>
         return isNew;
     }
 
-    public int getTaskId() {
-        return taskId;
-    }
-
     @Nullable
     public Result getResult() {
         return result;
-    }
-
-    @NonNull
-    public Result requireResult() {
-        return Objects.requireNonNull(result, MISSING_TASK_RESULTS);
     }
 
     @Override
