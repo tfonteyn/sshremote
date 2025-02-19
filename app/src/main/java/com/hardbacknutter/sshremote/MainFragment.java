@@ -40,8 +40,8 @@ import java.util.Objects;
 import com.hardbacknutter.sshclient.ChannelSession;
 import com.hardbacknutter.sshclient.SshClientFactory;
 import com.hardbacknutter.sshclient.userauth.SshTooManyAuthAttemptException;
-import com.hardbacknutter.sshremote.databinding.ButtonBinding;
 import com.hardbacknutter.sshremote.databinding.FragmentMainBinding;
+import com.hardbacknutter.sshremote.databinding.RowButtonBinding;
 import com.hardbacknutter.sshremote.ddsupport.ItemTouchHelperAdapter;
 import com.hardbacknutter.sshremote.ddsupport.SimpleItemTouchHelperCallback;
 
@@ -276,11 +276,11 @@ public class MainFragment
             extends RecyclerView.ViewHolder {
 
         @NonNull
-        private final ButtonBinding mVb;
+        private final RowButtonBinding vb;
 
-        Holder(@NonNull final View itemView) {
-            super(itemView);
-            mVb = ButtonBinding.bind(itemView);
+        Holder(@NonNull final RowButtonBinding vb) {
+            super(vb.getRoot());
+            this.vb = vb;
         }
     }
 
@@ -290,18 +290,18 @@ public class MainFragment
 
         @NonNull
 
-        private final LayoutInflater mLayoutInflater;
+        private final LayoutInflater inflater;
 
         ButtonAdapter(@NonNull final Context context) {
-            mLayoutInflater = LayoutInflater.from(context);
+            inflater = LayoutInflater.from(context);
         }
 
         @NonNull
         @Override
         public Holder onCreateViewHolder(@NonNull final ViewGroup parent,
                                          final int viewType) {
-            final View view = mLayoutInflater.inflate(R.layout.button, parent, false);
-            return new Holder(view);
+            final RowButtonBinding rVb = RowButtonBinding.inflate(inflater, parent, false);
+            return new Holder(rVb);
         }
 
         @Override
@@ -310,12 +310,12 @@ public class MainFragment
             final UserButton userButton = list.get(position);
             final String label = userButton.getLabel();
             if (label.isEmpty()) {
-                holder.mVb.action.setText(R.string.button_not_set);
+                holder.vb.action.setText(R.string.button_not_set);
             } else {
-                holder.mVb.action.setText(label);
+                holder.vb.action.setText(label);
             }
 
-            holder.mVb.action.setOnClickListener(v -> {
+            holder.vb.action.setOnClickListener(v -> {
                 if (userButton.isPersisted()) {
                     clearOutput();
                     vb.progress.setVisibility(View.VISIBLE);
@@ -325,7 +325,7 @@ public class MainFragment
                     edit(userButton.getPosition());
                 }
             });
-            holder.mVb.action.setOnLongClickListener(v -> {
+            holder.vb.action.setOnLongClickListener(v -> {
                 if (movingButtons) {
                     itemTouchHelper.startDrag(holder);
                 } else {

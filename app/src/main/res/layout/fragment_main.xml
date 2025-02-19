@@ -46,7 +46,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:spanCount="@integer/btn_list_column_count"
             tools:itemCount="12"
-            tools:listitem="@layout/button">
+            tools:listitem="@layout/row_button">
 
         </androidx.recyclerview.widget.RecyclerView>
 
