@@ -179,15 +179,14 @@ public final class SessionImpl
      */
     private SessionImpl(@NonNull final SshClientImpl sshClient,
                         @Nullable final HostConfig hostConfig,
+                        @NonNull final SshSessionConfig clientConfig,
                         @Nullable final String username,
                         @NonNull final String hostnameOrAlias,
                         final int port)
             throws IOException, GeneralSecurityException, SshAuthException {
 
         this.sshClient = sshClient;
-        // create a child config
-        final SshClientConfig parentConfig = sshClient.getConfig();
-        this.config = new SshClientConfigImpl(parentConfig, hostConfig, parentConfig.getLogger());
+        this.config = clientConfig;
 
         this.username = resolveUsername(username, hostConfig);
         this.host = resolveHostname(hostnameOrAlias, hostConfig);
@@ -218,7 +217,14 @@ public final class SessionImpl
                                  @NonNull final String hostnameOrAlias,
                                  final int port)
             throws GeneralSecurityException, IOException, SshAuthException {
-        return new SessionImpl(sshClient, hostConfig, username, hostnameOrAlias, port);
+
+        final SshClientConfig config = sshClient.getConfig();
+        // create a child config
+        final SshClientConfigImpl clientConfig =
+                new SshClientConfigImpl(config, hostConfig, config.getLogger());
+
+        return new SessionImpl(sshClient, hostConfig, clientConfig,
+                               username, hostnameOrAlias, port);
     }
 
     @NonNull
