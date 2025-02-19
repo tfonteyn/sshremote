@@ -9,8 +9,8 @@ tasks.register("clean", Delete) {
 
 ext {
     applicationId = "com.hardbacknutter.sshremote"
-    applicationVersionCode = 6
-    applicationVersionName = "1.3.1"
+    applicationVersionCode = 7
+    applicationVersionName = "1.3.2"
 
     toolChain = 17
     minSdkVersion = 26
