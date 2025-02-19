@@ -12,6 +12,7 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -165,6 +166,9 @@ public final class SessionImpl
     private KexDelegate kexDelegate;
     @Nullable
     private List<String> serverSigAlgs;
+
+    /** cached after first retrieval from config. */
+    private List<String> clientPublicKeyAcceptedAlgorithms;
 
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
@@ -356,7 +360,6 @@ public final class SessionImpl
     public void setHostKeyRepository(@NonNull final HostKeyRepository hostkeyRepository) {
         this.hostKeyRepository = hostkeyRepository;
     }
-
 
     @Override
     public void connect()
@@ -892,6 +895,17 @@ public final class SessionImpl
 
     public boolean isInKeyExchange() {
         return kexDelegate != null && kexDelegate.isInKeyExchange();
+    }
+
+    @NonNull
+    @Override
+    public List<String> getClientPublicKeyAcceptedAlgorithms()
+            throws NoSuchAlgorithmException {
+        if (clientPublicKeyAcceptedAlgorithms == null) {
+            clientPublicKeyAcceptedAlgorithms = ImplementationFactory
+                    .getPublicKeyAcceptedAlgorithms(this);
+        }
+        return clientPublicKeyAcceptedAlgorithms;
     }
 
     @NonNull

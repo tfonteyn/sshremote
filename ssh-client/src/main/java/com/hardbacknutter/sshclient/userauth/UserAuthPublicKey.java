@@ -24,7 +24,6 @@ import com.hardbacknutter.sshclient.identity.IdentityRepository;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
 /**
@@ -77,7 +76,7 @@ public class UserAuthPublicKey
             throws IOException, GeneralSecurityException, SshAuthCancelException,
                    SshPartialAuthException {
 
-        for (final String name : ImplementationFactory.getPublicKeyAcceptedAlgorithms(session)) {
+        for (final String name : session.getClientPublicKeyAcceptedAlgorithms()) {
             if (HostKeyAlgorithm.isRSA(name)) {
                 rsaMethods.add(name);
             } else {

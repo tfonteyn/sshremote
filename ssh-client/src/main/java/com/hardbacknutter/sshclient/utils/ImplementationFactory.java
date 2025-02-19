@@ -650,10 +650,13 @@ public final class ImplementationFactory {
             return all;
         }
 
+        // has validation been disabled globally ?
         if (!config.getBooleanValue(PK_VALIDATE_ALGORITHM_CLASSES, true)) {
             return all.stream().distinct().collect(Collectors.toList());
         }
 
+        // Test all to check the jvm environment supports the algoritms.
+        // Only return the ones which worked.
         final List<String> result = new ArrayList<>();
         for (final String name : all.stream().distinct().collect(Collectors.toList())) {
             try {
