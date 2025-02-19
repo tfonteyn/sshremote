@@ -10,7 +10,12 @@ import java.net.URLClassLoader;
 import java.util.jar.Manifest;
 
 import com.hardbacknutter.sshclient.transport.SshClientImpl;
+import com.hardbacknutter.sshclient.utils.SshClientConfigImpl;
 
+/**
+ * The default configuration can be found in {@link SshClientConfigImpl}
+ * in the method {@code loadDefaultConfig()}.
+ */
 public final class SshClientFactory {
 
     private static final String VERSION = "1.3.1";
