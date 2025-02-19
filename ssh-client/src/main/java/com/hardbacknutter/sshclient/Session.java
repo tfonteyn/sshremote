@@ -93,6 +93,9 @@ public interface Session {
 
     /**
      * Get access to all options as currently in use.
+     * <p>
+     * <strong>CONSIDER THIS READ-ONLY, changes made to the returned
+     * object may result in failing connections</strong>
      *
      * @return the configuration
      */
