@@ -220,7 +220,7 @@ public final class SessionImpl
 
         final SshClientConfig config = sshClient.getConfig();
         // create a child config
-        final SshClientConfigImpl clientConfig =
+        final SshSessionConfig clientConfig =
                 new SshClientConfigImpl(config, hostConfig, config.getLogger());
 
         return new SessionImpl(sshClient, hostConfig, clientConfig,
