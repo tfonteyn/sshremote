@@ -318,7 +318,9 @@ public final class SshClientConfigImpl
                     HostConfig.KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
                     + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
+                    // Requires OpenSSH 9.9
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
+                    // Requires OpenSSH 9.0
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
@@ -336,6 +338,7 @@ public final class SshClientConfigImpl
                     KexProposal.CHECK_KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
                     + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
+                    + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
                     + ',' + KeyExchangeConstants.CURVE_448_SHA_512
                     + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1

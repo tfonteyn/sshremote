@@ -62,8 +62,10 @@ public final class KeyExchangeConstants {
     public static final String CURVE_25519_SHA_256 = "curve25519-sha256";
     public static final String CURVE_25519_SHA_256_LIBSSH_ORG = "curve25519-sha256@libssh.org";
 
+    /** Requires OpenSSH 9.9 */
     public static final String SNTRUP761X25519_SHA512 =
             "sntrup761x25519-sha512";
+    /** Requires OpenSSH 9.0 */
     public static final String SNTRUP761X25519_SHA512_OPENSSH_COM =
             "sntrup761x25519-sha512@openssh.com";
 
