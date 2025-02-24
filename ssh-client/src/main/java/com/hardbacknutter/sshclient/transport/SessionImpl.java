@@ -96,6 +96,7 @@ public final class SessionImpl
             .getBytes(StandardCharsets.UTF_8);
 
     private static final String ERROR_SESSION_IS_DOWN = "Session is not connected";
+    static final int DEFAULT_PORT = 22;
 
     @NonNull
     private final SshSessionConfig config;
@@ -283,7 +284,7 @@ public final class SessionImpl
             return resolved;
         }
 
-        return 22;
+        return DEFAULT_PORT;
     }
 
     @NonNull
@@ -490,7 +491,7 @@ public final class SessionImpl
     private String createHostKeyName() {
         if (hostKeyAlias != null) {
             return hostKeyAlias;
-        } else if (port != 22) {
+        } else if (port != DEFAULT_PORT) {
             return "[" + host + "]:" + port;
         } else {
             return host;
@@ -584,6 +585,7 @@ public final class SessionImpl
         // but resets to 0 upon receiving a new set from the server
         int nextMethod = 0;
 
+        @Nullable
         String methodCanceled = null;
 
         // Try each auth method until we're authenticated or have run out of methods to try.
@@ -1424,7 +1426,7 @@ public final class SessionImpl
         }
 
         // Load all host specific identities (key files) into the session IdentityRepository.
-        final List<String> fileNames = hostConfig.getStringList(HostConfig.IDENTITY_FILE, null);
+        final List<String> fileNames = hostConfig.getStringList(HostConfig.IDENTITY_FILE);
         if (!fileNames.isEmpty()) {
             // Wrap the repo if required.
             synchronized (this) {
@@ -1450,6 +1452,7 @@ public final class SessionImpl
     private void applyHostConfig(@NonNull final HostConfig hostConfig,
                                  @NonNull final ChannelSession channel) {
 
+        @Nullable
         Boolean enable;
 
         enable = hostConfig.getBooleanValue(HostConfig.FORWARD_AGENT, false);

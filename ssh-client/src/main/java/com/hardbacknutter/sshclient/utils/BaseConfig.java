@@ -3,7 +3,6 @@ package com.hardbacknutter.sshclient.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,6 +11,13 @@ import java.util.List;
  */
 public interface BaseConfig {
 
+    /**
+     * Check if the given key represents a list-value.
+     *
+     * @param key to check
+     *
+     * @return flag
+     */
     boolean isValueList(@NonNull String key);
 
     /**
@@ -21,9 +27,11 @@ public interface BaseConfig {
      * @param key      the key for the configuration option
      * @param defValue value to return if the key is not present
      *
-     * @return single value: the String value, or {@code defValue} if the key is not present.
-     * list value: the CSV String, or {@code defValue} when {@code defValue} is non-{@code null},
-     * or {@code ""} when  {@code defValue} is {@code null}.
+     * @return single value: the String value,
+     *         or {@code defValue} if the key is not present.
+     *         list value: the CSV String,
+     *         or {@code defValue} when {@code defValue} is non-{@code null},
+     *         or {@code ""} when  {@code defValue} is {@code null}.
      */
     @Nullable
     String getString(@NonNull String key,
@@ -50,7 +58,8 @@ public interface BaseConfig {
     /**
      * Convenience method for a single-value {@code int}.
      *
-     * @param key the key for the configuration option
+     * @param key      the key for the configuration option
+     * @param defValue to use if the key is not present
      *
      * @return the value, or {@code defValue} if the key is not present.
      */
@@ -71,7 +80,8 @@ public interface BaseConfig {
     /**
      * Convenience method for a single-value {@code boolean}.
      *
-     * @param key the key for the configuration option
+     * @param key      the key for the configuration option
+     * @param defValue to use if the key is not present
      *
      * @return the value, or {@code defValue} if the key is not present.
      */
@@ -86,25 +96,34 @@ public interface BaseConfig {
 
     /**
      * Convenience method for a multi-value configuration option.
-     * <p>
-     * If the key is not found, we return an empty {@code List<String>}.
      *
      * @param key the key for the configuration option
      *
      * @return the value corresponding to the key.
+     *         If the key is not found, an empty {@code List<String>}.
      */
     @NonNull
     default List<String> getStringList(@NonNull final String key) {
-        return getStringList(key, null);
+        // guard against overrides; handle null here
+        final List<String> list = getStringList(key, null);
+        return list != null ? list : List.of();
     }
 
-    @NonNull
+    /**
+     * Convenience method for a multi-value configuration option.
+     *
+     * @param key      the key for the configuration option
+     * @param defValue to use if the key is not present
+     *
+     * @return the value corresponding to the key.
+     */
+    @Nullable
     default List<String> getStringList(@NonNull final String key,
-                                       @Nullable final String defValue) {
+                                       @Nullable final List<String> defValue) {
         if (!isValueList(key)) {
             throw new IllegalArgumentException("Key is not a list-value: " + key);
         }
-        final String value = getString(key, defValue);
-        return value != null ? Arrays.asList(value.split(",")) : new ArrayList<>();
+        final String value = getString(key, null);
+        return value != null ? Arrays.asList(value.split(",")) : defValue;
     }
 }

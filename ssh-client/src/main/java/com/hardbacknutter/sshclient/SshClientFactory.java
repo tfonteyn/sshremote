@@ -51,6 +51,8 @@ public final class SshClientFactory {
      * Constructor.
      * <p>
      * The entry point for user-code.
+     *
+     * @return new client instance; logging disabled.
      */
     @NonNull
     public static SshClient create() {
@@ -62,7 +64,9 @@ public final class SshClientFactory {
      * <p>
      * The entry point for user-code.
      *
-     * @param logger to use; can be {@code null} for no logging at all.
+     * @param logger to use; use {@code null} to disable all logging
+     *
+     * @return new client instance
      */
     public static SshClient create(@Nullable final Logger logger) {
         return new SshClientImpl(logger);

@@ -50,6 +50,7 @@ public class SshClientImpl
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-4.2">
      *         RFC 4253, section4.2</a>
      */
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     static final String VERSION = "SSH-2.0-JSSHC_2.0";
 
     /**
@@ -255,6 +256,7 @@ public class SshClientImpl
             throws IOException, GeneralSecurityException, SshAuthException {
 
         // extra/specific config for the specified host
+        @Nullable
         final HostConfig hostConfig;
         //TODO: should we just use getHostKeyRepository()? (and never have a null hostConfig)
         if (hostConfigRepository != null) {
@@ -290,7 +292,7 @@ public class SshClientImpl
             if (!globalIdentitiesLoaded) {
                 final List<String> fileNames = hostConfigRepository
                         .getHostConfig("")
-                        .getStringList(HostConfig.IDENTITY_FILE, null);
+                        .getStringList(HostConfig.IDENTITY_FILE);
 
                 for (final String prvKeyFilename : fileNames) {
                     addIdentity(prvKeyFilename, null, null);

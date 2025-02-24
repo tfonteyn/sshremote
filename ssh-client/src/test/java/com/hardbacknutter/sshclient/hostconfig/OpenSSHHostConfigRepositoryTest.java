@@ -56,7 +56,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals("root", host.getUser());
         assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
-        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
+        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS);
         System.out.println(ciphers);
         assertEquals(2, ciphers.size());
         assertEquals("aes256-ctr", ciphers.get(0));
@@ -78,7 +78,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals(2322, host.getPort());
         assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
-        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
+        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS);
         System.out.println(ciphers);
         assertEquals(2, ciphers.size());
         assertEquals("aes256-ctr", ciphers.get(0));
@@ -102,7 +102,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals(7654, host.getPort());
         assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
-        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
+        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS);
         System.out.println(ciphers);
         assertEquals(3, ciphers.size());
         assertEquals("aes256-ctr", ciphers.get(0));
@@ -127,7 +127,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals(-1, host.getPort());
         assertEquals("10.0.0.1", host.getString(HostConfig.BIND_ADDRESS));
 
-        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
+        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS);
         System.out.println(ciphers);
         assertEquals(2, ciphers.size());
         assertEquals("aes256-ctr", ciphers.get(0));
@@ -149,7 +149,7 @@ class OpenSSHHostConfigRepositoryTest
         assertEquals(-1, host.getPort());
         assertEquals("10.0.0.2", host.getString(HostConfig.BIND_ADDRESS));
 
-        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS, null);
+        final List<String> ciphers = host.getStringList(HostConfig.CIPHERS);
         System.out.println(ciphers);
 
         assertEquals(5, ciphers.size());

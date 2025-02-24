@@ -109,6 +109,10 @@ public final class SshClientConfigImpl
 
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
+     *
+     * @param parentConfig optional parent configuration
+     * @param hostConfig   optional hosts configuration
+     * @param logger       to use; use {@code null} to disable all logging
      */
     public SshClientConfigImpl(@Nullable final SshClientConfig parentConfig,
                                @Nullable final HostConfig hostConfig,
@@ -122,8 +126,11 @@ public final class SshClientConfigImpl
     /**
      * Construct an {@link SshClient} configuration.
      *
+     * @param logger to use; use {@code null} to disable all logging
+     *
      * @return a {@link SshClientConfig}
      */
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     @NonNull
     public static SshClientConfig createClientConfig(@Nullable final Logger logger) {
         return new SshClientConfigImpl(null, null, logger);
@@ -214,6 +221,7 @@ public final class SshClientConfigImpl
                                    @Nullable final String defValue) {
         // For a single option, we check all levels using 'null' as the default.
         // Only when no levels have our option, we will return the 'defValue'.
+        @Nullable
         String value;
 
         // if this session configuration has the value, just return it.
@@ -280,19 +288,20 @@ public final class SshClientConfigImpl
      *     {@code
      *         // Compression: the keys consist of the prefix "inflate." or  "deflate."
      *         // + the standard ssh name for the compression protocol.
-     *         {
-     *              putClass(DEFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB,
-     *                         SshDeflaterImpl.class);
-     *              putClass(INFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB,
-     *                         SshInflaterImpl.class);
      *
-     *              putClass(DEFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
-     *                         SshDeflaterImpl.class);
-     *              putClass(INFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
-     *                         SshInflaterImpl.class);
-     *         }
+     *         putClass(DEFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB,
+     *                  SshDeflaterImpl.class);
+     *         putClass(INFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB,
+     *                  SshInflaterImpl.class);
+     *
+     *         putClass(DEFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
+     *                  SshDeflaterImpl.class);
+     *         putClass(INFLATER_CONFIG_PREFIX + KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
+     *                  SshInflaterImpl.class);
+     *
      *          // The random provider, defaults to {@link java.security.SecureRandom}
      *          putClass(Random.RANDOM, RandomImpl.class);
+     *      }
      * </pre>
      */
     private void loadDefaultConfig() {
@@ -318,9 +327,9 @@ public final class SshClientConfigImpl
                     HostConfig.KEX_ALGS,
                     KeyExchangeConstants.CURVE_25519_SHA_256
                     + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
-                    // Requires OpenSSH 9.9
-                    + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
-                    // Requires OpenSSH 9.0
+                    // Requires OpenSSH 9.9;
+                    // Our reference platform Ubuntu 2024-10 ships with 9.7
+                    // + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
