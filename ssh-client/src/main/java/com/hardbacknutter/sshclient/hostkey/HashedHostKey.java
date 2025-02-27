@@ -1,7 +1,7 @@
 package com.hardbacknutter.sshclient.hostkey;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;

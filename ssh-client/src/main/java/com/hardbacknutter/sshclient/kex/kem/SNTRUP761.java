@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex.kem;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

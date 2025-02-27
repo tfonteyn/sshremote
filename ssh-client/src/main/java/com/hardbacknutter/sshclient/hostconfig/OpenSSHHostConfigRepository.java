@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.hostconfig;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;

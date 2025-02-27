@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex.kem;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Key Encapsulation Mechanism.

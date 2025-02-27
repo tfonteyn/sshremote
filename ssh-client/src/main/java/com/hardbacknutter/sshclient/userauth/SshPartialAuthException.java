@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.userauth;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.List;

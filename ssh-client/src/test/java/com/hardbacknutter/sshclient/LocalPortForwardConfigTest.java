@@ -2,7 +2,7 @@ package com.hardbacknutter.sshclient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.forwarding.LocalForwardConfig;
 import com.hardbacknutter.sshclient.forwarding.PortForwardException;

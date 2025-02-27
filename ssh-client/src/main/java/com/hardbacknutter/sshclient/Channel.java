@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.transport.Packet;

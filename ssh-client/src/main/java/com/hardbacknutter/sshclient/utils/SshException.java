@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.utils;
 
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Base for all SSH Client related exceptions

@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.userauth;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Provides a way to prompt the user for {@code keyboard-interactive} authentication.

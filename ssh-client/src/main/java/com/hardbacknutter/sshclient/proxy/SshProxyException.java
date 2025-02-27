@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.proxy;
 
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.utils.SshException;
 

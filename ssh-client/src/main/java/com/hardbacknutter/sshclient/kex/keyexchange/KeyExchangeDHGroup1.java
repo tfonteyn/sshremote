@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex.keyexchange;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.kex.keyagreements.DH;
 

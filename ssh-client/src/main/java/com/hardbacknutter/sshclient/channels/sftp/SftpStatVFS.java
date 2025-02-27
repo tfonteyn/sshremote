@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.channels.sftp;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class SftpStatVFS {

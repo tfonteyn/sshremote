@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.channels.sftp;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.ChannelSftp;
 import com.hardbacknutter.sshclient.Constants;

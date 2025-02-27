@@ -1,7 +1,7 @@
 package com.hardbacknutter.sshclient.channels.session;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.ChannelSession;
 import com.hardbacknutter.sshclient.channels.BaseChannel;

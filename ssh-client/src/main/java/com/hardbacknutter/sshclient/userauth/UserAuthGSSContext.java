@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.userauth;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import org.ietf.jgss.MessageProp;
 

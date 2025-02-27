@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Random number generator.

@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 

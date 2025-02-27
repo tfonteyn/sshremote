@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.utils;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;

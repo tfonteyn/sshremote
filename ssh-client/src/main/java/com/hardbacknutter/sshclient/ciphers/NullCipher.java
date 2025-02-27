@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.ciphers;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * An implementation of the Cipher {@code none}, i.e. unencrypted transport.

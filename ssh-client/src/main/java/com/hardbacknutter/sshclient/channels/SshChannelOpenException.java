@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.channels;
 
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SshChannelOpenException
         extends SshChannelException {

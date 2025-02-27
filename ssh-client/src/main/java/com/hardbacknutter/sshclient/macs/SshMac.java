@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.macs;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.kex.KexProposal;
 

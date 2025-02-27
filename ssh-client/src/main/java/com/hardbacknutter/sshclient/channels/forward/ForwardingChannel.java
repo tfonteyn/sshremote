@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.channels.forward;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.channels.BaseChannel;
 import com.hardbacknutter.sshclient.channels.SshChannelException;

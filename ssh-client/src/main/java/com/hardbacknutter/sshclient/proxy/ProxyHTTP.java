@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.proxy;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

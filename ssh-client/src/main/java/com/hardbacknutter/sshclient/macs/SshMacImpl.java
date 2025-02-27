@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.macs;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.security.InvalidKeyException;
 import java.security.Key;

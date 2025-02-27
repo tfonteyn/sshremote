@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.ciphers;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;

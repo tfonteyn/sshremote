@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.stream.Stream;
 import javax.crypto.Cipher;

@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.keypair.util;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.signature;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;

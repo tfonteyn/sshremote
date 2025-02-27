@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.keypair;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 

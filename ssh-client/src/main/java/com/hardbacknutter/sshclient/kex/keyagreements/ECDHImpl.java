@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex.keyagreements;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.keypair.ECKeyType;
 

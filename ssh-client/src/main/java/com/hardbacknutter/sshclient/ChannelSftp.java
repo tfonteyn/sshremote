@@ -1,7 +1,7 @@
 package com.hardbacknutter.sshclient;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.channels.sftp.SftpATTRS;
 import com.hardbacknutter.sshclient.channels.sftp.SftpException;

@@ -1,7 +1,7 @@
 package com.hardbacknutter.sshclient.forwarding;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.channels.direct.ChannelDirectTCPIP;
 import com.hardbacknutter.sshclient.transport.SessionImpl;

@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.hostconfig;
 
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.kex.KexProposal;
 import com.hardbacknutter.sshclient.utils.BaseConfig;

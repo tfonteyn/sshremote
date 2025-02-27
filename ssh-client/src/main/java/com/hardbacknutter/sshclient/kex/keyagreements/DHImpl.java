@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex.keyagreements;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;

@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.transport;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.Random;
 import com.hardbacknutter.sshclient.utils.ABuffer;

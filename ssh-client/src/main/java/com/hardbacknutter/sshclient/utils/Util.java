@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.utils;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public final class Util {
 

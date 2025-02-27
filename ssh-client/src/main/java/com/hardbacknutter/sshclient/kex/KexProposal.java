@@ -1,7 +1,7 @@
 package com.hardbacknutter.sshclient.kex;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;

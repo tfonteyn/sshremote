@@ -1,7 +1,7 @@
 package com.hardbacknutter.sshclient.keypair.pbkdf;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyException;

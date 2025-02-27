@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.signature;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public class SshSignatureRSA
         extends SshSignatureBase {
