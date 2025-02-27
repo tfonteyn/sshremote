@@ -29,8 +29,8 @@ tasks.withType(Test).configureEach {
 dependencies {
     api(libs.jspecify)
 
-    implementation(libs.bouncycastle.bcprov)
-    implementation(libs.bouncycastle.bcutil)
+    api(libs.bouncycastle.bcprov)
+    api(libs.bouncycastle.bcutil)
 
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)

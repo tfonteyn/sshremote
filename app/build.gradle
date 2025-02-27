@@ -163,6 +163,9 @@ dependencies {
 
     implementation(libs.google.material)
 
+    implementation(libs.bouncycastle.bcprov)
+    implementation(libs.bouncycastle.bcutil)
+
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.params)
