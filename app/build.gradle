@@ -20,6 +20,13 @@ if (project.hasProperty("SSHRemote.properties")) {
         props.load(new FileInputStream(file))
     }
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(rootProject.ext.toolChain)
+    }
+}
+
 kotlin {
     jvmToolchain rootProject.ext.toolChain
 }
