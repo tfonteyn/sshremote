@@ -499,7 +499,7 @@ public class ChannelSftpImpl
 
     @Override
     public void ls(@NonNull final String path,
-                   @NonNull final LsEntry.Selector selector)
+                    final LsEntry.@NonNull Selector selector)
             throws SftpException {
         try {
             //noinspection DataFlowIssue

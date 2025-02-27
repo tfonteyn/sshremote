@@ -206,7 +206,7 @@ public interface ChannelSftp
      * @see LsEntry.Selector
      */
     void ls(@NonNull String path,
-            @NonNull LsEntry.Selector selector)
+            LsEntry.@NonNull Selector selector)
             throws SftpException;
 
     /**

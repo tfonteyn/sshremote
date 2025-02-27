@@ -12,12 +12,12 @@ public class DbgProgressListener
     }
 
     @Override
-    public void init(@NonNull final ChannelSftp.Direction direction,
+    public void init(final ChannelSftp.@NonNull Direction direction,
                      @NonNull final String src,
                      @NonNull final String dest,
                      final long max) {
         logger.log(Logger.INFO, () -> "Progress: direction=" + direction
-                + ", src=" + src + ", dst=" + dest + ", max=" + max);
+                                      + ", src=" + src + ", dst=" + dest + ", max=" + max);
     }
 
     @Override

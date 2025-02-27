@@ -1,11 +1,11 @@
 package com.hardbacknutter.sshclient.channels.sftp;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.util.Objects;
 
 import com.hardbacknutter.sshclient.ChannelSftp;
 
-import java.util.Objects;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 
 class LsEntryImpl
@@ -13,10 +13,10 @@ class LsEntryImpl
 
     @NonNull
     private final String filename;
-    @Nullable
-    private String longname;
     @NonNull
     private final SftpATTRS attrs;
+    @Nullable
+    private String longname;
 
     LsEntryImpl(@NonNull final String filename,
                 @Nullable final String longname,
@@ -50,7 +50,7 @@ class LsEntryImpl
 
 
     @Override
-    public int compareTo(@Nullable final ChannelSftp.LsEntry o)
+    public int compareTo(final ChannelSftp.@Nullable LsEntry o)
             throws NullPointerException, ClassCastException {
         Objects.requireNonNull(o);
         return filename.compareTo(o.getFilename());
@@ -67,7 +67,7 @@ class LsEntryImpl
         final ChannelSftp.LsEntry that = (ChannelSftp.LsEntry) o;
         // longname is ignored
         return filename.equals(that.getFilename())
-                && attrs.equals(that.getAttrs());
+               && attrs.equals(that.getAttrs());
     }
 
     @Override
@@ -79,9 +79,9 @@ class LsEntryImpl
     @NonNull
     public String toString() {
         return "LsEntryImpl{"
-                + "filename='" + filename + '\''
-                + ", longname='" + longname + '\''
-                + ", attrs=" + attrs
-                + '}';
+               + "filename='" + filename + '\''
+               + ", longname='" + longname + '\''
+               + ", attrs=" + attrs
+               + '}';
     }
 }
