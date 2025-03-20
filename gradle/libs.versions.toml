@@ -32,7 +32,7 @@ bouncycastle = "1.80"
 jspecify = "1.0.0"
 
 # https://junit.org/junit5/docs/current/user-guide/#overview
-jupiter = "5.12.0"
+jupiter = "5.12.1"
 
 # https://developer.android.com/jetpack/androidx/releases/test
 androidxTestCore = '1.6.1'
