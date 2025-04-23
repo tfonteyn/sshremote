@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "8.10.0-rc02"
+androidGradlePlugin = "8.10.0-rc03"
 # https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
 androidKotlinPlugin = "2.1.20"
 
@@ -11,14 +11,14 @@ androidxAppcompat = '1.7.0'
 androidxConstraintlayout = "2.2.1"
 androidxCoordinatorlayout = "1.3.0"
 androidxCore = "1.16.0"
-androidxCustomview = "1.2.0-rc01"
-androidxDocumentfile = "1.1.0-beta01"
+androidxCustomview = "1.2.0"
+androidxDocumentfile = "1.1.0-rc01"
 androidxDrawerlayout = "1.2.0"
 androidxFragment = "1.8.6"
 androidxLifecycle = '2.8.7'
 androidxPreference = "1.2.1"
 androidxRecyclerview = "1.4.0"
-androidxRoom = "2.7.0"
+androidxRoom = "2.7.1"
 
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 desugar = "2.1.5"
