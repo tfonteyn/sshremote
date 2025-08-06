@@ -46,7 +46,7 @@ public class IdentityRepositoryWrapper
     /**
      * Pass-through operation.
      */
-    public boolean remove(@Nullable final byte[] publicKeyBlob)
+    public boolean remove(final byte @Nullable [] publicKeyBlob)
             throws SshException, GeneralSecurityException {
         return repository.remove(publicKeyBlob);
     }

@@ -59,7 +59,7 @@ public interface SshMac {
     /**
      * Initializes the MAC, providing the key.
      */
-    void init(@NonNull byte[] key)
+    void init(byte @NonNull [] key)
             throws GeneralSecurityException;
 
     /**
@@ -76,7 +76,7 @@ public interface SshMac {
      * @param offset the position in {@code input} where the data starts.
      * @param len    the length of the data.
      */
-    void update(@NonNull byte[] input,
+    void update(byte @NonNull [] input,
                 int offset,
                 int len);
 
@@ -86,7 +86,7 @@ public interface SshMac {
      * @param output    an array to put the authentication code into.
      * @param outOffset the position in {@code output} where the output should begin.
      */
-    void doFinal(@NonNull byte[] output,
+    void doFinal(byte @NonNull [] output,
                  int outOffset)
             throws GeneralSecurityException;
 }

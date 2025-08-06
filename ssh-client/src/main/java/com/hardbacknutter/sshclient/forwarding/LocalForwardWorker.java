@@ -62,7 +62,7 @@ abstract class LocalForwardWorker {
      */
     void start(final boolean asDaemon)
             throws IOException {
-        @NonNull final InetAddress tmpAddress = InetAddress.getByName(address);
+        final InetAddress tmpAddress = InetAddress.getByName(address);
         ss = (ssf == null) ? new ServerSocket(localPort, 0, tmpAddress)
                 : ssf.createServerSocket(localPort, 0, tmpAddress);
 
@@ -89,7 +89,6 @@ abstract class LocalForwardWorker {
         thread = null;
         try {
             ss.close();
-            //noinspection DataFlowIssue
             ss = null;
         } catch (final Exception ignore) {
         }

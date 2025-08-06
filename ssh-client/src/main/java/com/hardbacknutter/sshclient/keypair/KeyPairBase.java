@@ -54,8 +54,7 @@ public abstract class KeyPairBase
      * It may be {@link #privateKeyEncrypted} or not.
      * If it is, then {@link #decryptor} should be able to decrypt it.
      */
-    @Nullable
-    protected byte[] privateKeyBlob;
+    protected byte @Nullable [] privateKeyBlob;
     @Nullable
     PBKDF decryptor;
     @Nullable
@@ -80,7 +79,7 @@ public abstract class KeyPairBase
      * @param decryptor (optional) The vendor specific decryptor
      */
     KeyPairBase(@NonNull final SshClientConfig config,
-                @NonNull final byte[] privateKeyBlob,
+                final byte @NonNull [] privateKeyBlob,
                 @NonNull final PrivateKeyEncoding privateKeyEncoding,
                 final boolean encrypted,
                 @Nullable final PBKDF decryptor) {
@@ -102,9 +101,8 @@ public abstract class KeyPairBase
      *
      * @return the blob
      */
-    @NonNull
-    static byte[] wrapPublicKey(@NonNull final String keyAlgorithm,
-                                @NonNull final byte[]... args) {
+    static byte @NonNull [] wrapPublicKey(@NonNull final String keyAlgorithm,
+                                          final byte @NonNull []... args) {
         // use a fixed-size buffer
         // (+4: a uint32 to store the length of the argument string)
         int length = 4 + keyAlgorithm.length();
@@ -137,9 +135,8 @@ public abstract class KeyPairBase
                    NoSuchAlgorithmException,
                    NoSuchProviderException;
 
-    @NonNull
-    @Override
-    public byte[] getSignature(@NonNull final byte[] data,
+        @Override
+    public byte @NonNull [] getSignature(final byte @NonNull [] data,
                                @NonNull final String algorithm)
             throws GeneralSecurityException {
 
@@ -225,7 +222,7 @@ public abstract class KeyPairBase
      *
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
-    abstract void parsePrivateKey(@NonNull byte[] encodedKey,
+    abstract void parsePrivateKey(byte @NonNull [] encodedKey,
                                   @NonNull PrivateKeyEncoding encoding)
             throws GeneralSecurityException;
 
@@ -239,7 +236,7 @@ public abstract class KeyPairBase
      *         decrypted, i.e. is now usable, else {@code false}.
      */
     @Override
-    public boolean decrypt(@Nullable final byte[] passphrase)
+    public boolean decrypt(final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
 
         if (!privateKeyEncrypted) {
@@ -259,7 +256,7 @@ public abstract class KeyPairBase
         } catch (final GeneralSecurityException e) {
             // We have an actual error
             throw e;
-        } catch (@NonNull final Exception e) {
+        } catch (final Exception e) {
             config.getLogger().log(Logger.DEBUG, e, () -> "decrypt");
 
             // failed due to a key format decoding problem
@@ -290,8 +287,7 @@ public abstract class KeyPairBase
      * <p>
      * The returned blob MUST be parsed for validity.
      */
-    @NonNull
-    byte[] internalDecrypt(@Nullable final byte[] passphrase)
+    byte @NonNull [] internalDecrypt(final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
         if (privateKeyBlob == null) {
             throw new InvalidKeyException("No key data");

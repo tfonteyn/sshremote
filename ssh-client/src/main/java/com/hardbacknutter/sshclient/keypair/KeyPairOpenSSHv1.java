@@ -36,8 +36,7 @@ public final class KeyPairOpenSSHv1
     /** key derivation function. */
     @Nullable
     private String kdfName;
-    @Nullable
-    private byte[] kdfOptions;
+    private byte @Nullable [] kdfOptions;
 
     /**
      * Constructor.
@@ -59,7 +58,7 @@ public final class KeyPairOpenSSHv1
      * reads openssh key v1 format and returns key type.
      */
     @NonNull
-    public static String getHostKeyAlgorithm(@NonNull final byte[] blob)
+    public static String getHostKeyAlgorithm(final byte @NonNull [] blob)
             throws IOException, InvalidKeyException {
 
         final Buffer buffer = new Buffer(blob);
@@ -74,7 +73,7 @@ public final class KeyPairOpenSSHv1
     }
 
     @Override
-    void parsePrivateKey(@NonNull final byte[] encodedKey,
+    void parsePrivateKey(final byte @NonNull [] encodedKey,
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
         if (getDelegate() != null) {
@@ -116,17 +115,17 @@ public final class KeyPairOpenSSHv1
                 setPrivateKeyEncrypted(false);
                 createDelegate(getHostKeyAlgorithm(privateKeyBlob), privateKeyBlob);
             }
-        } catch (@NonNull final GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception ignore) {
+        } catch (final Exception ignore) {
             config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
         }
     }
 
     @Override
-    public boolean decrypt(@Nullable final byte[] passphrase)
+    public boolean decrypt(final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
         if (!isEncrypted()) {
             return true;
@@ -171,8 +170,7 @@ public final class KeyPairOpenSSHv1
         @NonNull
         final SshClientConfig config;
 
-        @Nullable
-        private byte[] privateKeyBlob;
+        private byte @Nullable [] privateKeyBlob;
 
 
         public Builder(@NonNull final SshClientConfig config) {
@@ -185,7 +183,7 @@ public final class KeyPairOpenSSHv1
          * @param privateKeyBlob The encoded private key
          */
         @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob) {
+        public Builder setPrivateKey(final byte @NonNull [] privateKeyBlob) {
             this.privateKeyBlob = privateKeyBlob;
             return this;
         }

@@ -43,8 +43,7 @@ public class PBKDFPutty2 implements PBKDF {
 
     @Nullable
     private SshCipher cipher;
-    @Nullable
-    private byte[] cipherIV;
+    private byte @Nullable [] cipherIV;
 
     @NonNull
     public PBKDFPutty2 init()
@@ -55,7 +54,7 @@ public class PBKDFPutty2 implements PBKDF {
 
     @Override
     public void setCipher(@Nullable final SshCipher cipher,
-                          @Nullable final byte[] cipherIV) {
+                          final byte @Nullable [] cipherIV) {
         this.cipher = cipher;
         this.cipherIV = cipherIV;
     }
@@ -63,8 +62,7 @@ public class PBKDFPutty2 implements PBKDF {
     /**
      * @param keyLength MUST be set to 32 for compatibility
      */
-    @NonNull
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength) {
         if (keyLength != 32) {
             throw new IllegalArgumentException("keyLength must be 32");
@@ -87,9 +85,8 @@ public class PBKDFPutty2 implements PBKDF {
         return pbeKey;
     }
 
-    @NonNull
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException {
         if (cipher == null || cipherIV == null) {
             throw new KeyException("Cipher/iv not set");

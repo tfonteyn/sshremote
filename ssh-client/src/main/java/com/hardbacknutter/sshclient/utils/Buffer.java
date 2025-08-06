@@ -24,7 +24,7 @@ public class Buffer
     /**
      * Create a Buffer using the given array as backing store. The buffer size is FIXED.
      */
-    public Buffer(@NonNull final byte[] data) {
+    public Buffer(final byte @NonNull [] data) {
         super(data);
     }
 
@@ -34,7 +34,7 @@ public class Buffer
      *
      * @return a NEW (copied) byte array.
      */
-    public byte[] getPayload() {
+    public byte @NonNull [] getPayload() {
         return Arrays.copyOfRange(data, 0, getWriteOffset());
     }
 }

@@ -28,11 +28,10 @@ public class PBKDF1 implements PBKDF {
 
     @Nullable
     private SshCipher cipher;
-    @Nullable
-    private byte[] cipherIV;
+    private byte @Nullable [] cipherIV;
 
     public PBKDF1 init(@NonNull final String algorithm,
-                       @NonNull final byte[] salt)
+                       final byte @NonNull [] salt)
             throws NoSuchAlgorithmException {
         this.salt = salt;
         md = MessageDigest.getInstance(algorithm);
@@ -41,13 +40,12 @@ public class PBKDF1 implements PBKDF {
 
     @Override
     public void setCipher(@Nullable final SshCipher cipher,
-                          @Nullable final byte[] cipherIV) {
+                          final byte @Nullable [] cipherIV) {
         this.cipher = cipher;
         this.cipherIV = cipherIV;
     }
 
-    @NonNull
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength) throws NoSuchAlgorithmException {
         /*
          * https://datatracker.ietf.org/doc/html/rfc8018#section-5.1
@@ -79,9 +77,8 @@ public class PBKDF1 implements PBKDF {
         return key;
     }
 
-    @NonNull
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException {
         if (cipher == null || cipherIV == null) {
             throw new KeyException("Cipher/iv not set");

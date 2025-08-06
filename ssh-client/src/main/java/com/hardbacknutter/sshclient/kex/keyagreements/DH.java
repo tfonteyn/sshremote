@@ -55,8 +55,7 @@ public interface DH {
      *
      * @return the shared secret K, in the form of a byte[].
      */
-    @NonNull
-    byte[] getSharedSecret(@NonNull BigInteger f)
+    byte @NonNull [] getSharedSecret(@NonNull BigInteger f)
             throws GeneralSecurityException;
 
     /**

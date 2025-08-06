@@ -61,8 +61,7 @@ public class DHImpl
     }
 
     @Override
-    @NonNull
-    public byte[] getSharedSecret(@NonNull final BigInteger f)
+    public byte @NonNull [] getSharedSecret(@NonNull final BigInteger f)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
                    InvalidKeyException, IllegalStateException {
 

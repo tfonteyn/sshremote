@@ -123,8 +123,8 @@ public interface SshCipher {
      *                              short to hold the operation result.
      */
     void init(int opmode,
-              @NonNull byte[] key,
-              @NonNull byte[] iv)
+              byte @NonNull [] key,
+              byte @NonNull [] iv)
             throws GeneralSecurityException;
 
     /**
@@ -141,10 +141,10 @@ public interface SshCipher {
      * @param outputOffset the position in {@code output} from which on the data
      *                     should be written.
      */
-    void update(@NonNull byte[] input,
+    void update(byte @NonNull [] input,
                 int inputOffset,
                 int inputLen,
-                @NonNull byte[] output,
+                byte @NonNull [] output,
                 int outputOffset)
             throws GeneralSecurityException;
 
@@ -156,7 +156,7 @@ public interface SshCipher {
      * @param offset the offset in {@code src} where the AAD input starts
      * @param len    the number of AAD bytes
      */
-    void updateAAD(@NonNull byte[] src,
+    void updateAAD(byte @NonNull [] src,
                    int offset,
                    int len)
             throws GeneralSecurityException;
@@ -174,10 +174,10 @@ public interface SshCipher {
      *
      * @return the number of bytes stored in {@code output}
      */
-    int doFinal(@NonNull byte[] input,
+    int doFinal(byte @NonNull [] input,
                 int inputOffset,
                 int inputLen,
-                @NonNull byte[] output,
+                byte @NonNull [] output,
                 int outputOffset)
             throws GeneralSecurityException;
 

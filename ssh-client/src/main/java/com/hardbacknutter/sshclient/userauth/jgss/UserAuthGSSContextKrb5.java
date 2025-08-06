@@ -115,8 +115,7 @@ public class UserAuthGSSContextKrb5
         return context.isEstablished();
     }
 
-    @NonNull
-    public byte[] init(@NonNull final byte[] token,
+    public byte @NonNull [] init(final byte @NonNull [] token,
                        final int offset,
                        final int len)
             throws SshAuthException {
@@ -143,8 +142,7 @@ public class UserAuthGSSContextKrb5
         }
     }
 
-    @NonNull
-    public byte[] getMIC(@NonNull final byte[] inMsg,
+    public byte @NonNull [] getMIC(final byte @NonNull [] inMsg,
                          final int offset,
                          final int len)
             throws SshAuthException {

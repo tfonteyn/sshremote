@@ -35,7 +35,7 @@ class LegacyPEMReader {
 
     @NonNull
     SshKeyPair parse(@NonNull final PemObject pem,
-                     @Nullable final byte[] publicKeyBlob,
+                     final byte @Nullable [] publicKeyBlob,
                      @Nullable final PublicKeyEncoding publicKeyEncoding)
             throws InvalidKeyException, GeneralSecurityException, IOException {
 
@@ -89,8 +89,7 @@ class LegacyPEMReader {
         }
     }
 
-    @NonNull
-    private byte[] createIV(@NonNull final String pemIV,
+    private byte @NonNull [] createIV(@NonNull final String pemIV,
                             final int ivSize) throws InvalidKeyException {
         final byte[] iv = new byte[ivSize];
         try {

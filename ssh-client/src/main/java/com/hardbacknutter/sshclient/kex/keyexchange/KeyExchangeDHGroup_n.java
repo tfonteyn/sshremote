@@ -77,10 +77,10 @@ abstract class KeyExchangeDHGroup_n
     @Override
     public void init(@NonNull final SshClientConfig config,
                      @NonNull final PacketIO io,
-                     @NonNull final byte[] V_S,
-                     @NonNull final byte[] V_C,
-                     @NonNull final byte[] I_S,
-                     @NonNull final byte[] I_C)
+                     final byte @NonNull [] V_S,
+                     final byte @NonNull [] V_C,
+                     final byte @NonNull [] I_S,
+                     final byte @NonNull [] I_C)
             throws GeneralSecurityException, IOException {
         super.init(config, io, V_S, V_C, I_S, I_C);
         if (agreement == null) {

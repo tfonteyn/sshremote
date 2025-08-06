@@ -368,7 +368,7 @@ public abstract class BaseChannel
              * Sending the data to the server is done when the stream is {@link #flush() flushed}
              */
             @Override
-            public void write(@NonNull final byte[] buf,
+            public void write(final byte @NonNull [] buf,
                               final int offset,
                               int length)
                     throws IOException {
@@ -562,7 +562,7 @@ public abstract class BaseChannel
      * @param offset start pointer into the bytes array for the payload data
      * @param length of the payload
      */
-    protected void writeData(@NonNull final byte[] bytes,
+    protected void writeData(final byte @NonNull [] bytes,
                              final int offset,
                              final int length)
             throws IOException, SshChannelException, GeneralSecurityException {
@@ -580,7 +580,7 @@ public abstract class BaseChannel
      * @throws SshChannelException is not thrown for now, but added to be consistent
      *                             with {@link #writeData(byte[], int, int)}
      */
-    private void writeExtData(@NonNull final byte[] bytes,
+    private void writeExtData(final byte @NonNull [] bytes,
                               final int offset,
                               final int length)
             throws IOException, SshChannelException {

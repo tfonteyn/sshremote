@@ -287,7 +287,7 @@ public class ProxySOCKS5
     }
 
     private void fill(@NonNull final InputStream in,
-                      @NonNull final byte[] buf,
+                      final byte @NonNull [] buf,
                       final int len)
             throws SshProxyException, IOException {
         int s = 0;

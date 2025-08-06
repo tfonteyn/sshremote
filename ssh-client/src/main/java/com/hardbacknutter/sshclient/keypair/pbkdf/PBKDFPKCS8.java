@@ -39,12 +39,11 @@ public class PBKDFPKCS8
 
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
-                          @NonNull final byte[] cipherIV) {
+                          final byte @NonNull [] cipherIV) {
     }
 
-    @NonNull
-    @Override
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+        @Override
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength)
             throws GeneralSecurityException {
         if (delegate == null) {
@@ -54,9 +53,8 @@ public class PBKDFPKCS8
     }
 
     @Override
-    @NonNull
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
 
         // RSA encrypted with prvKeyAlgOID == id_PBES2
@@ -148,11 +146,11 @@ public class PBKDFPKCS8
         }
     }
 
-    private byte[] decryptSCrypt(@NonNull final byte[] encryptedPrivateKey,
-                                 @NonNull final byte[] passphrase,
+    private byte[] decryptSCrypt(final byte @NonNull [] encryptedPrivateKey,
+                                 final byte @NonNull [] passphrase,
                                  @NonNull final ASN1Encodable paramSequence,
                                  @NonNull final SshCipher cipher,
-                                 @NonNull final byte[] cipherIV)
+                                 final byte @NonNull [] cipherIV)
             throws GeneralSecurityException, IOException {
         //   scrypt-params ::= SEQUENCE {
         //       salt OCTET STRING,
@@ -182,12 +180,11 @@ public class PBKDFPKCS8
     }
 
     // PKCS5 Params
-    @NonNull
-    private byte[] decryptPBKDF2(@NonNull final byte[] encryptedPrivateKey,
-                                 @NonNull final byte[] passphrase,
+    private byte @NonNull [] decryptPBKDF2(final byte @NonNull [] encryptedPrivateKey,
+                                 final byte @NonNull [] passphrase,
                                  @NonNull final ASN1Encodable paramSequence,
                                  @NonNull final SshCipher cipher,
-                                 @NonNull final byte[] cipherIV)
+                                 final byte @NonNull [] cipherIV)
             throws GeneralSecurityException, IOException {
         //                 ObjectIdentifier(1.2.840.113549.1.5.12)      ==> 'paramOID'
         //                 Sequence                                     ==> 'parameters'

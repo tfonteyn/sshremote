@@ -25,8 +25,7 @@ abstract class ProxyBase
     OutputStream out;
     @Nullable
     String user;
-    @Nullable
-    byte[] passwd;
+    byte @Nullable [] passwd;
     @Nullable
     private Socket socket;
 

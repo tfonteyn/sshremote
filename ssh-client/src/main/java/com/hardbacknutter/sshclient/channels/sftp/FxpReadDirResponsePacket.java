@@ -130,15 +130,13 @@ class FxpReadDirResponsePacket {
     }
 
     static class LSStruct {
-        @NonNull
-        final byte[] filename;
-        @Nullable
-        final byte[] longname;
+        final byte @NonNull [] filename;
+        final byte @Nullable [] longname;
         @NonNull
         final SftpATTRS attr;
 
-        LSStruct(@NonNull final byte[] filename,
-                 @Nullable final byte[] longname,
+        LSStruct(final byte @NonNull [] filename,
+                 final byte @Nullable [] longname,
                  @NonNull final SftpATTRS attr) {
             this.filename = filename;
             this.longname = longname;

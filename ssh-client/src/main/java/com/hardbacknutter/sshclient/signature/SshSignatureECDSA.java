@@ -27,9 +27,8 @@ public class SshSignatureECDSA
         super(jcaSignatureAlgorithm);
     }
 
-    @NonNull
-    @Override
-    public byte[] sign()
+        @Override
+    public byte @NonNull [] sign()
             throws SignatureException {
 
         final byte[] sig = signature.sign();
@@ -63,7 +62,7 @@ public class SshSignatureECDSA
     }
 
     @Override
-    public boolean verify(@NonNull final byte[] sig)
+    public boolean verify(final byte @NonNull [] sig)
             throws SignatureException {
 
         final byte[] signatureBlob = unwrap(sig);

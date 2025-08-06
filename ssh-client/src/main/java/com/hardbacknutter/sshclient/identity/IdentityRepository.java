@@ -80,7 +80,7 @@ public interface IdentityRepository {
      *
      * @throws SshException if the IdentityRepository has problems.
      */
-    boolean remove(@Nullable byte[] publicKeyBlob)
+    boolean remove(byte @Nullable [] publicKeyBlob)
             throws SshException, GeneralSecurityException;
 
     /**

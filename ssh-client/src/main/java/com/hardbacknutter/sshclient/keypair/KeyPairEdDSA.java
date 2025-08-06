@@ -51,12 +51,10 @@ public class KeyPairEdDSA
     @Nullable
     private EdKeyType type;
 
-    @Nullable
-    private byte[] prv_array;
+    private byte @Nullable [] prv_array;
 
     /** the length will be {@link EdKeyType#keySize}. */
-    @Nullable
-    private byte[] pub_array;
+    private byte @Nullable [] pub_array;
 
     /**
      * Constructor.
@@ -110,7 +108,7 @@ public class KeyPairEdDSA
      */
     @NonNull
     public static PublicKey createPublicKey(@NonNull final String curveName,
-                                            @NonNull final byte[] rawKey)
+                                            final byte @NonNull [] rawKey)
             throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
 
         final KeySpec keySpec = new RawEncodedKeySpec(rawKey);
@@ -171,16 +169,14 @@ public class KeyPairEdDSA
         return keyFactory.generatePrivate(keySpec);
     }
 
-    @NonNull
-    @Override
-    public byte[] getSshEncodedPublicKey() {
+        @Override
+    public byte @NonNull [] getSshEncodedPublicKey() {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
         return wrapPublicKey(type.hostKeyAlgorithm, pub_array);
     }
 
     @Override
-    @NonNull
-    public byte[] toSshAgentEncodedKeyPair()
+    public byte @NonNull [] toSshAgentEncodedKeyPair()
             throws KeyManagementException {
         if (isEncrypted()) {
             throw new KeyManagementException("Key is encrypted");
@@ -208,7 +204,7 @@ public class KeyPairEdDSA
      * @param encodedKey the key data.
      * @param encoding   the encoding format
      */
-    private void parsePublicKey(@Nullable final byte[] encodedKey,
+    private void parsePublicKey(final byte @Nullable [] encodedKey,
                                 @Nullable final PublicKeyEncoding encoding)
             throws NoSuchAlgorithmException,
                    NoSuchProviderException,
@@ -230,7 +226,7 @@ public class KeyPairEdDSA
                         final Buffer buffer = new Buffer(encodedKey);
                         type = EdKeyType.getByHostKeyAlgorithm(buffer.getJString());
                         pub_array = buffer.getString();
-                    } catch (@NonNull final IOException e) {
+                    } catch (final IOException e) {
                         throw new InvalidKeyException(e);
                     }
                     break;
@@ -242,7 +238,7 @@ public class KeyPairEdDSA
     }
 
     @Override
-    void parsePrivateKey(@NonNull final byte[] encodedKey,
+    void parsePrivateKey(final byte @NonNull [] encodedKey,
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
@@ -339,11 +335,11 @@ public class KeyPairEdDSA
                     throw new UnsupportedKeyBlobEncodingException(encoding);
 
             }
-        } catch (@NonNull final GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception ignore) {
+        } catch (final Exception ignore) {
             config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
 
             // failed due to a key format decoding problem
@@ -367,12 +363,10 @@ public class KeyPairEdDSA
 
         @NonNull
         final SshClientConfig config;
-        @Nullable
-        private byte[] publicKeyBlob;
+        private byte @Nullable [] publicKeyBlob;
         @Nullable
         private PublicKeyEncoding publicKeyEncoding;
-        @Nullable
-        private byte[] privateKeyBlob;
+        private byte @Nullable [] privateKeyBlob;
         @Nullable
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
@@ -386,7 +380,7 @@ public class KeyPairEdDSA
 
         @Override
         @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+        public Builder setPrivateKey(final byte @NonNull [] privateKeyBlob,
                                      @NonNull final PrivateKeyEncoding encoding) {
             this.privateKeyBlob = privateKeyBlob;
             this.privateKeyEncoding = encoding;
@@ -395,7 +389,7 @@ public class KeyPairEdDSA
 
         @Override
         @NonNull
-        public Builder setPublicKey(@Nullable final byte[] publicKeyBlob,
+        public Builder setPublicKey(final byte @Nullable [] publicKeyBlob,
                                     @Nullable final PublicKeyEncoding encoding) {
             this.publicKeyBlob = publicKeyBlob;
             this.publicKeyEncoding = encoding;

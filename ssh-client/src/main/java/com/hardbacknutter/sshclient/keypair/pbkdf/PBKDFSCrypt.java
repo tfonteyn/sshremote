@@ -34,7 +34,7 @@ public class PBKDFSCrypt implements PBKDF {
      * @param parallel  Parallelization parameter. Must be a positive integer less than or equal to
      *                  {@code Integer.MAX_VALUE / (128 * r * 8)}.
      */
-    public PBKDFSCrypt init(@NonNull final byte[] salt,
+    public PBKDFSCrypt init(final byte @NonNull [] salt,
                             final int cost,
                             final int blockSize,
                             final int parallel) {
@@ -47,21 +47,19 @@ public class PBKDFSCrypt implements PBKDF {
 
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
-                          @NonNull final byte[] cipherIV) {
+                          final byte @NonNull [] cipherIV) {
         this.cipher = cipher;
         this.cipherIV = cipherIV;
     }
 
-    @NonNull
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength) {
         return SCrypt.generate(passphrase, salt, cost, blockSize, parallel, keyLength);
     }
 
-    @NonNull
-    @Override
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+        @Override
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
         byte[] pbeKey = null;
         final byte[] plainKey = new byte[blob.length];

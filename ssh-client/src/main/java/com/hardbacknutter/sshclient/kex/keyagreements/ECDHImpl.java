@@ -56,15 +56,13 @@ public class ECDHImpl
         keyAgreement.init(keyPair.getPrivate());
     }
 
-    @NonNull
     @Override
-    public byte[] getQ() {
+    public byte @NonNull [] getQ() {
         return q;
     }
 
-    @NonNull
     @Override
-    public byte[] getSharedSecret(@NonNull final ECPoint w)
+    public byte @NonNull [] getSharedSecret(@NonNull final ECPoint w)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
                    InvalidKeyException, IllegalStateException {
 

@@ -37,6 +37,5 @@ public interface Random {
      *
      * @return a <strong>new</strong> byte array with random data
      */
-    @NonNull
-    byte[] nextBytes(int length);
+    byte @NonNull [] nextBytes(int length);
 }

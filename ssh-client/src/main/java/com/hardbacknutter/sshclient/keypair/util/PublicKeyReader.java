@@ -121,7 +121,7 @@ class PublicKeyReader {
             comment = "";
         }
 
-        PublicKeyAndComment(@Nullable final byte[] blob,
+        PublicKeyAndComment(final byte @Nullable [] blob,
                             @Nullable final PublicKeyEncoding encoding,
                             @Nullable final String comment) {
             this.blob = blob;
@@ -129,8 +129,7 @@ class PublicKeyReader {
             this.comment = comment != null ? comment : "";
         }
 
-        @Nullable
-        public byte[] getBlob() {
+        public byte @Nullable [] getBlob() {
             return blob;
         }
 

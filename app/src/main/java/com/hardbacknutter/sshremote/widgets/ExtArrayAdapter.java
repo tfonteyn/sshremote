@@ -509,7 +509,7 @@ public class ExtArrayAdapter<T>
                             + " in item layout");
                 }
             }
-        } catch (@NonNull final ClassCastException e) {
+        } catch (final ClassCastException e) {
             Log.e("ExtArrayAdapter", "You must supply a resource ID for a TextView");
             throw new IllegalStateException(
                     "ExtArrayAdapter requires the resource ID to be a TextView", e);

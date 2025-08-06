@@ -151,8 +151,8 @@ public class ChaCha20Poly1305
 
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] key,
-                     @NonNull final byte[] iv) {
+                     final byte @NonNull [] key,
+                     final byte @NonNull [] iv) {
 
         this.opmode = opmode;
 
@@ -214,17 +214,17 @@ public class ChaCha20Poly1305
 
     // Will be called only to encrypt the 4 bytes for the packet length
     @Override
-    public void update(@NonNull final byte[] input,
+    public void update(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset)
             throws ShortBufferException {
         k1_cipher.update(input, inputOffset, inputLen, output, outputOffset);
     }
 
     @Override
-    public void updateAAD(@NonNull final byte[] src,
+    public void updateAAD(final byte @NonNull [] src,
                           final int offset,
                           final int len) {
         // Should never be called for ChaCha20
@@ -232,10 +232,10 @@ public class ChaCha20Poly1305
     }
 
     @Override
-    public int doFinal(@NonNull final byte[] input,
+    public int doFinal(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset)
             throws ShortBufferException, AEADBadTagException {
 

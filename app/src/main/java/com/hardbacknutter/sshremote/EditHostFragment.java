@@ -73,7 +73,7 @@ public class EditHostFragment
                 } else {
                     vm.setPort(Integer.parseInt(p));
                 }
-            } catch (@NonNull final NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 vm.setPort(Host.DEFAULT_PORT);
                 vb.port.setText(String.valueOf(Host.DEFAULT_PORT));
             }

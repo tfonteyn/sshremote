@@ -81,7 +81,7 @@ public enum ECKeyType {
     }
 
     @NonNull
-    public static ECPoint decodePoint(@NonNull final byte[] encodedPoint)
+    public static ECPoint decodePoint(final byte @NonNull [] encodedPoint)
             throws IOException {
 
         if ((encodedPoint.length == 0) || (encodedPoint[0] != POINT_CONVERSION_UNCOMPRESSED)) {
@@ -95,8 +95,7 @@ public enum ECKeyType {
         return new ECPoint(new BigInteger(1, xb), new BigInteger(1, yb));
     }
 
-    @NonNull
-    private static byte[] trimZeroes(@NonNull final byte[] b) {
+    private static byte @NonNull [] trimZeroes(final byte @NonNull [] b) {
         int i = 0;
         while ((i < b.length - 1) && (b[i] == 0)) {
             i++;
@@ -111,8 +110,7 @@ public enum ECKeyType {
     /**
      * Encode a {@link ECPoint} to a byte array using the correct key size for this type.
      */
-    @NonNull
-    public byte[] encodePoint(@NonNull final ECPoint w) {
+    public byte @NonNull [] encodePoint(@NonNull final ECPoint w) {
         // bits: 256(32)/384(48)/521(66)
         // get field size in bytes (rounding up)
         final int n = (keySize + 7) >> 3;

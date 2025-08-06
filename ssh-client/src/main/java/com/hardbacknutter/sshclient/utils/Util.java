@@ -21,8 +21,8 @@ public final class Util {
     /**
      * Timing safe replacement for {@code Arrays.equals(a,b);}
      */
-    public static boolean arraysEquals(@NonNull final byte[] a,
-                                       @NonNull final byte[] b) {
+    public static boolean arraysEquals(final byte @NonNull [] a,
+                                       final byte @NonNull [] b) {
 
         if (a.length != b.length) {
             return false;

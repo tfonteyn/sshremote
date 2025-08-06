@@ -69,8 +69,8 @@ public final class IdentityImpl
     @NonNull
     public static Identity fromKeyData(@NonNull final SshClientConfig config,
                                        @NonNull final String name,
-                                       @NonNull final byte[] prvKey,
-                                       @Nullable final byte[] pubKey)
+                                       final byte @NonNull [] prvKey,
+                                       final byte @Nullable [] pubKey)
             throws IOException, GeneralSecurityException {
 
         final KeyPairParser keyPairParser = new KeyPairParser(config);
@@ -88,7 +88,7 @@ public final class IdentityImpl
      * or if this identity is not encrypted.
      */
     @Override
-    public boolean decrypt(@Nullable final byte[] passphrase)
+    public boolean decrypt(final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
         return sshKeyPair.decrypt(passphrase);
     }
@@ -102,14 +102,12 @@ public final class IdentityImpl
      * @return blob of the public key
      */
     @Override
-    @NonNull
-    public byte[] getSshEncodedPublicKey() {
+    public byte @NonNull [] getSshEncodedPublicKey() {
         return sshKeyPair.getSshEncodedPublicKey();
     }
 
     @Override
-    @NonNull
-    public byte[] getSignature(@NonNull final byte[] data,
+    public byte @NonNull [] getSignature(final byte @NonNull [] data,
                                @NonNull final String algorithm)
             throws GeneralSecurityException {
         return sshKeyPair.getSignature(data, algorithm);

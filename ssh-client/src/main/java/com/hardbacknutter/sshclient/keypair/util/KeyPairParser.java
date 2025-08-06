@@ -108,8 +108,8 @@ public class KeyPairParser {
      * @return the new KeyPair.
      */
     @NonNull
-    public SshKeyPair parse(@NonNull final byte[] prvKey,
-                            @Nullable final byte[] pubKey)
+    public SshKeyPair parse(final byte @NonNull [] prvKey,
+                            final byte @Nullable [] pubKey)
             throws IOException, GeneralSecurityException {
 
         // Check for binary format key from "ssh-add" command on the remote.

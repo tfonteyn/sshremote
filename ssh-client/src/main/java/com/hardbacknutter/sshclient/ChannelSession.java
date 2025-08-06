@@ -55,8 +55,8 @@ public interface ChannelSession
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
      * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
-    void setEnv(@NonNull byte[] name,
-                @NonNull byte[] value);
+    void setEnv(byte @NonNull [] name,
+                byte @NonNull [] value);
 
     /**
      * Send the given signal to the process at the remote side.

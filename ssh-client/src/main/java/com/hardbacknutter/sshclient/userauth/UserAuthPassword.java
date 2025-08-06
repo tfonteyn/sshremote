@@ -54,7 +54,7 @@ public class UserAuthPassword
     @Override
     public boolean authenticate(@NonNull final Session session,
                                 @NonNull final PacketIO io,
-                                @Nullable final byte[] authPassword)
+                                final byte @Nullable [] authPassword)
             throws IOException, GeneralSecurityException,
                    SshAuthCancelException, SshPartialAuthException,
                    SshTooManyAuthAttemptException {

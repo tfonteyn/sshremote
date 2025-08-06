@@ -86,7 +86,7 @@ public class UserAuthGSSAPIWithMIC
     @Override
     public boolean authenticate(@NonNull final Session session,
                                 @NonNull final PacketIO io,
-                                @Nullable final byte[] password)
+                                final byte @Nullable [] password)
             throws IOException, GeneralSecurityException, SshPartialAuthException {
 
         final byte[] usernameBytes = username.getBytes(StandardCharsets.UTF_8);

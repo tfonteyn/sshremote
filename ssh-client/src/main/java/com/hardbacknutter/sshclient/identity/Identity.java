@@ -47,7 +47,7 @@ public interface Identity {
      * {@link #getSignature(byte[], String)} can now be used,
      * {@code false} if the passphrase was wrong.
      */
-    boolean decrypt(@Nullable byte[] passphrase)
+    boolean decrypt(byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException;
 
     /**
@@ -55,8 +55,7 @@ public interface Identity {
      *
      * @return encoded public key
      */
-    @Nullable
-    byte[] getSshEncodedPublicKey()
+    byte @Nullable [] getSshEncodedPublicKey()
             throws GeneralSecurityException;
 
     /**
@@ -67,8 +66,7 @@ public interface Identity {
      *
      * @return a signature of {@code data}
      */
-    @NonNull
-    byte[] getSignature(@NonNull byte[] data,
+    byte @NonNull [] getSignature(byte @NonNull [] data,
                         @NonNull String algorithm)
             throws GeneralSecurityException;
 

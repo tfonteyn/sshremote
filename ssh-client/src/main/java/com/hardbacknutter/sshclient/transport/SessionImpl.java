@@ -127,15 +127,13 @@ public final class SessionImpl
     private String clientVersion = SshClientImpl.VERSION;
 
     /** Unique session id, based on the hash from the KeyExchange. */
-    @Nullable
-    private byte[] sessionId;
+    private byte @Nullable [] sessionId;
 
     @Nullable
     private TransportS2C s2c;
     @Nullable
     private TransportC2S c2s;
-    @Nullable
-    private byte[] password;
+    private byte @Nullable [] password;
     @Nullable
     private UserInfo userinfo;
     @Nullable
@@ -293,8 +291,7 @@ public final class SessionImpl
         return sshClient;
     }
 
-    @Nullable
-    public byte[] getPassword() {
+    public byte @Nullable [] getPassword() {
         return password;
     }
 
@@ -306,7 +303,7 @@ public final class SessionImpl
     }
 
     @Override
-    public void setPassword(@Nullable final byte[] password) {
+    public void setPassword(final byte @Nullable [] password) {
         if (password != null) {
             this.password = Arrays.copyOf(password, password.length);
         }
@@ -658,8 +655,7 @@ public final class SessionImpl
     }
 
     @Override
-    @Nullable
-    public byte[] getSessionId() {
+    public byte @Nullable [] getSessionId() {
         return sessionId;
     }
 

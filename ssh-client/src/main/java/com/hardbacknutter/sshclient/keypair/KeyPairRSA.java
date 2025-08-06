@@ -189,9 +189,8 @@ public class KeyPairRSA
         return keyFactory.generatePrivate(keySpec);
     }
 
-    @NonNull
-    @Override
-    public byte[] getSshEncodedPublicKey() {
+        @Override
+    public byte @NonNull [] getSshEncodedPublicKey() {
         Objects.requireNonNull(publicExponent, "publicExponent");
         Objects.requireNonNull(modulus, "modulus");
         return wrapPublicKey(serverHostKeyAlgorithm,
@@ -199,9 +198,8 @@ public class KeyPairRSA
                              modulus.toByteArray());
     }
 
-    @NonNull
-    @Override
-    public byte[] toSshAgentEncodedKeyPair()
+        @Override
+    public byte @NonNull [] toSshAgentEncodedKeyPair()
             throws KeyManagementException {
         if (isEncrypted()) {
             throw new KeyManagementException("key is encrypted.");
@@ -233,7 +231,7 @@ public class KeyPairRSA
      * @param encodedKey the key data.
      * @param encoding   the encoding format
      */
-    private void parsePublicKey(@Nullable final byte[] encodedKey,
+    private void parsePublicKey(final byte @Nullable [] encodedKey,
                                 @Nullable final PublicKeyEncoding encoding)
             throws NoSuchAlgorithmException,
                    InvalidKeySpecException,
@@ -255,7 +253,7 @@ public class KeyPairRSA
                         buffer.skipString(/* hostKeyAlgorithm */);
                         publicExponent = buffer.getBigInteger();
                         modulus = buffer.getBigInteger();
-                    } catch (@NonNull final IllegalArgumentException | IOException e) {
+                    } catch (final IllegalArgumentException | IOException e) {
                         throw new InvalidKeyException(e);
                     }
                     break;
@@ -267,7 +265,7 @@ public class KeyPairRSA
     }
 
     @Override
-    void parsePrivateKey(@NonNull final byte[] encodedKey,
+    void parsePrivateKey(final byte @NonNull [] encodedKey,
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
@@ -362,11 +360,11 @@ public class KeyPairRSA
                 default:
                     throw new UnsupportedKeyBlobEncodingException(encoding);
             }
-        } catch (@NonNull final GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception ignore) {
+        } catch (final Exception ignore) {
             config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
 
             // failed due to a key format decoding problem
@@ -417,12 +415,10 @@ public class KeyPairRSA
 
         @NonNull
         final SshClientConfig config;
-        @Nullable
-        private byte[] publicKeyBlob;
+        private byte @Nullable [] publicKeyBlob;
         @Nullable
         private PublicKeyEncoding publicKeyEncoding;
-        @Nullable
-        private byte[] privateKeyBlob;
+        private byte @Nullable [] privateKeyBlob;
         @Nullable
         private PrivateKeyEncoding privateKeyEncoding;
         private boolean encrypted;
@@ -435,7 +431,7 @@ public class KeyPairRSA
 
         @Override
         @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+        public Builder setPrivateKey(final byte @NonNull [] privateKeyBlob,
                                      @NonNull final PrivateKeyEncoding encoding) {
             this.privateKeyBlob = privateKeyBlob;
             this.privateKeyEncoding = encoding;
@@ -452,7 +448,7 @@ public class KeyPairRSA
 
         @Override
         @NonNull
-        public Builder setPublicKey(@Nullable final byte[] publicKeyBlob,
+        public Builder setPublicKey(final byte @Nullable [] publicKeyBlob,
                                     @Nullable final PublicKeyEncoding encoding) {
             this.publicKeyBlob = publicKeyBlob;
             this.publicKeyEncoding = encoding;

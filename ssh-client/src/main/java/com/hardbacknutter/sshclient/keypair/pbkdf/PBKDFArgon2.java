@@ -27,8 +27,7 @@ public class PBKDFArgon2 implements PBKDF {
 
     @Nullable
     private SshCipher cipher;
-    @Nullable
-    private byte[] cipherIV;
+    private byte @Nullable [] cipherIV;
 
     /**
      * Init.
@@ -75,7 +74,7 @@ public class PBKDFArgon2 implements PBKDF {
                 final int j = i * 2;
                 salt1[i] = (byte) Integer.parseInt(salt.substring(j, j + 2), 16);
             }
-        } catch (@NonNull final NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             throw new KeyException(e);
         }
 
@@ -99,13 +98,12 @@ public class PBKDFArgon2 implements PBKDF {
 
     @Override
     public void setCipher(@Nullable final SshCipher cipher,
-                          @Nullable final byte[] cipherIV) {
+                          final byte @Nullable [] cipherIV) {
         this.cipher = cipher;
         this.cipherIV = cipherIV;
     }
 
-    @NonNull
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength) {
 
         final byte[] key = new byte[keyLength];
@@ -113,9 +111,8 @@ public class PBKDFArgon2 implements PBKDF {
         return key;
     }
 
-    @NonNull
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException {
         if (cipher == null || cipherIV == null) {
             throw new KeyException("Cipher/iv not set");

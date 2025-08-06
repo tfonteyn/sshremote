@@ -221,7 +221,7 @@ public class ChannelSftpImpl
      * @return string
      */
     @NonNull
-    private String byte2str(@NonNull final byte[] bytes) {
+    private String byte2str(final byte @NonNull [] bytes) {
         return new String(bytes, remoteCharset);
     }
 
@@ -896,7 +896,7 @@ public class ChannelSftpImpl
                 }
 
                 @Override
-                public int read(@NonNull final byte[] b,
+                public int read(final byte @NonNull [] b,
                                 final int off,
                                 int len)
                         throws IOException {
@@ -1491,7 +1491,7 @@ public class ChannelSftpImpl
                  * Sends the given data to the server with a {@link SftpConstants#SSH_FXP_WRITE}.
                  */
                 @Override
-                public void write(@NonNull final byte[] data,
+                public void write(final byte @NonNull [] data,
                                   final int offset,
                                   final int length)
                         throws IOException {
@@ -1919,7 +1919,7 @@ public class ChannelSftpImpl
         sendPacketPath(SftpConstants.SSH_FXP_STAT, path, null);
     }
 
-    private void sendSTAT(@NonNull final byte[] path)
+    private void sendSTAT(final byte @NonNull [] path)
             throws IOException, GeneralSecurityException, SshChannelException {
         sendPacketPath(SftpConstants.SSH_FXP_STAT, path, null);
     }
@@ -1929,7 +1929,7 @@ public class ChannelSftpImpl
         sendPacketPath(SftpConstants.SSH_FXP_LSTAT, path, null);
     }
 
-    private void sendFSTAT(@NonNull final byte[] handle)
+    private void sendFSTAT(final byte @NonNull [] handle)
             throws IOException, GeneralSecurityException, SshChannelException {
         sendPacketPath(SftpConstants.SSH_FXP_FSTAT, handle, null);
     }
@@ -1945,7 +1945,7 @@ public class ChannelSftpImpl
         sendFxpPacket(packet);
     }
 
-    private void sendFSETSTAT(@NonNull final byte[] handle,
+    private void sendFSETSTAT(final byte @NonNull [] handle,
                               @NonNull final SftpATTRS attr)
             throws IOException, GeneralSecurityException, SshChannelException {
 
@@ -2027,7 +2027,7 @@ public class ChannelSftpImpl
         sendPacketPath(SftpConstants.SSH_FXP_OPENDIR, path, null);
     }
 
-    private void sendREADDIR(@NonNull final byte[] handle)
+    private void sendREADDIR(final byte @NonNull [] handle)
             throws IOException, GeneralSecurityException, SshChannelException {
 
         sendPacketPath(SftpConstants.SSH_FXP_READDIR, handle, null);
@@ -2041,7 +2041,7 @@ public class ChannelSftpImpl
                        extPosixRename ? EXT_POSIX_RENAME_OPENSSH_COM : null);
     }
 
-    private void sendCLOSE(@NonNull final byte[] handle)
+    private void sendCLOSE(final byte @NonNull [] handle)
             throws IOException, GeneralSecurityException, SshChannelException {
 
         sendPacketPath(SftpConstants.SSH_FXP_CLOSE, handle, null);
@@ -2071,7 +2071,7 @@ public class ChannelSftpImpl
     }
 
     private void sendPacketPath(final byte fxp,
-                                @NonNull final byte[] path,
+                                final byte @NonNull [] path,
                                 @Nullable final String extension)
             throws IOException, GeneralSecurityException, SshChannelException {
 
@@ -2102,8 +2102,8 @@ public class ChannelSftpImpl
     }
 
     private void sendPacketPath(final byte fxp,
-                                @NonNull final byte[] path1,
-                                @NonNull final byte[] path2,
+                                final byte @NonNull [] path1,
+                                final byte @NonNull [] path2,
                                 @Nullable final String extension)
             throws IOException, GeneralSecurityException, SshChannelException {
 
@@ -2133,9 +2133,9 @@ public class ChannelSftpImpl
      *
      * @return actual number of bytes send to the server
      */
-    private int sendWRITE(@NonNull final byte[] handle,
+    private int sendWRITE(final byte @NonNull [] handle,
                           final long offset,
-                          @NonNull final byte[] data,
+                          final byte @NonNull [] data,
                           final int start,
                           final int length)
             throws IOException, GeneralSecurityException, SshChannelException {
@@ -2181,7 +2181,7 @@ public class ChannelSftpImpl
      *               from where to start reading
      * @param length the maximum number of bytes to read
      */
-    private void sendREAD(@NonNull final byte[] handle,
+    private void sendREAD(final byte @NonNull [] handle,
                           final long offset,
                           final int length)
             throws IOException, GeneralSecurityException, SshChannelException {
@@ -2290,16 +2290,14 @@ public class ChannelSftpImpl
         }
     }
 
-    @NonNull
-    private byte[] receiveNAME()
+    private byte @NonNull [] receiveNAME()
             throws IOException, SftpException {
         final FxpBuffer packet = receive(SftpConstants.SSH_FXP_NAME);
         packet.getInt(); // count, always 1
         return packet.getString();
     }
 
-    @NonNull
-    private byte[] receiveHANDLE()
+    private byte @NonNull [] receiveHANDLE()
             throws IOException, SftpException {
         final FxpBuffer packet = receive(SftpConstants.SSH_FXP_HANDLE);
         return packet.getString();

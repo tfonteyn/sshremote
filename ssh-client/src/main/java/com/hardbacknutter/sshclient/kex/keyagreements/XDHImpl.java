@@ -56,15 +56,13 @@ public class XDHImpl
         keyAgreement.init(keyPair.getPrivate());
     }
 
-    @NonNull
     @Override
-    public byte[] getQ() {
+    public byte @NonNull [] getQ() {
         return q;
     }
 
-    @NonNull
     @Override
-    public byte[] getSharedSecret(@NonNull final byte[] q_s)
+    public byte @NonNull [] getSharedSecret(final byte @NonNull [] q_s)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
                    InvalidKeyException, IllegalStateException, NoSuchProviderException {
 
@@ -95,7 +93,7 @@ public class XDHImpl
     //   [IANA-REASON].  No further validation is required beyond what is
     //   described in [RFC7748].
     @Override
-    public void validate(@NonNull final byte[] q_s)
+    public void validate(final byte @NonNull [] q_s)
             throws InvalidKeyException {
         if (q_s.length != keySize) {
             throw new InvalidKeyException("validation failed");
@@ -117,8 +115,7 @@ public class XDHImpl
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc7748#section-5">
      * RFC 7748 Elliptic Curves for Security, section 5. The X25519 and X448 Functions</a>
      */
-    @NonNull
-    private byte[] rotate(@NonNull final byte[] u) {
+    private byte @NonNull [] rotate(final byte @NonNull [] u) {
         final int len = u.length;
         final byte[] out = new byte[len];
 

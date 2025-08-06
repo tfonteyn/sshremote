@@ -132,7 +132,7 @@ public final class HostKeyAlgorithm {
      * @see #parseType(String)
      */
     @NonNull
-    public static String parseType(@NonNull final byte[] key)
+    public static String parseType(final byte @NonNull [] key)
             throws InvalidKeyException {
         if (key.length > 20) {
             if (key[8] == 'd') {

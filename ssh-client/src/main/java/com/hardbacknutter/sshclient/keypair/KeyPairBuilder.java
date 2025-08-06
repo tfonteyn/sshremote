@@ -17,7 +17,7 @@ public interface KeyPairBuilder {
      *                       This is independent from the encryption state.
      */
     @NonNull
-    KeyPairBuilder setPrivateKey(@NonNull byte[] privateKeyBlob,
+    KeyPairBuilder setPrivateKey(byte @NonNull [] privateKeyBlob,
                                  @NonNull PrivateKeyEncoding encoding);
 
     /**
@@ -28,7 +28,7 @@ public interface KeyPairBuilder {
      *                      This is independent from the encryption state.
      */
     @NonNull
-    KeyPairBuilder setPublicKey(@Nullable byte[] publicKeyBlob,
+    KeyPairBuilder setPublicKey(byte @Nullable [] publicKeyBlob,
                                 @Nullable PublicKeyEncoding encoding);
 
     /**

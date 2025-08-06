@@ -11,10 +11,9 @@ public interface KEM {
 
     int getPublicKeyLength();
 
-    byte[] getPublicKey();
+    byte @NonNull [] getPublicKey();
 
     int getEncapsulationLength();
 
-    @NonNull
-    byte[] extractSecret(byte[] encapsulation);
+    byte @NonNull [] extractSecret(byte[] encapsulation);
 }

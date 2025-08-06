@@ -151,8 +151,7 @@ class PuttyReader {
         return keyPair;
     }
 
-    @NonNull
-    private byte[] parseBase64(@NonNull final BufferedReader br,
+    private byte @NonNull [] parseBase64(@NonNull final BufferedReader br,
                                @NonNull String line)
             throws IOException, InvalidKeyException {
         final int lines = Integer.parseInt(line.substring(line.indexOf(':') + 2).trim());

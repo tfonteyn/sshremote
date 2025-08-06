@@ -134,9 +134,9 @@ public final class Globber {
      *
      * @return {@code true} if pattern matches name from given indexes
      */
-    private static boolean globRemotePath(@NonNull final byte[] pattern,
+    private static boolean globRemotePath(final byte @NonNull [] pattern,
                                           final int patternIndex,
-                                          @NonNull final byte[] filename,
+                                          final byte @NonNull [] filename,
                                           final int nameIndex) {
 
         if (pattern.length == 0) {

@@ -74,9 +74,9 @@ public abstract class Transport {
      *         RFC 4253 SSH Transport Layer Protocol, section 7.2. Output from Key Exchange</a>
      */
     private static byte[] expandKey(@NonNull final MessageDigest md,
-                                    @NonNull final byte[] K,
-                                    @NonNull final byte[] H,
-                                    @NonNull final byte[] key,
+                                    final byte @NonNull [] K,
+                                    final byte @NonNull [] H,
+                                    final byte @NonNull [] key,
                                     final int requiredLength) {
         final Buffer buffer = new Buffer();
         byte[] result = key;
@@ -109,11 +109,11 @@ public abstract class Transport {
      */
     void initEncryption(@NonNull final KexAgreement agreement,
                         @NonNull final MessageDigest md,
-                        @NonNull final byte[] K,
-                        @NonNull final byte[] H,
-                        @NonNull final byte[] encKey,
-                        @NonNull final byte[] encIv,
-                        @NonNull final byte[] macKey)
+                        final byte @NonNull [] K,
+                        final byte @NonNull [] H,
+                        final byte @NonNull [] encKey,
+                        final byte @NonNull [] encIv,
+                        final byte @NonNull [] macKey)
             throws GeneralSecurityException {
 
         cipher = ImplementationFactory.getCipher(config, agreement.getCipher(cipherMode));

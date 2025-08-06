@@ -51,31 +51,31 @@ public class NullCipher
 
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] key,
-                     @NonNull final byte[] iv) {
+                     final byte @NonNull [] key,
+                     final byte @NonNull [] iv) {
     }
 
     @Override
-    public void update(@NonNull final byte[] input,
+    public void update(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset) {
         System.arraycopy(input, inputOffset, output, outputOffset, inputLen);
     }
 
     @Override
-    public void updateAAD(@NonNull final byte[] src,
+    public void updateAAD(final byte @NonNull [] src,
                           final int offset,
                           final int len) {
 
     }
 
     @Override
-    public int doFinal(@NonNull final byte[] input,
+    public int doFinal(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset) {
         return 0;
     }

@@ -72,7 +72,7 @@ public class UserAuthPublicKey
     @Override
     public boolean authenticate(@NonNull final Session session,
                                 @NonNull final PacketIO io,
-                                @Nullable final byte[] password)
+                                final byte @Nullable [] password)
             throws IOException, GeneralSecurityException, SshAuthCancelException,
                    SshPartialAuthException {
 
@@ -210,7 +210,7 @@ public class UserAuthPublicKey
     private String preAuth(@NonNull final Session session,
                            @NonNull final PacketIO io,
                            @NonNull final List<String> algorithms,
-                           @NonNull final byte[] publicKeyBlob)
+                           final byte @NonNull [] publicKeyBlob)
             throws IOException, GeneralSecurityException {
 
         for (final String algorithm : algorithms) {
@@ -264,7 +264,7 @@ public class UserAuthPublicKey
                                  @NonNull final Session session,
                                  @NonNull final Identity identity,
                                  @NonNull final List<String> preAuthSuccessful,
-                                 @Nullable byte[] publicKeyBlob)
+                                 byte @Nullable [] publicKeyBlob)
             throws GeneralSecurityException, IOException, SshPartialAuthException {
 
         if (publicKeyBlob == null) {
@@ -331,7 +331,7 @@ public class UserAuthPublicKey
     private boolean sendAuthPacket(@NonNull final PacketIO io,
                                    @NonNull final Session session,
                                    @NonNull final Identity identity,
-                                   @NonNull final byte[] publicKeyBlob,
+                                   final byte @NonNull [] publicKeyBlob,
                                    @NonNull final String publicKeyAlgorithm)
             throws IOException {
 

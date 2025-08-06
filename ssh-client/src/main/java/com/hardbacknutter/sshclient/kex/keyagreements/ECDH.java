@@ -35,8 +35,7 @@ public interface ECDH {
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    @NonNull
-    byte[] getQ()
+    byte @NonNull [] getQ()
             throws GeneralSecurityException;
 
     /**
@@ -48,8 +47,7 @@ public interface ECDH {
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    @NonNull
-    byte[] getSharedSecret(@NonNull ECPoint w)
+    byte @NonNull [] getSharedSecret(@NonNull ECPoint w)
             throws GeneralSecurityException;
 
 

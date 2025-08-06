@@ -11,10 +11,8 @@ import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
  */
 public class KexKeys {
 
-    @NonNull
-    private final byte[] K;
-    @NonNull
-    private final byte[] H;
+    private final byte @NonNull [] K;
+    private final byte @NonNull [] H;
     @NonNull
     private final MessageDigest md;
 
@@ -26,20 +24,18 @@ public class KexKeys {
      * @param H  the hash; pre-encoded as a raw byte[]
      */
     KexKeys(@NonNull final MessageDigest md,
-            @NonNull final byte[] K,
-            @NonNull final byte[] H) {
+            final byte @NonNull [] K,
+            final byte @NonNull [] H) {
         this.md = md;
         this.K = K;
         this.H = H;
     }
 
-    @NonNull
-    public byte[] getK() {
+    public byte @NonNull [] getK() {
         return K;
     }
 
-    @NonNull
-    public byte[] getH() {
+    public byte @NonNull [] getH() {
         return H;
     }
 

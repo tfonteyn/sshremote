@@ -11,16 +11,14 @@ public class RandomImpl
 
     @NonNull
     private final SecureRandom random;
-    @NonNull
-    private byte[] tmp = new byte[16];
+    private byte @NonNull [] tmp = new byte[16];
 
     public RandomImpl() {
         random = new SecureRandom();
     }
 
     @Override
-    @NonNull
-    public byte[] nextBytes(final int length) {
+    public byte @NonNull [] nextBytes(final int length) {
         final byte[] buf = new byte[length];
         synchronized (random) {
             if (buf.length > tmp.length) {

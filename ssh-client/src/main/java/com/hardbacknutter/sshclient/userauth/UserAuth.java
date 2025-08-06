@@ -46,6 +46,6 @@ public interface UserAuth {
      */
     boolean authenticate(@NonNull Session session,
                          @NonNull PacketIO io,
-                         @Nullable byte[] password)
+                         byte @Nullable [] password)
             throws IOException, GeneralSecurityException, SshAuthException;
 }

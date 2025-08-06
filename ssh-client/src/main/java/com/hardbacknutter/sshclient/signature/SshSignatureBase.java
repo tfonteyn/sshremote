@@ -39,7 +39,7 @@ abstract class SshSignatureBase
     }
 
     @Override
-    public void update(@NonNull final byte[] data)
+    public void update(final byte @NonNull [] data)
             throws SignatureException {
         signature.update(data);
     }
@@ -50,9 +50,8 @@ abstract class SshSignatureBase
         signature.initSign(key);
     }
 
-    @NonNull
-    @Override
-    public byte[] sign()
+        @Override
+    public byte @NonNull [] sign()
             throws SignatureException {
         return wrap(signature.sign());
     }
@@ -64,7 +63,7 @@ abstract class SshSignatureBase
     }
 
     @Override
-    public boolean verify(@NonNull final byte[] sig)
+    public boolean verify(final byte @NonNull [] sig)
             throws SignatureException {
 
         final byte[] signatureBlob = unwrap(sig);
@@ -80,8 +79,7 @@ abstract class SshSignatureBase
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.6">
      * RFC 4253 SSH Transport Layer Protocol, section 6.6.</a>
      */
-    @NonNull
-    byte[] wrap(@NonNull final byte[] signature_blob) {
+    byte @NonNull [] wrap(final byte @NonNull [] signature_blob) {
         // use a fixed-size buffer
         // (+4: a uint32 to store the length of the argument string)
         final Buffer buffer = new Buffer(4 + hostKeyAlgorithm.length()
@@ -93,8 +91,7 @@ abstract class SshSignatureBase
     }
 
     @SuppressWarnings("WeakerAccess")
-    @NonNull
-    protected byte[] unwrap(@NonNull final byte[] sig) {
+    protected byte @NonNull [] unwrap(final byte @NonNull [] sig) {
         final Buffer buffer = new Buffer(sig);
         try {
             // Unwrap if needed

@@ -42,10 +42,10 @@ public interface KeyExchange {
      */
     void init(@NonNull SshClientConfig config,
               @NonNull PacketIO io,
-              @NonNull byte[] V_S,
-              @NonNull byte[] V_C,
-              @NonNull byte[] I_S,
-              @NonNull byte[] I_C)
+              byte @NonNull [] V_S,
+              byte @NonNull [] V_C,
+              byte @NonNull [] I_S,
+              byte @NonNull [] I_C)
             throws GeneralSecurityException, IOException;
 
     /**
@@ -80,8 +80,7 @@ public interface KeyExchange {
      *
      * @return an ssh string
      */
-    @NonNull
-    byte[] getK_S();
+    byte @NonNull [] getK_S();
 
     /**
      * Get K, the shared secret; as a raw byte[].
@@ -91,16 +90,14 @@ public interface KeyExchange {
      *
      * @return the shared secret; as a raw byte[].
      */
-    @NonNull
-    byte[] getK();
+    byte @NonNull [] getK();
 
     /**
      * Get H, the hash, as a raw byte[].
      *
      * @return H
      */
-    @NonNull
-    byte[] getH();
+    byte @NonNull [] getH();
 
     /**
      * Get the hash generator as used during KEX.

@@ -1,7 +1,5 @@
 package com.hardbacknutter.sshclient.kex.keyexchange;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -28,6 +26,8 @@ import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * Abstract base class for key exchange algorithms.
@@ -83,13 +83,13 @@ abstract class KeyExchangeBase
         this.digestAlgorithm = digestAlgorithm;
     }
 
-    static byte[] encodeAsMPInt(@NonNull final byte[] bytes) {
+    static byte @NonNull [] encodeAsMPInt(final byte @NonNull [] bytes) {
         final Buffer buffer = new Buffer();
         buffer.putMPInt(bytes);
         return buffer.getPayload();
     }
 
-    static byte[] encodeAsString(@NonNull final byte[] bytes) {
+    static byte @NonNull [] encodeAsString(final byte @NonNull [] bytes) {
         final Buffer buffer = new Buffer();
         buffer.putString(bytes);
         return buffer.getPayload();
@@ -99,10 +99,10 @@ abstract class KeyExchangeBase
     @Override
     public void init(@NonNull final SshClientConfig config,
                      @NonNull final PacketIO io,
-                     @NonNull final byte[] V_S,
-                     @NonNull final byte[] V_C,
-                     @NonNull final byte[] I_S,
-                     @NonNull final byte[] I_C)
+                     final byte @NonNull [] V_S,
+                     final byte @NonNull [] V_C,
+                     final byte @NonNull [] I_S,
+                     final byte @NonNull [] I_C)
             throws IOException, GeneralSecurityException {
         md = MessageDigest.getInstance(digestAlgorithm);
 
@@ -141,15 +141,13 @@ abstract class KeyExchangeBase
         return state == command;
     }
 
-    @NonNull
     @Override
-    public byte[] getK() {
+    public byte @NonNull [] getK() {
         return K;
     }
 
-    @NonNull
     @Override
-    public byte[] getH() {
+    public byte @NonNull [] getH() {
         return H;
     }
 
@@ -159,13 +157,12 @@ abstract class KeyExchangeBase
         return md;
     }
 
-    @NonNull
     @Override
-    public byte[] getK_S() {
+    public byte @NonNull [] getK_S() {
         return K_S;
     }
 
-    void verifyHashSignature(@NonNull final byte[] sig_of_H)
+    void verifyHashSignature(final byte @NonNull [] sig_of_H)
             throws IOException, GeneralSecurityException {
         final String sshSignatureAlgorithm = new Buffer(sig_of_H).getJString();
         final SshSignature sig = ImplementationFactory.getSignature(config, sshSignatureAlgorithm);
@@ -239,8 +236,7 @@ abstract class KeyExchangeBase
      *
      * @see <a href="https://bugs.openjdk.org/browse/JDK-7146728">JDK-7146728</a>
      */
-    @NonNull
-    byte[] trimZeroes(@NonNull final byte[] secret) {
+    byte @NonNull [] trimZeroes(final byte @NonNull [] secret) {
         if (secret.length > 1 && secret[0] == 0 && (secret[1] & 0x80) == 0) {
             final byte[] tmp = new byte[secret.length - 1];
             System.arraycopy(secret, 1, tmp, 0, tmp.length);

@@ -50,7 +50,7 @@ public class DNSService {
             }
             return inetAddress;
 
-        } catch (@NonNull final ExecutionException e) {
+        } catch (final ExecutionException e) {
             // unwrap if we can
             if (e.getCause() instanceof IOException) {
                 throw (IOException) e.getCause();
@@ -61,11 +61,11 @@ public class DNSService {
             }
             throw new UnknownHostException(host);
 
-        } catch (@NonNull final TimeoutException e) {
+        } catch (final TimeoutException e) {
             // re-throw as if it's coming from the network call.
             throw new SocketTimeoutException(host);
 
-        } catch (@NonNull final InterruptedException e) {
+        } catch (final InterruptedException e) {
             // re-throw as if it's coming from the network call.
             throw new UnknownHostException(host);
 

@@ -164,7 +164,7 @@ public class TransportC2S
                 socketOutputStream.close();
             }
             socketOutputStream = null;
-        } catch (@NonNull final Exception ignore) {
+        } catch (final Exception ignore) {
         }
     }
 }

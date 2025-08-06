@@ -21,7 +21,7 @@ public interface PBKDF {
     }
 
     void setCipher(@NonNull SshCipher cipher,
-                   @NonNull byte[] cipherIV);
+                   byte @NonNull [] cipherIV);
 
     /**
      * Generates an encoded SecretKey using the given passphrase and length using
@@ -36,8 +36,7 @@ public interface PBKDF {
      *
      * @throws GeneralSecurityException on any failure
      */
-    @NonNull
-    byte[] generateSecretKey(@NonNull byte[] passphrase,
+    byte @NonNull [] generateSecretKey(byte @NonNull [] passphrase,
                              int keyLength)
             throws GeneralSecurityException;
 
@@ -49,8 +48,7 @@ public interface PBKDF {
      *
      * @return plain (encoded) key blob
      */
-    @NonNull
-    byte[] decrypt(@NonNull byte[] passphrase,
-                   @NonNull byte[] blob)
+    byte @NonNull [] decrypt(byte @NonNull [] passphrase,
+                   byte @NonNull [] blob)
             throws GeneralSecurityException, IOException;
 }

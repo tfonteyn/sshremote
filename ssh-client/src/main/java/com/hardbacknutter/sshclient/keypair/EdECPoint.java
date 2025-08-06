@@ -31,7 +31,7 @@ final class EdECPoint {
     /**
      * Constructor.
      */
-    EdECPoint(@NonNull final byte[] encodedPoint) {
+    EdECPoint(final byte @NonNull [] encodedPoint) {
         final byte msb = encodedPoint[encodedPoint.length - 1];
         encodedPoint[encodedPoint.length - 1] =
                 (byte) (encodedPoint[encodedPoint.length - 1] & (byte) 0x7F);
@@ -59,7 +59,7 @@ final class EdECPoint {
         return y;
     }
 
-    private void reverse(@NonNull final byte[] arr) {
+    private void reverse(final byte @NonNull [] arr) {
         int i = 0;
         int j = arr.length - 1;
 

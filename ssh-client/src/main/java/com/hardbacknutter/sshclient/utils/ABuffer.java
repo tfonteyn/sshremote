@@ -39,8 +39,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     private final boolean fixedSize;
 
-    @NonNull
-    public byte[] data;
+    public byte @NonNull [] data;
 
     /** The position where the next PUT operation will put data. */
     public int writeOffset;
@@ -74,7 +73,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     /**
      * Create a buffer using the given array as backing store. The buffer size is fixed.
      */
-    ABuffer(@NonNull final byte[] data) {
+    ABuffer(final byte @NonNull [] data) {
         this.fixedSize = true;
         this.data = data;
     }
@@ -226,7 +225,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param bytes array
      */
     @NonNull
-    public T putBytes(@NonNull final byte[] bytes) {
+    public T putBytes(final byte @NonNull [] bytes) {
         ensureCapacity(bytes.length);
         System.arraycopy(bytes, 0, data, writeOffset, bytes.length);
         writeOffset += bytes.length;
@@ -242,7 +241,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param length number of bytes to copy
      */
     @NonNull
-    public T putBytes(@NonNull final byte[] bytes,
+    public T putBytes(final byte @NonNull [] bytes,
                       final int offset,
                       final int length) {
         ensureCapacity(length);
@@ -315,7 +314,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @see #getBigInteger()
      */
     @NonNull
-    public T putMPInt(@NonNull final byte[] bytes) {
+    public T putMPInt(final byte @NonNull [] bytes) {
         int i = bytes.length;
         if ((bytes[0] & 0x80) == 0) {
             putInt(i);
@@ -365,7 +364,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @see #putString(byte[], int, int)
      */
     @NonNull
-    public T putString(@NonNull final byte[] bytes) {
+    public T putString(final byte @NonNull [] bytes) {
         return putString(bytes, 0, bytes.length);
     }
 
@@ -380,7 +379,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param length how many bytes to put.
      */
     @NonNull
-    public T putString(@NonNull final byte[] bytes,
+    public T putString(final byte @NonNull [] bytes,
                        final int offset,
                        final int length) {
         return putInt(length).putBytes(bytes, offset, length);
@@ -422,7 +421,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param dest the array to put the bytes to. This array will
      *             be filled, i.e. we read dest.length bytes from the buffer.
      */
-    public void getBytes(@NonNull final byte[] dest) {
+    public void getBytes(final byte @NonNull [] dest) {
         System.arraycopy(data, readOffset, dest, 0, dest.length);
         readOffset += dest.length;
     }
@@ -434,7 +433,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param offset the start index in the destination array.
      * @param length the number of bytes to read.
      */
-    private void getBytes(@NonNull final byte[] dest,
+    private void getBytes(final byte @NonNull [] dest,
                           @SuppressWarnings("SameParameterValue") final int offset,
                           final int length) {
         System.arraycopy(data, readOffset, dest, offset, length);
@@ -504,8 +503,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @throws IOException for illegal sizes
      * @see #putString
      */
-    @NonNull
-    public byte[] getString()
+    public byte @NonNull [] getString()
             throws IOException {
         // uint32 but we can't have out-of-memory
         final int len = getInt();
@@ -560,8 +558,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @see #getBigInteger()
      * @see #putMPInt(byte[])
      */
-    @NonNull
-    public byte[] getMPInt()
+    public byte @NonNull [] getMPInt()
             throws IOException {
         // uint32 but we can't have out-of-memory
         final int len = getInt();
@@ -585,8 +582,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @deprecated use {@link #getBigInteger()} instead
      */
     @Deprecated
-    @NonNull
-    public byte[] getMPIntBits() {
+    public byte @NonNull [] getMPIntBits() {
         final int bits = getInt();
         final int len = (bits + 7) / 8;
 

@@ -44,8 +44,7 @@ public class ChannelSessionImpl
     /** TERM environment variable value (e.g., vt100). */
     @NonNull
     private String ptyTerm = "vt100";
-    @NonNull
-    private byte[] ptyModes = "".getBytes(StandardCharsets.UTF_8);
+    private byte @NonNull [] ptyModes = "".getBytes(StandardCharsets.UTF_8);
 
     private int ptyColumns = 80;
     private int ptyRows = 24;
@@ -80,8 +79,8 @@ public class ChannelSessionImpl
     }
 
     @Override
-    public void setEnv(@NonNull final byte[] name,
-                       @NonNull final byte[] value) {
+    public void setEnv(final byte @NonNull [] name,
+                       final byte @NonNull [] value) {
         synchronized (this) {
             if (env == null) {
                 env = new HashMap<>();
@@ -108,7 +107,7 @@ public class ChannelSessionImpl
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-8">
      * RFC 4254 SSH Connection Protocol, section 8. Encoding of Terminal Modes</a>
      */
-    public void setPtyModes(@NonNull final byte[] modes) {
+    public void setPtyModes(final byte @NonNull [] modes) {
         this.ptyModes = modes;
     }
 
@@ -247,8 +246,8 @@ public class ChannelSessionImpl
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
      * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
-    private void sendEnvRequest(final byte[] name,
-                                final byte[] value)
+    private void sendEnvRequest(final byte @NonNull [] name,
+                                final byte @NonNull [] value)
             throws GeneralSecurityException, IOException, SshChannelException {
         // byte      SSH_MSG_CHANNEL_REQUEST
         // uint32    recipient channel
@@ -375,8 +374,7 @@ public class ChannelSessionImpl
         super.handle(packet);
     }
 
-    @NonNull
-    private byte[] toByteArray(@NonNull final Object o) {
+    private byte @NonNull [] toByteArray(@NonNull final Object o) {
         if (o instanceof String) {
             return ((String) o).getBytes(StandardCharsets.UTF_8);
         }

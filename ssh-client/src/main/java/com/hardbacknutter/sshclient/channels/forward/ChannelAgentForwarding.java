@@ -128,7 +128,7 @@ public class ChannelAgentForwarding
     }
 
     @Override
-    protected void writeData(@NonNull final byte[] bytes,
+    protected void writeData(final byte @NonNull [] bytes,
                              final int offset,
                              final int length)
             throws IOException, GeneralSecurityException {
@@ -229,7 +229,6 @@ public class ChannelAgentForwarding
 
                     responseBuffer.putInt(toSend.size());
                     for (final Identity identity : toSend) {
-                        //noinspection DataFlowIssue
                         responseBuffer.putString(identity.getSshEncodedPublicKey())
                                       // comment
                                       .putString("");

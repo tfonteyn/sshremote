@@ -47,7 +47,7 @@ public class IOStreams {
         this.out_ext_do_not_close = do_not_close;
     }
 
-    public int read(@NonNull final byte[] bytes,
+    public int read(final byte @NonNull [] bytes,
                     @SuppressWarnings("SameParameterValue") final int offset,
                     final int length)
             throws IOException {
@@ -58,7 +58,7 @@ public class IOStreams {
     /**
      * For writing {@link SshConstants#SSH_MSG_CHANNEL_DATA}
      */
-    public void write(@NonNull final byte[] bytes,
+    public void write(final byte @NonNull [] bytes,
                       final int offset,
                       final int length)
             throws IOException {
@@ -72,7 +72,7 @@ public class IOStreams {
      * <p>
      * If the stream is not open, the write is ignored.
      */
-    public void writeExt(@NonNull final byte[] bytes,
+    public void writeExt(final byte @NonNull [] bytes,
                          final int offset,
                          final int length)
             throws IOException {

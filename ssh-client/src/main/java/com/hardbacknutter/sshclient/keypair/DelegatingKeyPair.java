@@ -27,8 +27,7 @@ public abstract class DelegatingKeyPair
     @Nullable
     private KeyPairBase delegate;
     /** Holds the public key blob before the delegate is created. */
-    @Nullable
-    byte[] publicKeyEncodedBlob;
+    byte @Nullable [] publicKeyEncodedBlob;
     /** Holds the public key format before the delegate is created. */
     @Nullable
     PublicKeyEncoding publicKeyBlobFormat;
@@ -37,7 +36,7 @@ public abstract class DelegatingKeyPair
     private String publicKeyComment = "";
 
     DelegatingKeyPair(@NonNull final SshClientConfig config,
-                      @NonNull final byte[] privateKeyBlob,
+                      final byte @NonNull [] privateKeyBlob,
                       @NonNull final PrivateKeyEncoding privateKeyEncoding,
                       final boolean encrypted,
                       @Nullable final PBKDF decryptor) {
@@ -95,9 +94,8 @@ public abstract class DelegatingKeyPair
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getPrivateKey();
     }
 
-    @NonNull
-    @Override
-    public byte[] getSignature(@NonNull final byte[] data,
+        @Override
+    public byte @NonNull [] getSignature(final byte @NonNull [] data,
                                @NonNull final String algorithm)
             throws GeneralSecurityException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getSignature(data, algorithm);
@@ -110,9 +108,8 @@ public abstract class DelegatingKeyPair
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).getVerifier();
     }
 
-    @NonNull
-    @Override
-    public byte[] toSshAgentEncodedKeyPair()
+        @Override
+    public byte @NonNull [] toSshAgentEncodedKeyPair()
             throws GeneralSecurityException {
         return Objects.requireNonNull(delegate, MUST_PARSE_FIRST).toSshAgentEncodedKeyPair();
     }
@@ -152,9 +149,8 @@ public abstract class DelegatingKeyPair
         delegate.setPublicKeyComment(comment);
     }
 
-    @NonNull
-    @Override
-    public byte[] getSshEncodedPublicKey() {
+        @Override
+    public byte @NonNull [] getSshEncodedPublicKey() {
         if (delegate == null) {
             Objects.requireNonNull(publicKeyEncodedBlob, "publicKeyBlob");
             return publicKeyEncodedBlob;
@@ -163,7 +159,7 @@ public abstract class DelegatingKeyPair
     }
 
     @Override
-    public boolean decrypt(@Nullable final byte[] passphrase)
+    public boolean decrypt(final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
         if (delegate == null) {
             return super.decrypt(passphrase);
@@ -171,9 +167,8 @@ public abstract class DelegatingKeyPair
         return delegate.decrypt(passphrase);
     }
 
-    @NonNull
     @Override
-    byte[] internalDecrypt(@Nullable final byte[] passphrase)
+    byte @NonNull [] internalDecrypt(final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
         if (delegate == null) {
             return super.internalDecrypt(passphrase);
@@ -190,7 +185,7 @@ public abstract class DelegatingKeyPair
     }
 
     void createDelegate(@NonNull final String hostKeyAlgorithm,
-                        @NonNull final byte[] plainKey)
+                        final byte @NonNull [] plainKey)
             throws GeneralSecurityException, IOException {
         Objects.requireNonNull(privateKeyEncoding, "privateKeyEncoding");
 
@@ -204,7 +199,7 @@ public abstract class DelegatingKeyPair
     }
 
     void createDelegate(@NonNull final ASN1ObjectIdentifier prvKeyAlgOID,
-                        @NonNull final byte[] encodedKey)
+                        final byte @NonNull [] encodedKey)
             throws GeneralSecurityException, IOException {
         Objects.requireNonNull(privateKeyEncoding, "privateKeyEncoding");
 

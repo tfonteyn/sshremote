@@ -40,7 +40,7 @@ public interface HostKeyRepository {
     @SuppressWarnings("OverlyBroadThrowsClause")
     @NonNull
     default HostKey createHostKey(@NonNull final String host,
-                                  @NonNull final byte[] key)
+                                  final byte @NonNull [] key)
             throws GeneralSecurityException {
         return new HostKey(host, key);
     }
@@ -59,7 +59,7 @@ public interface HostKeyRepository {
     @NonNull
     KeyIs isKnown(@NonNull String host,
                   @NonNull String serverHostKeyAlgorithm,
-                  @NonNull byte[] key)
+                  byte @NonNull [] key)
             throws InvalidKeyException;
 
     /**
@@ -84,7 +84,7 @@ public interface HostKeyRepository {
      */
     void remove(@NonNull String host,
                 @Nullable String type,
-                @Nullable byte[] key);
+                byte @Nullable [] key);
 
     /**
      * returns an identifier for this repository.

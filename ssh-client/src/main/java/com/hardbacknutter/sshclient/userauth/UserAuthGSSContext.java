@@ -64,8 +64,7 @@ public interface UserAuthGSSContext {
      *
      * @see org.ietf.jgss.GSSContext#initSecContext
      */
-    @NonNull
-    byte[] init(@NonNull byte[] token,
+    byte @NonNull [] init(byte @NonNull [] token,
                 int offset,
                 int len)
             throws SshAuthException;
@@ -83,8 +82,7 @@ public interface UserAuthGSSContext {
      *
      * @see org.ietf.jgss.GSSContext#getMIC(byte[], int, int, MessageProp)
      */
-    @NonNull
-    byte[] getMIC(@NonNull byte[] inMsg,
+    byte @NonNull [] getMIC(byte @NonNull [] inMsg,
                   int offset,
                   int len)
             throws SshAuthException;

@@ -56,7 +56,7 @@ public interface Session {
      *
      * @param password the new password.
      */
-    void setPassword(@Nullable byte[] password);
+    void setPassword(byte @Nullable [] password);
 
     /**
      * Specifies an alias that should be used instead of the real host name
@@ -156,8 +156,7 @@ public interface Session {
      *
      * @return session id, or {@code null} if we have not exchanged keys yet
      */
-    @Nullable
-    byte[] getSessionId();
+    byte @Nullable [] getSessionId();
 
     /**
      * Get the host key of the server.

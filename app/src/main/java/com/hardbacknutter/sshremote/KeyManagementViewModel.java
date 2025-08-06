@@ -105,7 +105,7 @@ public class KeyManagementViewModel
                     }
                 }
             }
-        } catch (@NonNull final IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             // user most likely tried reading from a binary file
             throw new IOException("Invalid file?");
         }

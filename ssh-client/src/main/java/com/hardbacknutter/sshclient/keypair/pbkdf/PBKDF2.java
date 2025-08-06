@@ -35,7 +35,7 @@ public class PBKDF2
 
 
     public PBKDF2 init(@NonNull final String algorithm,
-                       @NonNull final byte[] salt,
+                       final byte @NonNull [] salt,
                        final int iterationCount)
             throws NoSuchAlgorithmException {
         this.salt = salt;
@@ -47,13 +47,12 @@ public class PBKDF2
 
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
-                          @NonNull final byte[] cipherIV) {
+                          final byte @NonNull [] cipherIV) {
         this.cipher = cipher;
         this.cipherIV = cipherIV;
     }
 
-    @NonNull
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength)
             throws InvalidKeySpecException {
 
@@ -66,10 +65,9 @@ public class PBKDF2
         return skf.generateSecret(keySpec).getEncoded();
     }
 
-    @NonNull
-    @Override
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+        @Override
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
         byte[] pbeKey = null;
         final byte[] plainKey = new byte[blob.length];

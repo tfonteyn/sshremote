@@ -100,8 +100,8 @@ public class SshCipherImpl
     @SuppressWarnings("OverlyBroadThrowsClause")
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] key,
-                     @NonNull final byte[] iv)
+                     final byte @NonNull [] key,
+                     final byte @NonNull [] iv)
             throws GeneralSecurityException {
 
         // if the iv buffer is too large, it will automatically be shortened
@@ -110,7 +110,7 @@ public class SshCipherImpl
     }
 
     void init(final int opmode,
-              @NonNull final byte[] key,
+              final byte @NonNull [] key,
               @NonNull final AlgorithmParameterSpec params)
             throws InvalidKeyException, InvalidAlgorithmParameterException {
 
@@ -130,17 +130,17 @@ public class SshCipherImpl
     }
 
     @Override
-    public void update(@NonNull final byte[] input,
+    public void update(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset)
             throws ShortBufferException {
         cipher.update(input, inputOffset, inputLen, output, outputOffset);
     }
 
     @Override
-    public void updateAAD(@NonNull final byte[] src,
+    public void updateAAD(final byte @NonNull [] src,
                           final int offset,
                           final int len) {
         cipher.updateAAD(src, offset, len);
@@ -148,10 +148,10 @@ public class SshCipherImpl
 
     @SuppressWarnings("OverlyBroadThrowsClause")
     @Override
-    public int doFinal(@NonNull final byte[] input,
+    public int doFinal(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset)
             throws GeneralSecurityException {
         return cipher.doFinal(input, inputOffset, inputLen, output, outputOffset);

@@ -101,8 +101,7 @@ public class KexProposal {
     @NonNull
     private final SshClientConfig config;
     @SuppressWarnings("FieldNotUsedInToString")
-    @Nullable
-    private byte[] I_C;
+    private byte @Nullable [] I_C;
 
     /**
      * Constructor.
@@ -195,8 +194,7 @@ public class KexProposal {
      *
      * @return I_C
      */
-    @NonNull
-    byte[] getIC() {
+    byte @NonNull [] getIC() {
         return Objects.requireNonNull(I_C);
     }
 
@@ -218,7 +216,7 @@ public class KexProposal {
      * // string    languages_server_to_client
      */
     @NonNull
-    KexAgreement negotiate(@NonNull final byte[] I_S,
+    KexAgreement negotiate(final byte @NonNull [] I_S,
                            final boolean authenticated)
             throws IOException, SshAuthException {
         final Buffer buffer = new Buffer(I_S);

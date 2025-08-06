@@ -73,7 +73,7 @@ public class SshMacImpl
     }
 
     @Override
-    public void init(@NonNull final byte[] key)
+    public void init(final byte @NonNull [] key)
             throws NoSuchAlgorithmException, InvalidKeyException {
 
         mac = Mac.getInstance(algorithm);
@@ -108,14 +108,14 @@ public class SshMacImpl
     }
 
     @Override
-    public void update(@NonNull final byte[] input,
+    public void update(final byte @NonNull [] input,
                        final int offset,
                        final int len) {
         mac.update(input, offset, len);
     }
 
     @Override
-    public void doFinal(@NonNull final byte[] output,
+    public void doFinal(final byte @NonNull [] output,
                         final int outOffset)
             throws ShortBufferException {
         if (digestLength == macBuffer.length) {

@@ -63,7 +63,7 @@ public class SNTRUP761
     }
 
     @Override
-    public byte[] getPublicKey() {
+    public byte @NonNull [] getPublicKey() {
         return publicKey.getEncoded();
     }
 
@@ -73,8 +73,7 @@ public class SNTRUP761
     }
 
     @Override
-    @NonNull
-    public byte[] extractSecret(final byte[] encapsulation) {
+    public byte @NonNull [] extractSecret(final byte[] encapsulation) {
         return extractor.extractSecret(encapsulation);
     }
 }

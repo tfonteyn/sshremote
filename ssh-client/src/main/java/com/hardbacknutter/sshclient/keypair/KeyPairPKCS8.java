@@ -44,7 +44,7 @@ public final class KeyPairPKCS8
 
 
     @Override
-    void parsePrivateKey(@NonNull final byte[] encodedKey,
+    void parsePrivateKey(final byte @NonNull [] encodedKey,
                          @NonNull final PrivateKeyEncoding encoding)
             throws GeneralSecurityException {
 
@@ -70,11 +70,11 @@ public final class KeyPairPKCS8
             createDelegate(prvKeyAlgOID, encodedKey);
 
 
-        } catch (@NonNull final GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             // We have an actual error
             throw e;
 
-        } catch (@NonNull final Exception ignore) {
+        } catch (final Exception ignore) {
             config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
         }
     }
@@ -83,8 +83,7 @@ public final class KeyPairPKCS8
 
         @NonNull
         final SshClientConfig config;
-        @Nullable
-        private byte[] privateKeyBlob;
+        private byte @Nullable [] privateKeyBlob;
         private boolean encrypted;
 
         public Builder(@NonNull final SshClientConfig config) {
@@ -98,7 +97,7 @@ public final class KeyPairPKCS8
          * @param encrypted      flag
          */
         @NonNull
-        public Builder setPrivateKey(@NonNull final byte[] privateKeyBlob,
+        public Builder setPrivateKey(final byte @NonNull [] privateKeyBlob,
                                      final boolean encrypted) {
             this.privateKeyBlob = privateKeyBlob;
             this.encrypted = encrypted;

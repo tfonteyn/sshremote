@@ -39,8 +39,8 @@ public class RC4Cipher
 
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] key,
-                     @NonNull final byte[] iv)
+                     final byte @NonNull [] key,
+                     final byte @NonNull [] iv)
             throws GeneralSecurityException {
         super.init(opmode, key, iv);
 

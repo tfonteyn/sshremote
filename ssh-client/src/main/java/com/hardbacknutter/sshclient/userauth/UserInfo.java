@@ -55,8 +55,7 @@ public interface UserInfo {
      * <p>
      * Implementations need to return "thePassword".getBytes(StandardCharsets.UTF_8)
      */
-    @Nullable
-    default byte[] getPassword() {
+    default byte @Nullable [] getPassword() {
         return null;
     }
 
@@ -80,8 +79,7 @@ public interface UserInfo {
      * <p>
      * Implementations need to return "thePassword".getBytes(StandardCharsets.UTF_8)
      */
-    @Nullable
-    default byte[] getPassphrase() {
+    default byte @Nullable [] getPassphrase() {
         return null;
     }
 

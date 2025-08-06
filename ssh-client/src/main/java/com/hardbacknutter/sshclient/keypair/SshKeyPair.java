@@ -35,8 +35,7 @@ public interface SshKeyPair {
      *
      * @return blob of the public key
      */
-    @NonNull
-    byte[] getSshEncodedPublicKey();
+    byte @NonNull [] getSshEncodedPublicKey();
 
     @NonNull
     PublicKey getPublicKey()
@@ -70,7 +69,7 @@ public interface SshKeyPair {
      * @return {@code true} if the private key was successfully
      * decrypted, i.e. is now usable, else {@code false}.
      */
-    boolean decrypt(@Nullable byte[] passphrase)
+    boolean decrypt(byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException;
 
     /**
@@ -82,8 +81,7 @@ public interface SshKeyPair {
      *
      * @see #getSignature(byte[], String)
      */
-    @NonNull
-    default byte[] getSignature(@NonNull final byte[] data)
+    default byte @NonNull [] getSignature(final byte @NonNull [] data)
             throws GeneralSecurityException {
         return getSignature(data, getHostKeyAlgorithm());
     }
@@ -103,8 +101,7 @@ public interface SshKeyPair {
      *
      * @return the SSH wrapped signature.
      */
-    @NonNull
-    byte[] getSignature(@NonNull byte[] data,
+    byte @NonNull [] getSignature(byte @NonNull [] data,
                         @NonNull String algorithm)
             throws GeneralSecurityException;
 
@@ -142,8 +139,7 @@ public interface SshKeyPair {
      *
      * @return blob of the key pair
      */
-    @NonNull
-    byte[] toSshAgentEncodedKeyPair()
+    byte @NonNull [] toSshAgentEncodedKeyPair()
             throws GeneralSecurityException;
 
     /**

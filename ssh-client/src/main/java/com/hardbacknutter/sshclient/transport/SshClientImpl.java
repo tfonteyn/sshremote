@@ -327,7 +327,7 @@ public class SshClientImpl
     @SuppressWarnings("WeakerAccess")
     public boolean addIdentity(@NonNull final String privateKeyFilename,
                                @Nullable final String publicKeyFilename,
-                               @Nullable final byte[] passphrase)
+                               final byte @Nullable [] passphrase)
             throws IOException, GeneralSecurityException {
         final Identity identity = IdentityImpl.fromFiles(config, privateKeyFilename,
                                                          publicKeyFilename);
@@ -337,9 +337,9 @@ public class SshClientImpl
     @Override
     @SuppressWarnings({"WeakerAccess", "unused"})
     public boolean addIdentity(@NonNull final String name,
-                               @NonNull final byte[] prvKey,
-                               @Nullable final byte[] pubKey,
-                               @Nullable final byte[] passphrase)
+                               final byte @NonNull [] prvKey,
+                               final byte @Nullable [] pubKey,
+                               final byte @Nullable [] passphrase)
             throws IOException, GeneralSecurityException {
         final Identity identity = IdentityImpl.fromKeyData(config, name, prvKey, pubKey);
         return addIdentity(identity, passphrase);
@@ -347,7 +347,7 @@ public class SshClientImpl
 
     @Override
     public boolean addIdentity(@NonNull final Identity identity,
-                               @Nullable final byte[] passphrase)
+                               final byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException {
 
         // Try to decrypt.

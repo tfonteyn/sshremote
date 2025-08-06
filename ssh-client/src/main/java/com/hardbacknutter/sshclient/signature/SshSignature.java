@@ -26,7 +26,7 @@ public interface SshSignature {
      *
      * @param data the array containing the data to be signed/verified.
      */
-    void update(@NonNull byte[] data)
+    void update(byte @NonNull [] data)
             throws GeneralSecurityException;
 
     /**
@@ -40,8 +40,7 @@ public interface SshSignature {
      *
      * @return a signature for the data.
      */
-    @NonNull
-    byte[] sign()
+    byte @NonNull [] sign()
             throws GeneralSecurityException;
 
     /**
@@ -62,7 +61,7 @@ public interface SshSignature {
      * @return {@code true} if the signature is correct,
      * {@code false} if the signature is not correct.
      */
-    boolean verify(@NonNull byte[] sig)
+    boolean verify(byte @NonNull [] sig)
             throws GeneralSecurityException;
 
 }

@@ -431,7 +431,7 @@ public class MainFragment
                               + getString(R.string.library_name) + ": "
                               + SshClientFactory.getVersionName();
 
-                } catch (@NonNull final PackageManager.NameNotFoundException e) {
+                } catch (final PackageManager.NameNotFoundException e) {
                     message = "";
                 }
 

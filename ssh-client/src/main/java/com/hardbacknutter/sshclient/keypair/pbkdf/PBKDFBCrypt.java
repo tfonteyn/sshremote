@@ -43,8 +43,7 @@ public class PBKDFBCrypt
             0x4f787963, 0x68726f6d, 0x61746963, 0x426c6f77,
             0x66697368, 0x53776174, 0x44796e61, 0x6d697465,
     };
-    @NonNull
-    private byte[] salt;
+    private byte @NonNull [] salt;
     private int iterationCount;
 
     @NonNull
@@ -59,7 +58,7 @@ public class PBKDFBCrypt
      * @param salt           the salt.
      * @param iterationCount the iteration count.
      */
-    public PBKDFBCrypt init(@NonNull final byte[] salt,
+    public PBKDFBCrypt init(final byte @NonNull [] salt,
                             final int iterationCount)
             throws NoSuchAlgorithmException {
         this.salt = salt;
@@ -71,12 +70,11 @@ public class PBKDFBCrypt
 
     @Override
     public void setCipher(@Nullable final SshCipher cipher,
-                          @Nullable final byte[] cipherIV) {
+                          final byte @Nullable [] cipherIV) {
         this.cipher = cipher;
     }
 
-    @NonNull
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength)
             throws DigestException {
         final byte[] key = new byte[keyLength];
@@ -84,10 +82,9 @@ public class PBKDFBCrypt
         return key;
     }
 
-    @NonNull
-    @Override
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+        @Override
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
         if (cipher == null) {
             throw new KeyException("Cipher not set");
@@ -116,8 +113,8 @@ public class PBKDFBCrypt
     }
 
 
-    private void pbkdf(@NonNull final byte[] passphrase,
-                       @NonNull final byte[] output)
+    private void pbkdf(final byte @NonNull [] passphrase,
+                       final byte @NonNull [] output)
             throws DigestException {
 
         final int nblocks = (output.length + 31) / 32;
@@ -164,9 +161,9 @@ public class PBKDFBCrypt
         }
     }
 
-    private void hash(@NonNull final byte[] hpass,
-                      @NonNull final byte[] hsalt,
-                      @NonNull final byte[] output) {
+    private void hash(final byte @NonNull [] hpass,
+                      final byte @NonNull [] hsalt,
+                      final byte @NonNull [] output) {
         init_key();
         ekskey(hsalt, hpass);
         for (int i = 0; i < 64; i++) {

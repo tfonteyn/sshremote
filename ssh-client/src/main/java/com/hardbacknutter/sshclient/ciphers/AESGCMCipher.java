@@ -63,8 +63,8 @@ public class AESGCMCipher
 
     @Override
     public void init(final int opmode,
-                     @NonNull final byte[] key,
-                     @NonNull final byte[] iv)
+                     final byte @NonNull [] key,
+                     final byte @NonNull [] iv)
             throws InvalidKeyException, InvalidAlgorithmParameterException {
 
         this.ivBuffer = ByteBuffer.wrap(iv);
@@ -80,10 +80,10 @@ public class AESGCMCipher
     }
 
     @Override
-    public int doFinal(@NonNull final byte[] input,
+    public int doFinal(final byte @NonNull [] input,
                        final int inputOffset,
                        final int inputLen,
-                       @NonNull final byte[] output,
+                       final byte @NonNull [] output,
                        final int outputOffset)
             throws GeneralSecurityException {
 

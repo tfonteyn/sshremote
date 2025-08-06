@@ -192,7 +192,7 @@ public class KnownHosts
     @Override
     public KeyIs isKnown(@NonNull final String host,
                          @NonNull final String type,
-                         @NonNull final byte[] key)
+                         final byte @NonNull [] key)
             throws InvalidKeyException {
 
         final KeyIs status = internalIsKnown2(host, type, key);
@@ -216,7 +216,7 @@ public class KnownHosts
     @NonNull
     private KeyIs internalIsKnown2(@NonNull final String host,
                                    @NonNull final String type,
-                                   @NonNull final byte[] key)
+                                   final byte @NonNull [] key)
             throws InvalidKeyException {
         final List<HostKey> hostKeys = getHostKeys(host, type);
 
@@ -254,7 +254,7 @@ public class KnownHosts
     @Override
     @NonNull
     public HostKey createHostKey(@NonNull final String host,
-                                 @NonNull final byte[] key)
+                                 final byte @NonNull [] key)
             throws GeneralSecurityException {
 
         if (config.getBooleanValue(HostConfig.HASH_KNOWN_HOSTS, false)) {
@@ -320,7 +320,7 @@ public class KnownHosts
     @Override
     public void remove(@NonNull final String host,
                        @Nullable final String type,
-                       @Nullable final byte[] key) {
+                       final byte @Nullable [] key) {
 
         boolean sync = false;
         synchronized (pool) {

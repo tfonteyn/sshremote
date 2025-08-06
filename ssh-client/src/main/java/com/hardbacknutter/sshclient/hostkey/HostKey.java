@@ -47,8 +47,7 @@ public class HostKey {
     @NonNull
     private final String type;
     // The key will only be {@code null} if the type is not known
-    @Nullable
-    private final byte[] key;
+    private final byte @Nullable [] key;
 
     /**
      * Hostnames is a comma-separated list of patterns (‘*’ and ‘?’ act as wildcards)
@@ -67,7 +66,7 @@ public class HostKey {
      * @param key  the key data.
      */
     public HostKey(@NonNull final String host,
-                   @Nullable final byte[] key)
+                   final byte @Nullable [] key)
             throws InvalidKeyException {
         this("", host, null, key, null);
     }
@@ -81,7 +80,7 @@ public class HostKey {
      */
     public HostKey(@NonNull final String host,
                    @NonNull final String type,
-                   @Nullable final byte[] key)
+                   final byte @Nullable [] key)
             throws InvalidKeyException {
         this("", host, type, key, null);
     }
@@ -96,7 +95,7 @@ public class HostKey {
     public HostKey(@NonNull final String marker,
                    @NonNull final String host,
                    @Nullable final String type,
-                   @Nullable final byte[] key,
+                   final byte @Nullable [] key,
                    @Nullable final String comment)
             throws InvalidKeyException {
 
@@ -141,7 +140,7 @@ public class HostKey {
      */
     @NonNull
     public static String getFingerPrint(@NonNull final SshClientConfig config,
-                                        @NonNull final byte[] data)
+                                        final byte @NonNull [] data)
             throws NoSuchAlgorithmException {
 
         String algorithm = config.getString(HostConfig.FINGERPRINT_HASH);
@@ -159,7 +158,7 @@ public class HostKey {
      */
     @NonNull
     public static String getFingerPrint(@NonNull final String algorithm,
-                                        @NonNull final byte[] data)
+                                        final byte @NonNull [] data)
             throws NoSuchAlgorithmException {
 
         final MessageDigest md = MessageDigest.getInstance(algorithm);
@@ -221,8 +220,7 @@ public class HostKey {
         return hostnames;
     }
 
-    @Nullable
-    byte[] getKey() {
+    byte @Nullable [] getKey() {
         return key;
     }
 

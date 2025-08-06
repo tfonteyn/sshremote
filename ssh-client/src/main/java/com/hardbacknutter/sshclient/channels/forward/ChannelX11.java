@@ -105,7 +105,7 @@ public class ChannelX11
         ChannelX11.cookie = hexDecode(hex);
     }
 
-    private static byte[] hexDecode(@NonNull final byte[] hexBytes) {
+    private static byte @NonNull [] hexDecode(final byte @NonNull [] hexBytes) {
         final byte[] bytes = new byte[16];
         for (int i = 0; i < 16; i++) {
             bytes[i] = (byte) (((Character.digit(hexBytes[i * 2], 16) << 4) & 0xf0) |
@@ -122,8 +122,7 @@ public class ChannelX11
      *
      * @return hex byte[] (1 byte == hex enc of 1 nibble)
      */
-    @NonNull
-    private static byte[] hexEncode(@NonNull final byte[] bytes) {
+    private static byte @NonNull [] hexEncode(final byte @NonNull [] bytes) {
         final byte[] hexBytes = new byte[32];
         for (int i = 0; i < 16; i++) {
             hexBytes[2 * i] = HEX_BYTES[(bytes[i] >>> 4) & 0xf];
@@ -139,8 +138,7 @@ public class ChannelX11
      *
      * @return the hexadecimal encoded cookie, ready to send.
      */
-    @NonNull
-    public static byte[] getHexEncodedAuthCookie(@NonNull final Session session)
+    public static byte @NonNull [] getHexEncodedAuthCookie(@NonNull final Session session)
             throws NoSuchAlgorithmException {
         synchronized (hexCookiePool) {
 
@@ -185,7 +183,7 @@ public class ChannelX11
     }
 
     @Override
-    protected void writeData(@NonNull final byte[] bytes,
+    protected void writeData(final byte @NonNull [] bytes,
                              final int offset,
                              final int length)
             throws IOException {
@@ -200,7 +198,7 @@ public class ChannelX11
     /**
      * Handle the initial X11 connection packet, and swap the auth cookie as needed.
      */
-    private void initConnection(@NonNull final byte[] bytes,
+    private void initConnection(final byte @NonNull [] bytes,
                                 final int offset,
                                 final int length)
             throws IOException {

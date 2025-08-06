@@ -40,7 +40,7 @@ class GlobberRemotePathQuotingTest {
     }
 
     @NonNull
-    private static byte[] unquote_with_bytes(@NonNull final byte[] path) {
+    private static byte[] unquote_with_bytes(final byte @NonNull [] path) {
         int originalPathLength = path.length;
 
         int i = 0;

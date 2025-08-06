@@ -29,7 +29,7 @@ public interface ChannelShell
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-8">
      * RFC 4254 SSH Connection Protocol, section 8. Encoding of Terminal Modes</a>
      */
-    void setPtyModes(@NonNull byte[] modes);
+    void setPtyModes(byte @NonNull [] modes);
 
     /**
      * Set the terminal type.

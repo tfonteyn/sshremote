@@ -25,7 +25,7 @@ public class SshSignatureDSA
     }
 
     private static void putBigInteger(@NonNull final BigInteger value,
-                                      final byte[] result,
+                                      final byte @NonNull [] result,
                                       final int offset) {
         final byte[] data = value.toByteArray();
         final boolean maxExceeded = data.length > INT_LEN;
@@ -35,9 +35,8 @@ public class SshSignatureDSA
                          Math.min(INT_LEN, data.length));
     }
 
-    @NonNull
-    @Override
-    public byte[] sign()
+        @Override
+    public byte @NonNull [] sign()
             throws SignatureException {
 
         // sig is in ASN.1  ::=  SEQUENCE { r INTEGER, s INTEGER  }
@@ -66,7 +65,7 @@ public class SshSignatureDSA
     }
 
     @Override
-    public boolean verify(@NonNull final byte[] sig)
+    public boolean verify(final byte @NonNull [] sig)
             throws SignatureException {
 
         final byte[] signatureBlob = unwrap(sig);

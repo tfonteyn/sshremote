@@ -19,15 +19,13 @@ class HashedHostKey
     private static final String HASH_DELIM = "|";
     @NonNull
     private final SshMac mac;
-    @Nullable
-    private byte[] salt;
-    @Nullable
-    private byte[] hash;
+    private byte @Nullable [] salt;
+    private byte @Nullable [] hash;
     private boolean hashed;
 
     HashedHostKey(@NonNull final SshMac mac,
                   @NonNull final String host,
-                  @NonNull final byte[] key)
+                  final byte @NonNull [] key)
             throws InvalidKeyException {
         this(mac, "", host, null, key, null);
     }
@@ -36,7 +34,7 @@ class HashedHostKey
                   @NonNull final String marker,
                   @NonNull final String host,
                   @Nullable final String type,
-                  @Nullable final byte[] key,
+                  final byte @Nullable [] key,
                   @Nullable final String comment)
             throws InvalidKeyException {
         super(marker, host, type, key, comment);

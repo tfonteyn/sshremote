@@ -46,8 +46,7 @@ public interface XDH {
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    @NonNull
-    byte[] getQ()
+    byte @NonNull [] getQ()
             throws GeneralSecurityException;
 
     /**
@@ -59,8 +58,7 @@ public interface XDH {
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    @NonNull
-    byte[] getSharedSecret(@NonNull byte[] q_s)
+    byte @NonNull [] getSharedSecret(byte @NonNull [] q_s)
             throws GeneralSecurityException;
 
 
@@ -69,6 +67,6 @@ public interface XDH {
      *
      * @param q_s Q_S, server's ephemeral public key octet string
      */
-    void validate(@NonNull byte[] q_s)
+    void validate(byte @NonNull [] q_s)
             throws GeneralSecurityException;
 }

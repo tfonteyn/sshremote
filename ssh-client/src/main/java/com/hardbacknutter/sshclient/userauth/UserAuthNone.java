@@ -43,7 +43,7 @@ public class UserAuthNone
     @Override
     public boolean authenticate(@NonNull final Session session,
                                 @NonNull final PacketIO io,
-                                @Nullable final byte[] password)
+                                final byte @Nullable [] password)
             throws IOException, GeneralSecurityException, SshAuthException {
 
         // send

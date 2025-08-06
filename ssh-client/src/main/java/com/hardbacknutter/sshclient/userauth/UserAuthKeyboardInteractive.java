@@ -42,7 +42,7 @@ public class UserAuthKeyboardInteractive
     @Override
     public boolean authenticate(@NonNull final Session session,
                                 @NonNull final PacketIO io,
-                                @Nullable final byte[] authPassword)
+                                final byte @Nullable [] authPassword)
             throws IOException, GeneralSecurityException,
                    SshTooManyAuthAttemptException, SshPartialAuthException,
                    SshAuthCancelException {

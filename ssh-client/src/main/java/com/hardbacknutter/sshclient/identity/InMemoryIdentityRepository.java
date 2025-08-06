@@ -89,7 +89,7 @@ public class InMemoryIdentityRepository
     }
 
     @Override
-    public synchronized boolean remove(@Nullable final byte[] publicKeyBlob)
+    public synchronized boolean remove(final byte @Nullable [] publicKeyBlob)
             throws GeneralSecurityException {
         if (publicKeyBlob == null) {
             return false;

@@ -17,22 +17,20 @@ public class DelegatingPBKDF
 
     @Nullable
     private SshCipher cipher;
-    @Nullable
-    private byte[] cipherIV;
+    private byte @Nullable [] cipherIV;
 
     @Nullable
     private PBKDF delegate;
 
     @Override
     public void setCipher(@NonNull final SshCipher cipher,
-                          @NonNull final byte[] cipherIV) {
+                          final byte @NonNull [] cipherIV) {
         this.cipher = cipher;
         this.cipherIV = cipherIV;
     }
 
-    @NonNull
-    @Override
-    public byte[] generateSecretKey(@NonNull final byte[] passphrase,
+        @Override
+    public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
                                     final int keyLength)
             throws GeneralSecurityException {
         if (delegate == null) {
@@ -45,10 +43,9 @@ public class DelegatingPBKDF
         this.delegate = delegate;
     }
 
-    @NonNull
-    @Override
-    public byte[] decrypt(@NonNull final byte[] passphrase,
-                          @NonNull final byte[] blob)
+        @Override
+    public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
+                          final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
         if (cipher == null || cipherIV == null) {
             throw new KeyException("Cipher/iv not set");

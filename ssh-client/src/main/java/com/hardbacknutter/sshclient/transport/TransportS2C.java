@@ -342,7 +342,7 @@ public class TransportS2C
      *     The number of bytes actually read is returned as an integer.
      * </pre>
      */
-    private void read(@NonNull final byte[] bytes,
+    private void read(final byte @NonNull [] bytes,
                       int offset,
                       int length)
             throws IOException {
@@ -402,7 +402,7 @@ public class TransportS2C
                 socketInputStream.close();
             }
             socketInputStream = null;
-        } catch (@NonNull final Exception ignore) {
+        } catch (final Exception ignore) {
         }
     }
 }

@@ -303,7 +303,7 @@ public interface SshClient {
      */
     boolean addIdentity(@NonNull String privateKeyFilename,
                         @Nullable String publicKeyFilename,
-                        @Nullable byte[] passphrase)
+                        byte @Nullable [] passphrase)
             throws IOException, GeneralSecurityException;
 
     /**
@@ -324,9 +324,9 @@ public interface SshClient {
      */
     @SuppressWarnings({"WeakerAccess", "unused"})
     boolean addIdentity(@NonNull String name,
-                        @NonNull byte[] prvKey,
-                        @Nullable byte[] pubKey,
-                        @Nullable byte[] passphrase)
+                        byte @NonNull [] prvKey,
+                        byte @Nullable [] pubKey,
+                        byte @Nullable [] passphrase)
             throws IOException, GeneralSecurityException;
 
     /**
@@ -344,6 +344,6 @@ public interface SshClient {
      * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
      */
     boolean addIdentity(@NonNull Identity identity,
-                        @Nullable byte[] passphrase)
+                        byte @Nullable [] passphrase)
             throws GeneralSecurityException, IOException;
 }

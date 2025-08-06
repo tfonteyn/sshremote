@@ -27,8 +27,8 @@ class SshAgentReader {
         this.config = config;
     }
 
-    static boolean isSSHAgent(@Nullable final byte[] prvKey,
-                              @Nullable final byte[] pubKey) {
+    static boolean isSSHAgent(final byte @Nullable [] prvKey,
+                              final byte @Nullable [] pubKey) {
 
         // Do a FAST check by looking at the length byte for matching
         // one of the "key type" string lengths.
@@ -60,7 +60,7 @@ class SshAgentReader {
      * @return a KeyPair
      */
     @NonNull
-    public SshKeyPair parse(@NonNull final byte[] identityBlob)
+    public SshKeyPair parse(final byte @NonNull [] identityBlob)
             throws IOException, GeneralSecurityException {
 
         final Buffer buffer = new Buffer(identityBlob);

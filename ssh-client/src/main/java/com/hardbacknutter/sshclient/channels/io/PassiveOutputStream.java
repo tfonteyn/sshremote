@@ -30,7 +30,7 @@ public final class PassiveOutputStream
     }
 
     @Override
-    public void write(@NonNull final byte[] buf,
+    public void write(final byte @NonNull [] buf,
                       final int offset,
                       final int length)
             throws IOException {
