@@ -15,6 +15,6 @@ ext {
     toolChain = 21
 
     minSdkVersion = 26
-    targetSdkVersion = 35
-    compileSdkVersion = 35
+    targetSdkVersion = 36
+    compileSdkVersion = 36
 }
