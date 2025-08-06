@@ -1,9 +1,13 @@
 package com.hardbacknutter.sshclient.channels.session;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.hardbacknutter.sshclient.ChannelSession;
+import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.channels.BaseChannel;
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.channels.forward.ChannelX11;
@@ -11,11 +15,8 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.Map;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Base class for all Interactive Sessions channels.
@@ -26,7 +27,7 @@ import java.util.Map;
  * forwarding.  Multiple sessions can be active simultaneously.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6">
- * RFC 4254 SSH Connection Protocol, section 6. Interactive Sessions</a>
+ *         RFC 4254 SSH Connection Protocol, section 6. Interactive Sessions</a>
  */
 public class ChannelSessionImpl
         extends BaseChannel
@@ -57,6 +58,11 @@ public class ChannelSessionImpl
     @Nullable
     private ChannelExitStatusImpl exitStatus;
 
+    /**
+     * Constructor.
+     *
+     * @param session {@link Session} instance this channel belongs to.
+     */
     public ChannelSessionImpl(@NonNull final SessionImpl session) {
         super(NAME, session);
     }
@@ -93,8 +99,10 @@ public class ChannelSessionImpl
      * Allocate a Pseudo-Terminal using all default settings.
      * This method is not effective after the channel is connected.
      *
+     * @param enable flag
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.2">
-     * RFC 4254 SSH Connection Protocol, section 6.2. Requesting a Pseudo-Terminal</a>.
+     *         RFC 4254 SSH Connection Protocol, section 6.2. Requesting a Pseudo-Terminal</a>.
      */
     public void setPty(final boolean enable) {
         this.pty = enable;
@@ -104,8 +112,10 @@ public class ChannelSessionImpl
      * Set the terminal modes.
      * This method is not effective after the channel is connected.
      *
+     * @param modes to set
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-8">
-     * RFC 4254 SSH Connection Protocol, section 8. Encoding of Terminal Modes</a>
+     *         RFC 4254 SSH Connection Protocol, section 8. Encoding of Terminal Modes</a>
      */
     public void setPtyModes(final byte @NonNull [] modes) {
         this.ptyModes = modes;
@@ -129,8 +139,11 @@ public class ChannelSessionImpl
      * @param widthInPixels  terminal width
      * @param heightInPixels terminal height
      *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.7">
-     * RFC SSH 4254 Connection Protocol, section 6.7. Window Dimension Change Message</a>
+     *         RFC SSH 4254 Connection Protocol, section 6.7. Window Dimension Change Message</a>
      */
     public void setPtySize(final int columns,
                            final int rows,
@@ -244,7 +257,7 @@ public class ChannelSessionImpl
 
     /**
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
-     * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
     private void sendEnvRequest(final byte @NonNull [] name,
                                 final byte @NonNull [] value)
@@ -265,7 +278,7 @@ public class ChannelSessionImpl
 
     /**
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.2">
-     * RFC 4254 SSH Connection Protocol, section 6.2. Requesting a Pseudo-Terminal</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.2. Requesting a Pseudo-Terminal</a>
      */
     private void sendPtyRequest()
             throws GeneralSecurityException, IOException, SshChannelException {
@@ -295,7 +308,7 @@ public class ChannelSessionImpl
 
     /**
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.7">
-     * RFC 4254 SSH Connection Protocol, section 6.7. Window Dimension Change Message</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.7. Window Dimension Change Message</a>
      */
     private void sendWindowChangeRequest()
             throws GeneralSecurityException, IOException, SshChannelException {
@@ -334,7 +347,7 @@ public class ChannelSessionImpl
      * @param packet to handle
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.10">
-     * RFC 4254 SSH Connection Protocol, section 6.10. Returning Exit Status</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.10. Returning Exit Status</a>
      */
     @Override
     public void handle(@NonNull final Packet packet)

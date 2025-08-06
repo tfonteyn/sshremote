@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -20,6 +17,9 @@ import com.hardbacknutter.sshclient.kex.KexAgreement;
 import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Encapsulate a {@link SshCipher} and {@link SshMac} used for either

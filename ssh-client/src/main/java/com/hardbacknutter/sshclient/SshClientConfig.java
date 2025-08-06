@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
@@ -14,18 +11,21 @@ import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.userauth.UserAuth;
 import com.hardbacknutter.sshclient.utils.BaseConfig;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
- * <h3>Algorithm configuration</h3>
+ * <h2>Algorithm configuration</h2>
  * <p>
  * These options contain a (comma-separated, without spaces)
  * list of algorithms, which will be offered to the server, and
  * from which one will be selected by negotiation during key exchange.
  * These should confirm to the format defined by RFC 4250, and be
  * accompanied by an "implementation" option.
- * <h4>Key exchange algorithms: {@link KeyExchange}</h4>
- * <h4>User Authentication methods: {@link UserAuth}</h4>
+ * <h3>Key exchange algorithms: {@link KeyExchange}</h3>
+ * <h3>User Authentication methods: {@link UserAuth}</h3>
  *
- * <h4>Symmetric Encryption algorithms: {@link SshCipher}</h4>
+ * <h3>Symmetric Encryption algorithms: {@link SshCipher}</h3>
  * <dl>
  * <dt>{@code cipher.s2c}</dt>
  * <dd>encryption algorithms used for server-to-client transport.
@@ -38,8 +38,8 @@ import com.hardbacknutter.sshclient.utils.BaseConfig;
  *     to the server in a KEX_INIT message.</dd>
  * </dl>
  *
- * <h4>Message Authentication Code algorithms: {@link SshMac}</h4>
- * <h4>Compression: {@link SshDeflater} and {@link SshInflater}</h4>
+ * <h3>Message Authentication Code algorithms: {@link SshMac}</h3>
+ * <h3>Compression: {@link SshDeflater} and {@link SshInflater}</h3>
  * <p>
  * During key exchange, the first option in the client's list
  * (i.e. the option value) which also appears on the server's list
@@ -61,15 +61,37 @@ import com.hardbacknutter.sshclient.utils.BaseConfig;
 public interface SshClientConfig
         extends BaseConfig {
 
+    /**
+     * Get the configured {@link Logger}.
+     *
+     * @return logger
+     */
     @NonNull
     Logger getLogger();
 
+    /**
+     * Set a {@link Logger}.
+     *
+     * @param logger to use
+     */
     void setLogger(@Nullable Logger logger);
 
+    /**
+     * Get the configured {@link Random}.
+     *
+     * @return instance
+     *
+     * @throws NoSuchAlgorithmException on failure to init the instance
+     */
     @NonNull
     Random getRandom()
             throws NoSuchAlgorithmException;
 
+    /**
+     * Get a map with all options.
+     *
+     * @return map
+     */
     @NonNull
     Map<String, String> getAll();
 
@@ -79,9 +101,11 @@ public interface SshClientConfig
      * <p>
      * The values are copied into the existing configuration.
      *
+     * @param map with values
+     *
      * @see #putString(String, String)
      */
-    void putAll(@NonNull Map<String, String> newConf);
+    void putAll(@NonNull Map<String, String> map);
 
     /**
      * Put a configuration {@link String} option.

@@ -22,6 +22,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
 public class UserAuthKeyboardInteractive
         implements UserAuth {
 
+    /** Password Authentication Method. */
     public static final String METHOD = "keyboard-interactive";
 
     private String username;

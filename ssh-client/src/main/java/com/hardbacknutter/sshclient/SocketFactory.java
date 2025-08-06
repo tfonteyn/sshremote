@@ -1,11 +1,11 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * A factory for (client) sockets.
@@ -27,6 +27,10 @@ public interface SocketFactory {
      *
      * @param host the destination host name.
      * @param port the destination port number.
+     *
+     * @return socket
+     *
+     * @throws IOException for generic IO errors
      */
     @NonNull
     Socket createSocket(@NonNull String host,
@@ -41,6 +45,10 @@ public interface SocketFactory {
      * @param host            the destination host name.
      * @param port            the destination port number.
      * @param timeoutInMillis to use.
+     *
+     * @return socket
+     *
+     * @throws IOException for generic IO errors
      */
     @NonNull
     default Socket createSocket(@NonNull final String host,
@@ -59,6 +67,8 @@ public interface SocketFactory {
      * @param socket a {@link Socket} created with {@link #createSocket}.
      *
      * @return an {@link InputStream} reading from the socket.
+     *
+     * @throws IOException for generic IO errors
      */
     @NonNull
     default InputStream getInputStream(@NonNull final Socket socket)
@@ -75,6 +85,8 @@ public interface SocketFactory {
      * @param socket a {@link Socket} created with {@link #createSocket}.
      *
      * @return an {@link OutputStream} writing to the socket.
+     *
+     * @throws IOException for generic IO errors
      */
     @NonNull
     default OutputStream getOutputStream(@NonNull final Socket socket)

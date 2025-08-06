@@ -1,13 +1,13 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
-import com.hardbacknutter.sshclient.SocketFactory;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import com.hardbacknutter.sshclient.SocketFactory;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class SocketFactoryImpl
         implements SocketFactory {

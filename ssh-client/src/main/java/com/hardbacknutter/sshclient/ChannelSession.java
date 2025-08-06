@@ -1,17 +1,18 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("unused")
 public interface ChannelSession
         extends Channel {
 
+    /** Channel type/name. */
     String NAME = "session";
 
     /**
@@ -27,7 +28,7 @@ public interface ChannelSession
      * @param screenNumber to use; a negative value disables forwarding
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.3">
-     * RFC 4254 SSH Connection Protocol, section 6.3. Requesting X11 Forwarding</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.3. Requesting X11 Forwarding</a>
      */
     void setXForwarding(int screenNumber);
 
@@ -41,7 +42,7 @@ public interface ChannelSession
      * @param value A value for the environment variable.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
-     * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
     void setEnv(@NonNull String name,
                 @NonNull String value);
@@ -53,7 +54,7 @@ public interface ChannelSession
      * @param value A value for the environment variable.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.4">
-     * RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.4. Environment Variable Passing</a>
      */
     void setEnv(byte @NonNull [] name,
                 byte @NonNull [] value);
@@ -63,18 +64,30 @@ public interface ChannelSession
      *
      * @param signal the signal name, without the "SIG" prefix.
      *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.9">
-     * RFC 4254 SSH Connection Protocol, Section 6.9. Signals</a>
+     *         RFC 4254 SSH Connection Protocol, Section 6.9. Signals</a>
      */
     void sendSignal(@NonNull String signal)
             throws GeneralSecurityException, IOException, SshChannelException;
 
     /**
+     * Can the client do flow control.
+     *
+     * @return flag
+     *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.8">
-     * RFC 4254 SSH Connection Protocol, section 6.8. Local Flow Control</a>
+     *         RFC 4254 SSH Connection Protocol, section 6.8. Local Flow Control</a>
      */
     boolean isClientCanDoFlowControl();
 
+    /**
+     * Retrieve the full {@link ExitStatus} record.
+     *
+     * @return status
+     */
     @Nullable
     ExitStatus getExitStatus();
 
@@ -89,6 +102,9 @@ public interface ChannelSession
      */
     interface ExitStatus {
 
+        /**
+         * Return code from {@link #getStatus()} if there was no error.
+         */
         int NO_EXIT_STATUS = -1;
 
         /**
@@ -99,13 +115,17 @@ public interface ChannelSession
          * Contains the exit-status returned by the remote command,
          * or -1, if the command not yet terminated (or this channel type has no command).
          *
+         * @return status
+         *
          * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-6.10">
-         * RFC 4254 SSH Connection Protocol, section 6.10. Returning Exit Status</a>
+         *         RFC 4254 SSH Connection Protocol, section 6.10. Returning Exit Status</a>
          */
         int getStatus();
 
         /**
          * Optional exit status message (determined by remote host).
+         *
+         * @return status
          */
         @Nullable
         String getMessage();
@@ -118,6 +138,8 @@ public interface ChannelSession
          *       ABRT, ALRM, FPE, HUP, ILL, INT, KILL, PIPE, QUIT, SEGV, TERM, USR1, USR2
          *  </pre>
          * Additional 'signal name' values MAY be sent in the format "sig-name@xyz"
+         *
+         * @return name
          */
         @Nullable
         String getSignalName();
@@ -127,6 +149,8 @@ public interface ChannelSession
          * <p>
          * Only valid when/if the remote host process threw a signal;
          * i.e. when {@link #getSignalName()} is not {@code null}
+         *
+         * @return flag
          */
         boolean isCoreDumped();
     }

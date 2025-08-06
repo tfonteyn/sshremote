@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -16,6 +13,9 @@ import com.hardbacknutter.sshclient.hostkey.KnownHosts;
 import com.hardbacknutter.sshclient.identity.Identity;
 import com.hardbacknutter.sshclient.identity.IdentityRepository;
 import com.hardbacknutter.sshclient.userauth.SshAuthException;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This is the central entry/configuration point.
@@ -80,9 +80,11 @@ public interface SshClient {
      * Sets multiple default configuration options at once.
      * The given hashtable should only contain Strings. Values are copied.
      *
+     * @param config to use
+     *
      * @see #setConfig(String, String)
      */
-    void setConfig(@NonNull Map<String, String> newConf);
+    void setConfig(@NonNull Map<String, String> config);
 
     /**
      * Retrieves a configuration option.
@@ -97,6 +99,21 @@ public interface SshClient {
     String getConfig(@NonNull String key);
 
     /**
+     * Returns the current {@link HostConfigRepository}.
+     *
+     * @return current host key repository
+     */
+    @Nullable
+    HostConfigRepository getHostConfigRepository();
+
+    /**
+     * Set the {@link HostConfigRepository}.
+     *
+     * @param repository to use
+     */
+    void setHostConfigRepository(@Nullable HostConfigRepository repository);
+
+    /**
      * Returns the current {@link HostKeyRepository}.
      * <p>
      * If not yet set by one of the methods {@link #setKnownHosts(InputStream)},
@@ -108,11 +125,6 @@ public interface SshClient {
      * @see HostKeyRepository
      * @see KnownHosts
      */
-    @Nullable
-    HostConfigRepository getHostConfigRepository();
-
-    void setHostConfigRepository(@Nullable HostConfigRepository configRepository);
-
     @NonNull
     HostKeyRepository getHostKeyRepository();
 
@@ -120,6 +132,8 @@ public interface SshClient {
      * Sets a generic/custom {@link HostKeyRepository}.
      * This will be used by sessions {@linkplain Session#connect connected}
      * in the future to validate the host keys offered by the remote hosts.
+     *
+     * @param repository to use
      *
      * @see HostKeyRepository
      * @see KnownHosts
@@ -135,6 +149,8 @@ public interface SshClient {
      *
      * @param filename the name of the file to be loaded.
      *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see KnownHosts
      * @see HostKeyRepository
      * @see #setHostKeyRepository(HostKeyRepository)
@@ -151,6 +167,8 @@ public interface SshClient {
      *
      * @param stream an InputStream with the list of known hosts.
      *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see KnownHosts
      * @see HostKeyRepository
      * @see #setHostKeyRepository(HostKeyRepository)
@@ -167,7 +185,9 @@ public interface SshClient {
      *
      * @return a new instance of {@code Session}.
      *
-     * @throws SshAuthException if {@code username} or {@code host} are invalid.
+     * @throws SshAuthException         if {@code username} or {@code host} are invalid.
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see #getSession(String username, String host, int port, String hostNameOrAlias)
      */
     @NonNull
@@ -184,7 +204,9 @@ public interface SshClient {
      *
      * @return a new instance of {@code Session}.
      *
-     * @throws SshAuthException if {@code username} or {@code host} are invalid.
+     * @throws SshAuthException         if {@code username} or {@code host} are invalid.
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see #getSession(String username, String host, int port, String hostNameOrAlias)
      */
     @NonNull
@@ -204,7 +226,9 @@ public interface SshClient {
      *
      * @return a new instance of {@code Session}.
      *
-     * @throws SshAuthException if {@code username} or {@code host} are invalid.
+     * @throws SshAuthException         if {@code username} or {@code host} are invalid.
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see #getSession(String username, String host, int port, String hostNameOrAlias)
      */
     @NonNull
@@ -247,7 +271,9 @@ public interface SshClient {
      *
      * @return a new instance of {@code Session}.
      *
-     * @throws SshAuthException if {@code username} or {@code host} are invalid.
+     * @throws SshAuthException         if {@code username} or {@code host} are invalid.
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see HostConfigRepository
      */
     @NonNull
@@ -257,6 +283,12 @@ public interface SshClient {
                        @Nullable String hostNameOrAlias)
             throws IOException, GeneralSecurityException, SshAuthException;
 
+    /**
+     * Gets the {@code identityRepository}, which will be referred
+     * * in the public key authentication.
+     *
+     * @return repository
+     */
     @NonNull
     IdentityRepository getIdentityRepository();
 
@@ -282,6 +314,9 @@ public interface SshClient {
      *                           This is also used as the identifying name of the key.
      *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
+     *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     boolean addIdentity(@NonNull String privateKeyFilename)
             throws IOException, GeneralSecurityException;
@@ -299,7 +334,9 @@ public interface SshClient {
      *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
      *
-     * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
+     * @throws InvalidKeyException      if a {@code passphrase} was given, but decryption failed
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     boolean addIdentity(@NonNull String privateKeyFilename,
                         @Nullable String publicKeyFilename,
@@ -320,7 +357,9 @@ public interface SshClient {
      *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
      *
-     * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
+     * @throws InvalidKeyException      if a {@code passphrase} was given, but decryption failed
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     @SuppressWarnings({"WeakerAccess", "unused"})
     boolean addIdentity(@NonNull String name,
@@ -341,7 +380,9 @@ public interface SshClient {
      *
      * @return {@code true} if the identity was added successfully, {@code false} otherwise.
      *
-     * @throws InvalidKeyException if a {@code passphrase} was given, but decryption failed
+     * @throws InvalidKeyException      if a {@code passphrase} was given, but decryption failed
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     boolean addIdentity(@NonNull Identity identity,
                         byte @Nullable [] passphrase)

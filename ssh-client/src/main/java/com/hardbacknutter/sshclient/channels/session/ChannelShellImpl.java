@@ -3,6 +3,7 @@ package com.hardbacknutter.sshclient.channels.session;
 import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.ChannelShell;
+import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
@@ -28,6 +29,11 @@ public class ChannelShellImpl
 
     private boolean waitForReply = true;
 
+    /**
+     * Constructor.
+     *
+     * @param session {@link Session} instance this channel belongs to.
+     */
     public ChannelShellImpl(@NonNull final SessionImpl session) {
         super(session);
     }

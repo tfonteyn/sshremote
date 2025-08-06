@@ -199,7 +199,7 @@ public abstract class BaseChannel
      *
      * @param session passed in as a convenience
      *
-     * @throws SshChannelException if any errors occur
+     * @throws SshChannelException for channel specific errors
      */
     protected void onAfterConnect(@NonNull final SessionImpl session)
             throws SshChannelException, GeneralSecurityException, IOException {
@@ -244,6 +244,8 @@ public abstract class BaseChannel
     /**
      * Checks if we have already read all the data,
      * i.e. whether the remote sent an end-of-file notification for this channel.
+     *
+     * @return {@ode true} if we had an {@code EOF}
      */
     @SuppressWarnings("unused")
     public boolean isRemoteEof() {

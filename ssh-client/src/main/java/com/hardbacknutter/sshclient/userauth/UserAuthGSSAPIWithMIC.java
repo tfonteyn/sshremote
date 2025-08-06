@@ -47,6 +47,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
 public class UserAuthGSSAPIWithMIC
         implements UserAuth {
 
+    /** Password Authentication Method. */
     public static final String METHOD = "gssapi-with-mic";
 
     private static final byte SSH_MSG_USERAUTH_GSSAPI_RESPONSE = 60;

@@ -1,15 +1,15 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.GeneralSecurityException;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.GeneralSecurityException;
+import org.jspecify.annotations.NonNull;
 
 public interface Channel {
 
@@ -17,7 +17,9 @@ public interface Channel {
      * Opens the channel without any timeout.
      * This is equivalent to {@link #connect(int) connect(0)}.
      *
-     * @throws SshChannelException if any errors occur
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     default void connect()
             throws SshChannelException, GeneralSecurityException, IOException {
@@ -31,7 +33,9 @@ public interface Channel {
      *                       established, in milliseconds. If 0, we wait as long
      *                       as needed (but at most 1000 times 50 milliseconds each).
      *
-     * @throws SshChannelException if any errors occur
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     void connect(int connectTimeout)
             throws SshChannelException, GeneralSecurityException, IOException;
@@ -53,6 +57,9 @@ public interface Channel {
      * Handle an incoming packet meant for this channel.
      *
      * @param packet to handle
+     *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     void handle(@NonNull Packet packet)
             throws IOException, GeneralSecurityException;
@@ -64,6 +71,7 @@ public interface Channel {
      * in SSH_MSG_CHANNEL_DATA to the remote side.
      * This method should be called before {@link #connect}.
      *
+     * @param in           the InputStream for this channel
      * @param do_not_close if {@code true}, we do not close the stream
      *                     when {@link #disconnect()} is called
      */
@@ -77,6 +85,10 @@ public interface Channel {
      * <p>
      * This method is a polling alternative to {@link #setOutputStream}.
      * It should be called before {@link #connect}.
+     *
+     * @return the InputStream for this channel
+     *
+     * @throws IOException for generic IO errors
      */
     @NonNull
     InputStream getInputStream()
@@ -87,6 +99,8 @@ public interface Channel {
      * read from this stream and forward the data to the remote side.
      * The stream will be closed on {@link #disconnect}.
      * This method should be called before {@link #connect}.
+     *
+     * @param in the InputStream for this channel
      */
     default void setInputStream(@NonNull final InputStream in) {
         setInputStream(in, false);
@@ -101,6 +115,8 @@ public interface Channel {
      * <p>
      * This method is an alternative to {@link #setInputStream}.
      * It should be called before {@link #connect}.
+     *
+     * @return the OutputStream for this channel
      */
     @NonNull
     OutputStream getOutputStream();
@@ -111,6 +127,8 @@ public interface Channel {
      * written to this OutputStream.
      * This method should be called before {@link #connect}.
      * The stream will be closed on {@link #disconnect}.
+     *
+     * @param out the OutputStream for this channel
      *
      * @see #getInputStream
      */
@@ -124,6 +142,7 @@ public interface Channel {
      * written to this OutputStream.
      * This method should be called before {@link #connect}.
      *
+     * @param out          the OutputStream for this channel
      * @param do_not_close if {@code true}, we do not close the stream
      *                     on {@link #disconnect}.
      *
@@ -141,6 +160,10 @@ public interface Channel {
      * <p>
      * This method is a polling alternative to {@link #setExtOutputStream}.
      * It should be called before {@link #connect}.
+     *
+     * @return the extended InputStream for this channel
+     *
+     * @throws IOException for generic IO errors
      */
     @NonNull
     InputStream getExtInputStream()
@@ -160,6 +183,8 @@ public interface Channel {
      * <p>
      * The stream will be closed on {@link #disconnect}.
      *
+     * @param out the extended OutputStream for this channel
+     *
      * @see #getExtInputStream
      */
     default void setExtOutputStream(@NonNull final OutputStream out) {
@@ -177,12 +202,13 @@ public interface Channel {
      * <p>
      * This method should be called before {@link #connect}.
      *
+     * @param out          the extended OutputStream for this channel
      * @param do_not_close if {@code true}, we do not close the stream
      *                     on {@link #disconnect}.
      *
      * @see #getExtInputStream
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5.2">
-     * RFC 4254 SSH Connection Protocol, section 5.2: Data Transfer</a>
+     *         RFC 4254 SSH Connection Protocol, section 5.2: Data Transfer</a>
      */
     void setExtOutputStream(@NonNull OutputStream out,
                             boolean do_not_close);

@@ -3,6 +3,7 @@ package com.hardbacknutter.sshclient.channels.session;
 import org.jspecify.annotations.NonNull;
 
 import com.hardbacknutter.sshclient.ChannelSubsystem;
+import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.channels.sftp.ChannelSftpImpl;
 import com.hardbacknutter.sshclient.transport.Packet;
@@ -28,6 +29,11 @@ public class ChannelSubsystemImpl
     @NonNull
     private String subsystem = "";
 
+    /**
+     * Constructor.
+     *
+     * @param session {@link Session} instance this channel belongs to.
+     */
     public ChannelSubsystemImpl(@NonNull final SessionImpl session) {
         super(session);
     }

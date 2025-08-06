@@ -27,6 +27,7 @@ public class UserAuthPassword
     /** The standard Java resource bundle with (translated) messages. */
     private static final String USER_MESSAGES = "msg.usermessages";
 
+    /** Password Authentication Method. */
     public static final String METHOD = "password";
 
     /**

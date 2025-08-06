@@ -1,11 +1,11 @@
 package com.hardbacknutter.sshclient.channels.direct;
 
-import org.jspecify.annotations.NonNull;
-
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * A Channel which allows forwarding a pair of local streams
@@ -13,11 +13,12 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
  *
  * @see Session#openChannel Session.openChannel("direct-tcpip")
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-7.2">
- * RFC 4254 SSH Connection Protocol, section 7.2. TCP/IP Forwarding Channels</a>
+ *         RFC 4254 SSH Connection Protocol, section 7.2. TCP/IP Forwarding Channels</a>
  */
 public class ChannelDirectTCPIP
         extends ChannelDirect {
 
+    /** Channel type/name. */
     public static final String NAME = "direct-tcpip";
 
     @NonNull
@@ -27,6 +28,11 @@ public class ChannelDirectTCPIP
     private String host;
     private int port;
 
+    /**
+     * Constructor.
+     *
+     * @param session {@link Session} instance this channel belongs to.
+     */
     public ChannelDirectTCPIP(@NonNull final SessionImpl session) {
         super(NAME, session);
     }

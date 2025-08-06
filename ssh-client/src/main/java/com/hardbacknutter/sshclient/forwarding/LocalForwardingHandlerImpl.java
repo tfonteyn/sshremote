@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.forwarding;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -14,6 +11,9 @@ import javax.net.ServerSocketFactory;
 import com.hardbacknutter.sshclient.LocalForwardingHandler;
 import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Handles all local port forwarding.
@@ -102,13 +102,13 @@ public class LocalForwardingHandlerImpl
                    final int connectTimeout,
                    @NonNull final String host,
                    final int remotePort)
-            throws PortForwardException, IOException {
+            throws PortForwardException, UnknownHostException, IOException {
 
         final String address = LocalForwardConfig.normalizeBindAddress(bindAddress);
 
         if (find(localPort, address) != null) {
             throw new PortForwardException("local port " + address
-                                                   + ":" + localPort + " is already registered.");
+                                           + ":" + localPort + " is already registered.");
         }
 
         final LocalPortForwardWorker pw =
@@ -136,7 +136,7 @@ public class LocalForwardingHandlerImpl
 
         if (find(localPort, address) != null) {
             throw new PortForwardException("local port " + address
-                                                   + ":" + localPort + " is already registered.");
+                                           + ":" + localPort + " is already registered.");
         }
 
         final LocalSocketPathForwardWorker pw =
@@ -158,7 +158,7 @@ public class LocalForwardingHandlerImpl
         final LocalForwardWorker pw = find(localPort, address);
         if (pw == null) {
             throw new PortForwardException("local port " + address
-                                                   + ":" + localPort + " is not registered.");
+                                           + ":" + localPort + " is not registered.");
         }
         pw.close();
         pool.remove(pw);
@@ -168,6 +168,10 @@ public class LocalForwardingHandlerImpl
      * Return the instance for the given session/port (and optional bind address).
      *
      * @return the PortWatcher, or {@code null} if there wasn't one.
+     *
+     * @throws UnknownHostException if no IP address for the
+     *                              {@code host} could be found, or if a scope_id was specified
+     *                              for a global IPv6 address.
      */
     @Nullable
     private LocalForwardWorker find(final int localPort,
@@ -180,7 +184,7 @@ public class LocalForwardingHandlerImpl
                        .filter(pw -> session.equals(pw.getSession()))
                        .filter(pw -> localPort == pw.getLocalPort())
                        .filter(pw -> (anyLocalAddress.equals(pw.getBindAddress())
-                               || pw.getBindAddress().equals(inetAddress)))
+                                      || pw.getBindAddress().equals(inetAddress)))
                        .findFirst()
                        .orElse(null);
         }

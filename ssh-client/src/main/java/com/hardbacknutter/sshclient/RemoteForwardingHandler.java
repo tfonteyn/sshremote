@@ -1,14 +1,14 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.List;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.forwarding.PortForwardException;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.List;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Handles all remote port forwarding.
@@ -39,6 +39,10 @@ public interface RemoteForwardingHandler {
      * @param socketFactory (optional) socket factory
      *
      * @return the allocated remote port number
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     int add(@Nullable String bindAddress,
             int remotePort,
@@ -66,6 +70,11 @@ public interface RemoteForwardingHandler {
      *                         the TCP port will be allocated on the remote.
      *
      * @return the allocated remote port number
+     *
+     * @throws PortForwardException     for specific port-forwarding errors
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     int add(@NonNull String connectionString)
             throws IOException, GeneralSecurityException,
@@ -78,6 +87,12 @@ public interface RemoteForwardingHandler {
      * @param remotePort remote port
      * @param host       host address
      * @param localPort  local port
+     *
+     * @return the allocated remote port number
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     default int add(final int remotePort,
                     @NonNull final String host,
@@ -101,6 +116,12 @@ public interface RemoteForwardingHandler {
      * @param remotePort  remote port
      * @param host        host address
      * @param localPort   local port
+     *
+     * @return the allocated remote port number
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     default int add(@NonNull final String bindAddress,
                     final int remotePort,
@@ -118,6 +139,12 @@ public interface RemoteForwardingHandler {
      * @param host          host address
      * @param localPort     local port
      * @param socketFactory (optional) socket factory
+     *
+     * @return the allocated remote port number
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     default int add(final int remotePort,
                     @NonNull final String host,
@@ -148,6 +175,12 @@ public interface RemoteForwardingHandler {
      * @param remotePort  remote port
      * @param daemon      class name, which implements "ForwardedTCPIPDaemon"
      * @param arg         arguments for "daemon"
+     *
+     * @return the port that was bound on the server
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     int addDaemon(@Nullable String bindAddress,
                   int remotePort,
@@ -168,6 +201,11 @@ public interface RemoteForwardingHandler {
      * @param remotePort remote port
      * @param daemon     class name, which implements "ForwardedTCPIPDaemon"
      *
+     * @return the port that was bound on the server
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see #addDaemon(String, int, String, Object[])
      */
     default int addDaemon(final int remotePort,
@@ -190,6 +228,11 @@ public interface RemoteForwardingHandler {
      * @param daemon     class name, which implements "ForwardedTCPIPDaemon"
      * @param arg        arguments for "daemon"
      *
+     * @return the port that was bound on the server
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see #addDaemon(String, int, String, Object[])
      */
     default int addDaemon(final int remotePort,

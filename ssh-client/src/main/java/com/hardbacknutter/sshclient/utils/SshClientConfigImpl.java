@@ -171,9 +171,9 @@ public final class SshClientConfigImpl
     }
 
     @Override
-    public void putAll(@NonNull final Map<String, String> newConf) {
+    public void putAll(@NonNull final Map<String, String> map) {
         synchronized (config) {
-            config.putAll(newConf);
+            config.putAll(map);
         }
     }
 
@@ -221,7 +221,6 @@ public final class SshClientConfigImpl
                                    @Nullable final String defValue) {
         // For a single option, we check all levels using 'null' as the default.
         // Only when no levels have our option, we will return the 'defValue'.
-        @Nullable
         String value;
 
         // if this session configuration has the value, just return it.

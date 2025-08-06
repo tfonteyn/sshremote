@@ -34,6 +34,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
 public class UserAuthPublicKey
         implements UserAuth {
 
+    /** Password Authentication Method. */
     public static final String METHOD = "publickey";
 
     /** The standard Java resource bundle with (translated) messages. */

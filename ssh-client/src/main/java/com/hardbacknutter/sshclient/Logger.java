@@ -1,8 +1,8 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-
 import java.util.function.Supplier;
+
+import org.jspecify.annotations.NonNull;
 
 public interface Logger {
 
@@ -48,6 +48,7 @@ public interface Logger {
      * Log the given message <strong>if</strong> the given log level is enabled.
      *
      * @param level   to log at
+     * @param e       to log
      * @param message to log
      */
     default void log(final int level,

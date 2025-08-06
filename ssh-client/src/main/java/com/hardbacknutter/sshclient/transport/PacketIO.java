@@ -1,11 +1,11 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import com.hardbacknutter.sshclient.Session;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * INTERNAL USE ONLY.
@@ -23,6 +23,9 @@ public interface PacketIO {
      * Read from the input (remote host) and return the resulting Packet.
      *
      * @return the Packet.
+     *
+     * @throws IOException              for generic IO errors
+     * @throws GeneralSecurityException for generic security errors
      */
     @NonNull
     Packet read()
@@ -32,6 +35,9 @@ public interface PacketIO {
      * Send the given packet to the remote host.
      *
      * @param packet to send
+     *
+     * @throws IOException              for generic IO errors
+     * @throws GeneralSecurityException for generic security errors
      */
     void write(@NonNull Packet packet)
             throws IOException, GeneralSecurityException;

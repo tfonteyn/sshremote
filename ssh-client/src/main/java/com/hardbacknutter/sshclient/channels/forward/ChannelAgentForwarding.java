@@ -34,6 +34,7 @@ import com.hardbacknutter.sshclient.utils.SshException;
 public class ChannelAgentForwarding
         extends ForwardingChannel {
 
+    /** Channel type/name. */
     public static final String NAME = "auth-agent@openssh.com";
 
     /** The standard Java resource bundle with (translated) messages. */

@@ -6,6 +6,7 @@ import org.jspecify.annotations.NonNull;
 public interface ChannelExec
         extends ChannelSession {
 
+    /** Channel type/name. */
     String NAME = "exec";
 
     /**

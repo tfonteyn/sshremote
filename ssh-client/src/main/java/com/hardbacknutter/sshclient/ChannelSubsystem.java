@@ -5,6 +5,7 @@ import org.jspecify.annotations.NonNull;
 @SuppressWarnings("unused")
 public interface ChannelSubsystem {
 
+    /** Channel type/name. */
     String NAME = "subsystem";
 
     /**
@@ -24,6 +25,8 @@ public interface ChannelSubsystem {
      * This will entirely depend on what subsystem is being addressed.
      * <p>
      * The default is {@code true}.
+     *
+     * @param waitForReply flag
      */
     void setWaitForReply(boolean waitForReply);
 }

@@ -1,16 +1,15 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.List;
+import javax.net.ServerSocketFactory;
 
 import com.hardbacknutter.sshclient.forwarding.LocalForwardConfig;
 import com.hardbacknutter.sshclient.forwarding.PortForwardException;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.List;
-
-import javax.net.ServerSocketFactory;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Handles all local port forwarding.
@@ -43,6 +42,9 @@ public interface LocalForwardingHandler {
      *                         the listening port will be bound for local use only.
      *
      * @return the allocated local port number
+     *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws IOException          for generic IO errors
      */
     int add(@NonNull String connectionString)
             throws PortForwardException, IOException;
@@ -59,6 +61,12 @@ public interface LocalForwardingHandler {
      * @param remotePort     remote port
      *
      * @return the allocated local port number
+     *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws UnknownHostException if no IP address for the
+     *                              {@code host} could be found, or if a scope_id was specified
+     *                              for a global IPv6 address.
+     * @throws IOException          for generic IO errors
      */
     int add(@Nullable String bindAddress,
             int localPort,
@@ -66,14 +74,32 @@ public interface LocalForwardingHandler {
             int connectTimeout,
             @NonNull String host,
             int remotePort)
-            throws PortForwardException, IOException;
+            throws PortForwardException, UnknownHostException, IOException;
 
+    /**
+     * Same as {@link #add(String)} but all arguments separately
+     * and a possibility to set a {@link ServerSocketFactory} and the connection timeout.
+     *
+     * @param bindAddress    (optional) bind address
+     * @param localPort      local port
+     * @param ssf            (optional) server socket factory
+     * @param connectTimeout timeout for establishing connections
+     * @param socketPath     to add
+     *
+     * @return the allocated local port number
+     *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws UnknownHostException if no IP address for the
+     *                              {@code host} could be found, or if a scope_id was specified
+     *                              for a global IPv6 address.
+     * @throws IOException          for generic IO errors
+     */
     int add(@Nullable String bindAddress,
             int localPort,
             @Nullable ServerSocketFactory ssf,
             int connectTimeout,
             @NonNull String socketPath)
-            throws PortForwardException, IOException;
+            throws PortForwardException, UnknownHostException, IOException;
 
     /**
      * Registers the local port forwarding for loop-back interface.
@@ -85,6 +111,8 @@ public interface LocalForwardingHandler {
      *
      * @return an allocated local TCP port number
      *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws IOException          for generic IO errors
      * @see #add(String, int, ServerSocketFactory, int, String, int)
      */
     default int add(final int localPort,
@@ -110,6 +138,8 @@ public interface LocalForwardingHandler {
      *
      * @return an allocated local TCP port number
      *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws IOException          for generic IO errors
      * @see #add(String, int, ServerSocketFactory, int, String, int)
      */
     default int add(@Nullable final String bindAddress,
@@ -137,6 +167,8 @@ public interface LocalForwardingHandler {
      *
      * @return an allocated local TCP port number
      *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws IOException          for generic IO errors
      * @see #add(String, int, ServerSocketFactory, int, String, int)
      */
     default int add(@Nullable final String bindAddress,
@@ -153,6 +185,11 @@ public interface LocalForwardingHandler {
      * at local TCP port {@code localPort} on the loopback interface.
      *
      * @param localPort local TCP port
+     *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws UnknownHostException if no IP address for the
+     *                              {@code host} could be found, or if a scope_id was specified
+     *                              for a global IPv6 address.
      */
     default void remove(final int localPort)
             throws UnknownHostException, PortForwardException {
@@ -165,6 +202,11 @@ public interface LocalForwardingHandler {
      *
      * @param bindAddress bind address of network interfaces
      * @param localPort   local TCP port
+     *
+     * @throws PortForwardException for specific port-forwarding errors
+     * @throws UnknownHostException if no IP address for the
+     *                              {@code host} could be found, or if a scope_id was specified
+     *                              for a global IPv6 address.
      */
     void remove(@Nullable String bindAddress,
                 int localPort)

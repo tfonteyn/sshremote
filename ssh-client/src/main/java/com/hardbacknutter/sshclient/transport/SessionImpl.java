@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -20,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.StringJoiner;
 
 import com.hardbacknutter.sshclient.Channel;
@@ -77,6 +73,9 @@ import com.hardbacknutter.sshclient.utils.SshClientConfigImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 import com.hardbacknutter.sshclient.utils.SshException;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A Session represents a connection to a SSH server.
  * <p>
@@ -88,6 +87,8 @@ import com.hardbacknutter.sshclient.utils.SshException;
 public final class SessionImpl
         implements Session, PacketIO {
 
+    static final int DEFAULT_PORT = 22;
+
     /** All channels opened by this session. */
     private static final Map<Integer, Channel> channelPool =
             Collections.synchronizedMap(new HashMap<>());
@@ -96,7 +97,6 @@ public final class SessionImpl
             .getBytes(StandardCharsets.UTF_8);
 
     private static final String ERROR_SESSION_IS_DOWN = "Session is not connected";
-    static final int DEFAULT_PORT = 22;
 
     @NonNull
     private final SshSessionConfig config;
@@ -360,8 +360,8 @@ public final class SessionImpl
     }
 
     @Override
-    public void setIdentityRepository(@NonNull final IdentityRepository identityRepository) {
-        this.identityRepository = identityRepository;
+    public void setIdentityRepository(@NonNull final IdentityRepository repository) {
+        this.identityRepository = repository;
     }
 
     @Override
@@ -371,8 +371,8 @@ public final class SessionImpl
     }
 
     @Override
-    public void setHostKeyRepository(@NonNull final HostKeyRepository hostkeyRepository) {
-        this.hostKeyRepository = hostkeyRepository;
+    public void setHostKeyRepository(@NonNull final HostKeyRepository repository) {
+        this.hostKeyRepository = repository;
     }
 
     @Override

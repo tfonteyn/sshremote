@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -32,6 +29,8 @@ import com.hardbacknutter.sshclient.userauth.SshAuthException;
 import com.hardbacknutter.sshclient.utils.SshClientConfigImpl;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class SshClientImpl
         implements SshClient {
@@ -151,10 +150,10 @@ public class SshClientImpl
     }
 
     @Override
-    public void setConfig(@NonNull final Map<String, String> newConf) {
-        synchronized (config) {
-            for (final Map.Entry<String, String> entry : newConf.entrySet()) {
-                config.putString(entry.getKey(), entry.getValue());
+    public void setConfig(@NonNull final Map<String, String> config) {
+        synchronized (this.config) {
+            for (final Map.Entry<String, String> entry : config.entrySet()) {
+                this.config.putString(entry.getKey(), entry.getValue());
             }
         }
     }
@@ -176,8 +175,8 @@ public class SshClientImpl
 
     @Override
     @SuppressWarnings("WeakerAccess")
-    public void setHostConfigRepository(@Nullable final HostConfigRepository configRepository) {
-        this.hostConfigRepository = configRepository;
+    public void setHostConfigRepository(@Nullable final HostConfigRepository repository) {
+        this.hostConfigRepository = repository;
     }
 
     @Override
@@ -256,7 +255,6 @@ public class SshClientImpl
             throws IOException, GeneralSecurityException, SshAuthException {
 
         // extra/specific config for the specified host
-        @Nullable
         final HostConfig hostConfig;
         //TODO: should we just use getHostKeyRepository()? (and never have a null hostConfig)
         if (hostConfigRepository != null) {

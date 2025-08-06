@@ -4,6 +4,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.Logger;
+import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
@@ -19,6 +20,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
 public class ChannelDirectStreamLocal
         extends ChannelDirect {
 
+    /** Channel type/name. */
     public static final String NAME = "direct-streamlocal@openssh.com";
 
     private static final String ERROR_SOCKET_PATH_MUST_BE_SET = "socketPath must be set";
@@ -26,6 +28,11 @@ public class ChannelDirectStreamLocal
     @Nullable
     private String socketPath;
 
+    /**
+     * Constructor.
+     *
+     * @param session {@link Session} instance this channel belongs to.
+     */
     public ChannelDirectStreamLocal(@NonNull final SessionImpl session) {
         super(NAME, session);
     }

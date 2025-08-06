@@ -1,14 +1,10 @@
 package com.hardbacknutter.sshclient;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
@@ -17,6 +13,9 @@ import com.hardbacknutter.sshclient.identity.IdentityRepository;
 import com.hardbacknutter.sshclient.proxy.Proxy;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 import com.hardbacknutter.sshclient.utils.SshException;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 2021-06-02: initial introduction of a Session INTERFACE with the intention of
@@ -65,11 +64,15 @@ public interface Session {
      * <p>
      * This is useful when there are multiple SSH servers on a single host,
      * with different host keys.
+     *
+     * @param hostKeyAlias alias
      */
     void setHostKeyAlias(@NonNull String hostKeyAlias);
 
     /**
      * Get the current value of the UserInfo object.
+     *
+     * @return {@link UserInfo}
      */
     @Nullable
     UserInfo getUserInfo();
@@ -79,6 +82,8 @@ public interface Session {
      * UserInfo object is used for feedback to the user and to
      * query information from the user. Most important here is
      * the password query.
+     *
+     * @param userinfo to use
      */
     void setUserInfo(@Nullable UserInfo userinfo);
 
@@ -114,12 +119,16 @@ public interface Session {
 
     /**
      * Get the <em>resolved</em> host name used for connecting to the remote host.
+     *
+     * @return host
      */
     @NonNull
     String getHost();
 
     /**
      * Get the port used for connecting to the remote host.
+     *
+     * @return port
      */
     int getPort();
 
@@ -127,7 +136,12 @@ public interface Session {
     /**
      * Opens the connection, using the timeout set with {@link #setTimeout}.
      *
-     * @throws SshException if this session is already connected.
+     * @throws SshException             if this session is already connected, or some
+     *                                  other error occurs during connecting.
+     *                                  (If there was some other exception,
+     *                                  it is chained as the cause)
+     * @throws IOException              for generic IO errors
+     * @throws GeneralSecurityException for generic security errors
      * @see #connect(int)
      */
     void connect()
@@ -136,12 +150,16 @@ public interface Session {
     /**
      * Opens the connection, using the specified timeout.
      *
-     * @throws SshException     if this session is already connected, or some
-     *                          other error occurs during connecting. (If there was some other
-     *                          exception, it is chained as the cause)
-     * @throws RuntimeException are thrown as-is
+     * @param timeoutInMillis to use
+     *
+     * @throws SshException             if this session is already connected, or some
+     *                                  other error occurs during connecting.
+     *                                  (If there was some other exception,
+     *                                  it is chained as the cause)
+     * @throws IOException              for generic IO errors
+     * @throws GeneralSecurityException for generic security errors
      */
-    void connect(int connectTimeout)
+    void connect(int timeoutInMillis)
             throws SshException, IOException, GeneralSecurityException;
 
     /**
@@ -199,8 +217,12 @@ public interface Session {
      *  </ul>
      *
      * @param type a string identifying the channel type.
+     * @param <T>  type of the {@link ChannelSession}
      *
      * @return a Channel of the requested type, initialized, but not yet connected.
+     *
+     * @throws SshChannelException for channel specific errors
+     * @throws IOException         for generic IO errors
      */
     @NonNull
     <T extends ChannelSession> T openChannel(@NonNull String type)
@@ -210,6 +232,8 @@ public interface Session {
      * Initiates a new key exchange. This is necessary for some changes on
      * the configuration to become active, like compression or encryption mode.
      *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-9">
      *         RFC 4253 SSH Transport Layer Protocol, section 9.</a>
      */
@@ -220,6 +244,9 @@ public interface Session {
      * Send a {@code "keepalive"} message.
      * <p>
      * Used internally, but can be called by users when needed.
+     *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     void sendKeepAlive()
             throws IOException, GeneralSecurityException;
@@ -227,6 +254,8 @@ public interface Session {
     /**
      * Send a {@code SSH_MSG_IGNORE} message.
      *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see <a href="https://www.rfc-editor.org/rfc/rfc4251.html#section-9.3.1">
      *         RFC 4251 Protocol Architecture, section 9.3.1. (to avoid the Rogaway attack)</a>
      */
@@ -236,6 +265,8 @@ public interface Session {
     /**
      * Send a global "no-more-sessions@openssh.com" message.
      *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      * @see <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/usr.bin/ssh/PROTOCOL?rev=HEAD">
      *         SSH protocol version 2 vendor extensions, section 2.2</a>
      */
@@ -269,6 +300,11 @@ public interface Session {
     void setTimeout(int timeoutInMs)
             throws IOException;
 
+    /**
+     * Get the socket factory used to create a socket to the target host.
+     *
+     * @return factory
+     */
     @NonNull
     SocketFactory getSocketFactory();
 
@@ -277,6 +313,8 @@ public interface Session {
      * If not set, or set to {@code null}, we use plain TCP sockets.
      * <p>
      * Note that a separate socket factory can be passed to {@linkplain #setProxy proxy}.
+     *
+     * @param factory to use
      */
     void setSocketFactory(@Nullable SocketFactory factory);
 
@@ -311,6 +349,13 @@ public interface Session {
      */
     void setRunAsDaemon(boolean enable);
 
+    /**
+     * Get the list of algorithms we can accept for public key authentication.
+     *
+     * @return the list; will contain at least one algorithm
+     *
+     * @throws NoSuchAlgorithmException if no algorithm configured/available
+     */
     @NonNull
     List<String> getClientPublicKeyAcceptedAlgorithms()
             throws NoSuchAlgorithmException;
@@ -327,6 +372,8 @@ public interface Session {
      * Gets the identityRepository.
      * If not set, {@link SshClient#getIdentityRepository()} will be returned.
      *
+     * @return repository
+     *
      * @see SshClient#getIdentityRepository()
      */
     @NonNull
@@ -337,14 +384,18 @@ public interface Session {
      * in the public key authentication.
      * If not set, {@link SshClient#getIdentityRepository()} will be used.
      *
+     * @param repository to use
+     *
      * @see #getIdentityRepository()
      */
-    void setIdentityRepository(@NonNull IdentityRepository identityRepository);
+    void setIdentityRepository(@NonNull IdentityRepository repository);
 
 
     /**
      * Gets the HostKeyRepository.
      * If not set, {@link SshClient#getHostConfigRepository()} will be returned.
+     *
+     * @return repository
      */
     @NonNull
     HostKeyRepository getHostKeyRepository();
@@ -353,9 +404,11 @@ public interface Session {
      * Sets the HostKeyRepository, which will be referred in checking host keys.
      * If not set, {@link SshClient#getHostConfigRepository()} will be used.
      *
+     * @param repository to use
+     *
      * @see #getHostKeyRepository()
      */
-    void setHostKeyRepository(@NonNull HostKeyRepository hostkeyRepository);
+    void setHostKeyRepository(@NonNull HostKeyRepository repository);
 
     /**
      * Get access to the local port forwarding handler.
@@ -375,6 +428,8 @@ public interface Session {
 
     /**
      * Enable or disable ssh-agent forwarding.
+     *
+     * @param enable flag
      */
     void setAgentForwarding(boolean enable);
 
@@ -393,6 +448,8 @@ public interface Session {
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
      *
+     * @param host to use
+     *
      * @see #setX11Forwarding(int)
      * @see #setX11Port
      * @see #setX11Cookie
@@ -406,6 +463,8 @@ public interface Session {
      * <p>
      * <em>Attention:</em> This is effectively a static property.
      * We're assuming/supporting only one local X11 server.
+     *
+     * @param port to use
      *
      * @see #setX11Forwarding(int)
      * @see #setX11Host

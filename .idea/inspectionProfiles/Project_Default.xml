@@ -121,7 +121,7 @@
       <option name="m_ignoreInvisibleFields" value="true" />
       <option name="m_ignoreStaticMethods" value="true" />
     </inspection_tool>
-    <inspection_tool class="LocalVariableNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
+    <inspection_tool class="LocalVariableNamingConvention" enabled="false" level="WARNING" enabled_by_default="false">
       <option name="m_ignoreForLoopParameters" value="false" />
       <option name="m_ignoreCatchParameters" value="false" />
       <option name="m_regex" value="[a-z][A-Za-z\d]*" />
@@ -278,7 +278,7 @@
       <option name="useParameterizedTypeForCollectionMethods" value="true" />
       <option name="doNotWeakenToJavaLangObject" value="true" />
       <option name="onlyWeakentoInterface" value="true" />
-      <stopClasses>java.util.Set,com.hardbacknutter.nevertoomanybooks.bookedit.EditAction,java.util.List,java.util.Collection,java.time.LocalDateTime,android.net.Uri,com.hardbacknutter.nevertoomanybooks.sync.SyncServer,com.hardbacknutter.nevertoomanybooks.entities.Book.ContentType,com.hardbacknutter.nevertoomanybooks.entities.Bookshelf,com.hardbacknutter.nevertoomanybooks.entities.TocEntry,com.hardbacknutter.nevertoomanybooks.tasks.ProgressListener,com.hardbacknutter.nevertoomanybooks.backup.ImportResults,com.hardbacknutter.nevertoomanybooks.searchengines.Site.Type,com.hardbacknutter.nevertoomanybooks.entities.Series,com.hardbacknutter.nevertoomanybooks.entities.Publisher,com.hardbacknutter.nevertoomanybooks.entities.Author,com.hardbacknutter.nevertoomanybooks.entities.Book,android.text.Editable,com.hardbacknutter.nevertoomanybooks.database.CursorRow,com.hardbacknutter.lwp4a.library.hubs.Lpf2Hub,com.hardbacknutter.sshclient.hostconfig.HostConfig</stopClasses>
+      <stopClasses>java.util.Set,com.hardbacknutter.nevertoomanybooks.bookedit.EditAction,java.util.List,java.util.Collection,java.time.LocalDateTime,android.net.Uri,com.hardbacknutter.nevertoomanybooks.sync.SyncServer,com.hardbacknutter.nevertoomanybooks.entities.Book.ContentType,com.hardbacknutter.nevertoomanybooks.entities.Bookshelf,com.hardbacknutter.nevertoomanybooks.entities.TocEntry,com.hardbacknutter.nevertoomanybooks.tasks.ProgressListener,com.hardbacknutter.nevertoomanybooks.backup.ImportResults,com.hardbacknutter.nevertoomanybooks.searchengines.Site.Type,com.hardbacknutter.nevertoomanybooks.entities.Series,com.hardbacknutter.nevertoomanybooks.entities.Publisher,com.hardbacknutter.nevertoomanybooks.entities.Author,com.hardbacknutter.nevertoomanybooks.entities.Book,android.text.Editable,com.hardbacknutter.nevertoomanybooks.database.CursorRow,com.hardbacknutter.lwp4a.library.hubs.Lpf2Hub,com.hardbacknutter.sshclient.hostconfig.HostConfig,com.hardbacknutter.sshclient.SshClientConfig</stopClasses>
     </inspection_tool>
     <inspection_tool class="UnnecessarilyQualifiedStaticUsage" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="m_ignoreStaticFieldAccesses" value="true" />
@@ -298,7 +298,6 @@
     </inspection_tool>
     <inspection_tool class="UnnecessarySuperConstructor" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UnusedLibrary" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="UpperCaseFieldNameNotConstant" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UseOfObsoleteDateTimeApi" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UseOfPropertiesAsHashtable" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UtilityClassWithPublicConstructor" enabled="true" level="WARNING" enabled_by_default="true" />

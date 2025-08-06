@@ -24,6 +24,7 @@ import com.hardbacknutter.sshclient.utils.SshConstants;
 public class UserAuthNone
         implements UserAuth {
 
+    /** Password Authentication Method. */
     public static final String METHOD = "none";
 
     private String methods;
