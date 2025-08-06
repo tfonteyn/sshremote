@@ -25,7 +25,7 @@ public interface ECDH {
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    void init(@NonNull final ECKeyType ecType)
+    void init(@NonNull ECKeyType ecType)
             throws GeneralSecurityException;
 
     /**

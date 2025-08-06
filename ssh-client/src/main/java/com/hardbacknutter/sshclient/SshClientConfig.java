@@ -83,7 +83,7 @@ public interface SshClientConfig
      *
      * @see #putString(String, String)
      */
-    void putAll(@NonNull final Map<String, String> newConf);
+    void putAll(@NonNull Map<String, String> newConf);
 
     /**
      * Put a configuration {@link String} option.
@@ -91,8 +91,8 @@ public interface SshClientConfig
      * @param key   the key for the configuration option
      * @param value to set
      */
-    void putString(@NonNull final String key,
-                   @NonNull final String value);
+    void putString(@NonNull String key,
+                   @NonNull String value);
 
     /**
      * Convenience method / code clarify. Add a class definition to the configuration.

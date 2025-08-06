@@ -226,7 +226,7 @@ public abstract class KeyPairBase
      * @throws GeneralSecurityException if the key <strong>could</strong> be parsed but was invalid.
      */
     abstract void parsePrivateKey(@NonNull byte[] encodedKey,
-                                  @NonNull final PrivateKeyEncoding encoding)
+                                  @NonNull PrivateKeyEncoding encoding)
             throws GeneralSecurityException;
 
     /**

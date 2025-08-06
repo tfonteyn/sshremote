@@ -1095,8 +1095,8 @@ public abstract class BaseChannel
     public interface Request {
 
         @NonNull
-        Packet create(final int recipient,
-                      final boolean wantReply)
+        Packet create(int recipient,
+                      boolean wantReply)
                 throws NoSuchAlgorithmException;
     }
 }

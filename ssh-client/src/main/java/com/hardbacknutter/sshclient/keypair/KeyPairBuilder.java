@@ -17,8 +17,8 @@ public interface KeyPairBuilder {
      *                       This is independent from the encryption state.
      */
     @NonNull
-    KeyPairBuilder setPrivateKey(@NonNull final byte[] privateKeyBlob,
-                                 @NonNull final PrivateKeyEncoding encoding);
+    KeyPairBuilder setPrivateKey(@NonNull byte[] privateKeyBlob,
+                                 @NonNull PrivateKeyEncoding encoding);
 
     /**
      * Set the public key blob and its encoding format.
@@ -28,8 +28,8 @@ public interface KeyPairBuilder {
      *                      This is independent from the encryption state.
      */
     @NonNull
-    KeyPairBuilder setPublicKey(@Nullable final byte[] publicKeyBlob,
-                                @Nullable final PublicKeyEncoding encoding);
+    KeyPairBuilder setPublicKey(@Nullable byte[] publicKeyBlob,
+                                @Nullable PublicKeyEncoding encoding);
 
     /**
      * Set the optional decryptor to use if the key is encrypted.
@@ -37,7 +37,7 @@ public interface KeyPairBuilder {
      * @param decryptor (optional) The vendor specific decryptor
      */
     @NonNull
-    KeyPairBuilder setDecryptor(@Nullable final PBKDF decryptor);
+    KeyPairBuilder setDecryptor(@Nullable PBKDF decryptor);
 
     @NonNull
     SshKeyPair build()

@@ -33,7 +33,7 @@ public interface Channel {
      *
      * @throws SshChannelException if any errors occur
      */
-    void connect(final int connectTimeout)
+    void connect(int connectTimeout)
             throws SshChannelException, GeneralSecurityException, IOException;
 
     /**

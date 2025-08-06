@@ -35,8 +35,8 @@ public interface XDH {
      * @throws GeneralSecurityException if anything goes wrong.
      */
     void init(@NonNull String xdhCurveName,
-              @NonNull final ASN1ObjectIdentifier oid,
-              final int keySize)
+              @NonNull ASN1ObjectIdentifier oid,
+              int keySize)
             throws GeneralSecurityException;
 
     /**

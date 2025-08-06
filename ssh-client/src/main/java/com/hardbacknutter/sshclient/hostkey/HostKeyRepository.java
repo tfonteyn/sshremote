@@ -82,9 +82,9 @@ public interface HostKeyRepository {
      * @param key  the key to be removed. If {@code null}, all keys of the
      *             given type and host will be removed.
      */
-    void remove(@NonNull final String host,
-                @Nullable final String type,
-                @Nullable final byte[] key);
+    void remove(@NonNull String host,
+                @Nullable String type,
+                @Nullable byte[] key);
 
     /**
      * returns an identifier for this repository.
@@ -114,8 +114,8 @@ public interface HostKeyRepository {
      *             If {@code null} is given, a key type type will not be ignored.
      */
     @NonNull
-    List<HostKey> getHostKeys(@Nullable final String host,
-                              @Nullable final String type);
+    List<HostKey> getHostKeys(@Nullable String host,
+                              @Nullable String type);
 
     enum KeyIs {
         /**

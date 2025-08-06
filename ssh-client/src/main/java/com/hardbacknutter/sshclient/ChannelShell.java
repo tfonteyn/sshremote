@@ -20,7 +20,7 @@ public interface ChannelShell
 
     String NAME = "shell";
 
-    void setPty(final boolean enable);
+    void setPty(boolean enable);
 
     /**
      * Set the terminal modes.

@@ -128,8 +128,8 @@ public abstract class Transport {
     }
 
     // force api
-    abstract void initCompression(@NonNull final KexAgreement agreement,
-                                  final boolean authenticated)
+    abstract void initCompression(@NonNull KexAgreement agreement,
+                                  boolean authenticated)
             throws IOException, NoSuchAlgorithmException;
 
     boolean isChaCha() {
