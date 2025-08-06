@@ -24,6 +24,7 @@ import androidx.lifecycle.LiveData;
  *     }
  * </pre>
  */
+@FunctionalInterface
 public interface LiveDataEvent {
 
     /**

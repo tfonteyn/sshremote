@@ -22,6 +22,7 @@ import org.jspecify.annotations.NonNull;
  * random number generator, maybe based on some hardware device.
  * </p>
  */
+@FunctionalInterface
 public interface Random {
 
     String RANDOM = "random";

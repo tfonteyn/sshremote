@@ -848,6 +848,7 @@ public interface ChannelSftp
          * Objects implementing this interface can be passed as an argument to the
          * {@link ChannelSftp#ls(String, Selector)} method.
          */
+        @FunctionalInterface
         interface Selector {
 
             /**

@@ -19,6 +19,7 @@ import java.net.Socket;
  *
  * @see Session#setSocketFactory
  */
+@FunctionalInterface
 public interface SocketFactory {
 
     /**

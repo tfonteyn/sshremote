@@ -41,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 /**
  * Listener for manual initiation of a drag.
  */
+@FunctionalInterface
 public interface StartDragListener {
 
     /**

@@ -4,6 +4,7 @@ import android.text.TextWatcher;
 
 import androidx.annotation.NonNull;
 
+@FunctionalInterface
 public interface ExtTextWatcher
         extends TextWatcher {
 

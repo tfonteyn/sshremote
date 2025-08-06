@@ -13,6 +13,7 @@ import com.hardbacknutter.sshclient.SshClient;
  * @see HostConfig
  * @see HostConfigRepositoryFactory
  */
+@FunctionalInterface
 public interface HostConfigRepository {
 
     /**

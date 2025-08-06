@@ -3,6 +3,7 @@ package com.hardbacknutter.sshclient.ciphers;
 /**
  * AEAD mode (such as GCM/CCM): "Authenticated Encryption with Additional Data"
  */
+@FunctionalInterface
 public interface AEADCipher {
 
     /**

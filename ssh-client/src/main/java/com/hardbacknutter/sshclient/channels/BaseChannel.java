@@ -1091,6 +1091,7 @@ public abstract class BaseChannel
      * <p>
      * Represents a {@link SshConstants#SSH_MSG_CHANNEL_REQUEST} to be sent to the remote side.
      */
+    @FunctionalInterface
     public interface Request {
 
         @NonNull

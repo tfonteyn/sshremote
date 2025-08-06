@@ -14,6 +14,7 @@ import org.jspecify.annotations.NonNull;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4256">
  * RFC 4256 Generic Message Exchange Authentication for the Secure Shell Protocol (SSH)</a>
  */
+@FunctionalInterface
 public interface UIKeyboardInteractive
         extends UserInfo {
 
