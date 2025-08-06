@@ -57,7 +57,7 @@ public interface ChannelSftp
     /**
      * local command "lcd"
      * <p>
-     * Changes the <em>current local directory<em>.
+     * Changes the <em>current local directory</em>.
      *
      * @param path a directory path, absolute or relative to the current local path.
      *

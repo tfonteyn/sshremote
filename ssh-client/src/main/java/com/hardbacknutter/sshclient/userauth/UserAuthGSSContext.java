@@ -9,7 +9,6 @@ import org.ietf.jgss.MessageProp;
  * GSS API. This is used by {@link UserAuthGSSAPIWithMIC} to do the
  * actual cryptographic work. (See this class for a description on how this
  * interface is used.)
- * </p>
  * <p>
  * This interface only contains the methods needed for GSS-API authentication,
  * not the full GSS API.

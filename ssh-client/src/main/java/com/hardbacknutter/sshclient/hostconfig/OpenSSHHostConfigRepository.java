@@ -37,7 +37,7 @@ import com.hardbacknutter.sshclient.kex.KexProposal;
  *   <li>ForwardAgent               - {@link HostConfig#FORWARD_AGENT}</li>
  *   <li>ForwardX11                 - {@link HostConfig#FORWARD_X11}</li>
  *   <li>HashKnownHosts             - {@link HostConfig#HASH_KNOWN_HOSTS}</li>
- *   <li>HostKeyAlias               - {@link HostConfig#HOST_KEY_ALIAS}</li></li>
+ *   <li>HostKeyAlias               - {@link HostConfig#HOST_KEY_ALIAS}</li>
  *   <li>Hostname                   - {@link HostConfig#HOSTNAME}</li>
  *   <li>IdentityFile               - {@link HostConfig#IDENTITY_FILE}</li>
  *   <li>LocalForward               - {@link HostConfig#LOCAL_FORWARD}</li>

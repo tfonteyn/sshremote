@@ -26,11 +26,10 @@ import java.security.GeneralSecurityException;
  *  <dt>{@link KexProposal#PROPOSAL_MAC_CTOS mac.s2c}</dt>
  *  <dd>message authentication code algorithms for server-to-client transport.</dd>
  * </dl>
- * <p>
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.4">
  * RFC 4253 SSH Transport Layer Protocol, Section 6.4. Data Integrity</a>
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc6668#section-2>
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc6668#section-2">
  * RFC 6668 SHA-2 Data Integrity Verification for the SSH Transport Layer Protocol,
  * Section 2. Data Integrity</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2104">
@@ -42,7 +41,7 @@ public interface SshMac {
     /**
      * Get the digest length of the Mac.
      * Depending on which docs you read (Java, SSH, Wiki...),
-     * this is also known as <em>hash-size</em></em>, <em>hash output length</em>,
+     * this is also known as <em>hash-size</em>, <em>hash output length</em>,
      * <em>block size</em>
      * <p>
      * Not to be confused with the KEY-block-length.

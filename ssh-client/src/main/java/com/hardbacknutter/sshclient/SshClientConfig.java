@@ -22,7 +22,6 @@ import com.hardbacknutter.sshclient.utils.BaseConfig;
  * from which one will be selected by negotiation during key exchange.
  * These should confirm to the format defined by RFC 4250, and be
  * accompanied by an "implementation" option.
- * <p>
  * <h4>Key exchange algorithms: {@link KeyExchange}</h4>
  * <h4>User Authentication methods: {@link UserAuth}</h4>
  *
@@ -41,7 +40,6 @@ import com.hardbacknutter.sshclient.utils.BaseConfig;
  *
  * <h4>Message Authentication Code algorithms: {@link SshMac}</h4>
  * <h4>Compression: {@link SshDeflater} and {@link SshInflater}</h4>
- * <p>
  * <p>
  * During key exchange, the first option in the client's list
  * (i.e. the option value) which also appears on the server's list

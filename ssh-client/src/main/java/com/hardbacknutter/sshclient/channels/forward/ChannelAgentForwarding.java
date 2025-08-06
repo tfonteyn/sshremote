@@ -65,7 +65,7 @@ public class ChannelAgentForwarding
      * signature using the "rsa-sha2-256" or "rsa-sha2-512" signature
      * methods respectively.
      *
-     * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-agent-04#section-5.3>
+     * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-agent-04#section-5.3">
      *         RFC draft 4, section 5.3</a>
      */
     private static final int SSH_AGENT_RSA_SHA2_256 = 2;

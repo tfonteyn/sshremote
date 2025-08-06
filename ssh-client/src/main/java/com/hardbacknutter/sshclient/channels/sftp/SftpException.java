@@ -17,7 +17,7 @@ import com.hardbacknutter.sshclient.channels.SshChannelException;
  * <dd>some file or directory was non-existent</dd>
  * <dt>{@link ChannelSftpImpl} SSH_FX_OP_UNSUPPORTED</dt>
  * <dd>some operation is not supported by the server</dd>
- * </dd>
+ * </dl>
  * But in general every SSH_FXP_STATUS status value can be thrown.
  *
  * @see ChannelSftp

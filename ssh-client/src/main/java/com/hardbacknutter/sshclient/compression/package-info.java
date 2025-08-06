@@ -5,7 +5,6 @@
  * <p>
  * The below three are hardcoded; any others listed will be ignored.
  * </p>
- * <p>
  * <h4>Implementations</h4>
  * <dl>
  *   <dt>{@code none}</dt>
@@ -22,7 +21,6 @@
  *       <a href="https://datatracker.ietf.org/doc/html/draft-miller-secsh-compression-delayed-00">
  *           draft-miller-secsh-compression-delayed-00</a>.</dd>
  * </dl>
- * <p>
  * <h4>Configuration</h4>
  * <dl>
  *  <dt>{@code compression.c2s}</dt><dd>Compression algorithms

@@ -18,7 +18,7 @@ import org.bouncycastle.asn1.util.ASN1Dump;
 /**
  * A PKCS#8 KeyPair is a wrapper containing the actual KeyPair.
  *
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc2898#section-6.2>
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc2898#section-6.2">
  *         RFC 2898 PKCS#5 Password-Based Cryptography Specification, section 6.2. PBES2</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5958">
  *         RFC 5958 Asymmetric Key Packages</a> obsoletes 5208

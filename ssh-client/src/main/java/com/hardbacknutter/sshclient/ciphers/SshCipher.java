@@ -68,7 +68,7 @@ import javax.crypto.ShortBufferException;
  *      aes128-gcm@openssh.com,aes256-gcm@openssh.com
  * </pre>
  *
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc4344#section-4>
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc4344#section-4">
  * RFC 4344 SSH Transport Layer Encryption Modes, section 4. Encryption Modes</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.3">
  * RFC 4253 SSH Transport Layer Protocol, section 6.3. Encryption</a>

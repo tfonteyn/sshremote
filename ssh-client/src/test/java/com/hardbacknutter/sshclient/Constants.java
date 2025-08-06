@@ -141,7 +141,6 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  *      netsh advfirewall firewall delete rule name="ALLOW TCP PORT 2222"
  * </pre>
  * <p>
- * <p>
  * When systemd is active:
  * <pre>
  *     systemctl start sshd.service

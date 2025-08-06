@@ -390,7 +390,6 @@ public class KexDelegate {
 
     /**
      * Receives and interprets a {@link SshConstants#SSH_MSG_KEXINIT} packet from the server.
-     * <p>
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-7.2">
      *         RFC 4253 SSH Transport Layer Protocol, section 7.2.</a>
