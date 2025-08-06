@@ -88,7 +88,6 @@ public class Packet
      * Create a Packet with a default size. The buffer MAY expand when needed.
      */
     public Packet() {
-        super();
     }
 
     /**
@@ -108,7 +107,6 @@ public class Packet
      * and set the buffer's WRITE-position to the start of the payload.
      */
     public Packet(final byte command) {
-        super();
         writeOffset = HEADER_LEN;
         putByte(command);
     }

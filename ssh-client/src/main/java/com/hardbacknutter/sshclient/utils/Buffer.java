@@ -12,7 +12,6 @@ public class Buffer
      * Create a Buffer with a default size. The buffer MAY expand when needed.
      */
     public Buffer() {
-        super();
     }
 
     /**

@@ -15,7 +15,6 @@ public class MyPipedInputStream
 
     public MyPipedInputStream(final int minPipeSize,
                               final int maxPipeSize) {
-        super();
         this.minPipeSize = minPipeSize;
         this.maxPipeSize = maxPipeSize;
         buffer = new byte[minPipeSize];
