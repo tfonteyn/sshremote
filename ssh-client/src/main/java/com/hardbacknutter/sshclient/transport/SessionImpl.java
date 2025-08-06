@@ -933,11 +933,11 @@ public final class SessionImpl
     }
 
     @NonNull
-    public Optional<List<String>> getServerSignatureAlgorithms() {
+    public List<String> getServerSignatureAlgorithms() {
         if (serverSigAlgs != null && !serverSigAlgs.isEmpty()) {
-            return Optional.of(serverSigAlgs);
+            return serverSigAlgs;
         }
-        return Optional.empty();
+        return List.of();
     }
 
     @NonNull

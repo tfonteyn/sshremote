@@ -643,7 +643,7 @@ public final class ImplementationFactory {
         }
 
         if (config.getBooleanValue(PK_ENABLE_SERVER_SIG_ALGS, true)) {
-            session.getServerSignatureAlgorithms().ifPresent(all::addAll);
+            all.addAll(session.getServerSignatureAlgorithms());
         }
 
         if (all.isEmpty()) {

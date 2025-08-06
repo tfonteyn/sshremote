@@ -319,10 +319,10 @@ public interface Session {
     /**
      * Get the list of signature algorithms the server reported to support.
      *
-     * @return list, will contain at least one element when available
+     * @return list
      */
     @NonNull
-    Optional<List<String>> getServerSignatureAlgorithms();
+    List<String> getServerSignatureAlgorithms();
 
     /**
      * Gets the identityRepository.
