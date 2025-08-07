@@ -1,7 +1,10 @@
 package com.hardbacknutter.sshclient.keypair.util;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.util.Base64;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.ciphers.SshCipher;
@@ -15,18 +18,15 @@ import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFPutty2;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.util.Base64;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 
 /**
  * @see <a href="https://the.earth.li/~sgtatham/putty/0.76/htmldoc/AppendixC.html#ppk">
- * PPK file format</a>
+ *         PPK file format</a>
  * @see <a href="https://the.earth.li/~sgtatham/putty/0.76/htmldoc/AppendixC.html#ppk-v2">
- * PPK version 2 file format</a>
+ *         PPK version 2 file format</a>
  */
 class PuttyReader {
 
@@ -152,16 +152,17 @@ class PuttyReader {
     }
 
     private byte @NonNull [] parseBase64(@NonNull final BufferedReader br,
-                               @NonNull String line)
+                                         @NonNull final String line)
             throws IOException, InvalidKeyException {
-        final int lines = Integer.parseInt(line.substring(line.indexOf(':') + 2).trim());
+        String s = line;
+        final int lines = Integer.parseInt(s.substring(s.indexOf(':') + 2).trim());
         final StringBuilder bs = new StringBuilder();
         for (int i = 0; i < lines; i++) {
-            line = br.readLine();
-            if (line == null) {
+            s = br.readLine();
+            if (s == null) {
                 throw new InvalidKeyException("Not enough lines");
             }
-            bs.append(line);
+            bs.append(s);
         }
         return b64.decode(bs.toString());
     }
