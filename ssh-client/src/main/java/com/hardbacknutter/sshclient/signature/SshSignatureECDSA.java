@@ -23,6 +23,11 @@ import java.security.SignatureException;
 public class SshSignatureECDSA
         extends SshSignatureBase {
 
+    /**
+     * Constructor.
+     *
+     * @param jcaSignatureAlgorithm standard JDK digest algorithm name
+     */
     public SshSignatureECDSA(@NonNull final String jcaSignatureAlgorithm) {
         super(jcaSignatureAlgorithm);
     }

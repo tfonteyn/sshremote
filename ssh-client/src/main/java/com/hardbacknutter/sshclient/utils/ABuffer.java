@@ -1,7 +1,5 @@
 package com.hardbacknutter.sshclient.utils;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -9,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.hardbacknutter.sshclient.transport.Packet;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * A chunk of bytes together with methods to access them.
@@ -26,8 +26,8 @@ import com.hardbacknutter.sshclient.transport.Packet;
  * </p>
  *
  * @see <a href="http://datatracker.ietf.org/doc/html/rfc4251#section-5">
- * RFC 4251 SSH Protocol Architecture,
- * section 5. Data Type Representations Used in the SSH Protocols</a>
+ *         RFC 4251 SSH Protocol Architecture,
+ *         section 5. Data Type Representations Used in the SSH Protocols</a>
  */
 public abstract class ABuffer<T extends ABuffer<T>> {
 
@@ -113,6 +113,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Reset both the read and write position to the start of the buffer.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T reset() {
@@ -153,6 +155,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * Set the absolute position for the next write.
      *
      * @param offset the new offset.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T setWriteOffSet(final int offset) {
@@ -210,6 +214,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Put one byte into the buffer.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T putByte(final byte b) {
@@ -223,6 +229,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * Put all bytes from the given byte array into the buffer.
      *
      * @param bytes array
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T putBytes(final byte @NonNull [] bytes) {
@@ -239,6 +247,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param bytes  array
      * @param offset start position in the array
      * @param length number of bytes to copy
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T putBytes(final byte @NonNull [] bytes,
@@ -253,14 +263,18 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Put a Java Boolean as a byte with value 0 or 1 into the buffer.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
-    public T putBoolean(final boolean bool) {
-        return putByte((byte) (bool ? 1 : 0));
+    public T putBoolean(final boolean val) {
+        return putByte((byte) (val ? 1 : 0));
     }
 
     /**
      * Put a 32-bit number as 4 bytes (network byte order) into the buffer.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T putInt(final int val) {
@@ -275,6 +289,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Put a 64-bit number as 8 bytes (network byte order) into the buffer.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T putLong(final long val) {
@@ -310,6 +326,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      *       bytes of data.
      * </pre>
      *
+     * @return {@code this} for chaining
+     *
      * @see #getMPInt()
      * @see #getBigInteger()
      */
@@ -329,6 +347,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     /**
      * Put a Java BigInteger as an unsigned multiple precision integer (mpint) into the buffer.
      *
+     * @return {@code this} for chaining
+     *
      * @see #putMPInt(byte[])
      */
     public T putMPInt(@NonNull final BigInteger val) {
@@ -337,6 +357,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Put a Java String formatted as a SSH string in in UTF_8 into the buffer.
+     *
+     * @return {@code this} for chaining
      *
      * @see #putString(byte[], int, int)
      */
@@ -349,6 +371,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     /**
      * Put a Java String formatted as a SSH string in the given charset into the buffer.
      *
+     * @return {@code this} for chaining
+     *
      * @see #putString(byte[], int, int)
      */
     @NonNull
@@ -360,6 +384,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
 
     /**
      * Put a byte sequence formatted as a SSH string into the buffer.
+     *
+     * @return {@code this} for chaining
      *
      * @see #putString(byte[], int, int)
      */
@@ -377,6 +403,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * @param bytes  the array from which we take the data.
      * @param offset the start of the data in the array.
      * @param length how many bytes to put.
+     *
+     * @return {@code this} for chaining
      */
     @NonNull
     public T putString(final byte @NonNull [] bytes,
@@ -398,7 +426,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
             if (fixedSize) {
                 throw new IllegalStateException(
                         "Buffer size is fixed at: " + data.length
-                                + ", but " + n + " more bytes are needed");
+                        + ", but " + n + " more bytes are needed");
             }
             final byte[] tmpBuffer = new byte[getNextPowerOf2(writeOffset + n)];
             System.arraycopy(data, 0, tmpBuffer, 0, data.length);
@@ -460,9 +488,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      */
     public int getInt() {
         return ((data[readOffset++] & 0xff) << 24)
-                | ((data[readOffset++] & 0xff) << 16)
-                | ((data[readOffset++] & 0xff) << 8)
-                | ((data[readOffset++] & 0xff));
+               | ((data[readOffset++] & 0xff) << 16)
+               | ((data[readOffset++] & 0xff) << 8)
+               | ((data[readOffset++] & 0xff));
     }
 
     /**
@@ -472,9 +500,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      */
     public long getUInt() {
         return (((long) (data[readOffset++] & 0xff)) << 24)
-                | (((long) (data[readOffset++] & 0xff)) << 16)
-                | (((long) (data[readOffset++] & 0xff)) << 8)
-                | ((long) (data[readOffset++] & 0xff));
+               | (((long) (data[readOffset++] & 0xff)) << 16)
+               | (((long) (data[readOffset++] & 0xff)) << 8)
+               | ((long) (data[readOffset++] & 0xff));
     }
 
     /**
@@ -555,6 +583,8 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      * <p>
      * Read a multiple-precision (signed) integer.
      *
+     * @return byte array representing an MPInt
+     *
      * @see #getBigInteger()
      * @see #putMPInt(byte[])
      */
@@ -601,10 +631,10 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     @NonNull
     public String toString() {
         return "ABuffer{"
-                + "fixedSize=" + fixedSize
-                + ", data.length=" + data.length
-                + ", writeOffset=" + writeOffset
-                + ", readOffset=" + readOffset
-                + '}';
+               + "fixedSize=" + fixedSize
+               + ", data.length=" + data.length
+               + ", writeOffset=" + writeOffset
+               + ", readOffset=" + readOffset
+               + '}';
     }
 }

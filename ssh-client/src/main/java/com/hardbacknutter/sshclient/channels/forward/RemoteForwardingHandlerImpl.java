@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.channels.forward;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -18,6 +15,9 @@ import com.hardbacknutter.sshclient.forwarding.PortForwardException;
 import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.SshConstants;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Handles all remote port forwarding.
@@ -62,11 +62,11 @@ public class RemoteForwardingHandlerImpl
             return pool.stream()
                        .filter(config -> session.equals(config.getSession()))
                        .filter(config -> (remotePort == config.getRemotePort()
-                               ||
-                               (0 == config.getRemotePort()
-                                       && remotePort == config.getAllocatedRemotePort())))
+                                          ||
+                                          (0 == config.getRemotePort()
+                                           && remotePort == config.getAllocatedRemotePort())))
                        .filter(config -> bindAddress == null
-                               || bindAddress.equals(config.getBindAddress()))
+                                         || bindAddress.equals(config.getBindAddress()))
                        .findFirst()
                        .orElse(null);
         }
@@ -126,7 +126,7 @@ public class RemoteForwardingHandlerImpl
         synchronized (pool) {
             if (find(session, nBindAddress, remotePort) != null) {
                 throw new SshChannelException("remote port " + remotePort
-                                                      + " is already registered.");
+                                              + " is already registered.");
             }
             pool.add(new RemoteForwardSocketConfig(session, remotePort, allocated_port,
                                                    nBindAddress,
@@ -148,7 +148,7 @@ public class RemoteForwardingHandlerImpl
         synchronized (pool) {
             if (find(session, nBindAddress, remotePort) != null) {
                 throw new SshChannelException("remote port " + remotePort
-                                                      + " is already registered.");
+                                              + " is already registered.");
             }
             pool.add(new RemoteForwardDaemonConfig(session, remotePort,
                                                    // original code uses remotePort here!!
@@ -206,7 +206,7 @@ public class RemoteForwardingHandlerImpl
      * @return the port that was bound on the server
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-7">
-     * RFC 4254 SSH Connection Protocol, section 7. TCP/IP Port Forwarding</a>
+     *         RFC 4254 SSH Connection Protocol, section 7. TCP/IP Port Forwarding</a>
      */
     private int sendForwardRequest(@Nullable final String address,
                                    final int port)
@@ -216,20 +216,7 @@ public class RemoteForwardingHandlerImpl
 
         synchronized (grr) {
 
-            final String bindAddress;
-            if (address == null) {
-                // "localhost" means to listen on all protocol families supported by
-                // the SSH implementation on loopback addresses only
-                bindAddress = "localhost";
-
-            } else if (address.isEmpty() || "*".equals(address)) {
-                // "" means that connections are to be accepted on all protocol
-                // families supported by the SSH implementation.
-                bindAddress = "";
-
-            } else {
-                bindAddress = address;
-            }
+            final String bindAddress = getBindAddress(address);
 
             grr.setThread(Thread.currentThread());
             grr.setPort(port);
@@ -268,6 +255,25 @@ public class RemoteForwardingHandlerImpl
             allocatedPort = grr.getPort();
         }
         return allocatedPort;
+    }
+
+    @NonNull
+    private String getBindAddress(@Nullable final String address) {
+        final String bindAddress;
+        if (address == null) {
+            // "localhost" means to listen on all protocol families supported by
+            // the SSH implementation on loopback addresses only
+            bindAddress = "localhost";
+
+        } else if (address.isEmpty() || "*".equals(address)) {
+            // "" means that connections are to be accepted on all protocol
+            // families supported by the SSH implementation.
+            bindAddress = "";
+
+        } else {
+            bindAddress = address;
+        }
+        return bindAddress;
     }
 
     /**

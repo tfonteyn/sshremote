@@ -227,8 +227,7 @@ public class ChaCha20Poly1305
     public void updateAAD(final byte @NonNull [] src,
                           final int offset,
                           final int len) {
-        // Should never be called for ChaCha20
-        throw new IllegalStateException();
+        throw new IllegalStateException("updateAAD(..) Should never be called for ChaCha20");
     }
 
     @Override

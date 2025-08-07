@@ -245,7 +245,7 @@ public abstract class BaseChannel
      * Checks if we have already read all the data,
      * i.e. whether the remote sent an end-of-file notification for this channel.
      *
-     * @return {@ode true} if we had an {@code EOF}
+     * @return {@code true} if we had an {@code EOF}
      */
     @SuppressWarnings("unused")
     public boolean isRemoteEof() {

@@ -1,10 +1,10 @@
 package com.hardbacknutter.sshclient.macs;
 
-import org.jspecify.annotations.NonNull;
+import java.security.GeneralSecurityException;
 
 import com.hardbacknutter.sshclient.kex.KexProposal;
 
-import java.security.GeneralSecurityException;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A Keyed-Hashing algorithm for Message Authentication which will be used
@@ -19,7 +19,7 @@ import java.security.GeneralSecurityException;
  * using the no-argument constructor.
  * <p>
  * The algorithms to be used are negotiated during key exchange.
- * <h4>Configuration</h4>
+ * <h2>Configuration</h2>
  * <dl>
  *  <dt>{@link KexProposal#PROPOSAL_MAC_CTOS mac.c2s}</dt>
  *  <dd>message authentication code algorithms for client-to-server transport.</dd>
@@ -28,12 +28,12 @@ import java.security.GeneralSecurityException;
  * </dl>
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.4">
- * RFC 4253 SSH Transport Layer Protocol, Section 6.4. Data Integrity</a>
+ *         RFC 4253 SSH Transport Layer Protocol, Section 6.4. Data Integrity</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc6668#section-2">
- * RFC 6668 SHA-2 Data Integrity Verification for the SSH Transport Layer Protocol,
- * Section 2. Data Integrity</a>
+ *         RFC 6668 SHA-2 Data Integrity Verification for the SSH Transport Layer Protocol,
+ *         Section 2. Data Integrity</a>
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2104">
- * RFC 2104 HMAC: Keyed-Hashing for Message Authentication</a>
+ *         RFC 2104 HMAC: Keyed-Hashing for Message Authentication</a>
  * @see javax.crypto.Mac
  */
 public interface SshMac {
@@ -53,11 +53,17 @@ public interface SshMac {
     /**
      * Indicates if a MAC is of the EtM type.
      * Encrypt-then-MAC (EtM)
+     *
+     * @return {@code true} if EtM
      */
     boolean isEtm();
 
     /**
      * Initializes the MAC, providing the key.
+     *
+     * @param key to use
+     *
+     * @throws GeneralSecurityException if initialising the class instance fails somehow
      */
     void init(byte @NonNull [] key)
             throws GeneralSecurityException;
@@ -85,6 +91,8 @@ public interface SshMac {
      *
      * @param output    an array to put the authentication code into.
      * @param outOffset the position in {@code output} where the output should begin.
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     void doFinal(byte @NonNull [] output,
                  int outOffset)

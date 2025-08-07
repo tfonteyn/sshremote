@@ -9,6 +9,9 @@ package com.hardbacknutter.sshclient.signature;
 public class SshSignatureEd25519
         extends SshSignatureBase {
 
+    /**
+     * Constructor.
+     */
     public SshSignatureEd25519() {
         super("Ed25519");
     }

@@ -20,6 +20,11 @@ public class SshSignatureDSA
     //length of r and s may not exceed 20 bytes
     private static final int INT_LEN = 20;
 
+    /**
+     * Constructor.
+     *
+     * @param jcaSignatureAlgorithm standard JDK digest algorithm name
+     */
     public SshSignatureDSA(@NonNull final String jcaSignatureAlgorithm) {
         super(jcaSignatureAlgorithm);
     }
