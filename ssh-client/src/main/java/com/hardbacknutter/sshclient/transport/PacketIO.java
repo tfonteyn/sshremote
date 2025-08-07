@@ -8,14 +8,11 @@ import com.hardbacknutter.sshclient.Session;
 import org.jspecify.annotations.NonNull;
 
 /**
- * INTERNAL USE ONLY.
- * <p>
- * This interface is used to decouple the IO methods from the {@link SessionImpl} object
- * for use by user-code. i.e. read/write is NOT provided on the {@link Session} interface
- * as users should not use it.
+ * Read/write is NOT provided on the {@link Session} interface
+ * as users should not use it for anything related to the session itself.
  * <p>
  * User-code will only need this when implementing custom channels or custom classes to replace
- * the default implementations.
+ * a default implementation.
  */
 public interface PacketIO {
 
