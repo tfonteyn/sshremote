@@ -31,7 +31,8 @@ tasks.withType(Test).configureEach {
 }
 
 dependencies {
-    api(libs.jspecify)
+    api(libs.jspecify.annotations)
+    api(libs.jetbrains.annotations)
 
     api(libs.bouncycastle.bcprov)
     api(libs.bouncycastle.bcutil)

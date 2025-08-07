@@ -29,7 +29,7 @@ material = '1.12.0'
 # https://bouncycastle.org
 bouncycastle = "1.81"
 
-jspecify = "1.0.0"
+
 
 # https://junit.org/junit5/docs/current/user-guide/#overview
 jupiter = "5.13.4"
@@ -38,6 +38,11 @@ jupiter = "5.13.4"
 androidxTestCore = "1.7.0"
 androidxTestRunner = "1.7.0"
 androidxTestRules = "1.7.0"
+
+# https://jspecify.dev/
+jspecify = "1.0.0"
+# https://github.com/JetBrains/java-annotations/tree/master
+jetbrainsAnnotations = "26.0.2"
 
 [libraries]
 androidx-activity = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivity" }
@@ -66,7 +71,8 @@ google-desugar = { group = "com.android.tools", name = "desugar_jdk_libs_nio", v
 bouncycastle-bcprov = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
 bouncycastle-bcutil = { group = "org.bouncycastle", name = "bcutil-jdk18on", version.ref = "bouncycastle" }
 
-jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify"}
+jspecify-annotations = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify"}
+jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrainsAnnotations" }
 
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jupiter" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jupiter" }
