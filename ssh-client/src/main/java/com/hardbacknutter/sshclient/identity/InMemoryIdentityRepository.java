@@ -1,14 +1,14 @@
 package com.hardbacknutter.sshclient.identity;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
-import com.hardbacknutter.sshclient.SshClientConfig;
-
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.hardbacknutter.sshclient.SshClientConfig;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The default in-memory repository.
@@ -21,6 +21,11 @@ public class InMemoryIdentityRepository
     private final List<Identity> identities = new ArrayList<>();
 
 
+    /**
+     * Constructor.
+     *
+     * @param config to use
+     */
     public InMemoryIdentityRepository(@SuppressWarnings("unused")
                                       @NonNull final SshClientConfig config) {
     }
@@ -124,18 +129,18 @@ public class InMemoryIdentityRepository
         final List<byte[]> toRemove = new ArrayList<>();
 
         for (int i = 0; i < len; i++) {
-            final Identity foo = identities.get(i);
+            final Identity identity1 = identities.get(i);
+            final byte[] identity1blob = identity1.getSshEncodedPublicKey();
 
-            final byte[] foo_blob = foo.getSshEncodedPublicKey();
-            if (foo_blob != null) {
+            if (identity1blob != null) {
                 for (int j = i + 1; j < len; j++) {
+                    final Identity identity2 = identities.get(j);
+                    final byte[] identity2blob = identity2.getSshEncodedPublicKey();
 
-                    final Identity bar = identities.get(j);
-                    final byte[] bar_blob = bar.getSshEncodedPublicKey();
-                    if (bar_blob != null) {
-                        if (Arrays.equals(foo_blob, bar_blob) &&
-                                foo.isEncrypted() == bar.isEncrypted()) {
-                            toRemove.add(foo_blob);
+                    if (identity2blob != null) {
+                        if (Arrays.equals(identity1blob, identity2blob) &&
+                            identity1.isEncrypted() == identity2.isEncrypted()) {
+                            toRemove.add(identity1blob);
                             break;
                         }
                     }
