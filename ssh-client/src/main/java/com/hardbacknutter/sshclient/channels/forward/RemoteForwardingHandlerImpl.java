@@ -159,6 +159,7 @@ public class RemoteForwardingHandlerImpl
         return allocated;
     }
 
+    @SuppressWarnings("AssignmentToMethodParameter")
     @Override
     public void remove(@Nullable String bindAddress,
                        final int remotePort) {

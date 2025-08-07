@@ -261,6 +261,7 @@ public class UserAuthPublicKey
     /**
      * @return {@code true} if successfully authenticated
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     private boolean authenticate(@NonNull final PacketIO io,
                                  @NonNull final Session session,
                                  @NonNull final Identity identity,
