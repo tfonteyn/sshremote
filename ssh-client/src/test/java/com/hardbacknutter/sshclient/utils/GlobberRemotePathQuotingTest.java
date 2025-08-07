@@ -76,12 +76,14 @@ class GlobberRemotePathQuotingTest {
             return path;
         }
         final byte[] pathBytes2 = new byte[pathBytes.length + count];
-        for (int i = 0, j = 0; i < pathBytes.length; i++) {
+        int i = 0, j = 0;
+        while (i < pathBytes.length) {
             final byte b = pathBytes[i];
             if (b == '\\' || b == '?' || b == '*') {
                 pathBytes2[j++] = '\\';
             }
             pathBytes2[j++] = b;
+            i++;
         }
         return new String(pathBytes2, StandardCharsets.UTF_8);
     }
