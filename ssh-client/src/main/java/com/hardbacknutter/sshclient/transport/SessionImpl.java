@@ -582,7 +582,6 @@ public final class SessionImpl
         // but resets to 0 upon receiving a new set from the server
         int nextMethod = 0;
 
-        @Nullable
         String methodCanceled = null;
 
         // Try each auth method until we're authenticated or have run out of methods to try.
@@ -1448,7 +1447,6 @@ public final class SessionImpl
     private void applyHostConfig(@NonNull final HostConfig hostConfig,
                                  @NonNull final ChannelSession channel) {
 
-        @Nullable
         Boolean enable;
 
         enable = hostConfig.getBooleanValue(HostConfig.FORWARD_AGENT, false);

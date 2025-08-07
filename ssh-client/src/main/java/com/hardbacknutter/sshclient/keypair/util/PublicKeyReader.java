@@ -25,7 +25,7 @@ class PublicKeyReader {
             throws IOException, InvalidKeyException {
         try (PemReader reader = new PemReader(pubKeyReader)) {
             reader.mark(32);
-            @Nullable final String line = reader.readLine();
+            final String line = reader.readLine();
             if (line != null) {
                 reader.reset();
                 if (line.startsWith("-----BEGIN PUBLIC KEY")) {
@@ -107,8 +107,7 @@ class PublicKeyReader {
 
 
     static class PublicKeyAndComment {
-        @Nullable
-        private final byte[] blob;
+        private final byte @Nullable [] blob;
         @NonNull
         private final String comment;
 

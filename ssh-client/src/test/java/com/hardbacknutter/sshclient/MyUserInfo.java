@@ -34,9 +34,8 @@ public class MyUserInfo
         return password != null;
     }
 
-    @Nullable
     @Override
-    public byte[] getPassword() {
+    public byte @Nullable [] getPassword() {
         //noinspection DataFlowIssue
         return password.getBytes(StandardCharsets.UTF_8);
     }
@@ -48,9 +47,8 @@ public class MyUserInfo
         return keyFilesPassphrase != null;
     }
 
-    @Nullable
     @Override
-    public byte[] getPassphrase() {
+    public byte @Nullable [] getPassphrase() {
         //noinspection DataFlowIssue
         return keyFilesPassphrase.getBytes(StandardCharsets.UTF_8);
     }
