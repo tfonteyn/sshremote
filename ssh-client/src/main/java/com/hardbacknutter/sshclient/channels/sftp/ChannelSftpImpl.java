@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.channels.sftp;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +32,9 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.SessionImpl;
 import com.hardbacknutter.sshclient.utils.Globber;
 import com.hardbacknutter.sshclient.utils.SshConstants;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A Channel connected to an sftp server (as a subsystem of the ssh server).
@@ -498,7 +498,7 @@ public class ChannelSftpImpl
 
     @Override
     public void ls(@NonNull final String path,
-                    final LsEntry.@NonNull Selector selector)
+                   final LsEntry.@NonNull Selector selector)
             throws SftpException {
         try {
             //noinspection DataFlowIssue
@@ -1638,25 +1638,7 @@ public class ChannelSftpImpl
             // one or more source files, and a DIR as destination.
 
             for (final String srcPath : srcFilenames) {
-                final String dstFilename;
-                // If the destination is a directory, create a fully qualified
-                // filename by combining remote directory + source (local) filename
-                if (isDirectory) {
-                    // absDstPath already has a '/'' at the end
-                    final StringBuilder sb = new StringBuilder(absDstPath);
-                    // grab the last part of the local source path, i.e. the filename
-                    final int i = srcPath.lastIndexOf(File.separatorChar);
-                    if (i == -1) {
-                        sb.append(srcPath);
-                    } else {
-                        sb.append(srcPath.substring(i + 1));
-                    }
-                    dstFilename = sb.toString();
-
-                } else {
-                    // It's already a fully qualified filename
-                    dstFilename = absDstPath;
-                }
+                final String dstFilename = getDstFilename(srcPath, isDirectory, absDstPath);
 
                 long dstFileSize = 0;
                 if (mode == Mode.Resume) {
@@ -1696,6 +1678,31 @@ public class ChannelSftpImpl
         } catch (final Exception e) {
             throw new SftpException(SftpConstants.SSH_FX_FAILURE, e);
         }
+    }
+
+    private String getDstFilename(@NonNull final String srcPath,
+                                  final boolean isDirectory,
+                                  @NonNull final String absDstPath) {
+        final String dstFilename;
+        // If the destination is a directory, create a fully qualified
+        // filename by combining remote directory + source (local) filename
+        if (isDirectory) {
+            // absDstPath already has a '/'' at the end
+            final StringBuilder sb = new StringBuilder(absDstPath);
+            // grab the last part of the local source path, i.e. the filename
+            final int i = srcPath.lastIndexOf(File.separatorChar);
+            if (i == -1) {
+                sb.append(srcPath);
+            } else {
+                sb.append(srcPath.substring(i + 1));
+            }
+            dstFilename = sb.toString();
+
+        } else {
+            // It's already a fully qualified filename
+            dstFilename = absDstPath;
+        }
+        return dstFilename;
     }
 
     @Override
