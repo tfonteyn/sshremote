@@ -68,6 +68,9 @@ public class TransportC2S
      * Compress the Packet (if enabled), encode it, and finally send it to the remote server.
      *
      * @param packet to handle
+     *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     public synchronized void write(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {

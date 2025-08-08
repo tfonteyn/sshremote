@@ -48,20 +48,10 @@ import com.hardbacknutter.sshclient.utils.Buffer;
 public class Packet
         extends ABuffer<Packet> {
 
+    /**
+     * The length of the packet header.
+     */
     public static final int HEADER_LEN = 5;
-
-    /**
-     * Maximum padding length.
-     * Used where fixed-size packets are used.
-     */
-    public static final int MAX_PAD_SIZE = 32;
-
-    /**
-     * Margin for deflater; compressing can in rare circumstances actually inflate data.
-     * This is an safe estimate only.
-     * Used where fixed-size packets are used.
-     */
-    public static final int DEFLATER_MARGIN = 32;
 
     /**
      * The absolute maximum packet size we allow: 128kb.
@@ -94,6 +84,8 @@ public class Packet
      * Constructor.
      * <p>
      * Create a packet with a FIXED size.
+     *
+     * @param size for the packet
      */
     public Packet(final int size) {
         super(size, true);
@@ -105,6 +97,8 @@ public class Packet
      * Create a Packet with a default size. The buffer MAY expand when needed.
      * Put the given command byte in the buffer,
      * and set the buffer's WRITE-position to the start of the payload.
+     *
+     * @param command to set
      */
     public Packet(final byte command) {
         writeOffset = HEADER_LEN;
@@ -124,6 +118,10 @@ public class Packet
      * Put the given command byte in the buffer,
      * and set the buffer's WRITE-position to the start of the payload
      * (i.e. AFTER the command byte).
+     *
+     * @param command to set
+     *
+     * @return {@code this} for chaining
      */
     public Packet init(final byte command) {
         writeOffset = HEADER_LEN;
@@ -199,6 +197,8 @@ public class Packet
      * This is the first byte of the payload, i.e. the byte with index 5.
      * <p>
      * <strong>The read/write offsets are NOT modified</strong>
+     *
+     * @return command byte
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6">
      * RFC 4253 SSH Transport Layer Protocol, section 6. Binary Packet Protocol</a>

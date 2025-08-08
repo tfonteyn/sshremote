@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +18,9 @@ import com.hardbacknutter.sshclient.kex.KexAgreement;
 import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 import com.hardbacknutter.sshclient.utils.Util;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class TransportS2C
         extends Transport {
@@ -56,8 +56,8 @@ public class TransportS2C
      *
      * @see TransportC2S#writeVersion(String)
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-4.2">
-     * This identification string MUST be SSH-protoversion-softwareversion
-     * SP comments CR LF</a>
+     *         This identification string MUST be SSH-protoversion-softwareversion
+     *         SP comments CR LF</a>
      */
     @NonNull
     String readVersion()
@@ -101,6 +101,11 @@ public class TransportS2C
 
     /**
      * Read the packet data from the InputStream, and decode it.
+     *
+     * @param packet to read
+     *
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     public void read(@NonNull final Packet packet)
             throws IOException, GeneralSecurityException {
@@ -143,9 +148,9 @@ public class TransportS2C
         final byte[] tmp = new byte[4];
         cipher.update(packet.data, 0, 4, tmp, 0);
         int packetLen = ((tmp[0] << 24) & 0xff000000) |
-                ((tmp[1] << 16) & 0x00ff0000) |
-                ((tmp[2] << 8) & 0x0000ff00) |
-                ((tmp[3]) & 0x000000ff);
+                        ((tmp[1] << 16) & 0x00ff0000) |
+                        ((tmp[2] << 8) & 0x0000ff00) |
+                        ((tmp[3]) & 0x000000ff);
 
         if (packetLen < 5 || packetLen > Packet.MAX_SIZE) {
             discard(packet, packetLen, Packet.MAX_SIZE);

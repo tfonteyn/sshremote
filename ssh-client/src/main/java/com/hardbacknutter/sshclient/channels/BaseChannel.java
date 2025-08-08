@@ -23,26 +23,34 @@ import com.hardbacknutter.sshclient.transport.TransportC2S;
 import com.hardbacknutter.sshclient.utils.SshConstants;
 
 /**
- * The abstract base class for the different types of channel
+ * The base class for the different types of channel
  * which may be associated with a {@link Session}.
  *
  * @see Session#openChannel
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4254#section-5">
  *         RFC 4254 SSH Connection Protocol, section 5. Channel Mechanism</a>
  */
-public abstract class BaseChannel
+public class BaseChannel
         implements Channel {
 
-    @SuppressWarnings("WeakerAccess")
-    public static final int LOCAL_MAXIMUM_PACKET_SIZE = Packet.MAX_SIZE;
+    private static final int LOCAL_MAXIMUM_PACKET_SIZE = Packet.MAX_SIZE;
     /** Default: 1mb */
-    @SuppressWarnings("WeakerAccess")
-    public static final int LOCAL_DEFAULT_WINDOW_SIZE = 0x10_0000;
-
+    private static final int LOCAL_DEFAULT_WINDOW_SIZE = 0x10_0000;
 
     /** Config option: Maximum Channel input buffer size. */
     @SuppressWarnings("WeakerAccess")
     public static final String MAX_INPUT_BUFFER_SIZE = "max_input_buffer_size";
+    /**
+     * Maximum padding length.
+     * Used where fixed-size packets are used.
+     */
+    private static final int MAX_PAD_SIZE = 32;
+    /**
+     * Margin for deflater; compressing can in rare circumstances actually inflate data.
+     * This is an safe estimate only.
+     * Used where fixed-size packets are used.
+     */
+    private static final int DEFLATER_MARGIN = 32;
 
     /**
      * Standard Channel packet header.
@@ -64,6 +72,9 @@ public abstract class BaseChannel
     private static final AtomicInteger channelIdGenerator = new AtomicInteger();
 
     private static final int NO_RECIPIENT = -1;
+    // this value should be customizable.
+    private static final int DEFAULT_INPUT_BUFFER_SIZE = 32768;
+    private static final int CHANNEL_OPEN_LOOP_MAX = 2000;
 
     @NonNull
     protected final IOStreams ioStreams;
@@ -157,7 +168,7 @@ public abstract class BaseChannel
         this.session = session;
         transportC2s = session.getTransportC2s();
         this.id = channelIdGenerator.getAndIncrement();
-        safePacketMargin = Packet.MAX_PAD_SIZE + Packet.DEFLATER_MARGIN
+        safePacketMargin = MAX_PAD_SIZE + DEFLATER_MARGIN
                            // 20 is the old hardcoded size (64 hardcoded was to eager sometimes)
                            + transportC2s.getMacBlockSize().orElse(20);
 
@@ -487,8 +498,7 @@ public abstract class BaseChannel
     }
 
     protected int getDefaultInputBufferSize() {
-        // this value should be customizable.
-        return 32768;
+        return DEFAULT_INPUT_BUFFER_SIZE;
     }
 
     private int getMaxInputBufferSize() {
@@ -860,7 +870,7 @@ public abstract class BaseChannel
         final long waitTime = timeout == 0L ? 10L : timeout;
 
         // if there is no timeout set, we'll loop up to 2000 times and then give up...
-        int retry = timeout != 0L ? 1 : 2000;
+        int retry = timeout != 0L ? 1 : CHANNEL_OPEN_LOOP_MAX;
 
         synchronized (this) {
             while (recipient == NO_RECIPIENT
@@ -894,6 +904,10 @@ public abstract class BaseChannel
      *
      * @param request     to send
      * @param replyWanted flag: does the request want us to wait for a reply?
+     *
+     * @throws SshChannelException      for channel specific errors
+     * @throws GeneralSecurityException for generic security errors
+     * @throws IOException              for generic IO errors
      */
     @SuppressWarnings("WeakerAccess")
     public void sendRequest(@NonNull final Request request,

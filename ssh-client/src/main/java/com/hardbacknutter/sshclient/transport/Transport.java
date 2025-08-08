@@ -144,6 +144,11 @@ public abstract class Transport {
         return !(cipher instanceof AEADCipher) && mac != null && mac.isEtm();
     }
 
+    /**
+     * Get the current Sequence number of the packets.
+     *
+     * @return sequence number
+     */
     public int getSeq() {
         return seq;
     }

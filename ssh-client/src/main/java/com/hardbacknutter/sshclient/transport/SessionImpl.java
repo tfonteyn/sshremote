@@ -152,7 +152,7 @@ public final class SessionImpl
 
     @Nullable
     private Thread sessionThread;
-    private int serverAliveInterval;
+    private int serverAliveIntervalInMs;
     private int serverAliveCountMax = 1;
 
     /** Always use {@link #getIdentityRepository()}. */
@@ -912,6 +912,11 @@ public final class SessionImpl
         return packet;
     }
 
+    /**
+     * Check if we are currently in the process of exchanging keys.
+     *
+     * @return {@code true} if we are
+     */
     public boolean isInKeyExchange() {
         return kexDelegate != null && kexDelegate.isInKeyExchange();
     }
@@ -1304,11 +1309,13 @@ public final class SessionImpl
     /**
      * Returns setting for the interval to send a keep-alive message.
      *
-     * @see #setServerAliveInterval(int)
+     * @return interval in millis
+     *
+     * @see #setServerAliveIntervalInMs(int)
      */
     @SuppressWarnings({"WeakerAccess", "unused"})
     public int getServerAliveInterval() {
-        return this.serverAliveInterval;
+        return this.serverAliveIntervalInMs;
     }
 
     /**
@@ -1318,22 +1325,24 @@ public final class SessionImpl
      * If {@code 0} is specified, no keep-alive message must be sent.
      * The default interval is {@code 0}.
      *
-     * @param interval the timeout interval in milliseconds before sending
-     *                 a server alive message, if no message is received from the server.
+     * @param intervalInMs the timeout interval in milliseconds before sending
+     *                     a server alive message, if no message is received from the server.
      *
      * @see #getServerAliveInterval()
      */
     @SuppressWarnings("WeakerAccess")
-    public void setServerAliveInterval(final int interval)
+    public void setServerAliveIntervalInMs(final int intervalInMs)
             throws SocketException {
-        setTimeout(interval);
+        setTimeout(intervalInMs);
         // set after setting setTimeout which can throw!
-        this.serverAliveInterval = interval;
+        this.serverAliveIntervalInMs = intervalInMs;
     }
 
 
     /**
      * Returns setting for the threshold to send keep-alive messages.
+     *
+     * @return count
      *
      * @see #setServerAliveCountMax(int)
      */
@@ -1358,6 +1367,11 @@ public final class SessionImpl
     }
 
 
+    /**
+     * Check if we are running as a daemon.
+     *
+     * @return {@code true} if we are
+     */
     public boolean isRunningAsDaemonThread() {
         return runAsDaemonThread;
     }
@@ -1401,7 +1415,7 @@ public final class SessionImpl
         tmpIntValue = hostConfig.getIntValue(HostConfig.SERVER_ALIVE_INTERVAL, -1);
         if (tmpIntValue > -1) {
             // value is in seconds, convert to ms!
-            setServerAliveInterval(tmpIntValue * 1_000);
+            setServerAliveIntervalInMs(tmpIntValue * 1_000);
         }
 
         // see above, any specific timeout MUST be applied AFTER
