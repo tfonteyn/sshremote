@@ -12,7 +12,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
-abstract class SshSignatureBase
+class SshSignatureBase
         implements SshSignature {
 
     @NonNull

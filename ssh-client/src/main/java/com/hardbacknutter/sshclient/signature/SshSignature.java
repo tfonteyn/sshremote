@@ -1,10 +1,10 @@
 package com.hardbacknutter.sshclient.signature;
 
-import org.jspecify.annotations.NonNull;
-
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * A generic signature algorithm, with key and some state of
@@ -17,6 +17,8 @@ public interface SshSignature {
      * which does not depend on whether signing or verifying is done.)
      *
      * @param algorithm for signing/verifying.
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     void init(@NonNull String algorithm)
             throws GeneralSecurityException;
@@ -25,12 +27,18 @@ public interface SshSignature {
      * Add more data to be signed/verified.
      *
      * @param data the array containing the data to be signed/verified.
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     void update(byte @NonNull [] data)
             throws GeneralSecurityException;
 
     /**
      * Sets the private key to be used for signing.
+     *
+     * @param key to use
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     void initSign(@NonNull PrivateKey key)
             throws GeneralSecurityException;
@@ -39,12 +47,18 @@ public interface SshSignature {
      * Signs the data given so far to the {@link #update} method.
      *
      * @return a signature for the data.
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     byte @NonNull [] sign()
             throws GeneralSecurityException;
 
     /**
      * Sets the public key to be used for signature verification.
+     *
+     * @param key to use
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     void initVerify(@NonNull PublicKey key)
             throws GeneralSecurityException;
@@ -59,7 +73,9 @@ public interface SshSignature {
      *            given by {@link #update}.
      *
      * @return {@code true} if the signature is correct,
-     * {@code false} if the signature is not correct.
+     *         {@code false} if the signature is not correct.
+     *
+     * @throws GeneralSecurityException for generic security errors
      */
     boolean verify(byte @NonNull [] sig)
             throws GeneralSecurityException;
