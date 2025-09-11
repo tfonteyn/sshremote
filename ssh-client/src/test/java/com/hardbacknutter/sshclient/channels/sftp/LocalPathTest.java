@@ -18,6 +18,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * TODO: don't rely on this directory:
+ * <pre>
+ *     c:\tmp\avd
+ *     c:\tmp\d.txt
+ *     c:\tmp\glenat.txt
+ *     c:\tmp\insert.sql
+ *     c:\tmp\ssh
+ * </pre>
+ */
 class LocalPathTest {
 
     private Path lpwd;
@@ -106,57 +116,56 @@ class LocalPathTest {
         lpwd = new File("").toPath();
     }
 
-    /**
-     * TODO: don't rely on this directory:
-     * <pre>
-     *     c:\tmp\avd
-     *     c:\tmp\d.txt
-     *     c:\tmp\glenat.txt
-     *     c:\tmp\insert.sql
-     *     c:\tmp\ssh
-     * </pre>
-     */
     @Test
     void glob10() throws IOException {
-        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, "c:\\tmp\\*");
-        final List<String> b = glob_with_bytes(lpwd, "c:\\tmp\\*");
+        final String path = "c:\\tmp\\*";
+        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, path);
+        final List<String> b = glob_with_bytes(lpwd, path);
         assertEquals(s, b);
-
+        System.out.println(s);
     }
 
     @Test
     void glob11() throws IOException {
-        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, "c:/tmp/*");
-        final List<String> b = glob_with_bytes(lpwd, "c:/tmp/*");
+        final String path = "c:/tmp/*";
+        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, path);
+        final List<String> b = glob_with_bytes(lpwd, path);
         assertEquals(s, b);
+        System.out.println(s);
     }
 
     @Test
     void glob12() throws IOException {
-        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, "c:/tmp/*.txt");
-        final List<String> b = glob_with_bytes(lpwd, "c:/tmp/*.txt");
+        final String path = "c:/tmp/*.txt";
+        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, path);
+        final List<String> b = glob_with_bytes(lpwd, path);
         assertEquals(s, b);
     }
 
     @Test
     void glob13() throws IOException {
-        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, "c:/tmp/*en??.txt");
-        final List<String> b = glob_with_bytes(lpwd, "c:/tmp/*en??.txt");
+        final String path = "c:/tmp/*en??.txt";
+        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, path);
+        final List<String> b = glob_with_bytes(lpwd, path);
         assertEquals(s, b);
+        System.out.println(s);
     }
 
     @Test
     void glob20() throws IOException {
-        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, "/*");
-        final List<String> b = glob_with_bytes(lpwd, "/*");
+        final String path = "/*";
+        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, path);
+        final List<String> b = glob_with_bytes(lpwd, path);
         assertEquals(s, b);
+        System.out.println(s);
     }
 
     @Test
     void glob21() throws IOException {
-        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, "/*nor?");
-        final List<String> b = glob_with_bytes(lpwd, "/*nor?");
+        final String path = "/*nor?";
+        final List<String> s = ChannelSftpImpl.expandLocalPattern(lpwd, path);
+        final List<String> b = glob_with_bytes(lpwd, path);
         assertEquals(s, b);
+        System.out.println(s);
     }
-
 }
