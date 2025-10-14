@@ -1,7 +1,7 @@
 [versions]
 androidGradlePlugin = "8.13.0"
 # https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
-androidKotlinPlugin = "2.2.10"
+androidKotlinPlugin = "2.2.20"
 
 # https://developer.android.com/jetpack/androidx/versions
 
@@ -15,10 +15,10 @@ androidxCustomview = "1.2.0"
 androidxDocumentfile = "1.1.0"
 androidxDrawerlayout = "1.2.0"
 androidxFragment = "1.8.9"
-androidxLifecycle = "2.9.3"
+androidxLifecycle = "2.9.4"
 androidxPreference = "1.2.1"
 androidxRecyclerview = "1.4.0"
-androidxRoom = "2.8.0"
+androidxRoom = "2.8.2"
 
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 desugar = "2.1.5"
@@ -27,10 +27,11 @@ desugar = "2.1.5"
 material = '1.13.0'
 
 # https://bouncycastle.org
-bouncycastle = "1.81"
+bouncycastle = "1.82"
 
 # https://junit.org/junit5/docs/current/user-guide/#overview
-jupiter = "5.13.4"
+#noinspection NewerVersionAvailable
+jupiter = "5.14.0"
 
 # https://developer.android.com/jetpack/androidx/releases/test
 androidxTestCore = "1.7.0"
