@@ -6,6 +6,7 @@ import com.hardbacknutter.sshclient.ChannelSftp;
 import com.hardbacknutter.sshclient.transport.Packet;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -118,8 +119,16 @@ public final class SftpATTRS {
     private long size;
     @SuppressWarnings("FieldNotUsedInToString")
     private int permissions;
+    /**
+     * The access time of the files.
+     * Represented as seconds from Jan 1, 1970 in UTC.
+     */
     @SuppressWarnings("FieldNotUsedInToString")
     private int atime;
+    /**
+     * The modification time of the files.
+     * Represented as seconds from Jan 1, 1970 in UTC.
+     */
     @SuppressWarnings("FieldNotUsedInToString")
     private int mtime;
     private String[] extended;
@@ -241,21 +250,21 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns a string representation of the access time.
+     * Returns the access time.
+     *
+     * @return ISO-8601 date string
      */
-    @SuppressWarnings({"UseOfObsoleteDateTimeApi", "CallToDateToString"})
     public String getAccessTimeString() {
-        final Date date = new Date((long) atime * 1000L);
-        return date.toString();
+        return Instant.ofEpochSecond(atime).toString();
     }
 
     /**
-     * returns a string representation of the modification time.
+     * Returns the modification time.
+     *
+     * @return ISO-8601 date string
      */
-    @SuppressWarnings({"UseOfObsoleteDateTimeApi", "CallToDateToString"})
     public String getModificationTimeString() {
-        final Date date = new Date((long) mtime * 1000L);
-        return date.toString();
+        return Instant.ofEpochSecond(mtime).toString();
     }
 
     /**
