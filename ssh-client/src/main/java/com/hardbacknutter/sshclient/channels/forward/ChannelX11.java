@@ -261,7 +261,7 @@ public class ChannelX11
                 Arrays.copyOfRange(data, cookieStartOffset,
                                    cookieStartOffset + cookieDataLength);
 
-        // The fake (local session) cookie as created when the RequestX11 packet was send
+        // The fake (local session) cookie as created when the RequestX11 packet was sent
         final byte[] fakeCookie;
         synchronized (cookiePool) {
             fakeCookie = cookiePool.get(getSession());

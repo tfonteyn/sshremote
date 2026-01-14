@@ -70,7 +70,7 @@ public class IOStreams {
     /**
      * For writing {@link SshConstants#SSH_MSG_CHANNEL_EXTENDED_DATA}
      * <p>
-     * If the stream is not open, the write is ignored.
+     * If the stream is not open, the write operation is ignored.
      */
     public void writeExt(final byte @NonNull [] bytes,
                          final int offset,

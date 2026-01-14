@@ -103,7 +103,7 @@ public class UserButton {
         final boolean strict = global
                 .getBoolean(SshHelper.PK_STRICT_HOST_KEY_CHECKING, true);
 
-        // For now we don't let the user configure 'strict' on a per-host basis.
+        // For now, we don't let the user configure 'strict' on a per-host basis.
         // so we simply override with the global value
         host.strictHostKeyChecking = strict;
 

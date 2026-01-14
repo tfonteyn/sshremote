@@ -16,7 +16,7 @@ import com.hardbacknutter.sshclient.SshClientConfig;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 
 /**
- * The <strong>public</strong> key of a SSH server.
+ * The <strong>public</strong> key of an SSH server.
  * This class encapsulates a list of host names and the public
  * key of this host in one object.
  *

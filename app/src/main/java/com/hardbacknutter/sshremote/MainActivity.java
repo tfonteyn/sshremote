@@ -28,7 +28,7 @@ public class MainActivity
         // All insets rely on android:fitsSystemWindows="true"
         // as set on the top CoordinatorLayout.
         // The status-bar will be transparent.
-        // Not the "best" look, but more then good enough for this app
+        // Not the "best" look, but more than good enough for this app
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             EdgeToEdge.enable(this);
         }

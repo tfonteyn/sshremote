@@ -9,12 +9,12 @@ import java.util.Base64;
 import com.hardbacknutter.sshclient.SocketFactory;
 
 /**
- * A {@link Proxy} implementation using a HTTP proxy.
+ * A {@link Proxy} implementation using an HTTP proxy.
  * <p>
  * This uses the HTTP CONNECT method as described in Sections 5.2 and 5.3 of RFC 2817.
  * <p>
  * This class only supports Basic Authentication as defined in RFC 2617,
- * i.e. sending user name and password in plaintext. (Both will be
+ * i.e. sending username and password in plaintext. (Both will be
  * encoded using first UTF-8 and then Base64.)
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-luotonen-web-proxy-tunneling-01">

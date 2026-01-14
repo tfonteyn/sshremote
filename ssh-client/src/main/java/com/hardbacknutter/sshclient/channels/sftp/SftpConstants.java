@@ -369,7 +369,7 @@ final class SftpConstants {
      * string of the format "name@domain", where domain is an internet
      * domain name of the vendor defining the request.  The rest of the
      * request is completely vendor-specific, and servers should only
-     * attempt to interpret it if they recognize the `extended-request'
+     * attempt to interpret it if they recognize the `extended-request`
      * name.
      */
     static final byte SSH_FXP_EXTENDED = (byte) 200;
@@ -379,7 +379,7 @@ final class SftpConstants {
      * packets defined in Section ``Responses from the Server to the
      * Client''.  Additionally, the server may also respond with a
      * SSH_FXP_EXTENDED_REPLY packet, as defined below.  If the server does
-     * not recognize the `extended-request' name, then the server MUST
+     * not recognize the `extended-request` name, then the server MUST
      * respond with SSH_FXP_STATUS with error/status set to
      * SSH_FX_OP_UNSUPPORTED.
      * <p>

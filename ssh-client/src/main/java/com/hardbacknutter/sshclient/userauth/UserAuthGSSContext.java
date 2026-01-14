@@ -36,7 +36,7 @@ public interface UserAuthGSSContext {
     /**
      * Creates the context.
      *
-     * @param user the user name.
+     * @param user the username.
      * @param host the server's name.
      *
      * @see org.ietf.jgss.GSSManager#createContext
@@ -72,10 +72,8 @@ public interface UserAuthGSSContext {
     /**
      * Calculates a Message Integrity Code for a message.
      *
-     * @param inMsg  an array containing the message for which the
-     *               the code should be calculated.
-     * @param offset the index in {@code message} where the message actually
-     *               starts
+     * @param inMsg  an array containing the message for which the code should be calculated.
+     * @param offset the index in {@code message} where the message actually starts
      * @param len    the length of the message.
      *
      * @return a token containing the MIC for the message.

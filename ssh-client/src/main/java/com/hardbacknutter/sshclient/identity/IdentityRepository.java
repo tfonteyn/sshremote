@@ -100,7 +100,7 @@ public interface IdentityRepository {
 
     /**
      * Removes all identities. Public key authentication will not
-     * work anymore until another identity is added.
+     * work any more until another identity is added.
      *
      * @throws SshException if the IdentityRepository has problems.
      */

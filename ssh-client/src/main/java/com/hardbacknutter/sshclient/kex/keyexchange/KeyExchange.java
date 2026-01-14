@@ -19,9 +19,9 @@ public interface KeyExchange {
     byte STATE_END = 0;
 
     /**
-     * Initialises the class needed for the agreement.
+     * Initializes the class needed for the agreement.
      *
-     * @throws GeneralSecurityException if initialising the class instance fails somehow
+     * @throws GeneralSecurityException if initializing the class instance fails somehow
      */
     void initKeyAgreement(@NonNull SshClientConfig config)
             throws GeneralSecurityException;

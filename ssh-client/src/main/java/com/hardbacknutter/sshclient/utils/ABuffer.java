@@ -356,7 +356,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Put a Java String formatted as a SSH string in in UTF_8 into the buffer.
+     * Put a Java String formatted as an SSH string in UTF_8 into the buffer.
      *
      * @return {@code this} for chaining
      *
@@ -369,7 +369,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Put a Java String formatted as a SSH string in the given charset into the buffer.
+     * Put a Java String formatted as an SSH string in the given charset into the buffer.
      *
      * @return {@code this} for chaining
      *
@@ -383,7 +383,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Put a byte sequence formatted as a SSH string into the buffer.
+     * Put a byte sequence formatted as an SSH string into the buffer.
      *
      * @return {@code this} for chaining
      *
@@ -395,9 +395,9 @@ public abstract class ABuffer<T extends ABuffer<T>> {
     }
 
     /**
-     * Put a byte sequence formatted as a SSH string into the buffer.
+     * Put a byte sequence formatted as an SSH string into the buffer.
      * <p>
-     * A SSH string consists of first a (big-endian) 32-bit number indicating
+     * AN SSH string consists of first a (big-endian) 32-bit number indicating
      * the length of the string (number of bytes), then the bytes themselves.
      *
      * @param bytes  the array from which we take the data.

@@ -111,7 +111,7 @@ public interface HostKeyRepository {
      * @param host a hostname or alias used to lookup host keys.
      *             If {@code null} is given, every host key will be listed.
      * @param type a key type used to lookup host keys
-     *             If {@code null} is given, a key type type will not be ignored.
+     *             If {@code null} is given, a key type will not be ignored.
      */
     @NonNull
     List<HostKey> getHostKeys(@Nullable String host,

@@ -99,11 +99,11 @@ public class SshHelper {
     }
 
     /**
-     * Read <strong>ALL</strong> of the data from the given channel.
+     * Read <strong>ALL</strong> the data from the given channel.
      *
      * @param channel to read from
      *
-     * @return a single String with all of the output
+     * @return a single String with all the output
      *
      * @throws IOException on any error (including 'too much output')
      */

@@ -16,7 +16,7 @@ import java.math.BigInteger;
  * element of the field of integers modulo some value p that is determined by
  * the algorithm parameters. This field element is represented by a
  * {@code BigInteger}, and implementations that consume objects of this class
- * may reject integer values which are not in the range [0, p).
+ * may reject integer values which are not in the range [0, p].
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8032">
  * RFC 8032 Edwards-Curve Digital Signature Algorithm (EdDSA)</a>

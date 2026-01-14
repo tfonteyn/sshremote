@@ -230,7 +230,7 @@ public abstract class KeyPairBase
      * Decrypts the private key, using a passphrase.
      * <p>
      * This call is safe to call even if the key is not encrypted.
-     * Hence passing in a {@code null} passphrase is valid.
+     * Hence, passing in a {@code null} passphrase is valid.
      *
      * @return {@code true} if the private key was successfully
      *         decrypted, i.e. is now usable, else {@code false}.
@@ -325,7 +325,7 @@ public abstract class KeyPairBase
     }
 
     /**
-     * Called by the garbage collector when the object is not reachable anymore.
+     * Called by the garbage collector when the object is not reachable any more.
      * We then call {@link #dispose}.
      */
     @SuppressWarnings({"FinalizeDeclaration", "deprecation"})

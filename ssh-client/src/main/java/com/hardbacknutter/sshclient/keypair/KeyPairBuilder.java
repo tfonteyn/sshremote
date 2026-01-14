@@ -14,7 +14,7 @@ public interface KeyPairBuilder {
      *
      * @param privateKeyBlob The encoded private key
      * @param encoding       The vendor specific format of the private key
-     *                       This is independent from the encryption state.
+     *                       This is independent of the encryption state.
      */
     @NonNull
     KeyPairBuilder setPrivateKey(byte @NonNull [] privateKeyBlob,
@@ -25,7 +25,7 @@ public interface KeyPairBuilder {
      *
      * @param publicKeyBlob The encoded private key
      * @param encoding      The vendor specific format of the private key
-     *                      This is independent from the encryption state.
+     *                      This is independent of the encryption state.
      */
     @NonNull
     KeyPairBuilder setPublicKey(byte @Nullable [] publicKeyBlob,

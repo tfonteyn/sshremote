@@ -62,7 +62,7 @@ public final class Globber {
      * Hidden files (UNIX '.' files) will return {@code false}
      * if the pattern did NOT start with a '.'
      * <p>
-     * Uses optimised file-system dependent code from the JDK.
+     * Uses optimized file-system dependent code from the JDK.
      *
      * @return {@code true} if pattern matches name
      */

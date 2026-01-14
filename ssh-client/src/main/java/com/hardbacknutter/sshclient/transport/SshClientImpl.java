@@ -37,11 +37,11 @@ public class SshClientImpl
 
     /**
      * client version: {@code SSH-protoversion-softwareversion SP comments CR LF}
-     * The CR+LF is added when the version is send to the server.
+     * The CR+LF is added when the version is sent to the server.
      * <ul>
      * <li>protoversion is always "2.0"</li>
      * <li>softwareversion MUST consist of
-     *     printable US-ASCII characters, with the exception of whitespace
+     *     printable US-ASCII characters, except whitespace
      *     characters and the minus sign (-)</li>
      * </ul>
      *
@@ -362,7 +362,7 @@ public class SshClientImpl
         }
 
         // At this point the identity is successfully decrypted,
-        // OR no passphrase was given and it can (potentially) still be encrypted.
+        // OR no passphrase was given, and it can (potentially) still be encrypted.
 
         // Wrap the repo if required.
         synchronized (identityRepository) {

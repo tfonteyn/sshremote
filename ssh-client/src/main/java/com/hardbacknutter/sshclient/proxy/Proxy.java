@@ -14,7 +14,7 @@ import java.net.Socket;
 /**
  * Allows routing connections through some proxy.
  * <p>
- * A Proxy object creates a Socket and it's two streams for a remote
+ * A Proxy object creates a Socket, and it's two streams for a remote
  * server. It typically does this by first connecting to a proxy server,
  * negotiating some conditions (or providing a password) and then returning
  * the streams as the connection will be forwarded to the target host.
@@ -37,13 +37,13 @@ import java.net.Socket;
 public interface Proxy {
 
     /**
-     * Sets the user name and password needed for authentication to the proxy.
+     * Sets the username and password needed for authentication to the proxy.
      * This has no relation to any authentication on the target server.
      * <p>
      * If the proxy needs authentication, this method should be called
      * before calling {@link Session#connect}.
      *
-     * @param user   the user name
+     * @param user   the username
      * @param passwd the password.
      */
     default void setUserPasswd(@Nullable final String user,

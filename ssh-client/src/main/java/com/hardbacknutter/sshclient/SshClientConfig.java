@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * During key exchange, the first option in the client's list
  * (i.e. the option value) which also appears on the server's list
- * will be chosen for each algorithm. Thus the order matters here.
+ * will be chosen for each algorithm. Thus, the order matters here.
  * </p>
  * <h3 id="config-impl">Implementation classes</h3>
  * <p>The following options contain the class name of

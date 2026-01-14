@@ -135,7 +135,7 @@ public class KeyPairParser {
      * @return the new KeyPair.
      *
      * @throws IOException         if the input was not recognized as any supported key format.
-     * @throws InvalidKeyException if the input was recognised, but the detected format
+     * @throws InvalidKeyException if the input was recognized, but the detected format
      *                             is not supported
      */
     @NonNull

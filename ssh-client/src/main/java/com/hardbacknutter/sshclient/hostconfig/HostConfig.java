@@ -16,7 +16,7 @@ public interface HostConfig
         extends BaseConfig {
 
     /**
-     * The KEY to lookup a specific host using
+     * The KEY to look up a specific host using
      * {@link HostConfigRepository#getHostConfig(String)}.
      */
     String HOST = "Host";
@@ -185,7 +185,7 @@ public interface HostConfig
     String LOG_LEVEL = "LogLevel";
 
     /**
-     * The user name to use for connecting.
+     * The username to use for connecting.
      *
      * @return the string value, or {@code null} if not set.
      */

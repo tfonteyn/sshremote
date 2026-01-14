@@ -30,7 +30,7 @@ public class SshInflaterImpl
     public void decompress(@NonNull final Packet packet)
             throws IOException {
 
-        // * 2 is likely overkill, but lets be optimistic about the compression rate.
+        // * 2 is likely overkill, but let's be optimistic about the compression rate.
         final ByteArrayOutputStream outputStream =
                 new ByteArrayOutputStream(packet.data.length * 2);
 

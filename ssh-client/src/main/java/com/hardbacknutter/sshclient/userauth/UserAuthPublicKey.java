@@ -360,7 +360,7 @@ public class UserAuthPublicKey
         //      string    session identifier
         // +
         //      byte      SSH_MSG_USERAUTH_REQUEST
-        //      string    user name
+        //      string    username
         //      string    service name ("ssh-connection")
         //      string    "publickey"
         //      boolean   TRUE

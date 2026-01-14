@@ -17,7 +17,7 @@ public final class KeyPairBuilderFactory {
     private KeyPairBuilderFactory() {
     }
 
-    // we could merge this with byHostKeyAlgorithm, but lets keep it clean
+    // we could merge this with byHostKeyAlgorithm, but let's keep it clean
     @NonNull
     public static KeyPairBuilder byPemHeader(@NonNull final SshClientConfig config,
                                              @NonNull final String pemHeader)

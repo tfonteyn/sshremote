@@ -95,7 +95,7 @@ public class UserAuthGSSAPIWithMIC
         // https://datatracker.ietf.org/doc/html/rfc4462#section-3.2
         // send
         // byte      SSH_MSG_USERAUTH_REQUEST
-        // string    user name (in ISO-10646 UTF-8 encoding)
+        // string    username (in ISO-10646 UTF-8 encoding)
         // string    service name (in US-ASCII)
         // string    "gssapi-with-mic" (US-ASCII method name)
         // uint32    n, the number of mechanism OIDs client supports
@@ -232,7 +232,7 @@ public class UserAuthGSSAPIWithMIC
 
         // string    session identifier
         // byte      SSH_MSG_USERAUTH_REQUEST
-        // string    user name
+        // string    username
         // string    service
         // string    "gssapi-with-mic"
         final Buffer micBuffer = new Buffer()

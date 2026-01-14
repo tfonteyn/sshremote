@@ -63,7 +63,7 @@ public interface SshMac {
      *
      * @param key to use
      *
-     * @throws GeneralSecurityException if initialising the class instance fails somehow
+     * @throws GeneralSecurityException if initializing the class instance fails somehow
      */
     void init(byte @NonNull [] key)
             throws GeneralSecurityException;

@@ -311,7 +311,7 @@ public class RemoteForwardingHandlerImpl
     }
 
     /**
-     * Maintains the state of a single global request and it's corresponding
+     * Maintains the state of a single global request, and it's corresponding
      * reply from the SSH server for a requesting thread.  A single, final
      * instance is used to synchronize on to allow only one global request to be
      * handled at a time.

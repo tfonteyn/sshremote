@@ -10,7 +10,7 @@ import com.hardbacknutter.sshclient.channels.forward.ChannelForwardedTCPIP;
 
 /**
  * A local daemon <em>{@link Runnable}</em> executed when a host connects to
- * to a forwarded port at the remote side.
+ * a forwarded port at the remote side.
  * <p>
  * An application should implement this interface if it wants to handle
  * such connections internally instead of forwarding them to another

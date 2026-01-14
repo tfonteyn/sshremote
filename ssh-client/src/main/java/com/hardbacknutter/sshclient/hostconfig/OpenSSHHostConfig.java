@@ -65,7 +65,7 @@ final class OpenSSHHostConfig
     /**
      * Constructor.
      *
-     * @param hostOrAlias the hostname or a hostname alias to lookup the config.
+     * @param hostOrAlias the hostname or a hostname alias to look up the config.
      *                    Can be {@code ""} to retrieve the global configuration.
      * @param repo        the repository keyed to hostOrAlias,
      *                    and a list of options as the values.

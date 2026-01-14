@@ -340,7 +340,7 @@ public final class SshClientConfigImpl
             );
 
             // These will be tested to see if their implementations CAN be instantiated.
-            // If not, they will be removed from the above list before it is send to the
+            // If not, they will be removed from the above list before it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(
                     KexProposal.CHECK_KEX_ALGS,
@@ -374,7 +374,7 @@ public final class SshClientConfigImpl
             );
 
             // These will be tested to see if their implementations CAN be instantiated.
-            // If not, they will be removed from the above list BEFORE it is send to the
+            // If not, they will be removed from the above list BEFORE it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(KexProposal.CHECK_SIG_ALGS,
                                   HostKeyAlgorithm.SSH_ED25519
@@ -400,7 +400,7 @@ public final class SshClientConfigImpl
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_STOC, ciphers);
 
             // These will be tested to see if their implementations CAN be instantiated.
-            // If not, they will be removed from the above list BEFORE it is send to the
+            // If not, they will be removed from the above list BEFORE it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(KexProposal.CHECK_CIP_ALGS,
                                   SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
@@ -429,7 +429,7 @@ public final class SshClientConfigImpl
             putFromSystemProperty(KexProposal.PROPOSAL_MAC_CTOS, macs);
 
             // These will be tested to see if their implementations CAN be instantiated.
-            // If not, they will be removed from the above list BEFORE it is send to the
+            // If not, they will be removed from the above list BEFORE it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(KexProposal.CHECK_MAC_ALGS,
                                   SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM

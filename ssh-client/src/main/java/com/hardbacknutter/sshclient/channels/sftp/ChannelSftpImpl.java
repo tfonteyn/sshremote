@@ -37,7 +37,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A Channel connected to an sftp server (as a subsystem of the ssh server).
+ * A Channel connected to a sftp server (as a subsystem of the ssh server).
  * <p>
  * This class supports the client side of the sftp protocol,
  * version 3, and implements an interface similar to the
@@ -855,7 +855,7 @@ public class ChannelSftpImpl
             requestQueue.init();
 
             return new InputStream() {
-                /** The buffer for multi-byte reads. */
+                /** The buffer for multibyte reads. */
                 private final FxpBuffer fxpBuffer = new FxpBuffer(remoteMaxPacketSize);
                 /**
                  * The amount of bytes we'll ask the server to send in each request.
@@ -1425,7 +1425,7 @@ public class ChannelSftpImpl
             //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
-            // There is no local filename to use (as its a Stream) so we cannot use
+            // There is no local filename to use (as it's a Stream) so we cannot use
             // that to create the server-side file. We MUST have an actual filename.
             final String dstFilename = resolveRemotePath(dstPath);
             sendSTAT(dstFilename);
@@ -1433,7 +1433,7 @@ public class ChannelSftpImpl
             try {
                 attr = receiveATTRS();
             } catch (final SftpException | IOException ignore) {
-                // didn't exist, that's ok.
+                // didn't exist, that's OK.
             }
             // but if it did exist, it should NOT be a directory
             if (attr != null && attr.isDirectory()) {
@@ -1620,7 +1620,7 @@ public class ChannelSftpImpl
                     absDstPath += '/';
                 }
             } catch (final IOException | SftpException ignore) {
-                // didn't exist, that's ok.
+                // didn't exist, that's OK.
             }
 
             // expand the local path. We MUST have at least one file to continue.
@@ -1647,7 +1647,7 @@ public class ChannelSftpImpl
                         final SftpATTRS attr = receiveATTRS();
                         dstFileSize = attr.getSize();
                     } catch (final Exception ignore) {
-                        // didn't exist, that's ok.
+                        // didn't exist, that's OK.
                     }
 
                     final long srcFileSize = new File(srcPath).length();
@@ -1715,7 +1715,7 @@ public class ChannelSftpImpl
             //noinspection DataFlowIssue
             mpIn.updateReadSide();
 
-            // There is no local filename to use (as its a Stream) so we cannot use
+            // There is no local filename to use (as it's a Stream) so we cannot use
             // that to create the server-side file. We MUST have an actual filename.
             final String dstFilename = resolveRemotePath(dstPath);
             sendSTAT(dstFilename);
@@ -1724,7 +1724,7 @@ public class ChannelSftpImpl
             try {
                 isDirectory = receiveATTRS().isDirectory();
             } catch (final IOException | SftpException ignore) {
-                // didn't exist, that's ok.
+                // didn't exist, that's OK.
             }
             // but if it did exist, it should NOT be a directory
             if (isDirectory) {
@@ -2135,7 +2135,7 @@ public class ChannelSftpImpl
      * @param data   data to be written
      * @param start  the offset (in bytes) in the data buffer from where to start sending
      * @param length number of bytes we would like to send
-     *               The actual amount can be lower and the caller must check
+     *               The actual amount can be less and the caller must check
      *               the return value of this call.
      *
      * @return actual number of bytes send to the server
@@ -2246,7 +2246,7 @@ public class ChannelSftpImpl
                 // string    data
                 .init(SshConstants.SSH_MSG_CHANNEL_DATA)
                 .putInt(getRecipient())
-                // We use place holders for the length fields. They will be updated at 'write' time
+                // We use placeholders for the length fields. They will be updated at 'write' time
                 // length of the "data" string: payloadLength + 4
                 .putInt(0xDEAD)
                 // "data": the SFX packet:
@@ -2261,7 +2261,7 @@ public class ChannelSftpImpl
      * Check that the packet received is of the given expected type.
      * If it's not the expected type, an exception with the actual type byte will be thrown.
      * <p>
-     * If it's a SSH_FXP_STATUS, it's assumed that the call succeeded, but returned
+     * If it's an SSH_FXP_STATUS, it's assumed that the call succeeded, but returned
      * an error. An exception with the status code will be thrown.
      *
      * @param expectedType to check

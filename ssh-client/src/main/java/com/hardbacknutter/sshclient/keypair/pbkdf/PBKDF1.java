@@ -57,10 +57,10 @@ public class PBKDF1 implements PBKDF {
          */
         final int hashSize = md.getDigestLength();
         final byte[] hn = new byte[keyLength / hashSize * hashSize +
-                (keyLength % hashSize
-                        == 0 ? 0 : hashSize)];
+                (keyLength % hashSize == 0 ? 0 : hashSize)];
         byte[] tmp = null;
-        for (int index = 0; index + hashSize <= hn.length; ) {
+        int index = 0;
+        while (index + hashSize <= hn.length) {
             if (tmp != null) {
                 md.update(tmp, 0, tmp.length);
             }

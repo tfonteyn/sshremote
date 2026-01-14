@@ -274,7 +274,7 @@ public class KeyPairEdDSA
                     type = EdKeyType.getByHostKeyAlgorithm(buffer.getJString());
                     pub_array = buffer.getString();
                     // OpenSSH stores private key in first half of string and duplicate copy
-                    // of public key in second half of string. Hence only copy one half.
+                    // of public key in second half of string. Hence, only copy one half.
                     prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
                     setPublicKeyComment(buffer.getJString());
                     break;

@@ -47,7 +47,7 @@ public class BaseChannel
     private static final int MAX_PAD_SIZE = 32;
     /**
      * Margin for deflater; compressing can in rare circumstances actually inflate data.
-     * This is an safe estimate only.
+     * This is a safe estimate only.
      * Used where fixed-size packets are used.
      */
     private static final int DEFLATER_MARGIN = 32;
@@ -91,7 +91,7 @@ public class BaseChannel
     /** LOCAL Unique ID for this channel instance. (incremental/generated). */
     private final int id;
     /**
-     * {@code true} if the OPEN Packet was send to the remote, or in the case of a local
+     * {@code true} if the OPEN Packet was sent to the remote, or in the case of a local
      * channel, the channel is ready for action.
      */
     protected boolean connected;
@@ -206,7 +206,7 @@ public class BaseChannel
 
     /**
      * This method gets called during {@link #connect(int)} after the channel opened.
-     * Override this method to define additional/specific behavior.
+     * Override this method to define additional/specific behaviour.
      *
      * @param session passed in as a convenience
      *
@@ -702,7 +702,7 @@ public class BaseChannel
             }
         }
 
-        // we get here when the remote window size is big enough and we can just send it.
+        // we get here when the remote window size is big enough, and we can just send it.
         transportC2s.write(packet);
     }
 
@@ -1089,7 +1089,7 @@ public class BaseChannel
          */
         None,
         /**
-         * A request was send and we're waiting for the reply.
+         * A request was sent, and we're waiting for the reply.
          */
         Waiting,
         /**

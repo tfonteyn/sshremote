@@ -149,7 +149,7 @@ public interface SshCipher {
             throws GeneralSecurityException;
 
     /**
-     * Continues a multi-part update of the Additional Authentication
+     * Continues a multipart update of the Additional Authentication
      * Data (AAD), using a subset of the provided buffer.
      *
      * @param src    the buffer containing the AAD

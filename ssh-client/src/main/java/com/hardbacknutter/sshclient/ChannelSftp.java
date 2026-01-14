@@ -21,7 +21,7 @@ public interface ChannelSftp
 
     /**
      * Set the remote filename encoding.
-     * This should be the the same encoding actually used on the server.
+     * This should be the same encoding actually used on the server.
      * <p>
      * The default is UTF-8.
      *
@@ -361,7 +361,7 @@ public interface ChannelSftp
     /**
      * Retrieves the file attributes of a file or directory.
      * <p>
-     * This method <strong>does not follows symbolic links</strong> (i.e. returns
+     * This method <strong>does not follow symbolic links</strong> (i.e. returns
      * the attributes of the link and not the target).
      *
      * @param path the path of the file or directory, relative

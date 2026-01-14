@@ -93,7 +93,7 @@ class FxpBuffer
      *
      * @param inputStream to read from
      *
-     * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
+     * @throws IndexOutOfBoundsException if the number of bytes is larger than the buffer.
      */
     void readPayload(@NonNull final InputStream inputStream)
             throws IOException, IndexOutOfBoundsException {
@@ -110,7 +110,7 @@ class FxpBuffer
      *
      * @return total amount of bytes <strong>actually</strong> read.
      *
-     * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
+     * @throws IndexOutOfBoundsException if the number of bytes is larger than the buffer.
      */
     int readAppending(@NonNull final InputStream inputStream,
                       final int length)
@@ -130,7 +130,7 @@ class FxpBuffer
      *
      * @return total amount of bytes <strong>actually</strong> read.
      *
-     * @throws IndexOutOfBoundsException if the number of bytes is larger then the buffer.
+     * @throws IndexOutOfBoundsException if the number of bytes is larger than the buffer.
      */
     private int read(@NonNull final InputStream inputStream,
                      int offset,
@@ -156,7 +156,7 @@ class FxpBuffer
      * Get the length of the DATA in the FXP packet.
      * <p>
      * Note: this class has already the original 4 bytes for the request id,
-     * so this length in 4 bytes less then the value found in the binary packet header.
+     * so this length in 4 bytes less than the value found in the binary packet header.
      * This can be ignored for all intended purposes.
      *
      * @return length of data payload

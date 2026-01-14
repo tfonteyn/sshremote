@@ -57,8 +57,8 @@ public class Packet
      * The absolute maximum packet size we allow: 128kb.
      * <pre>
      *    All implementations MUST be able to process packets with an
-     *    uncompressed payload length of 32768 bytes or less and a total packet
-     *    size of 35000 bytes or less (including 'packet_length',
+     *    uncompressed payload length of 32768 bytes or fewer and a total packet
+     *    size of 35000 bytes or fewer (including 'packet_length',
      *    'padding_length', 'payload', 'random padding', and 'mac').  The
      *    maximum of 35000 bytes is an arbitrarily chosen value that is larger
      *    than the uncompressed length noted above.  Implementations SHOULD
@@ -193,7 +193,7 @@ public class Packet
     }
 
     /**
-     * Read the command, i.e. the byte identifying the type of an SSH packet.
+     * Read the command, i.e. the byte identifying the type of SSH packet.
      * This is the first byte of the payload, i.e. the byte with index 5.
      * <p>
      * <strong>The read/write offsets are NOT modified</strong>

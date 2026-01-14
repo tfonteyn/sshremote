@@ -102,7 +102,7 @@ public final class ImplementationFactory {
      * This method is used for loading generic security classes, where the config keys
      * are potentially not known at compile time.
      *
-     * @param configKey  the configuration key to lookup the class name
+     * @param configKey  the configuration key to look up the class name
      * @param asSubclass the (interface) class type which must be returned
      *                   (to ensure the configured class is the right type)
      *
@@ -141,7 +141,7 @@ public final class ImplementationFactory {
      * If the config key is not found, the given {@code defClassName} is used.
      * If the class fails to load, an exception is thrown.
      *
-     * @param configKey  the configuration key to lookup the class name
+     * @param configKey  the configuration key to look up the class name
      * @param defClass   the class to use if the lookup fails
      * @param asSubclass the (interface) class type which must be returned
      *                   (to ensure the configured class is the right type)
@@ -469,7 +469,7 @@ public final class ImplementationFactory {
             final Class<? extends SshCipher> c =
                     Class.forName(classname).asSubclass(SshCipher.class);
             final SshCipher cipher = c.getDeclaredConstructor().newInstance();
-            // Check if the Cipher CAN be initialized using it's own defaults.
+            // Check if the Cipher CAN be initialized using its own defaults.
             cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
                         new byte[cipher.getKeySize()],
                         new byte[cipher.getIVSize()]);
@@ -655,7 +655,7 @@ public final class ImplementationFactory {
             return all.stream().distinct().collect(Collectors.toList());
         }
 
-        // Test all to check the jvm environment supports the algoritms.
+        // Test all to check the jvm environment supports the algorithms.
         // Only return the ones which worked.
         final List<String> result = new ArrayList<>();
         for (final String name : all.stream().distinct().collect(Collectors.toList())) {

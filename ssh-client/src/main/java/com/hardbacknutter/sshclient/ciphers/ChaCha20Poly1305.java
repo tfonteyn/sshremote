@@ -84,7 +84,7 @@ public class ChaCha20Poly1305
      */
     private static final int keyLength = 32;
     /**
-     * ... we need 2 x 256 bit keys, hence this value MUST be 64.
+     * ... we need 2 x 256-bit keys, hence this value MUST be 64.
      */
     private static final int doubleKeyLength = 64;
 
@@ -130,7 +130,7 @@ public class ChaCha20Poly1305
 
     @Override
     public int getKeySize() {
-        // key size is 32, but we need 2 x 256 bit keys, hence this value MUST be 64.
+        // key size is 32, but we need 2 x 256-bit keys, hence this value MUST be 64.
         return doubleKeyLength;
     }
 
@@ -158,7 +158,7 @@ public class ChaCha20Poly1305
 
         // Make sure to limit the key length to the length the cipher wants.
         final byte[] normalisedKey;
-        // key size is 32, but we need 2 x 256 bit keys, hence this value MUST be 64.
+        // key size is 32, but we need 2 x 256-bit keys, hence this value MUST be 64.
         if (key.length > doubleKeyLength) {
             normalisedKey = new byte[doubleKeyLength];
             System.arraycopy(key, 0, normalisedKey, 0, normalisedKey.length);

@@ -61,7 +61,7 @@ abstract class ProxyBase
     }
 
     /**
-     * Sets the user name and password needed for authentication
+     * Sets the username and password needed for authentication
      * to the proxy. This has no relation to any authentication on
      * the target server.
      * <p>
@@ -72,7 +72,7 @@ abstract class ProxyBase
      * as the "UserName/Password" method.
      * </p>
      *
-     * @param user   the user name
+     * @param user   the username
      * @param passwd the password.
      */
     @Override

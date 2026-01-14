@@ -47,7 +47,7 @@ public interface SshClient {
 
     /**
      * Sets the {@link Logger} to be used by this client.
-     * Existing sessions will keep using the logger as set when they where created.
+     * Existing sessions will keep using the logger as set when they were created.
      *
      * @param logger the new logger. If {@code null}, we use a builtin
      *               Logger which logs nothing.
@@ -244,7 +244,7 @@ public interface SshClient {
      * <p>
      * If the given {@code username} is {@code null} it will be retrieved
      * from the (optional) {@link HostConfigRepository}.
-     * If there is no repository, or if a user name is not present,
+     * If there is no repository, or if a username is not present,
      * the value of the system property {@code "user.name"} will be used.
      * <p>
      * If the given {@code port} is {@code 0} (or negative) it will be retrieved

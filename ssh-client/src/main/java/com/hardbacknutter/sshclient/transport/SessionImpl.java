@@ -77,7 +77,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A Session represents a connection to a SSH server.
+ * A Session represents a connection to an SSH server.
  * <p>
  * A session is opened with {@link #connect()} and closed with {@link #disconnect}.
  * <p>
@@ -255,7 +255,7 @@ public final class SessionImpl
 
     private String resolveHostname(@NonNull final String hostnameOrAlias,
                                    @Nullable final HostConfig hostConfig) {
-        // The passed in host name can be an alias as used previously to lookup the HostConfig.
+        // The passed in host name can be an alias as used previously to look up the HostConfig.
         // If the HostConfig has the real host name (or is identical) use that one.
         String resolved = null;
         if (hostConfig != null) {
@@ -423,7 +423,7 @@ public final class SessionImpl
 
             connected = true;
 
-            // Step 1: verify the client and server support each others version
+            // Step 1: verify the client and server support each other's version
             c2s.writeVersion(clientVersion);
             serverVersion = s2c.readVersion();
 
@@ -542,7 +542,7 @@ public final class SessionImpl
         } catch (final Exception ignore) {
         }
 
-        // cleanup all session related objects/connections
+        // clean-up all session related objects/connections
         disconnect();
     }
 
@@ -982,7 +982,7 @@ public final class SessionImpl
                 throw new KexTimeoutException();
             }
 
-            // These can/must be send when we're in KeyExchange (but not timed out)
+            // These can/must be sent when we're in KeyExchange (but not timed out)
             final byte command = packet.getCommand();
             if (command == SshConstants.SSH_MSG_KEXINIT ||
                 command == SshConstants.SSH_MSG_NEWKEYS ||
@@ -1003,7 +1003,7 @@ public final class SessionImpl
 
         // We could do this when we call write with the SSH_MSG_NEWKEYS.
         // But doing it here means both read/write calling .resetSeq() are
-        // done from this class + it's idiot/future proof.
+        // done from this class + it's idiot/future-proof.
         if (packet.getCommand() == SshConstants.SSH_MSG_NEWKEYS
             && kexDelegate.isEnforceStrictKex()) {
             getLogger().log(Logger.DEBUG, () -> "StrictKex: reset the c2s sequence number");
@@ -1586,7 +1586,7 @@ public final class SessionImpl
             return Arrays.equals(sessionId, session.sessionId);
         }
 
-        // both session id's are null, compare everything
+        // both session ids are null, compare everything
         return port == session.port
                && host.equals(session.host)
                && Objects.equals(username, session.username)

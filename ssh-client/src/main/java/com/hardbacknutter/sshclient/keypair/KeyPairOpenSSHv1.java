@@ -107,7 +107,7 @@ public final class KeyPairOpenSSHv1
 
             if (!SshCipherConstants.NONE.equals(cipherName) && !KDFNAME_NONE.equals(kdfName)) {
                 // The type can only be determined after decryption.
-                // Set a deferred decryptor which acts a a placeholder for the cipher.
+                // Set a deferred decryptor which acts a placeholder for the cipher.
                 decryptor = new DelegatingPBKDF();
                 decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
                 setPrivateKeyEncrypted(true);
@@ -152,7 +152,7 @@ public final class KeyPairOpenSSHv1
                     .setDelegate(new PBKDFBCrypt().init(salt, rounds));
 
             plainKey = internalDecrypt(passphrase);
-            // We MUST try parsing first to determine if it decrypted ok, or not!
+            // We MUST try parsing first to determine if it decrypted OK, or not!
             parsePrivateKey(plainKey, PrivateKeyEncoding.OPENSSH_V1);
 
         } else {

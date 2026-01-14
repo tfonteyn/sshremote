@@ -90,7 +90,7 @@ public class SshMacImpl
             System.arraycopy(key, 0, normalisedKey, 0, macBuffer.length);
 
         } else {
-            // if the key is to small, it will automatically be padded with zeros
+            // if the key is too small, it will automatically be padded with zeros
             normalisedKey = key;
         }
 

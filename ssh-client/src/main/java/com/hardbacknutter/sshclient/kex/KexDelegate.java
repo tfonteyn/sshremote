@@ -183,7 +183,7 @@ public class KexDelegate {
      *     <li>"[" + hostname + "]:" + port</li>
      * </ul>
      *
-     * @param hostKeyName       the hostname/alias for use in host key lookup etc..
+     * @param hostKeyName       the hostname/alias for use in host key lookup etc...
      * @param kexProposalConfig pre-validated read-only configuration
      */
     public KexDelegate(@NonNull final SessionImpl session,
@@ -266,7 +266,7 @@ public class KexDelegate {
             throw new KexProtocolException(SshConstants.SSH_MSG_KEXINIT, command);
         }
 
-        // Setup the initial KeyExchange
+        // Set up the initial KeyExchange
         receiveKexInit(packet, false);
 
         do {
@@ -330,7 +330,7 @@ public class KexDelegate {
 
     /**
      * SSH_MSG_EXT_INFO <strong>MUST</strong>
-     * be send as the next packet following the client's first
+     * be sent as the next packet following the client's first
      * SSH_MSG_NEWKEYS message to the server.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc8308#section-2.4">

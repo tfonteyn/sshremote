@@ -101,7 +101,7 @@ public abstract class Transport {
     }
 
     /**
-     * Initialise cipher and MAC.
+     * Initialize cipher and MAC.
      *
      * @param md the hash generator as used during KEX.
      * @param K  the shared secret; pre-encoded as a raw byte[]

@@ -12,7 +12,7 @@ import java.util.HashMap;
  * The response is a {@link SftpConstants#SSH_FXP_VERSION} packet.
  * <p>
  * 10. Changes from previous protocol versions
- * The SSH File Transfer Protocol has changed over time, before it's
+ * The SSH File Transfer Protocol has changed over time, before its
  * standardization.  The following is a description of the incompatible
  * changes between different versions.
  * <p>

@@ -320,7 +320,7 @@ public interface Session {
 
     /**
      * Optionally sets a {@code Proxy} instance to tunnel the session through.
-     * By default the proxy is {@code null}, indicating no proxying will be used.
+     * By default, the proxy is {@code null}, indicating no proxying will be used.
      * <p>
      * Note: The proxy must be set prior to calling connect() if required.
      * <p>
@@ -344,7 +344,7 @@ public interface Session {
      *               If {@code true}, all threads will be daemon threads,
      *               i.e. their running does not avoid a shutdown of the VM.
      *               If {@code true}, normal non-daemon threads will be used (and the
-     *               VM can only shutdown after {@link #disconnect} (or with
+     *               VM can only shut down after {@link #disconnect} or with
      *               {@link System#exit}).
      */
     void setRunAsDaemon(boolean enable);
