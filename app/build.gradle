@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias libs.plugins.android.application
-    alias libs.plugins.android.kotlin
 }
 
 /*
@@ -25,12 +24,15 @@ if (project.hasProperty("SSHRemote.properties")) {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(rootProject.ext.toolChain)
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.toolchain.get())
     }
 }
 
+/* https://kotlinlang.org/docs/gradle.html */
 kotlin {
-    jvmToolchain rootProject.ext.toolChain
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.java.toolchain.get()))
+    }
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11
     }
@@ -38,7 +40,7 @@ kotlin {
 
 android {
     namespace = "com.hardbacknutter.sshremote"
-    compileSdk = rootProject.ext.compileSdkVersion
+    compileSdk = libs.versions.compileSdk.get().toInteger()
 
     signingConfigs {
         release {
@@ -54,8 +56,8 @@ android {
         versionCode = rootProject.ext.applicationVersionCode
         versionName = rootProject.ext.applicationVersionName
 
-        minSdk = rootProject.ext.minSdkVersion
-        targetSdk = rootProject.ext.targetSdkVersion
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
 
         signingConfig = signingConfigs.release
 
@@ -78,6 +80,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -87,28 +93,12 @@ android {
         coreLibraryDesugaringEnabled = true
     }
 
-    buildFeatures {
-        buildConfig = true
-        viewBinding = true
-    }
-
     testOptions {
         unitTests {
             includeAndroidResources = true
             // Can be enabled to make Log.x work. OR, use Logger.x
             returnDefaultValues = false
-            all {
-                reports {
-                    junitXml.getRequired().set(true)
-                    html.getRequired().set(false)
-                }
-            }
         }
-    }
-
-    lint {
-        // allow command line builds to complete
-        abortOnError = false
     }
 
     packagingOptions {
@@ -137,11 +127,24 @@ android {
         includeInBundle = false
     }
 
-    applicationVariants.configureEach {
-        final variant ->
-            variant.outputs.configureEach {
-                outputFileName = "${rootProject.name}-${defaultConfig.versionName}-${variant.name}.apk"
+    androidComponents {
+        onVariants(selector().all(), { variant ->
+            variant.outputs.each { output ->
+                output.outputFileName.set("${rootProject.name}-${output.versionName.get()}-${variant.name}.apk")
             }
+        })
+    }
+
+    lint {
+        // allow command line builds to complete
+        abortOnError = false
+    }
+}
+
+tasks.withType(Test).configureEach {
+    reports {
+        junitXml.required.set(true)
+        html.required.set(false)
     }
 }
 

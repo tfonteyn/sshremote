@@ -8,7 +8,7 @@ version = '1.3.2'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(rootProject.ext.toolChain)
+        languageVersion = JavaLanguageVersion.of(libs.versions.java.toolchain.get())
     }
 
     sourceCompatibility = JavaVersion.VERSION_11

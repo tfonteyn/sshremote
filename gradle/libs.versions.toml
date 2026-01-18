@@ -1,7 +1,14 @@
 [versions]
-androidGradlePlugin = "8.13.2"
-# https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
-androidKotlinPlugin = "2.3.0"
+# Android 8.0
+minSdk = "26"
+# Android 16
+targetSdk = "36"
+compileSdk = "36"
+
+# JDK used by Gradle
+java-toolchain = "21"
+
+androidGradlePlugin = "9.0.0"
 
 # https://developer.android.com/jetpack/androidx/versions
 
@@ -80,5 +87,4 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
-android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "androidKotlinPlugin" }
 java-library = { id = "java-library" }
