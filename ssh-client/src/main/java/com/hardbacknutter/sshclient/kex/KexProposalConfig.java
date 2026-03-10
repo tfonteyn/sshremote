@@ -5,6 +5,7 @@ import org.jspecify.annotations.NonNull;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -56,8 +57,12 @@ public class KexProposalConfig {
         mac_s2c = config.getStringList(KexProposal.PROPOSAL_MAC_STOC);
 
         compression_c2s = getStringList(config, KexProposal.PROPOSAL_COMP_CTOS,
+                                        KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
+                                        KexProposal.COMPRESSION_ZLIB,
                                         KexProposal.COMPRESSION_NONE);
         compression_s2c = getStringList(config, KexProposal.PROPOSAL_COMP_STOC,
+                                        KexProposal.COMPRESSION_ZLIB_OPENSSH_COM,
+                                        KexProposal.COMPRESSION_ZLIB,
                                         KexProposal.COMPRESSION_NONE);
 
         language_c2s = getStringList(config, KexProposal.PROPOSAL_LANG_CTOS, "");
@@ -71,10 +76,10 @@ public class KexProposalConfig {
     @NonNull
     private static List<String> getStringList(@NonNull final SshClientConfig config,
                                               @NonNull final String key,
-                                              @NonNull final String defValue) {
+                                              @NonNull final String... defValues) {
         final List<String> list = config.getStringList(key);
         if (list.isEmpty()) {
-            list.add(defValue);
+            Collections.addAll(list, defValues);
         }
         return list;
     }
