@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.keypair;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -36,6 +33,8 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.bouncycastle.jcajce.spec.RawEncodedKeySpec;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Using Bouncy castle; using SunEC requires Java 15
@@ -77,6 +76,7 @@ public class KeyPairEdDSA
     /**
      * Generate a <strong>new</strong> KeyPair with the given curve.
      *
+     * @param config    to us
      * @param curveName "Ed25519" or "Ed448"
      */
     public KeyPairEdDSA(@NonNull final SshClientConfig config,
@@ -169,7 +169,7 @@ public class KeyPairEdDSA
         return keyFactory.generatePrivate(keySpec);
     }
 
-        @Override
+    @Override
     public byte @NonNull [] getSshEncodedPublicKey() {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
         return wrapPublicKey(type.getHostKeyAlgorithm(), pub_array);
@@ -373,8 +373,7 @@ public class KeyPairEdDSA
         @Nullable
         private PBKDF decryptor;
 
-        public Builder(@NonNull final SshClientConfig config)
-                throws NoSuchAlgorithmException {
+        public Builder(@NonNull final SshClientConfig config) {
             this.config = config;
         }
 
