@@ -220,7 +220,7 @@ abstract class KeyExchangeBase
             case HostKeyAlgorithm.SSH_ED448: {
                 final byte[] key = buffer.getString();
                 return KeyPairEdDSA.createPublicKey(
-                        EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm).curveName, key);
+                        EdKeyType.getByHostKeyAlgorithm(hostKeyAlgorithm).getCurveName(), key);
             }
             default: {
                 throw new NoSuchAlgorithmException(hostKeyAlgorithm);

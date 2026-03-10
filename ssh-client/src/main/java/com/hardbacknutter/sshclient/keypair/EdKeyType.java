@@ -27,13 +27,13 @@ public enum EdKeyType {
     );
 
     @NonNull
-    public final String hostKeyAlgorithm;
+    private final String hostKeyAlgorithm;
     @NonNull
-    public final String curveName;
+    private final String curveName;
 
-    public final int keySize;
+    private final int keySize;
     @NonNull
-    final ASN1ObjectIdentifier keyOid;
+    private final ASN1ObjectIdentifier keyOid;
 
 
     EdKeyType(@NonNull final String hostKeyAlgorithm,
@@ -45,6 +45,25 @@ public enum EdKeyType {
         this.curveName = curveName;
         this.keySize = keySize;
         this.keyOid = keyOid;
+    }
+
+    @NonNull
+    public String getHostKeyAlgorithm() {
+        return hostKeyAlgorithm;
+    }
+
+    @NonNull
+    public String getCurveName() {
+        return curveName;
+    }
+
+    public int getKeySize() {
+        return keySize;
+    }
+
+    @NonNull
+    public ASN1ObjectIdentifier getKeyOid() {
+        return keyOid;
     }
 
     @NonNull

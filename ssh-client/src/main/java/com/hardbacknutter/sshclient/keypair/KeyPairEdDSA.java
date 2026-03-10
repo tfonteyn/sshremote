@@ -53,7 +53,7 @@ public class KeyPairEdDSA
 
     private byte @Nullable [] prv_array;
 
-    /** the length will be {@link EdKeyType#keySize}. */
+    /** the length will be {@link EdKeyType#getKeySize()}. */
     private byte @Nullable [] pub_array;
 
     /**
@@ -87,7 +87,7 @@ public class KeyPairEdDSA
         this.type = EdKeyType.getByCurveName(curveName);
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator
-                .getInstance(type.curveName, "BC");
+                .getInstance(type.getCurveName(), "BC");
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
         // parse from encoded... remember, this is BC, you need Java 15 to use JCE with Ed.
@@ -102,7 +102,7 @@ public class KeyPairEdDSA
      * Construct the PublicKey based on the components.
      *
      * @param curveName "Ed25519" or "Ed448"
-     * @param rawKey    the {@link EdKeyType#keySize} byte long raw public key data
+     * @param rawKey    the {@link EdKeyType#getKeySize()} byte long raw public key data
      *
      * @return key
      */
@@ -121,18 +121,18 @@ public class KeyPairEdDSA
     @Override
     public String getHostKeyAlgorithm() {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-        return type.hostKeyAlgorithm;
+        return type.getHostKeyAlgorithm();
     }
 
     /**
-     * EdDSA uses the length {@link EdKeyType#keySize} of the key.
+     * EdDSA uses the length {@link EdKeyType#getKeySize()} of the key.
      *
      * @return key size in bytes
      */
     @Override
     public int getKeySize() {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-        return type.keySize;
+        return type.getKeySize();
     }
 
     @Override
@@ -143,7 +143,7 @@ public class KeyPairEdDSA
                    NoSuchProviderException {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
         Objects.requireNonNull(pub_array, "pub_array");
-        return createPublicKey(type.curveName, pub_array);
+        return createPublicKey(type.getCurveName(), pub_array);
     }
 
     @NonNull
@@ -157,7 +157,7 @@ public class KeyPairEdDSA
         try {
             // create as an ASN1 object, so we can create the PKCS8 keySpec from it.
             final PrivateKeyInfo keyInfo = new PrivateKeyInfo(
-                    new AlgorithmIdentifier(type.keyOid),
+                    new AlgorithmIdentifier(type.getKeyOid()),
                     new DEROctetString(prv_array));
             keySpec = new PKCS8EncodedKeySpec(keyInfo.getEncoded());
 
@@ -172,7 +172,7 @@ public class KeyPairEdDSA
         @Override
     public byte @NonNull [] getSshEncodedPublicKey() {
         Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
-        return wrapPublicKey(type.hostKeyAlgorithm, pub_array);
+        return wrapPublicKey(type.getHostKeyAlgorithm(), pub_array);
     }
 
     @Override
@@ -191,7 +191,7 @@ public class KeyPairEdDSA
         System.arraycopy(prv_array, 0, encodedKeys, 0, prv_array.length);
         System.arraycopy(pub_array, 0, encodedKeys, prv_array.length, pub_array.length);
         return new Buffer()
-                .putString(type.hostKeyAlgorithm)
+                .putString(type.getHostKeyAlgorithm())
                 .putString(pub_array)
                 .putString(encodedKeys)
                 .putString(getPublicKeyComment())
@@ -216,7 +216,7 @@ public class KeyPairEdDSA
                     Objects.requireNonNull(type, ERROR_TYPE_WAS_NULL);
 
                     final KeySpec keySpec = new X509EncodedKeySpec(encodedKey);
-                    final KeyFactory keyFactory = KeyFactory.getInstance(type.curveName, "BC");
+                    final KeyFactory keyFactory = KeyFactory.getInstance(type.getCurveName(), "BC");
                     final EdDSAPublicKey key = (EdDSAPublicKey) keyFactory.generatePublic(keySpec);
                     pub_array = key.getPointEncoding();
                     break;
@@ -264,7 +264,7 @@ public class KeyPairEdDSA
                     pub_array = buffer.getString();
                     // OpenSSH stores private key in first half of string and duplicate copy
                     // of public key in second half of string
-                    prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
+                    prv_array = Arrays.copyOf(buffer.getString(), type.getKeySize());
                     setPublicKeyComment(buffer.getJString());
                     break;
                 }
@@ -275,7 +275,7 @@ public class KeyPairEdDSA
                     pub_array = buffer.getString();
                     // OpenSSH stores private key in first half of string and duplicate copy
                     // of public key in second half of string. Hence, only copy one half.
-                    prv_array = Arrays.copyOf(buffer.getString(), type.keySize);
+                    prv_array = Arrays.copyOf(buffer.getString(), type.getKeySize());
                     setPublicKeyComment(buffer.getJString());
                     break;
                 }
