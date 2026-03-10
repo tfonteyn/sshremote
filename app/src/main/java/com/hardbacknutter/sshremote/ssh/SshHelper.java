@@ -25,7 +25,6 @@ import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.SshClientFactory;
 import com.hardbacknutter.sshclient.channels.SshChannelException;
-import com.hardbacknutter.sshclient.kex.KexProposal;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 import com.hardbacknutter.sshclient.utils.SshException;
 import com.hardbacknutter.sshremote.db.Command;
@@ -50,11 +49,6 @@ public class SshHelper {
         final int logLevel = global.getInt(PK_SSH_LOG_LEVEL, Logger.ERROR);
 
         sshClient = SshClientFactory.create(new JLogger(logLevel));
-
-        sshClient.setConfig(KexProposal.PROPOSAL_COMP_CTOS,
-                            KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
-        sshClient.setConfig(KexProposal.PROPOSAL_COMP_STOC,
-                            KexProposal.COMPRESSION_ZLIB_OPENSSH_COM);
     }
 
     /**
