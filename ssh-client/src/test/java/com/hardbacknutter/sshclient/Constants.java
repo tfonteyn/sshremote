@@ -4,7 +4,7 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
 
 /**
  * Test server: WLS2 Ubuntu with OpenSSH installed.
- * Initial install of the SSHD server:
+ * Initial installation of the SSHD server:
  * <pre>
  *     sudo apt install openssh-server
  * </pre>
@@ -123,7 +123,7 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  * <p>
  * Find the IP address and update {@link #HOST}.
  * <pre>
- *      # Powershell as admin, find the WSL ip:
+ *      # PowerShell as admin, find the WSL ip:
  *      wsl hostname -I
  *
  *      # example: 172.20.137.77

@@ -1870,7 +1870,7 @@ public class ChannelSftpImpl
                     // send the next batch of file data
                     bytesToWrite -= sendWRITE(handle, offset, data, 0, bytesToWrite);
 
-                    // optimization to avoid copying the array if possible
+                    // optimisation to avoid copying the array if possible
                     // See #sendWRITE
                     if (!Arrays.equals(data, uploadPacket.data)) {
                         data = uploadPacket.data;
@@ -2168,7 +2168,7 @@ public class ChannelSftpImpl
         final int dataLength = Math.min(length,
                                         remoteMaxPacketSize - (dataOffset + safePacketMargin));
 
-        // optimization to avoid copying the array if possible
+        // optimisation to avoid copying the array if possible
         if (Arrays.equals(uploadPacket.data, data)) {
             uploadPacket.putInt(dataLength)
                         .moveWritePosition(dataLength);

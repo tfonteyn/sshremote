@@ -23,7 +23,7 @@ import java.security.GeneralSecurityException;
 public interface DH {
 
     /**
-     * initializes the algorithm object for a new exchange.
+     * initialises the algorithm object for a new exchange.
      */
     void init()
             throws GeneralSecurityException;

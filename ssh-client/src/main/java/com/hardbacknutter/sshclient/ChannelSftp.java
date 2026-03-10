@@ -203,7 +203,7 @@ public interface ChannelSftp
      * This functions similar to the {@link java.io.FileFilter} interface.
      * <p>
      * If {@code select} returns {@code Selector#BREAK}, the ls-operation will be
-     * canceled immediately.
+     * cancelled immediately.
      * <p>
      * A simple 'get all' selector:
      * <pre>
@@ -943,7 +943,7 @@ public interface ChannelSftp
             /**
              * <p> This method will be invoked by {@link ChannelSftp#ls(String, Selector)}
              * for each file entry. If this method returns {@code false}
-             * the {@code ls} operation will be canceled.
+             * the {@code ls} operation will be cancelled.
              *
              * @param entry current item from {@code ls}
              *

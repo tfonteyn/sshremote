@@ -19,7 +19,7 @@ import java.security.spec.ECPoint;
 public interface ECDH {
 
     /**
-     * Initializes this instance for key pairs using the specified curve.
+     * Initialises this instance for key pairs using the specified curve.
      *
      * @param ecType {@link ECKeyType}
      *

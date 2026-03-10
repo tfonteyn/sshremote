@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * Do <strong>NOT</strong> overwrite from a newer version of the above.
  * A diff/merge will be needed.
  * <p>
- * Modified to allow easier extending + some optimizations + annotations added.
+ * Modified to allow easier extending + some optimisations + annotations added.
  * <p>
  * Key features:
  * <p>

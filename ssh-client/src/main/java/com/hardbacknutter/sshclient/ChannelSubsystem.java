@@ -12,7 +12,7 @@ public interface ChannelSubsystem {
      * Sets the name of the remote subsystem name.
      *
      * @param subsystem the name of the subsystem. It should consist of only
-     *                  printable ASCII characters and be a subsystem name recognized
+     *                  printable ASCII characters and be a subsystem name recognised
      *                  by the remote server process.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4250#section-4.6.1">

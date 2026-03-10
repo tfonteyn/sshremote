@@ -294,10 +294,10 @@ public class KexDelegate {
         // we got agreement, check if the host is who it says it is
         hostKey = checkHost(kex, hostKeyRepository, userinfo);
 
-        // confirm we're ok with the connection by "Taking Keys Into Use"
+        // confirm we're OK with the connection by "Taking Keys Into Use"
         final KexKeys keys = sendNewKeys();
 
-        // and check if the server is likewise ok with this
+        // and check if the server is likewise OK with this
         packet = session.read();
         final byte confirmation = packet.getCommand();
         if (confirmation != SshConstants.SSH_MSG_NEWKEYS) {
