@@ -8,11 +8,11 @@ compileSdk = "36"
 # JDK used by Gradle
 java-toolchain = "21"
 
-androidGradlePlugin = "9.0.0"
+androidGradlePlugin = "9.1.0"
 
 # https://developer.android.com/jetpack/androidx/versions
 
-androidxActivity = "1.12.2"
+androidxActivity = "1.12.4"
 androidxAnnotation = '1.9.1'
 androidxAppcompat = "1.7.1"
 androidxConstraintlayout = "2.2.1"
@@ -48,7 +48,7 @@ androidxTestRules = "1.7.0"
 # https://jspecify.dev/
 jspecify = "1.0.0"
 # https://github.com/JetBrains/java-annotations/tree/master
-jetbrainsAnnotations = "26.0.2-1"
+jetbrainsAnnotations = "26.1.0"
 
 [libraries]
 androidx-activity = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivity" }
