@@ -53,7 +53,7 @@ public enum ECKeyType {
         return Arrays.stream(values())
                      .filter(e -> e.hostKeyAlgorithm.equalsIgnoreCase(hostKeyAlgorithm))
                      .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
+                     .orElseThrow(() -> new NoSuchAlgorithmException(hostKeyAlgorithm));
     }
 
     @NonNull
@@ -62,7 +62,7 @@ public enum ECKeyType {
         return Arrays.stream(values())
                      .filter(e -> e.keySize == keySize)
                      .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
+                     .orElseThrow(() -> new NoSuchAlgorithmException("keySize=" + keySize));
     }
 
     @NonNull
@@ -76,7 +76,7 @@ public enum ECKeyType {
         } else if (keySize >= 32) {
             return ECDSA_SHA2_NISTP256;
         } else {
-            throw new NoSuchAlgorithmException();
+            throw new NoSuchAlgorithmException("keySize=" + keySize);
         }
     }
 

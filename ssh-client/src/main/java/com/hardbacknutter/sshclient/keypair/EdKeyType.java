@@ -53,7 +53,7 @@ public enum EdKeyType {
         return Arrays.stream(values())
                      .filter(e -> e.hostKeyAlgorithm.equalsIgnoreCase(hostKeyAlgorithm))
                      .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
+                     .orElseThrow(() -> new NoSuchAlgorithmException(hostKeyAlgorithm));
     }
 
     @NonNull
@@ -62,7 +62,7 @@ public enum EdKeyType {
         return Arrays.stream(values())
                      .filter(e -> e.curveName.equalsIgnoreCase(curveName))
                      .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
+                     .orElseThrow(() -> new NoSuchAlgorithmException("curveName=" + curveName));
     }
 
     @NonNull
@@ -71,7 +71,7 @@ public enum EdKeyType {
         return Arrays.stream(values())
                      .filter(e -> e.keyOid.equals(oid))
                      .findFirst()
-                     .orElseThrow(NoSuchAlgorithmException::new);
+                     .orElseThrow(() -> new NoSuchAlgorithmException("oid=" + oid));
     }
 
     // no longer used, but leaving here as "interesting" info.
