@@ -47,12 +47,12 @@ public class ConnectionTest
     }
 
     /**
-     * Public keys used here must be added on the server in "~/.ssh/authorized_keys
+     * Public keys used here must be added on the server in {@code ~/.ssh/authorized_keys}.
      */
     @NonNull
     public static Stream<Arguments> withKeys() {
         return Stream.of(
-                Arguments.of("id_ecdsa_256", null),
+                Arguments.of("id_ecdsa", null),
                 Arguments.of("id_ed25519", null),
                 Arguments.of("id_ed25519_secret", ui)
         );

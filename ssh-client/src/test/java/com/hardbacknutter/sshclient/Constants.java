@@ -8,7 +8,8 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  * <pre>
  *     sudo apt install openssh-server
  * </pre>
- * 2024-02-03: OpenSSH_8.9p1 Ubuntu-3ubuntu0.6, OpenSSL 3.0.2 15 Mar 2022
+ * 2026-03-11 Tests are done with (get version: '/usr/sbin/sshd -V')
+ * OpenSSH_9.9p1 Ubuntu-3ubuntu3.2, OpenSSL 3.4.1 11 Feb 2025
  * <p>
  * If needed, generate host keys:
  * <pre>
@@ -51,68 +52,108 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  * </pre>
  * Defaults for reference:
  * <pre>
- *     kexalgorithms        curve25519-sha256,
- *                          curve25519-sha256@libssh.org,
- *                          ecdh-sha2-nistp256,
- *                          ecdh-sha2-nistp384,
- *                          ecdh-sha2-nistp521,
- *                          sntrup761x25519-sha512@openssh.com,
- *                          diffie-hellman-group-exchange-sha256,
- *                          diffie-hellman-group16-sha512,
- *                          diffie-hellman-group18-sha512,
- *                          diffie-hellman-group14-sha256
+ *  kexalgorithms
  *
- *     hostkeyalgorithms    ssh-ed25519-cert-v01@openssh.com,
- *                          ecdsa-sha2-nistp256-cert-v01@openssh.com,
- *                          ecdsa-sha2-nistp384-cert-v01@openssh.com,
- *                          ecdsa-sha2-nistp521-cert-v01@openssh.com,
- *                          sk-ssh-ed25519-cert-v01@openssh.com,
- *                          sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,
- *                          rsa-sha2-512-cert-v01@openssh.com,
- *                          rsa-sha2-256-cert-v01@openssh.com,
- *                          ssh-ed25519,
- *                          ecdsa-sha2-nistp256,
- *                          ecdsa-sha2-nistp384,
- *                          ecdsa-sha2-nistp521,
- *                          sk-ssh-ed25519@openssh.com,
- *                          sk-ecdsa-sha2-nistp256@openssh.com,
- *                          rsa-sha2-512,
- *                          rsa-sha2-256
+ *      csntrup761x25519-sha512,
+ *      sntrup761x25519-sha512@openssh.com,
+ *      mlkem768x25519-sha256,
+ *      curve25519-sha256,
+ *      curve25519-sha256@libssh.org,
+ *      ecdh-sha2-nistp256,
+ *      ecdh-sha2-nistp384,
+ *      ecdh-sha2-nistp521,
+ *      diffie-hellman-group-exchange-sha256,
+ *      diffie-hellman-group16-sha512,
+ *      diffie-hellman-group18-sha512,
+ *      diffie-hellman-group14-sha256
  *
- *     pubkeyacceptedalgorithms     ssh-ed25519-cert-v01@openssh.com,
- *                                  ecdsa-sha2-nistp256-cert-v01@openssh.com,
- *                                  ecdsa-sha2-nistp384-cert-v01@openssh.com,
- *                                  ecdsa-sha2-nistp521-cert-v01@openssh.com,
- *                                  sk-ssh-ed25519-cert-v01@openssh.com,
- *                                  sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,
- *                                  rsa-sha2-512-cert-v01@openssh.com,
- *                                  rsa-sha2-256-cert-v01@openssh.com,
- *                                  ssh-ed25519,
- *                                  ecdsa-sha2-nistp256,
- *                                  ecdsa-sha2-nistp384,
- *                                  ecdsa-sha2-nistp521,
- *                                  sk-ssh-ed25519@openssh.com,
- *                                  sk-ecdsa-sha2-nistp256@openssh.com,
- *                                  rsa-sha2-512,
- *                                  rsa-sha2-256
+ *  casignaturealgorithms
  *
- *     ciphers  chacha20-poly1305@openssh.com,
- *              aes128-ctr,
- *              aes192-ctr,
- *              aes256-ctr,
- *              aes128-gcm@openssh.com,
- *              aes256-gcm@openssh.com
+ *      ssh-ed25519,
+ *      ecdsa-sha2-nistp256,
+ *      ecdsa-sha2-nistp384,
+ *      ecdsa-sha2-nistp521,
+ *      sk-ssh-ed25519@openssh.com,
+ *      sk-ecdsa-sha2-nistp256@openssh.com,
+ *      rsa-sha2-512,
+ *      rsa-sha2-256
  *
- *     macs     umac-64-etm@openssh.com,
- *              umac-128-etm@openssh.com,
- *              hmac-sha2-256-etm@openssh.com,
- *              hmac-sha2-512-etm@openssh.com,
- *              hmac-sha1-etm@openssh.com,
- *              umac-64@openssh.com,
- *              umac-128@openssh.com,
- *              hmac-sha2-256,
- *              hmac-sha2-512,
- *              hmac-sha1
+ *  hostbasedacceptedalgorithms
+ *
+ *      ssh-ed25519-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp256-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp384-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp521-cert-v01@openssh.com,
+ *      sk-ssh-ed25519-cert-v01@openssh.com,
+ *      sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,
+ *      rsa-sha2-512-cert-v01@openssh.com,
+ *      rsa-sha2-256-cert-v01@openssh.com,
+ *      ssh-ed25519,
+ *      ecdsa-sha2-nistp256,
+ *      ecdsa-sha2-nistp384,
+ *      ecdsa-sha2-nistp521,
+ *      sk-ssh-ed25519@openssh.com,
+ *      sk-ecdsa-sha2-nistp256@openssh.com,
+ *      rsa-sha2-512,
+ *      rsa-sha2-256
+ *
+ *  hostkeyalgorithms
+ *
+ *      ssh-ed25519-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp256-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp384-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp521-cert-v01@openssh.com,
+ *      sk-ssh-ed25519-cert-v01@openssh.com,
+ *      sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,
+ *      rsa-sha2-512-cert-v01@openssh.com,
+ *      rsa-sha2-256-cert-v01@openssh.com,
+ *      ssh-ed25519,ecdsa-sha2-nistp256,
+ *      ecdsa-sha2-nistp384,
+ *      ecdsa-sha2-nistp521,
+ *      sk-ssh-ed25519@openssh.com,
+ *      sk-ecdsa-sha2-nistp256@openssh.com,
+ *      rsa-sha2-512,
+ *      rsa-sha2-256
+ *
+ *  pubkeyacceptedalgorithms
+ *
+ *      ssh-ed25519-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp256-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp384-cert-v01@openssh.com,
+ *      ecdsa-sha2-nistp521-cert-v01@openssh.com,
+ *      sk-ssh-ed25519-cert-v01@openssh.com,
+ *      sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,
+ *      rsa-sha2-512-cert-v01@openssh.com,
+ *      rsa-sha2-256-cert-v01@openssh.com,
+ *      ssh-ed25519,ecdsa-sha2-nistp256,
+ *      ecdsa-sha2-nistp384,
+ *      ecdsa-sha2-nistp521,
+ *      sk-ssh-ed25519@openssh.com,
+ *      sk-ecdsa-sha2-nistp256@openssh.com,
+ *      rsa-sha2-512,
+ *      rsa-sha2-256
+ *
+ *
+ *  ciphers
+ *      chacha20-poly1305@openssh.com,
+ *      aes128-ctr,
+ *      aes192-ctr,
+ *      aes256-ctr,
+ *      aes128-gcm@openssh.com,
+ *      aes256-gcm@openssh.com
+ *
+ *  macs
+ *      umac-64-etm@openssh.com,
+ *      umac-128-etm@openssh.com,
+ *      hmac-sha2-256-etm@openssh.com,
+ *      hmac-sha2-512-etm@openssh.com,
+ *      hmac-sha1-etm@openssh.com,
+ *      umac-64@openssh.com,
+ *      umac-128@openssh.com,
+ *      hmac-sha2-256,
+ *      hmac-sha2-512,
+ *      hmac-sha1
+ *
  * </pre>
  * Useful command to see the current config
  * <pre>
