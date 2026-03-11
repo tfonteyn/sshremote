@@ -1,11 +1,8 @@
 package com.hardbacknutter.sshclient.kex;
 
-import org.jspecify.annotations.NonNull;
-
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -14,6 +11,8 @@ import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
 import com.hardbacknutter.sshclient.signature.SshSignature;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+
+import org.jspecify.annotations.NonNull;
 
 public class KexProposalConfig {
 
@@ -73,15 +72,20 @@ public class KexProposalConfig {
         }
     }
 
+    /**
+     * Convenience method for a multi-value configuration option.
+     *
+     * @param key       the key for the configuration option
+     * @param defValues to use if the key is not present
+     *
+     * @return the value corresponding to the key.
+     *         Should be treated as an immutable list.
+     */
     @NonNull
     private static List<String> getStringList(@NonNull final SshClientConfig config,
                                               @NonNull final String key,
                                               @NonNull final String... defValues) {
-        final List<String> list = config.getStringList(key);
-        if (list.isEmpty()) {
-            Collections.addAll(list, defValues);
-        }
-        return list;
+        return config.getStringList(key, List.of(defValues));
     }
 
     @NonNull

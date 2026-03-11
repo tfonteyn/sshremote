@@ -1,10 +1,10 @@
 package com.hardbacknutter.sshclient.utils;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Arrays;
 import java.util.List;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * INTERNAL USE ONLY.
@@ -37,7 +37,13 @@ public interface BaseConfig {
     String getString(@NonNull String key,
                      @Nullable String defValue);
 
-
+    /**
+     * Check if the given key is present and has a value.
+     *
+     * @param key to check
+     *
+     * @return {@code true} if there is a non-blank value
+     */
     default boolean contains(@NonNull final String key) {
         final String s = getString(key, null);
         return s != null && !s.isBlank();
@@ -100,13 +106,12 @@ public interface BaseConfig {
      * @param key the key for the configuration option
      *
      * @return the value corresponding to the key.
+     *         Should be treated as an immutable list.
      *         If the key is not found, an empty {@code List<String>}.
      */
     @NonNull
     default List<String> getStringList(@NonNull final String key) {
-        // guard against overrides; handle null here
-        final List<String> list = getStringList(key, null);
-        return list != null ? list : List.of();
+        return getStringList(key, List.of());
     }
 
     /**
@@ -116,14 +121,22 @@ public interface BaseConfig {
      * @param defValue to use if the key is not present
      *
      * @return the value corresponding to the key.
+     *         Should be treated as an immutable list.
+     *         Can be empty, but never {@code null}.
      */
-    @Nullable
+    @NonNull
     default List<String> getStringList(@NonNull final String key,
                                        @Nullable final List<String> defValue) {
         if (!isValueList(key)) {
             throw new IllegalArgumentException("Key is not a list-value: " + key);
         }
         final String value = getString(key, null);
-        return value != null ? Arrays.asList(value.split(",")) : defValue;
+        if (value != null) {
+            return Arrays.asList(value.split(","));
+        }
+        if (defValue != null) {
+            return defValue;
+        }
+        return List.of();
     }
 }
