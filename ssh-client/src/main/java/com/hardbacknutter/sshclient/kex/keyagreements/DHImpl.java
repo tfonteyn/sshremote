@@ -61,11 +61,11 @@ public class DHImpl
     }
 
     @Override
-    public byte @NonNull [] getSharedSecret(@NonNull final BigInteger f)
+    public byte @NonNull [] getSharedSecret(@NonNull final BigInteger y)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
                    InvalidKeyException, IllegalStateException {
 
-        final KeySpec keySpec = new DHPublicKeySpec(f, p, g);
+        final KeySpec keySpec = new DHPublicKeySpec(y, p, g);
 
         final KeyFactory keyFactory = KeyFactory.getInstance("DH");
         final PublicKey theirPublicKey = keyFactory.generatePublic(keySpec);
