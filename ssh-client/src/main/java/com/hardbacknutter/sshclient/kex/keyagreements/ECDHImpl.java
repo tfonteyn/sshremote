@@ -40,17 +40,17 @@ public class ECDHImpl
     private byte[] q;
 
     @Override
-    public void init(@NonNull final ECKeyType ecType)
+    public void init(@NonNull final ECKeyType ecKeyType)
             throws NoSuchAlgorithmException, InvalidAlgorithmParameterException,
                    InvalidKeyException {
 
         final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
-        final AlgorithmParameterSpec params = new ECGenParameterSpec(ecType.curveName);
+        final AlgorithmParameterSpec params = new ECGenParameterSpec(ecKeyType.curveName);
         keyPairGenerator.initialize(params);
 
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
         publicKey = (ECPublicKey) keyPair.getPublic();
-        q = ecType.encodePoint(publicKey.getW());
+        q = ecKeyType.encodePoint(publicKey.getW());
 
         keyAgreement = KeyAgreement.getInstance("ECDH");
         keyAgreement.init(keyPair.getPrivate());

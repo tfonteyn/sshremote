@@ -21,11 +21,11 @@ public interface ECDH {
     /**
      * Initialises this instance for key pairs using the specified curve.
      *
-     * @param ecType {@link ECKeyType}
+     * @param ecKeyType {@link ECKeyType}
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    void init(@NonNull ECKeyType ecType)
+    void init(@NonNull ECKeyType ecKeyType)
             throws GeneralSecurityException;
 
     /**

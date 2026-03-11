@@ -1,7 +1,5 @@
 package com.hardbacknutter.sshclient.kex.keyexchange;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -16,6 +14,8 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc5656#section-7">
@@ -46,7 +46,7 @@ public class KeyExchangeECDH
     private static final byte SSH_MSG_KEX_ECDH_REPLY = 31;
 
     @NonNull
-    private final ECKeyType ecType;
+    private final ECKeyType ecKeyType;
     private ECDH agreement;
 
     /** Q_C, client's ephemeral public key octet string. */
@@ -56,12 +56,12 @@ public class KeyExchangeECDH
      * Constructor.
      *
      * @param digestAlgorithm standard JDK digest algorithm name
-     * @param ecType          {@link ECKeyType}
+     * @param ecKeyType       {@link ECKeyType}
      */
     public KeyExchangeECDH(@NonNull final String digestAlgorithm,
-                           @NonNull final ECKeyType ecType) {
+                           @NonNull final ECKeyType ecKeyType) {
         super(digestAlgorithm);
-        this.ecType = ecType;
+        this.ecKeyType = ecKeyType;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class KeyExchangeECDH
             throws GeneralSecurityException {
 
         agreement = ImplementationFactory.getECDHKeyAgreement(config);
-        agreement.init(ecType);
+        agreement.init(ecKeyType);
     }
 
     @Override
