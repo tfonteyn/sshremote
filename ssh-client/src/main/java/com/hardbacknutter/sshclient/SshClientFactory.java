@@ -36,6 +36,7 @@ public final class SshClientFactory {
         final ClassLoader classLoader = SshClientFactory.class.getClassLoader();
         if (classLoader instanceof URLClassLoader) {
             final URL url = ((URLClassLoader) classLoader).findResource(META_INF_MANIFEST_MF);
+            //noinspection BlockingMethodInNonBlockingContext
             try (final InputStream is = url.openStream()) {
                 final Manifest manifest = new Manifest(is);
                 return manifest.getMainAttributes().getValue(MANIFEST_VERSION);
