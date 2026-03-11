@@ -81,6 +81,12 @@ public class ConnectionTest
         session.disconnect();
     }
 
+    @Test
+    void single()
+            throws GeneralSecurityException, SshException, IOException {
+        connectWithPassword("ssh-ed25519","mlkem768x25519-sha256");
+    }
+
     @ParameterizedTest
     @MethodSource("withAlgorithms")
     void connectWithPassword(@NonNull final String hostKeyAlgorithms,

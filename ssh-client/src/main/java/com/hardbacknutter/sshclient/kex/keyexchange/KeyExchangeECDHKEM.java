@@ -169,7 +169,8 @@ public class KeyExchangeECDHKEM
             // Create the shared secret based on KEM and XDC
             byte[] tmp = kem.extractSecret(kemPublicKey);
             md.update(tmp, 0, tmp.length);
-            tmp = trimZeroes(agreement.getSharedSecret(xdhPublicKey));
+            // do not trimZeroes, as they are a part of the secret
+            tmp = agreement.getSharedSecret(xdhPublicKey);
             md.update(tmp, 0, tmp.length);
             tmp = md.digest();
 

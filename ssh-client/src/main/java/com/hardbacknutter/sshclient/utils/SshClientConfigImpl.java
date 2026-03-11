@@ -324,12 +324,9 @@ public final class SshClientConfigImpl
             // https://datatracker.ietf.org/doc/html/draft-ietf-curdle-ssh-kex-sha2-03#section-4
             putFromSystemProperty(
                     HostConfig.KEX_ALGS,
-                    KeyExchangeConstants.CURVE_25519_SHA_256
+                    KeyExchangeConstants.MLKEM768X25519_SHA256
+                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256
                     + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
-                    // Requires OpenSSH 9.9;
-                    // Our reference platform Ubuntu 2024-10 ships with 9.7
-                    // + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
-                    + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
                     + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
@@ -344,10 +341,15 @@ public final class SshClientConfigImpl
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(
                     KexProposal.CHECK_KEX_ALGS,
-                    KeyExchangeConstants.CURVE_25519_SHA_256
-                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
+                    KeyExchangeConstants.MLKEM768X25519_SHA256
+                    + ',' + KeyExchangeConstants.MLKEM768NISTP256_SHA256
+                    + ',' + KeyExchangeConstants.MLKEM1024NISTP384_SHA384
+
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
                     + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
+
+                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256
+                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
                     + ',' + KeyExchangeConstants.CURVE_448_SHA_512
                     + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1
                     + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256

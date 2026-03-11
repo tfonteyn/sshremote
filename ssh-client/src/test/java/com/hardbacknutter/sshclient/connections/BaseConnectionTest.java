@@ -28,8 +28,13 @@ public class BaseConnectionTest {
             KexProposal.COMPRESSION_ZLIB
     };
     static final List<String> KEX_ALGS = List.of(
+            KeyExchangeConstants.MLKEM768X25519_SHA256,
+            KeyExchangeConstants.MLKEM768NISTP256_SHA256,
+            KeyExchangeConstants.MLKEM1024NISTP384_SHA384,
+
             KeyExchangeConstants.SNTRUP761X25519_SHA512,
             KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM,
+
             KeyExchangeConstants.CURVE_25519_SHA_256,
             KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG,
             KeyExchangeConstants.ECDH_SHA_2_NISTP_256,

@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.utils;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +25,7 @@ import com.hardbacknutter.sshclient.compression.SshInflaterImpl;
 import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.kex.KexProposal;
+import com.hardbacknutter.sshclient.kex.kem.MLKEM;
 import com.hardbacknutter.sshclient.kex.kem.SNTRUP761;
 import com.hardbacknutter.sshclient.kex.keyagreements.DH;
 import com.hardbacknutter.sshclient.kex.keyagreements.DHImpl;
@@ -37,6 +35,7 @@ import com.hardbacknutter.sshclient.kex.keyagreements.XDH;
 import com.hardbacknutter.sshclient.kex.keyagreements.XDHImpl;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchange;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeConstants;
+import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHECNKEM;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHGroup1;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHGroup14;
 import com.hardbacknutter.sshclient.kex.keyexchange.KeyExchangeDHGroup15;
@@ -63,6 +62,9 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
 import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
+import org.bouncycastle.pqc.crypto.mlkem.MLKEMParameters;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @SuppressWarnings("WeakerAccess")
 public final class ImplementationFactory {
@@ -238,6 +240,24 @@ public final class ImplementationFactory {
                     return new KeyExchangeECDH("SHA-384", ECKeyType.ECDSA_SHA2_NISTP384);
                 case KeyExchangeConstants.ECDH_SHA_2_NISTP_521:
                     return new KeyExchangeECDH("SHA-512", ECKeyType.ECDSA_SHA2_NISTP521);
+
+                case KeyExchangeConstants.MLKEM768X25519_SHA256: {
+                    return new KeyExchangeECDHKEM("SHA-256",
+                                                  XDHParameterSpec.X25519,
+                                                  X25519PublicKeyParameters.KEY_SIZE,
+                                                  EdECObjectIdentifiers.id_X25519,
+                                                  new MLKEM(MLKEMParameters.ml_kem_768));
+                }
+                case KeyExchangeConstants.MLKEM768NISTP256_SHA256: {
+                    return new KeyExchangeDHECNKEM("SHA-256",
+                                                   ECKeyType.ECDSA_SHA2_NISTP256,
+                                                   new MLKEM(MLKEMParameters.ml_kem_768));
+                }
+                case KeyExchangeConstants.MLKEM1024NISTP384_SHA384: {
+                    return new KeyExchangeDHECNKEM("SHA-384",
+                                                   ECKeyType.ECDSA_SHA2_NISTP384,
+                                                   new MLKEM(MLKEMParameters.ml_kem_1024));
+                }
 
                 case KeyExchangeConstants.SNTRUP761X25519_SHA512:
                 case KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM: {

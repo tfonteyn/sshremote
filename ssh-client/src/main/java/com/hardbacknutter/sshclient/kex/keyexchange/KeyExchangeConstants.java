@@ -10,6 +10,7 @@ package com.hardbacknutter.sshclient.kex.keyexchange;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc2409#section-6.2">
  * RFC 2409 The Internet Key Exchange (IKE), section 6.2. Second Oakley Group</a>
  */
+@SuppressWarnings("MissingJavadoc")
 public final class KeyExchangeConstants {
 
     public static final String DIFFIE_HELLMAN_GROUP_1_SHA_1 =
@@ -53,21 +54,34 @@ public final class KeyExchangeConstants {
     public static final String DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_512_SSH_COM =
             "diffie-hellman-group-exchange-sha512@ssh.com";
 
-    public static final String ECDH_SHA_2_NISTP_256 = "ecdh-sha2-nistp256";
-    public static final String ECDH_SHA_2_NISTP_384 = "ecdh-sha2-nistp384";
-    public static final String ECDH_SHA_2_NISTP_521 = "ecdh-sha2-nistp521";
+    public static final String ECDH_SHA_2_NISTP_256 =
+            "ecdh-sha2-nistp256";
+    public static final String ECDH_SHA_2_NISTP_384 =
+            "ecdh-sha2-nistp384";
+    public static final String ECDH_SHA_2_NISTP_521 =
+            "ecdh-sha2-nistp521";
 
-    public static final String CURVE_448_SHA_512 = "curve448-sha512";
+    public static final String CURVE_448_SHA_512 =
+            "curve448-sha512";
 
-    public static final String CURVE_25519_SHA_256 = "curve25519-sha256";
-    public static final String CURVE_25519_SHA_256_LIBSSH_ORG = "curve25519-sha256@libssh.org";
+    public static final String CURVE_25519_SHA_256 =
+            "curve25519-sha256";
+    public static final String CURVE_25519_SHA_256_LIBSSH_ORG =
+            "curve25519-sha256@libssh.org";
 
-    /** Requires OpenSSH 9.9 */
+    /* The below require OpenSSH 9.9/10 */
+
     public static final String SNTRUP761X25519_SHA512 =
             "sntrup761x25519-sha512";
-    /** Requires OpenSSH 9.0 */
     public static final String SNTRUP761X25519_SHA512_OPENSSH_COM =
             "sntrup761x25519-sha512@openssh.com";
+
+    public static final String MLKEM768X25519_SHA256 =
+            "mlkem768x25519-sha256";
+    public static final String MLKEM768NISTP256_SHA256 =
+            "mlkem768nistp256-sha256";
+    public static final String MLKEM1024NISTP384_SHA384 =
+            "mlkem1024nistp384-sha384";
 
     private KeyExchangeConstants() {
     }
