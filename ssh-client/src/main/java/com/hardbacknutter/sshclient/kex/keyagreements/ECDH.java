@@ -1,13 +1,13 @@
 package com.hardbacknutter.sshclient.kex.keyagreements;
 
-import org.jspecify.annotations.NonNull;
+import java.security.GeneralSecurityException;
+import java.security.spec.ECPoint;
 
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.kex.KexProposal;
 import com.hardbacknutter.sshclient.keypair.ECKeyType;
 
-import java.security.GeneralSecurityException;
-import java.security.spec.ECPoint;
+import org.jspecify.annotations.NonNull;
 
 /**
  * An interface with the mathematical operations needed for
@@ -55,6 +55,8 @@ public interface ECDH {
      * Validates a public key (i.e. an elliptic curve point) sent by the remote side.
      *
      * @param w the point of the server's ephemeral public key
+     *
+     * @throws GeneralSecurityException if anything goes wrong.
      */
     void validate(@NonNull ECPoint w)
             throws GeneralSecurityException;
