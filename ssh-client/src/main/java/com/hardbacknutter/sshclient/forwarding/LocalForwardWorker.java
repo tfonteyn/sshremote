@@ -74,7 +74,7 @@ abstract class LocalForwardWorker {
         }
         bindAddress = tmpAddress;
 
-        thread = new Thread(this::run);
+        thread = session.getThreadFactory().newThread(this::run);
         thread.setName("PortWatcher Thread for " + localPort);
         if (asDaemon) {
             thread.setDaemon(true);

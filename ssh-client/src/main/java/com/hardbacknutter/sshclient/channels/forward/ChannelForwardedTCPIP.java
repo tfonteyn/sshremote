@@ -84,7 +84,7 @@ public class ChannelForwardedTCPIP
                 setInputStream(new PassiveInputStream(pout, getDefaultInputBufferSize()));
 
                 daemon.setChannel(this, getInputStream(), pout);
-                new Thread(daemon::run).start();
+                session.getThreadFactory().newThread(daemon::run).start();
 
             } else if (remoteForwardConfig instanceof RemoteForwardSocketConfig) {
                 final Socket socket = ((RemoteForwardSocketConfig) remoteForwardConfig)

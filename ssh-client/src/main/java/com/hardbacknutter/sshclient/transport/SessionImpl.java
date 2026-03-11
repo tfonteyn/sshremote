@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.concurrent.ThreadFactory;
 
 import com.hardbacknutter.sshclient.Channel;
 import com.hardbacknutter.sshclient.ChannelExec;
@@ -172,6 +173,8 @@ public final class SessionImpl
     /** Cached after first use until a config change is made. */
     @Nullable
     private KexProposalConfig kexProposalConfig;
+    @NonNull
+    private ThreadFactory threadFactory = Thread::new;
 
     /**
      * Private constructor. Always use the static factory methods to get the correct type back.
@@ -376,6 +379,16 @@ public final class SessionImpl
     }
 
     @Override
+    public @NonNull ThreadFactory getThreadFactory() {
+        return threadFactory;
+    }
+
+    @Override
+    public void setThreadFactory(@Nullable final ThreadFactory threadFactory) {
+        this.threadFactory = Objects.requireNonNullElse(threadFactory, Thread::new);
+    }
+
+    @Override
     public void connect()
             throws SshException, GeneralSecurityException, IOException {
         connect(timeout);
@@ -452,7 +465,7 @@ public final class SessionImpl
             // Step 4: start this session as a Thread to handle all further communication
             synchronized (this) {
                 if (connected) {
-                    sessionThread = new Thread(this::run);
+                    sessionThread = getThreadFactory().newThread(this::run);
                     sessionThread.setName("Session to: " + host);
                     if (runAsDaemonThread) {
                         sessionThread.setDaemon(true);

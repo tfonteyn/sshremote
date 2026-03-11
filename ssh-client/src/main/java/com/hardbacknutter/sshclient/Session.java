@@ -5,6 +5,7 @@ import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 
 import com.hardbacknutter.sshclient.channels.SshChannelException;
 import com.hardbacknutter.sshclient.hostkey.HostKey;
@@ -132,6 +133,24 @@ public interface Session {
      */
     int getPort();
 
+
+    /**
+     * Returns the thread factory used by this session.
+     *
+     * @return The thread factory associated with this session.
+     *         If no specific thread factory has
+     *         been set, the default {@code Thread::new} is returned.
+     */
+    @NonNull ThreadFactory getThreadFactory();
+
+    /**
+     * Set a thread factory for creating new threads in this session.
+     *
+     * @param threadFactory The thread factory to be used;
+     *                      When {@code null} the default {@code Thread::new}
+     *                      will be used.
+     */
+    void setThreadFactory(@Nullable ThreadFactory threadFactory);
 
     /**
      * Opens the connection, using the timeout set with {@link #setTimeout}.

@@ -507,7 +507,7 @@ public class BaseChannel
     }
 
     protected void startThread() {
-        channelThread = new Thread(this::run);
+        channelThread = session.getThreadFactory().newThread(this::run);
         channelThread.setName(type + " thread " + session.getHost());
         if (session.isRunningAsDaemonThread()) {
             channelThread.setDaemon(true);
