@@ -1,6 +1,6 @@
 package com.hardbacknutter.sshclient.kex.keyagreements;
 
-import org.jspecify.annotations.NonNull;
+import java.security.GeneralSecurityException;
 
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.kex.KexProposal;
@@ -10,8 +10,7 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
 import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
 import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
-
-import java.security.GeneralSecurityException;
+import org.jspecify.annotations.NonNull;
 
 /**
  * An interface with the mathematical operations needed for
@@ -66,6 +65,8 @@ public interface XDH {
      * Validates a public key (i.e. an elliptic curve point) sent by the remote side.
      *
      * @param q_s Q_S, server's ephemeral public key octet string
+     *
+     * @throws GeneralSecurityException if anything goes wrong.
      */
     void validate(byte @NonNull [] q_s)
             throws GeneralSecurityException;
