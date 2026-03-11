@@ -133,7 +133,7 @@ public final class SftpATTRS {
     private int mtime;
     private String[] extended;
 
-    private SftpATTRS() {
+    public SftpATTRS() {
     }
 
     /**
