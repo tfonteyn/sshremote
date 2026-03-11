@@ -19,9 +19,9 @@ import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimePublicKeyParameters;
 public class SNTRUP761
         implements KEM {
 
+    private final SNTRUPrimeParameters parameters;
     private EncapsulatedSecretExtractor extractor;
     private SNTRUPrimePublicKeyParameters publicKey;
-    private SNTRUPrimeParameters kemPrimeParameters;
 
     // Bouncy Castle before 1.78 defines sharedKeyBytes differently than OpenSSH (16 instead of 32)
     // https://github.com/bcgit/bc-java/issues/1554
@@ -46,11 +46,16 @@ public class SNTRUP761
         }
     }
 
+    public SNTRUP761() {
+        parameters = createSNTRUP761();
+    }
+
     @Override
     public void init() {
-        kemPrimeParameters = createSNTRUP761();
         final AsymmetricCipherKeyPairGenerator kpg = new SNTRUPrimeKeyPairGenerator();
-        kpg.init(new SNTRUPrimeKeyGenerationParameters(new SecureRandom(), kemPrimeParameters));
+        final SNTRUPrimeKeyGenerationParameters param = new SNTRUPrimeKeyGenerationParameters(
+                new SecureRandom(), parameters);
+        kpg.init(param);
 
         final AsymmetricCipherKeyPair kp = kpg.generateKeyPair();
         extractor = new SNTRUPrimeKEMExtractor((SNTRUPrimePrivateKeyParameters) kp.getPrivate());
@@ -59,7 +64,7 @@ public class SNTRUP761
 
     @Override
     public int getPublicKeyLength() {
-        return kemPrimeParameters.getPublicKeyBytes();
+        return parameters.getPublicKeyBytes();
     }
 
     @Override
