@@ -391,11 +391,11 @@ public final class SshClientConfigImpl
         {
             // The list send to the server
             final String ciphers = SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
+                                   + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
+                                   + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
                                    + ',' + SshCipherConstants.AES_256_CTR
                                    + ',' + SshCipherConstants.AES_192_CTR
-                                   + ',' + SshCipherConstants.AES_128_CTR
-                                   + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
-                                   + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM;
+                                   + ',' + SshCipherConstants.AES_128_CTR;
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_CTOS, ciphers);
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_STOC, ciphers);
 
