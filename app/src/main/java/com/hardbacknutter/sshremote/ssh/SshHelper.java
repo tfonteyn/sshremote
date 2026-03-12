@@ -2,7 +2,6 @@ package com.hardbacknutter.sshremote.ssh;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
@@ -48,7 +47,7 @@ public class SshHelper {
 
         final int logLevel = global.getInt(PK_SSH_LOG_LEVEL, Logger.ERROR);
 
-        sshClient = SshClientFactory.create(new JLogger(logLevel));
+        sshClient = SshClientFactory.create(new LogCatLogger(logLevel));
     }
 
     /**
@@ -137,25 +136,4 @@ public class SshHelper {
         }
     }
 
-    public static class JLogger
-            implements com.hardbacknutter.sshclient.Logger {
-
-        @IntRange(from = Logger.NONE, to = Logger.DEBUG)
-        private final int level;
-
-        JLogger(@IntRange(from = Logger.NONE, to = Logger.DEBUG) final int logLevel) {
-            level = logLevel;
-        }
-
-        @Override
-        public boolean isEnabled(final int level) {
-            return level >= this.level;
-        }
-
-        @Override
-        public void log(final int level,
-                        @NonNull final String message) {
-            Log.d("SSH" + level, message);
-        }
-    }
 }
