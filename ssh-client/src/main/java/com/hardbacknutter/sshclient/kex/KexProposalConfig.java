@@ -171,14 +171,17 @@ public class KexProposalConfig {
             throw new NoSuchAlgorithmException("Kex algorithms not configured");
         }
 
-        // Try to instantiate the class, if that fails, remove the algorithm from the list
         for (final String name : config.getStringList(KexProposal.CHECK_KEX_ALGS)) {
-            try {
-
-                final KeyExchange kex = ImplementationFactory.getKeyExchange(config, name);
-                kex.initKeyAgreement(config);
-            } catch (final GeneralSecurityException e) {
-                kexAlgorithms.remove(name);
+            // Only test the ones which are actually in our current configured list
+            if (kexAlgorithms.contains(name)) {
+                try {
+                    // Try to instantiate the class, if that fails,
+                    // remove the algorithm from the list
+                    final KeyExchange kex = ImplementationFactory.getKeyExchange(config, name);
+                    kex.initKeyAgreement(config);
+                } catch (final GeneralSecurityException e) {
+                    kexAlgorithms.remove(name);
+                }
             }
         }
 
