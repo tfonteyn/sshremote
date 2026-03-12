@@ -1,10 +1,8 @@
 package com.hardbacknutter.sshclient.utils;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +27,9 @@ import com.hardbacknutter.sshclient.userauth.UserAuthNone;
 import com.hardbacknutter.sshclient.userauth.UserAuthPassword;
 import com.hardbacknutter.sshclient.userauth.UserAuthPublicKey;
 import com.hardbacknutter.sshclient.userauth.jgss.UserAuthGSSContextKrb5;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Each {@link SshClient} has ONE configuration object.
@@ -200,6 +201,17 @@ public final class SshClientConfigImpl
         }
     }
 
+    /**
+     * Convenience method to set a list of values as a csv value.
+     *
+     * @param configKey config key
+     * @param defValues to use
+     */
+    public void putFromSystemProperty(@NonNull final String configKey,
+                                      @NonNull final List<String> defValues) {
+        putFromSystemProperty(configKey, String.join(",", defValues));
+    }
+
     @Override
     public boolean isValueList(@NonNull final String key) {
         return KEY_IS_LIST_VALUE.contains(key.toLowerCase(Locale.ENGLISH));
@@ -323,122 +335,130 @@ public final class SshClientConfigImpl
             // The list send to the server
             // https://datatracker.ietf.org/doc/html/draft-ietf-curdle-ssh-kex-sha2-03#section-4
             putFromSystemProperty(
-                    HostConfig.KEX_ALGS,
-                    KeyExchangeConstants.MLKEM768X25519_SHA256
-                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256
-                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
-                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
-                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
-                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
-            );
+                    HostConfig.KEX_ALGS, List.of(
+                            KeyExchangeConstants.MLKEM768X25519_SHA256,
+
+                            KeyExchangeConstants.SNTRUP761X25519_SHA512,
+                            KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM,
+
+                            KeyExchangeConstants.CURVE_25519_SHA_256,
+                            KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG,
+                            KeyExchangeConstants.ECDH_SHA_2_NISTP_256,
+                            KeyExchangeConstants.ECDH_SHA_2_NISTP_384,
+                            KeyExchangeConstants.ECDH_SHA_2_NISTP_521,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_EXCHANGE_SHA_256,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
+                    ));
 
             // These will be tested to see if their implementations CAN be instantiated.
             // If not, they will be removed from the above list before it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
             putFromSystemProperty(
-                    KexProposal.CHECK_KEX_ALGS,
-                    KeyExchangeConstants.MLKEM768X25519_SHA256
-                    + ',' + KeyExchangeConstants.MLKEM768NISTP256_SHA256
-                    + ',' + KeyExchangeConstants.MLKEM1024NISTP384_SHA384
+                    KexProposal.CHECK_KEX_ALGS, List.of(
+                            KeyExchangeConstants.MLKEM768X25519_SHA256,
+                            KeyExchangeConstants.MLKEM768NISTP256_SHA256,
+                            KeyExchangeConstants.MLKEM1024NISTP384_SHA384,
 
-                    + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512
-                    + ',' + KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM
+                            KeyExchangeConstants.SNTRUP761X25519_SHA512,
+                            KeyExchangeConstants.SNTRUP761X25519_SHA512_OPENSSH_COM,
 
-                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256
-                    + ',' + KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG
-                    + ',' + KeyExchangeConstants.CURVE_448_SHA_512
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_15_SHA_512
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_17_SHA_512
-                    + ',' + KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512
-                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_256
-                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_384
-                    + ',' + KeyExchangeConstants.ECDH_SHA_2_NISTP_521
-            );
+                            KeyExchangeConstants.CURVE_25519_SHA_256,
+                            KeyExchangeConstants.CURVE_25519_SHA_256_LIBSSH_ORG,
+                            KeyExchangeConstants.CURVE_448_SHA_512,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_1,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_14_SHA_256,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_15_SHA_512,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_16_SHA_512,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_17_SHA_512,
+                            KeyExchangeConstants.DIFFIE_HELLMAN_GROUP_18_SHA_512,
+                            KeyExchangeConstants.ECDH_SHA_2_NISTP_256,
+                            KeyExchangeConstants.ECDH_SHA_2_NISTP_384,
+                            KeyExchangeConstants.ECDH_SHA_2_NISTP_521
+                    ));
         }
 
         // server_host_key_algorithms (Signature):
         {
             // The list send to the server
-            putFromSystemProperty(HostConfig.HOST_KEY_ALGS,
-                                  HostKeyAlgorithm.SSH_ED25519
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
-                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
-                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
-            );
+            putFromSystemProperty(HostConfig.HOST_KEY_ALGS, List.of(
+                    HostKeyAlgorithm.SSH_ED25519,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
+                    HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512,
+                    HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
+            ));
 
             // These will be tested to see if their implementations CAN be instantiated.
             // If not, they will be removed from the above list BEFORE it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
-            putFromSystemProperty(KexProposal.CHECK_SIG_ALGS,
-                                  HostKeyAlgorithm.SSH_ED25519
-                                  + ',' + HostKeyAlgorithm.SSH_ED448
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
-                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
-                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
-            );
+            putFromSystemProperty(KexProposal.CHECK_SIG_ALGS, List.of(
+                    HostKeyAlgorithm.SSH_ED25519,
+                    HostKeyAlgorithm.SSH_ED448,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
+                    HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512,
+                    HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
+            ));
         }
 
         // encryption_algorithms (Ciphers)
         {
             // The list send to the server
-            final String ciphers = SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
-                                   + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
-                                   + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
-                                   + ',' + SshCipherConstants.AES_256_CTR
-                                   + ',' + SshCipherConstants.AES_192_CTR
-                                   + ',' + SshCipherConstants.AES_128_CTR;
+            final List<String> ciphers = List.of(
+                    SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM,
+                    SshCipherConstants.AES_256_GCM_OPENSSH_COM,
+                    SshCipherConstants.AES_128_GCM_OPENSSH_COM,
+                    SshCipherConstants.AES_256_CTR,
+                    SshCipherConstants.AES_192_CTR,
+                    SshCipherConstants.AES_128_CTR
+            );
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_CTOS, ciphers);
             putFromSystemProperty(KexProposal.PROPOSAL_CIPHER_STOC, ciphers);
 
             // These will be tested to see if their implementations CAN be instantiated.
             // If not, they will be removed from the above list BEFORE it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
-            putFromSystemProperty(KexProposal.CHECK_CIP_ALGS,
-                                  SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM
-                                  + ',' + SshCipherConstants.AES_256_GCM_OPENSSH_COM
-                                  + ',' + SshCipherConstants.AES_128_GCM_OPENSSH_COM
-                                  + ',' + SshCipherConstants.AES_256_CTR
-                                  + ',' + SshCipherConstants.AES_192_CTR
-                                  + ',' + SshCipherConstants.AES_128_CTR
-                                  + ',' + SshCipherConstants.AES_256_CBC
-                                  + ',' + SshCipherConstants.AES_192_CBC
-                                  + ',' + SshCipherConstants.AES_128_CBC
-                                  + ',' + SshCipherConstants.TRIPLE_DES_CTR
-            );
+            putFromSystemProperty(KexProposal.CHECK_CIP_ALGS, List.of(
+                    SshCipherConstants.CHACHA20_POLY1305_OPENSSH_COM,
+                    SshCipherConstants.AES_256_GCM_OPENSSH_COM,
+                    SshCipherConstants.AES_128_GCM_OPENSSH_COM,
+                    SshCipherConstants.AES_256_CTR,
+                    SshCipherConstants.AES_192_CTR,
+                    SshCipherConstants.AES_128_CTR,
+                    SshCipherConstants.AES_256_CBC,
+                    SshCipherConstants.AES_192_CBC,
+                    SshCipherConstants.AES_128_CBC,
+                    SshCipherConstants.TRIPLE_DES_CTR
+            ));
         }
 
         // mac_algorithms (HMAC)
         {
             // The list send to the server
-            final String macs = SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
-                                + ',' + SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
-                                + ',' + SshMacConstants.HMAC_SHA_2_512
-                                + ',' + SshMacConstants.HMAC_SHA_2_256
-                                + ',' + SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM
-                                + ',' + SshMacConstants.HMAC_SHA_1;
+            final List<String> macs = List.of(
+                    SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM,
+                    SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM,
+                    SshMacConstants.HMAC_SHA_2_512,
+                    SshMacConstants.HMAC_SHA_2_256,
+                    SshMacConstants.HMAC_SHA_1_ETM_OPENSSH_COM,
+                    SshMacConstants.HMAC_SHA_1
+            );
             putFromSystemProperty(KexProposal.PROPOSAL_MAC_STOC, macs);
             putFromSystemProperty(KexProposal.PROPOSAL_MAC_CTOS, macs);
 
             // These will be tested to see if their implementations CAN be instantiated.
             // If not, they will be removed from the above list BEFORE it is sent to the
             // server. Disable with {@link KexProposal#CHECKS_ARE_DISABLED}
-            putFromSystemProperty(KexProposal.CHECK_MAC_ALGS,
-                                  SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM
-                                  + ',' + SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM
-                                  + ',' + SshMacConstants.HMAC_SHA_2_512
-                                  + ',' + SshMacConstants.HMAC_SHA_2_256
-            );
+            putFromSystemProperty(KexProposal.CHECK_MAC_ALGS, List.of(
+                    SshMacConstants.HMAC_SHA_2_512_ETM_OPENSSH_COM,
+                    SshMacConstants.HMAC_SHA_2_256_ETM_OPENSSH_COM,
+                    SshMacConstants.HMAC_SHA_2_512,
+                    SshMacConstants.HMAC_SHA_2_256
+            ));
         }
 
         // Authentication: the keys consist of the prefix "userauth."
@@ -465,21 +485,21 @@ public final class SshClientConfigImpl
                      + UserAuthGSSContextKrb5.METHOD,
                      UserAuthGSSContextKrb5.class);
 
-            putFromSystemProperty(HostConfig.PREFERRED_AUTHENTICATIONS,
-                                  UserAuthGSSAPIWithMIC.METHOD
-                                  + ',' + UserAuthPublicKey.METHOD
-                                  + ',' + UserAuthKeyboardInteractive.METHOD
-                                  + ',' + UserAuthPassword.METHOD
-            );
+            putFromSystemProperty(HostConfig.PREFERRED_AUTHENTICATIONS, List.of(
+                    UserAuthGSSAPIWithMIC.METHOD,
+                    UserAuthPublicKey.METHOD,
+                    UserAuthKeyboardInteractive.METHOD,
+                    UserAuthPassword.METHOD
+            ));
 
-            putFromSystemProperty(HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS,
-                                  HostKeyAlgorithm.SSH_ED25519
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384
-                                  + ',' + HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256
-                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512
-                                  + ',' + HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
-            );
+            putFromSystemProperty(HostConfig.PUBLIC_KEY_ACCEPTED_ALGORITHMS, List.of(
+                    HostKeyAlgorithm.SSH_ED25519,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP521,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP384,
+                    HostKeyAlgorithm.SSH_ECDSA_SHA2_NISTP256,
+                    HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_512,
+                    HostKeyAlgorithm.SIG_ONLY_RSA_SHA2_256
+            ));
         }
 
         // Custom configuration flags:
