@@ -254,7 +254,7 @@ public class KexDelegate {
         if (session.getConfig().getBooleanValue(PREFER_KNOWN_HOST_KEY_TYPES, true)) {
             kexProposal.preferKnownHostKeyTypes(hostKeyRepository, hostKeyName);
         }
-        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sent (initial request)");
+        session.getLogger().log(Logger.DEBUG, () -> "SSH_MSG_KEXINIT sending: initial request");
 
         sendKexInit();
 
@@ -382,7 +382,7 @@ public class KexDelegate {
             throws IOException, GeneralSecurityException {
         if (!inKeyExchange.get()) {
             session.getLogger().log(Logger.DEBUG, () ->
-                    "SSH_MSG_KEXINIT sent (client rekey request)");
+                    "SSH_MSG_KEXINIT sending: client rekey request");
 
             sendKexInit();
         }
@@ -452,7 +452,7 @@ public class KexDelegate {
 
         if (!inKeyExchange.get()) {
             session.getLogger().log(Logger.DEBUG, () ->
-                    "SSH_MSG_KEXINIT sent (re-keying requested by the remote)");
+                    "SSH_MSG_KEXINIT sending: re-keying requested by the remote");
             sendKexInit();
         }
 
@@ -585,8 +585,8 @@ public class KexDelegate {
                             if (userinfo != null) {
                                 userinfo.showMessage(getKeyIsChangedMessage(kex, false));
                             }
-                            throw new InvalidKeyException(
-                                    "Rejecting changed key for: " + hostKeyName);
+                            throw new InvalidKeyException("Rejecting changed key for: "
+                                                          + hostKeyName);
                         }
                         case No: {
                             // Remove the old key and add the replacement without any further checks
