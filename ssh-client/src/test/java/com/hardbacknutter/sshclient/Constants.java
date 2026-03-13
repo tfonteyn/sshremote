@@ -33,7 +33,7 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  * Content of "ssh4j.conf":
  * The port must match {@link #PORT}.
  * <p>
- * Make sure none of these are already set in "/etc/ssh/sshd_config" !
+ * Check what is currently set in "/etc/ssh/sshd_config"
  * <pre>
  *  Port 2222
  *
@@ -160,9 +160,9 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  *    sudo /usr/sbin/sshd -T
  * </pre>
  * <p>
- * Optional / as needed - Allow Windows host to access WSL sshd:
+ * Optional / as needed - Allow Windows host to access WSL2 sshd:
  * <p>
- * Find the IP address and update {@link #HOST}.
+ * We need the host to forward port 2222 to the WSL2 ip address:
  * <pre>
  *      # PowerShell as admin, find the WSL ip:
  *      wsl hostname -I
@@ -180,6 +180,14 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  *
  *      # Close the firewall
  *      netsh advfirewall firewall delete rule name="ALLOW TCP PORT 2222"
+ * </pre>
+ * ADB reverse proxy, we're connecting from inside the android device to the outside server.
+ * <pre>
+ *     adb reverse tcp:2222 tcp:2222
+ * </pre>
+ * Check this:
+ * <pre>
+ *     adb reverse --list
  * </pre>
  * <p>
  * When systemd is active:
@@ -226,11 +234,11 @@ import com.hardbacknutter.sshclient.connections.ConnectionTest;
  * Prepare the {@link #KNOWN_HOSTS} file with the server side public keys.
  * Example keys as generated above:
  * <pre>
- *      172.20.137.77 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdH[snip]
- *      172.20.137.77 ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdH[snip]
- *      172.20.137.77 ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdH[snip]
- *      172.20.137.77 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBl0LOnm9[snip]
- *      172.20.137.77 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDDXflt+RO[snip]
+ *      [127.0.0.1]:2222 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdH[snip]
+ *      [127.0.0.1]:2222 ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdH[snip]
+ *      [127.0.0.1]:2222 ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdH[snip]
+ *      [127.0.0.1]:2222 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBl0LOnm9[snip]
+ *      [127.0.0.1]:2222 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDDXflt+RO[snip]
  * </pre>
  * Update the list at {@link ConnectionTest#withKeys()} matching the ones
  * you added to the server "~/.ssh/authorized_keys"
@@ -239,7 +247,7 @@ public final class Constants {
     public static final String KEY_FILES_PASSPHRASE = "secret";
 
     public static final String RESOURCES = "src/test/resources/";
-    public static final String HOST = "172.20.137.77";
+    public static final String HOST = "127.0.0.1";
     public static final String USERNAME = "test";
     public static final String PASSWORD = "test";
     public static final int PORT = 2222;
