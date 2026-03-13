@@ -232,6 +232,7 @@ public class MainFragment
         }
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     private void onFailed(@NonNull final Pair<FinishedMessage<UserButton>, Exception> result) {
         vb.progress.setVisibility(View.GONE);
 
@@ -243,16 +244,22 @@ public class MainFragment
             vb.lastButton.setText(userButton.getLabel());
             vb.lastExitCode.setVisibility(View.INVISIBLE);
 
+            final String msg;
             if (e instanceof UnknownHostException) {
-                outputView.setText(R.string.error_ping_failed);
-
-            }
-            if (e instanceof SshTooManyAuthAttemptException) {
-                outputView.setText(getString(R.string.error_to_many_auth,
-                                             ((SshTooManyAuthAttemptException) e).getAuthTries()));
+                final Host host = userButton.getHost();
+                if (host != null) {
+                    msg = getString(R.string.error_unknown_host, host.hostnameOrIp);
+                } else {
+                    // We should never get here... flw
+                    msg = getString(R.string.button_not_set);
+                }
+            } else if (e instanceof SshTooManyAuthAttemptException) {
+                msg = getString(R.string.error_to_many_auth,
+                                ((SshTooManyAuthAttemptException) e).getAuthTries());
             } else {
-                outputView.setText(e.getMessage());
+                msg = e.getMessage();
             }
+            outputView.setText(msg);
         }
     }
 
