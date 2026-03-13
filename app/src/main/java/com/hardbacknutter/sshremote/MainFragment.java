@@ -12,8 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -32,6 +34,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.net.UnknownHostException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,8 +46,10 @@ import com.hardbacknutter.sshclient.SshClientFactory;
 import com.hardbacknutter.sshclient.userauth.SshTooManyAuthAttemptException;
 import com.hardbacknutter.sshremote.databinding.FragmentMainBinding;
 import com.hardbacknutter.sshremote.databinding.RowButtonBinding;
+import com.hardbacknutter.sshremote.db.Host;
 import com.hardbacknutter.sshremote.ddsupport.ItemTouchHelperAdapter;
 import com.hardbacknutter.sshremote.ddsupport.SimpleItemTouchHelperCallback;
+import com.hardbacknutter.sshremote.debug.GetContentUriForWritingContract;
 
 public class MainFragment
         extends Fragment {
@@ -53,6 +59,14 @@ public class MainFragment
     private final List<UserButton> list = new ArrayList<>();
     private FragmentMainBinding vb;
     private MainViewModel vm;
+
+    /** The launcher for picking a Uri to write to. */
+    @SuppressWarnings("DataFlowIssue")
+    private final ActivityResultLauncher<GetContentUriForWritingContract.Input>
+            createDocumentLauncher = registerForActivityResult(
+            new GetContentUriForWritingContract(),
+            o -> o.ifPresent(uri -> vm.writeDebugFile(getContext(), uri)));
+
     private FloatingActionButton fab;
     private ButtonAdapter adapter;
     private ItemTouchHelper itemTouchHelper;
@@ -422,6 +436,13 @@ public class MainFragment
                 movingButtons = true;
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
+            } else if (itemId == R.id.MENU_CREATE_DEBUG_REPORT) {
+                final String fileName = "sshremote-debug-" + LocalDate
+                        .now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                final String mimeType = getMimeTypeFromExtension("zip");
+                createDocumentLauncher.launch(new GetContentUriForWritingContract
+                        .Input(mimeType, fileName));
+
             } else if (itemId == R.id.MENU_ABOUT) {
                 final Context context = requireContext();
 
@@ -448,6 +469,16 @@ public class MainFragment
             }
 
             return false;
+        }
+
+        @NonNull
+        String getMimeTypeFromExtension(@NonNull final String fileExt) {
+            final String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
+            if (mimeType != null) {
+                return mimeType;
+            }
+            // fallback
+            return "application/" + fileExt;
         }
     }
 }

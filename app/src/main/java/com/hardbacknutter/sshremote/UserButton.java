@@ -117,7 +117,7 @@ public class UserButton {
         // so we simply override with the global value
         host.strictHostKeyChecking = strict;
 
-        final SshHelper ssh = new SshHelper(global, host);
+        final SshHelper ssh = new SshHelper(context, global, host);
         try {
             session = ssh.openSession(context, null);
             channel = ssh.openChannelExec(session, command);

@@ -3,7 +3,6 @@ package com.hardbacknutter.sshremote.ssh;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -35,6 +34,11 @@ public class SshHelper {
     public static final String PK_SSH_LOG_LEVEL = "global.ssh.log.level";
     public static final String PK_STRICT_HOST_KEY_CHECKING = "global.ssh.strictHostKeyChecking";
 
+    /** Subdirectory of {@link Context#getFilesDir()}. */
+    public static final String LOG_DIR = "log";
+    /** Base name of the logfile. */
+    public static final String LOG_FILE = "error.log";
+
     public static final String KNOWN_HOSTS = "known_hosts";
     private static final String CHANNEL_EXEC = "exec";
     @NonNull
@@ -42,13 +46,23 @@ public class SshHelper {
 
     private final SshClient sshClient;
 
-    public SshHelper(@NonNull final SharedPreferences global,
+    public SshHelper(@NonNull final Context context,
+                     @NonNull final SharedPreferences global,
                      @NonNull final Host host) {
         this.host = host;
 
         final int logLevel = global.getInt(PK_SSH_LOG_LEVEL, Logger.ERROR);
 
-        sshClient = SshClientFactory.create(new LogCatLogger(logLevel));
+        final File logDir = new File(context.getFilesDir(), LOG_DIR);
+        if (!logDir.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            logDir.mkdirs();
+        }
+
+        final FileLogger logger = new FileLogger(logLevel, logDir, LOG_FILE);
+        logger.cycleLogs();
+
+        sshClient = SshClientFactory.create(logger);
     }
 
     /**

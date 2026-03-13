@@ -36,6 +36,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@id/MENU_CREATE_DEBUG_REPORT"
+        android:orderInCategory="950"
+        android:title="@string/lbl_create_debug_report"
+        app:showAsAction="never" />
+
+    <item
         android:id="@id/MENU_ABOUT"
         android:orderInCategory="999"
         android:title="@string/lbl_about"

@@ -2,6 +2,7 @@ package com.hardbacknutter.sshremote;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -14,9 +15,12 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import com.hardbacknutter.sshclient.utils.SshException;
 import com.hardbacknutter.sshremote.db.DB;
+import com.hardbacknutter.sshremote.debug.DebugReport;
+import com.hardbacknutter.sshremote.ssh.SshHelper;
 
 @SuppressWarnings("WeakerAccess")
 public class MainViewModel
@@ -95,5 +99,18 @@ public class MainViewModel
 
     public void saveButtonOrder(@NonNull final List<UserButton> list) {
         db.getExecutor().execute(() -> list.forEach(userButton -> userButton.update(db)));
+    }
+
+    public void writeDebugFile(@NonNull final Context context,
+                               @NonNull final Uri uri) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            final DebugReport d = new DebugReport(context.getApplicationContext(),
+                                                  SshHelper.LOG_DIR);
+            try {
+                d.sendToFile(uri);
+            } catch (@NonNull final IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }
