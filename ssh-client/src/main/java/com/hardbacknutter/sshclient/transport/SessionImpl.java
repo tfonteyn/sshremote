@@ -1424,6 +1424,11 @@ public final class SessionImpl
             hostKeyAlias = tmpValue;
         }
 
+        tmpIntValue = hostConfig.getIntValue(HostConfig.SERVER_ALIVE_COUNT_MAX, 3);
+        if (tmpIntValue > -1) {
+            setServerAliveCountMax(tmpIntValue);
+        }
+
         // The server alive interval value is also set as the timeout!
         tmpIntValue = hostConfig.getIntValue(HostConfig.SERVER_ALIVE_INTERVAL, -1);
         if (tmpIntValue > -1) {

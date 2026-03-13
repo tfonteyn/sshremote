@@ -12,6 +12,7 @@ import com.hardbacknutter.sshclient.utils.BaseConfig;
  * @see HostConfigRepository
  * @see HostConfigRepositoryFactory
  */
+@SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 public interface HostConfig
         extends BaseConfig {
 
@@ -55,9 +56,14 @@ public interface HostConfig
     String CONNECT_TIMEOUT = "ConnectTimeout";
 
     /**
-     * int, in seconds
+     * int, in seconds, default is 0, indicating that these messages will not be sent to the server.
      */
     String SERVER_ALIVE_INTERVAL = "ServerAliveInterval";
+
+    /**
+     * int, a count, default value is {@code 3}
+     */
+    String SERVER_ALIVE_COUNT_MAX = "ServerAliveCountMax";
 
     /**
      * @see KexProposal.StrictHostKeyChecking
