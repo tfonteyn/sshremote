@@ -125,6 +125,11 @@ android {
         }
     }
 
+    lint {
+        // allow command line builds to complete
+        abortOnError = false
+    }
+
     // https://developer.android.com/build/dependencies#dependency-info-play
     dependenciesInfo {
         // Disables dependency metadata when building APKs.
@@ -140,11 +145,6 @@ android {
                 output.outputFileName.set(name)
             }
         })
-    }
-
-    lint {
-        // allow command line builds to complete
-        abortOnError = false
     }
 }
 
