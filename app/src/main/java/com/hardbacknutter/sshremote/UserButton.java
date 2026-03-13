@@ -70,6 +70,16 @@ public class UserButton {
         return config.label != null ? config.label : "";
     }
 
+    @Nullable
+    public Host getHost() {
+        return host;
+    }
+
+    @Nullable
+    public Command getCommand() {
+        return command;
+    }
+
     boolean isPersisted() {
         return config.id != 0;
     }
