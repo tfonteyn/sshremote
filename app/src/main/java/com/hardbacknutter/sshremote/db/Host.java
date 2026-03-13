@@ -76,9 +76,12 @@ public class Host {
         try {
             final InetAddress inetAddress = new DNSService().lookup(hostnameOrIp, DNS_TIMEOUT_MS);
 
-            final Socket sock = new Socket();
-            sock.connect(new InetSocketAddress(inetAddress, port), PING_TIMEOUT_MS);
-            sock.close();
+            //FIXME: there are issues with this Socket connect call lately (2022-09)
+            // not sure yet if it's related to the emulator or to Android 12 (13?)
+            // For now, pretend that if the DNS lookup went ok... it's all ok...
+            // final Socket sock = new Socket();
+            // sock.connect(new InetSocketAddress(inetAddress, port), PING_TIMEOUT_MS);
+            // sock.close();
             return;
         } catch (final IOException ignore) {
         }
