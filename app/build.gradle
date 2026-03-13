@@ -48,6 +48,12 @@ android {
             storePassword = props["sign.storePassword"]
             keyAlias = props["sign.keyAlias"]
             keyPassword = props["sign.keyPassword"]
+
+            // https://source.android.com/docs/security/features/apksigning
+            // APK key rotation is not recommended for Android 12 (API level 31) and earlier.
+            // URGENT: investigate enableV3Signing ...
+            //enableV3Signing true
+            //enableV4Signing true
         }
     }
 
