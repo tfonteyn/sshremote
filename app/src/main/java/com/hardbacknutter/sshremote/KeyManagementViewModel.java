@@ -98,7 +98,12 @@ public class KeyManagementViewModel
             while ((line = br.readLine()) != null) {
                 if (!line.startsWith("#") && !line.startsWith(" ")) {
                     final String[] parts = line.split(" ");
-                    if (parts.length == 3) {
+                    // 0: host/ip
+                    // 1: type
+                    // 2: fingerprint
+                    // There should not be any fields beyond this,
+                    // but we're lenient and simply ignore them
+                    if (parts.length >= 3) {
                         final byte[] key = Base64.getDecoder().decode(parts[2]);
                         final String fp = HostKey.getFingerPrint(fingerPrintAlgorithm, key);
                         hostLines.add(new HostLine(parts[0], parts[1], fp, line));
