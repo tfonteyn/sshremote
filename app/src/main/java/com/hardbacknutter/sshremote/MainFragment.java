@@ -133,6 +133,8 @@ public class MainFragment
         vm.onConfigLoaded().observe(getViewLifecycleOwner(), this::onConfigLoaded);
         vm.onFinished().observe(getViewLifecycleOwner(), this::onFinished);
         vm.onFailed().observe(getViewLifecycleOwner(), this::onFailed);
+        vm.onShowProgress().observe(getViewLifecycleOwner(), visible ->
+                vb.progress.setVisibility(visible ? View.VISIBLE : View.GONE));
 
         adapter = new ButtonAdapter(context);
         vb.buttonFlow.setAdapter(adapter);
@@ -205,8 +207,6 @@ public class MainFragment
     }
 
     private void onFinished(@NonNull final FinishedMessage<UserButton> result) {
-        vb.progress.setVisibility(View.GONE);
-
         if (result.isNewEvent()) {
             final UserButton userButton = result.getResult();
             //noinspection DataFlowIssue
@@ -234,8 +234,6 @@ public class MainFragment
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void onFailed(@NonNull final Pair<FinishedMessage<UserButton>, Exception> result) {
-        vb.progress.setVisibility(View.GONE);
-
         if (result.first.isNewEvent()) {
             final UserButton userButton = result.first.getResult();
             final Exception e = result.second;
@@ -325,7 +323,6 @@ public class MainFragment
             holder.vb.action.setOnClickListener(v -> {
                 if (userButton.isPersisted()) {
                     clearOutput();
-                    vb.progress.setVisibility(View.VISIBLE);
                     //noinspection DataFlowIssue
                     vm.execute(getContext(), userButton);
                 } else {

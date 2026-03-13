@@ -27,6 +27,8 @@ public class MainViewModel
             finished = new MutableLiveData<>();
     private final MutableLiveData<Pair<FinishedMessage<UserButton>, Exception>>
             failed = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> showProgress = new MutableLiveData<>();
+
 
     private DB db;
 
@@ -59,12 +61,18 @@ public class MainViewModel
     void execute(@NonNull final Context context,
                  @NonNull final UserButton userButton) {
 
+        showProgress.setValue(true);
+
         final Context appContext = context.getApplicationContext();
         db.getExecutor().execute(() -> {
             try {
                 userButton.exec(appContext);
+
+                showProgress.postValue(false);
                 finished.postValue(new FinishedMessage<>(0, userButton));
+
             } catch (final SshException | IOException | GeneralSecurityException e) {
+                showProgress.postValue(false);
                 failed.postValue(new Pair<>(new FinishedMessage<>(0, userButton), e));
             }
         });
@@ -78,6 +86,11 @@ public class MainViewModel
     @NonNull
     LiveData<Pair<FinishedMessage<UserButton>, Exception>> onFailed() {
         return failed;
+    }
+
+    @NonNull
+    LiveData<Boolean> onShowProgress() {
+        return showProgress;
     }
 
     public void saveButtonOrder(@NonNull final List<UserButton> list) {
