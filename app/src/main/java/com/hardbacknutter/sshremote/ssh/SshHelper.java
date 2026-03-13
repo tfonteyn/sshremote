@@ -24,6 +24,7 @@ import com.hardbacknutter.sshclient.Session;
 import com.hardbacknutter.sshclient.SshClient;
 import com.hardbacknutter.sshclient.SshClientFactory;
 import com.hardbacknutter.sshclient.channels.SshChannelException;
+import com.hardbacknutter.sshclient.hostconfig.HostConfig;
 import com.hardbacknutter.sshclient.userauth.UserInfo;
 import com.hardbacknutter.sshclient.utils.SshException;
 import com.hardbacknutter.sshremote.db.Command;
@@ -72,6 +73,9 @@ public class SshHelper {
         final Session session = sshClient.getSession(host.userName.trim(),
                                                      host.hostnameOrIp.trim(),
                                                      host.port);
+        // URGENT: this should be configurable on the 'host'
+        session.setConfig(HostConfig.SERVER_ALIVE_INTERVAL, "60");
+
         if (userInfo != null) {
             session.setUserInfo(userInfo);
         }
