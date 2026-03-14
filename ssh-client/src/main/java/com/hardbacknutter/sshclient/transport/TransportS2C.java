@@ -1,9 +1,8 @@
 package com.hardbacknutter.sshclient.transport;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
@@ -51,8 +50,7 @@ public class TransportS2C
 
     /**
      * Read the server version.
-     * This method must be called immediately after {@link TransportC2S#writeVersion(String)}
-     * is called.
+     * This method must be called as the very first read operation.
      *
      * @see TransportC2S#writeVersion(String)
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-4.2">
@@ -62,21 +60,53 @@ public class TransportS2C
     @NonNull
     String readVersion()
             throws IOException {
-        // Read the response; don't close the stream....
-        //noinspection DataFlowIssue
-        final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(socketInputStream, StandardCharsets.UTF_8));
+        // 2026-03-14: do not try to be clever and use InputStreamReader#readLine
+        // It can mess up... we MUST do this byte by byte
 
-        String version;
+        final ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
+        String version = null;
+
         // The server MAY send other lines of data before sending the version
         //    string.  Each line SHOULD be terminated by a Carriage Return and Line
         //    Feed.  Such lines MUST NOT begin with "SSH-", and SHOULD be encoded
         //    in ISO-10646 UTF-8 [RFC3629] (language is not specified).  Clients
         //    MUST be able to process such lines.  Such lines MAY be silently
         //    ignored, or MAY be displayed to the client user.
-        do {
-            version = reader.readLine();
-        } while (version != null && !version.startsWith("SSH-"));
+
+        // loop until we get a version string, or the stream is closed.
+        while (version == null) {
+            lineBuffer.reset();
+            int b;
+            boolean sawCr = false;
+
+            // Read bytes until we hit LF
+            while ((b = socketInputStream.read()) != -1) {
+                lineBuffer.write(b);
+
+                if (b == '\n' && sawCr) {
+                    // We have a complete \r\n terminated line
+                    break;
+                }
+                sawCr = (b == '\r');
+            }
+
+            // Stream closed ?
+            if (b == -1) {
+                break;
+            }
+
+            final byte[] lineBytes = lineBuffer.toByteArray();
+
+            // Check if line starts with "SSH-"
+            if (lineBytes.length >= 4
+                && lineBytes[0] == 'S'
+                && lineBytes[1] == 'S'
+                && lineBytes[2] == 'H'
+                && lineBytes[3] == '-') {
+                // Got the version, we're done here
+                version = new String(lineBytes, 0, lineBytes.length - 2, StandardCharsets.UTF_8);
+            }
+        }
 
         if (version == null) {
             throw new IOException("No server version received");
