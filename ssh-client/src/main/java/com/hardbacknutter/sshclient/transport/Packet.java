@@ -1,10 +1,10 @@
 package com.hardbacknutter.sshclient.transport;
 
-import org.jspecify.annotations.NonNull;
-
 import com.hardbacknutter.sshclient.Random;
 import com.hardbacknutter.sshclient.utils.ABuffer;
 import com.hardbacknutter.sshclient.utils.Buffer;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * A single packet to be sent to or received from the remote side.
@@ -43,7 +43,7 @@ import com.hardbacknutter.sshclient.utils.Buffer;
  * </pre>
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6">
- * RFC 4253 SSH Transport Layer Protocol, section 6. Binary Packet Protocol</a>
+ *         RFC 4253 SSH Transport Layer Protocol, section 6. Binary Packet Protocol</a>
  */
 public class Packet
         extends ABuffer<Packet> {
@@ -68,7 +68,7 @@ public class Packet
      * TODO: should be configurable.
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6.1">
-     * RFC 4253 SSH Transport Layer Protocol, section 6.1. Maximum Packet Length</a>
+     *         RFC 4253 SSH Transport Layer Protocol, section 6.1. Maximum Packet Length</a>
      */
     public static final int MAX_SIZE = 0x2_0000;
 
@@ -172,15 +172,18 @@ public class Packet
 
     /**
      * Read the actual length of the <strong>payload</strong> from the first 4 bytes of the buffer.
+     * <p>
+     * Valid for incoming packets.
+     * Outgoing packets must be {@link #finish(int, boolean, Random)}'d first!
      *
      * @return The length of the packet in bytes, not including 'mac' or the
-     * 'packet_length' field itself.
+     *         'packet_length' field itself.
      */
     int getPacketLength() {
         return data[0] << 24 & 0xff000000 |
-                data[1] << 16 & 0x00ff0000 |
-                data[2] << 8 & 0x0000ff00 |
-                data[3] & 0x000000ff;
+               data[1] << 16 & 0x00ff0000 |
+               data[2] << 8 & 0x0000ff00 |
+               data[3] & 0x000000ff;
     }
 
     /**
@@ -201,7 +204,7 @@ public class Packet
      * @return command byte
      *
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-6">
-     * RFC 4253 SSH Transport Layer Protocol, section 6. Binary Packet Protocol</a>
+     *         RFC 4253 SSH Transport Layer Protocol, section 6. Binary Packet Protocol</a>
      */
     public byte getCommand() {
         return data[HEADER_LEN];
@@ -211,10 +214,36 @@ public class Packet
     @NonNull
     public String toString() {
         return "Packet{"
-                + super.toString()
-                + ", packet size=" + getPacketLength()
-                + ", command=" + data[HEADER_LEN]
-                + ", padding size=" + data[4]
-                + '}';
+               + super.toString()
+               + ", packet size=" + getPacketLength()
+               + ", command=" + data[HEADER_LEN]
+               + ", padding size=" + data[4]
+               + '}';
+    }
+
+    @SuppressWarnings({"DefaultLocale", "MagicNumber", "ProhibitedExceptionCaught"})
+    @NonNull
+    public String dumpHex() {
+        // Determine total size from the first 4 bytes (Packet Length field)
+        final int totalSize = getPacketLength() + 4;
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append(String.format("--- Packet Hex Dump (%d bytes) writeOffset = %d ---\n",
+                                totalSize, writeOffset));
+        try {
+            for (int i = 0; i < totalSize - 1; i++) {
+                sb.append(String.format("%02X ", data[i]));
+
+                // Newline every 16 bytes
+                if ((i + 1) % 16 == 0 && (i + 1) < totalSize) {
+                    sb.append("\n");
+                }
+            }
+            sb.append("\n---------------------------------------");
+        } catch (final IndexOutOfBoundsException e) {
+            sb.append("\nIndexOutOfBoundsException: ").append(e.getMessage());
+        }
+
+        return sb.toString();
     }
 }
