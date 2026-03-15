@@ -8,9 +8,13 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreference;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshremote.ssh.SshHelper;
@@ -56,6 +60,20 @@ public class SettingsFragment
         //noinspection DataFlowIssue
         logLevelPref = findPreference(SshHelper.PK_SSH_LOG_LEVEL);
         updateLogLevelSummary();
+
+        initTopMenuBehaviour();
+    }
+
+    private void initTopMenuBehaviour() {
+        final Preference p = findPreference(MainActivity.PK_UI_TOP_MENU);
+        //noinspection DataFlowIssue
+        p.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
+        p.setOnPreferenceChangeListener((preference, newValue) -> {
+            //noinspection DataFlowIssue
+            Snackbar.make(getView(), R.string.warning_requires_restart,
+                          Snackbar.LENGTH_LONG).show();
+            return true;
+        });
     }
 
     @Override

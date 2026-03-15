@@ -64,9 +64,14 @@
     <string name="vertical">vertical</string>
     <string name="horizontal">horizontal</string>
 
+    <!-- Preference Category -->
+    <string name="pc_ui">User Interface</string>
+    <string name="pc_ssh">SSH</string>
+
     <string name="lbl_log_level">Log level</string>
     <string name="lbl_buttons_flow">Buttons flow</string>
     <string name="toggle_output_wrap">Wrap output</string>
+    <string name="warning_requires_restart">Please restart the app</string>
 
     <string-array name="log_levels">
         <item>None</item>
@@ -77,5 +82,26 @@
         <item>Debug</item>
     </string-array>
 
+    <!-- ListPreference title: UI menu bar at the top of the screen. -->
+    <string name="pt_ui_screen_systembars_behavior">Top menu</string>
+    <!-- ListPreference title: UI menu bar at the top of the screen.
+     Default behaviour is to scroll along with the rest of the screen.
+    -->
+    <string name="pt_screen_header_scroll">"Let the menu slide away when scrolling</string>
+    <!-- ListPreference title: UI menu bar at the top of the screen.
+         Stays fixed/visible while scrolling the screen. -->
+    <string name="pt_screen_header_fixed">Keep the menu pinned</string>
+
+    <!-- ListPreference
+     Allow the top system-bar/toolbar and bottom system-bar to scroll or not
+    -->
+    <string-array name="pe_ui_screen_systembars">
+        <item>@string/pt_screen_header_scroll</item>
+        <item>@string/pt_screen_header_fixed</item>
+    </string-array>
+    <string-array name="pv_ui_screen_systembars">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
 
 </resources>
