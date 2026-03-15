@@ -6,18 +6,23 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.Dimension;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.util.Pair;
@@ -66,6 +71,8 @@ public class MainFragment
             createDocumentLauncher = registerForActivityResult(
             new GetContentUriForWritingContract(),
             o -> o.ifPresent(uri -> vm.writeDebugFile(getContext(), uri)));
+
+    private ScaleGestureDetector scaleGestureDetector;
 
     private FloatingActionButton fab;
     private ButtonAdapter adapter;
@@ -118,22 +125,45 @@ public class MainFragment
      * They have in common that none of them work properly....
      * So, we just swap two views instead, easy, reliable.
      */
+    @SuppressLint("ClickableViewAccessibility")
     private void selectOutputView() {
         final CharSequence text;
         if (isWrap()) {
             vb.outputWrapped.setVisibility(View.VISIBLE);
             vb.horScroll.setVisibility(View.GONE);
+
             text = vb.outputScrollable.getText();
             vb.outputScrollable.setText(null);
+            vb.outputScrollable.setOnTouchListener(null);
+
             outputView = vb.outputWrapped;
+
         } else {
             vb.outputWrapped.setVisibility(View.GONE);
             vb.horScroll.setVisibility(View.VISIBLE);
+
             text = vb.outputWrapped.getText();
             vb.outputWrapped.setText(null);
+            vb.outputWrapped.setOnTouchListener(null);
+
             outputView = vb.outputScrollable;
         }
         outputView.setText(text);
+
+        //noinspection DataFlowIssue
+        scaleGestureDetector = new ScaleGestureDetector(
+                getContext(), new PinchListener(outputView, getResources().getDisplayMetrics()));
+
+        outputView.setClickable(true);
+        outputView.setFocusable(true);
+        outputView.setOnTouchListener((v, event) -> {
+            // If there is more than one finger, disable scrolling/parent interception
+            if (event.getPointerCount() > 1) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+            }
+            scaleGestureDetector.onTouchEvent(event);
+            return true;
+        });
     }
 
     @Override
@@ -300,6 +330,41 @@ public class MainFragment
         Holder(@NonNull final RowButtonBinding vb) {
             super(vb.getRoot());
             this.vb = vb;
+        }
+    }
+
+    private static final class PinchListener
+            extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+
+        @Dimension(unit = Dimension.SP)
+        private static final float MIN_SIZE_SP = 8f;
+        @Dimension(unit = Dimension.SP)
+        private static final float MAX_SIZE_SP = 40f;
+        @Px
+        final float minSizePx;
+        @Px
+        final float maxSizePx;
+        @NonNull
+        private final TextView textView;
+
+        private PinchListener(@NonNull final TextView textView,
+                              @NonNull final DisplayMetrics metrics) {
+            this.textView = textView;
+            minSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, MIN_SIZE_SP,
+                                                  metrics);
+            maxSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, MAX_SIZE_SP,
+                                                  metrics);
+        }
+
+        @Override
+        public boolean onScale(@NonNull final ScaleGestureDetector detector) {
+            @Px
+            final float currentSize = textView.getTextSize();
+            final float factor = detector.getScaleFactor();
+            @Px
+            final float newSize = Math.max(minSizePx, Math.min(currentSize * factor, maxSizePx));
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, newSize);
+            return true;
         }
     }
 
