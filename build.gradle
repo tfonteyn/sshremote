@@ -16,5 +16,5 @@ tasks.withType(Test).configureEach {
 ext {
     applicationId = "com.hardbacknutter.sshremote"
     applicationVersionCode = 11
-    applicationVersionName = "1.5.2"
+    applicationVersionName = "1.6.0"
 }
