@@ -91,6 +91,11 @@
     <!-- ListPreference title: UI menu bar at the top of the screen.
          Stays fixed/visible while scrolling the screen. -->
     <string name="pt_screen_header_fixed">Keep the menu pinned</string>
+    <string name="lbl_columns">Columns</string>
+    <string name="lbl_rows">Rows</string>
+    <string name="automatic">Automatic</string>
+    <string name="manual">Manual</string>
+    <string name="button_span">Button span count</string>
 
     <!-- ListPreference
      Allow the top system-bar/toolbar and bottom system-bar to scroll or not

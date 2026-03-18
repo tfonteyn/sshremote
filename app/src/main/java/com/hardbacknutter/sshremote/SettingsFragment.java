@@ -13,6 +13,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreference;
+import androidx.preference.TwoStatePreference;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -23,16 +24,36 @@ public class SettingsFragment
         extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    public static final String TAG = "SettingsFragment";
+    static final String TAG = "SettingsFragment";
 
-    public static final int DEF_BUTTONS_PER_PAGE = 8;
-    public static final String PK_BUTTONS_FLOW = "global.buttons.flow";
+    /**
+     * Default for {@link #PK_BUTTONS_PER_PAGE}.
+     */
+    static final int DEF_BUTTONS_PER_PAGE = 8;
+    /**
+     * Orientation.
+     * {@code true}: Horizontal.
+     * {@code false}: Vertical.
+     */
+    static final String PK_BUTTONS_FLOW = "global.buttons.flow";
+    /**
+     * Number of buttons.
+     */
+    static final String PK_BUTTONS_PER_PAGE = "global.buttons.amount";
+    /**
+     * Boolean: {@code false}: automatic (resources),
+     * or {@code true}: manual from {@link #PK_BUTTONS_SPAN_COUNT}.
+     */
+    static final String PK_BUTTONS_SPAN = "global.buttons.span";
+    /**
+     * Used for both columns and rows. Depends on the {@link #PK_BUTTONS_FLOW} setting.
+     */
+    static final String PK_BUTTONS_SPAN_COUNT = "global.buttons.span.count";
+    /**
+     * Whether to wrap the output of scroll horizontal.
+     */
+    static final String PK_WRAP_OUTPUT = "global.output.wrap";
 
-    public static final String PK_BUTTONS_PER_PAGE = "global.buttons.amount";
-
-    public static final String PK_WRAP_OUTPUT = "global.output.wrap";
-
-    private SeekBarPreference logLevelPref;
     private final OnBackPressedCallback backPressedCallback =
             new OnBackPressedCallback(true) {
                 @Override
@@ -41,23 +62,26 @@ public class SettingsFragment
                 }
             };
 
+    private SeekBarPreference spanCount;
+    private SeekBarPreference logLevelPref;
+
     @Override
     public void onCreatePreferences(final Bundle savedInstanceState,
                                     final String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
         final SwitchPreference buttonsFlow = findPreference(PK_BUTTONS_FLOW);
-
         //noinspection DataFlowIssue
         buttonsFlow.setSummaryProvider(p -> {
-            if (((SwitchPreference) p).isChecked()) {
+            if (((TwoStatePreference) p).isChecked()) {
                 return getString(R.string.vertical);
             } else {
                 return getString(R.string.horizontal);
             }
         });
 
-        //noinspection DataFlowIssue
+        spanCount = findPreference(PK_BUTTONS_SPAN_COUNT);
+
         logLevelPref = findPreference(SshHelper.PK_SSH_LOG_LEVEL);
         updateLogLevelSummary();
 
@@ -96,9 +120,25 @@ public class SettingsFragment
     @Override
     public void onSharedPreferenceChanged(@NonNull final SharedPreferences preferences,
                                           @Nullable final String key) {
+        // paranoia
+        if (key == null) {
+            return;
+        }
 
-        if (SshHelper.PK_SSH_LOG_LEVEL.equals(key)) {
-            updateLogLevelSummary();
+        switch (key) {
+            case PK_BUTTONS_FLOW: {
+                final boolean flowHorizontal = preferences.getBoolean(key, false);
+                if (flowHorizontal) {
+                    spanCount.setTitle(R.string.lbl_columns);
+                } else {
+                    spanCount.setTitle(R.string.lbl_rows);
+                }
+                break;
+            }
+            case SshHelper.PK_SSH_LOG_LEVEL: {
+                updateLogLevelSummary();
+                break;
+            }
         }
     }
 

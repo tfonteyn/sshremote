@@ -2,7 +2,7 @@
 <resources>
 
     <style name="SSHButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
-        <item name="android:layout_width">@dimen/btn_width</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_margin">@dimen/btn_margin</item>
         <item name="android:textColor">?attr/colorOnBackground</item>

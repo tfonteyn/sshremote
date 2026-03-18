@@ -90,31 +90,44 @@ public class MainFragment
 
         final GridLayoutManager lm = (GridLayoutManager) vb.buttonFlow.getLayoutManager();
         Objects.requireNonNull(lm);
+        selectButtonOrientationAndSpan(inflater.getContext(), lm);
 
-        final Context context = inflater.getContext();
+        selectOutputView();
+        return vb.getRoot();
+    }
+
+    private void selectButtonOrientationAndSpan(@NonNull final Context context,
+                                                @NonNull final GridLayoutManager lm) {
+
         final SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(context);
 
         final boolean flowHorizontal = preferences
                 .getBoolean(SettingsFragment.PK_BUTTONS_FLOW, false);
+        final int spanResId;
         if (flowHorizontal) {
             // android:orientation="horizontal"
             // app:spanCount="@integer/btn_list_column_count"
             // portrait phone: 6 buttons in a column
-            // landscape phone: 4 buttons in a column
+            // landscape phone: 3 buttons in a column
             lm.setOrientation(RecyclerView.HORIZONTAL);
-            lm.setSpanCount(context.getResources().getInteger(R.integer.btn_list_column_count));
+            spanResId = R.integer.btn_list_column_count;
         } else {
             // android:orientation="vertical"
             // app:spanCount="@integer/btn_list_row_count"
             // portrait phone: 2 buttons in a row
             // landscape phone: 3 buttons in a row
             lm.setOrientation(RecyclerView.VERTICAL);
-            lm.setSpanCount(context.getResources().getInteger(R.integer.btn_list_row_count));
+            spanResId = R.integer.btn_list_row_count;
         }
 
-        selectOutputView();
-        return vb.getRoot();
+        final boolean spanManual = preferences.getBoolean(SettingsFragment.PK_BUTTONS_SPAN, false);
+        if (spanManual) {
+            final int spanCount = preferences.getInt(SettingsFragment.PK_BUTTONS_SPAN_COUNT, 2);
+            lm.setSpanCount(spanCount);
+        } else {
+            lm.setSpanCount(context.getResources().getInteger(spanResId));
+        }
     }
 
     /**
