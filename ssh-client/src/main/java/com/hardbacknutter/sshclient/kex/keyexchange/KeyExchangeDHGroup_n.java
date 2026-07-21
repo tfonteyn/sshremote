@@ -119,7 +119,7 @@ abstract class KeyExchangeDHGroup_n
             final BigInteger f = receivedPacket.getBigInteger();
             final byte[] sig_of_H = receivedPacket.getString();
 
-            agreement.validate(e, f);
+            agreement.validatePublicKey(e, f);
 
             K = encodeAsMPInt(trimZeroes(agreement.getSharedSecret(f)));
 

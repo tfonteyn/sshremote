@@ -80,7 +80,7 @@ public interface DH {
      *
      * @throws GeneralSecurityException if anything goes wrong.
      */
-    void validate(@NonNull BigInteger e,
-                  @NonNull BigInteger f)
+    void validatePublicKey(@NonNull BigInteger e,
+                           @NonNull BigInteger f)
             throws GeneralSecurityException;
 }

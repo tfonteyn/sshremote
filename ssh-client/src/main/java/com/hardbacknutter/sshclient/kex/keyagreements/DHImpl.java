@@ -82,8 +82,8 @@ public class DHImpl
      * RFC 4253 SSH Transport Layer Protocol, section 8.</a>
      */
     @Override
-    public void validate(@NonNull final BigInteger e,
-                         @NonNull final BigInteger f)
+    public void validatePublicKey(@NonNull final BigInteger e,
+                                  @NonNull final BigInteger f)
             throws InvalidKeyException {
         if (e.compareTo(BigInteger.ONE) < 0 || e.compareTo(p) >= 0
                 ||

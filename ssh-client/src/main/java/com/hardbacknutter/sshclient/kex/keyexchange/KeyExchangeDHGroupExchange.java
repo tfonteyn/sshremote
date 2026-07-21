@@ -1,11 +1,15 @@
 package com.hardbacknutter.sshclient.kex.keyexchange;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.AlgorithmParameterSpec;
+
+import javax.crypto.spec.DHParameterSpec;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
@@ -15,6 +19,8 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import com.hardbacknutter.sshclient.transport.PacketIO;
 import com.hardbacknutter.sshclient.utils.Buffer;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * Base class for {@code diffie-hellman-group-exchange-sha*}
@@ -26,6 +32,21 @@ import com.hardbacknutter.sshclient.utils.ImplementationFactory;
  */
 public class KeyExchangeDHGroupExchange
         extends KeyExchangeBase {
+
+    /** Session configuration. Type: int. */
+    @SuppressWarnings("WeakerAccess")
+    public static final String CONFIG_DHGEX_KEY_SIZE_MIN = "dhgex_min";
+    /** Session configuration. Type: int. */
+    @SuppressWarnings("WeakerAccess")
+    public static final String CONFIG_DHGEX_KEY_SIZE_MAX = "dhgex_max";
+    /** Session configuration. Type: int. */
+    @SuppressWarnings("WeakerAccess")
+    public static final String CONFIG_DHGEX_KEY_SIZE_PREFERRED = "dhgex_preferred";
+
+    /** Default for minimum and preferred key size. */
+    private static final int DEF_MIN_KEY_SIZE = 1024;
+    /** Default for maximum key size; will be adjusted by {@link #check8192(SshClientConfig)}. */
+    private static final int DEF_MAX_KEY_SIZE = 2048;
 
     /**
      * First, the client sends:
@@ -65,10 +86,9 @@ public class KeyExchangeDHGroupExchange
      */
     private static final byte SSH_MSG_KEX_DH_GEX_REPLY = 33;
 
-
-    private static final int minKeySize = 1024;
-    private int preferredKeySize = 1024;
-    private int maxKeySize = 2048;
+    private int minKeySize = DEF_MIN_KEY_SIZE;
+    private int preferredKeySize = DEF_MIN_KEY_SIZE;
+    private int maxKeySize = DEF_MAX_KEY_SIZE;
 
     private DH agreement;
 
@@ -99,8 +119,23 @@ public class KeyExchangeDHGroupExchange
         // from 1024 to 2048 for DH.
         // JDK-8072452 increases DH max to 8192
         maxKeySize = check8192(config);
-        if (maxKeySize >= 2048) {
-            preferredKeySize = 2048;
+        if (maxKeySize >= DEF_MAX_KEY_SIZE) {
+            preferredKeySize = DEF_MAX_KEY_SIZE;
+        }
+
+        minKeySize = config.getIntValue(CONFIG_DHGEX_KEY_SIZE_MIN, minKeySize);
+        maxKeySize = config.getIntValue(CONFIG_DHGEX_KEY_SIZE_MAX, maxKeySize);
+        preferredKeySize = config.getIntValue(CONFIG_DHGEX_KEY_SIZE_PREFERRED, preferredKeySize);
+
+        if (minKeySize <= 0
+            || maxKeySize <= 0
+            || preferredKeySize <= 0
+            || preferredKeySize < minKeySize
+            || preferredKeySize > maxKeySize) {
+            throw new InvalidAlgorithmParameterException(
+                    "Invalid DHGEX sizes: min=" + minKeySize
+                    + " maxKeySize=" + maxKeySize
+                    + " preferredKeySize=" + preferredKeySize);
         }
 
         agreement = ImplementationFactory.getDHKeyAgreement(config);
@@ -155,6 +190,8 @@ public class KeyExchangeDHGroupExchange
                 p = receivedPacket.getBigInteger();
                 g = receivedPacket.getBigInteger();
 
+                validateDhGexGroup(p, g);
+
                 agreement.setP(p);
                 agreement.setG(g);
                 e = agreement.getE();
@@ -185,7 +222,7 @@ public class KeyExchangeDHGroupExchange
                 final BigInteger f = receivedPacket.getBigInteger();
                 final byte[] sig_of_H = receivedPacket.getString();
 
-                agreement.validate(e, f);
+                agreement.validatePublicKey(e, f);
 
                 K = encodeAsMPInt(trimZeroes(agreement.getSharedSecret(f)));
 
@@ -235,6 +272,29 @@ public class KeyExchangeDHGroupExchange
         }
     }
 
+    private void validateDhGexGroup(final BigInteger modulus,
+                                    final BigInteger gen)
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+
+        if (modulus == null || gen == null) {
+            throw new InvalidAlgorithmParameterException(
+                    "SSH_MSG_KEX_DH_GEX_GROUP: Modulus and generator must not be null");
+        }
+
+        final int bitLength = modulus.bitLength();
+        if (bitLength < minKeySize || bitLength > maxKeySize) {
+            throw new InvalidAlgorithmParameterException(
+                    "SSH_MSG_KEX_DH_GEX_GROUP:"
+                    + " group prime modulus out of negotiated range: "
+                    + bitLength + " bits");
+        }
+
+        final AlgorithmParameterSpec dhParamSpec = new DHParameterSpec(modulus, gen);
+        final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
+        keyGen.initialize(dhParamSpec);
+    }
+
+    @SuppressWarnings("OverlyBroadCatchBlock")
     private int check8192(@NonNull final SshClientConfig config)
             throws GeneralSecurityException {
 
