@@ -140,6 +140,10 @@ public final class SftpATTRS {
      * Factory constructor.
      * <p>
      * Parses an ATTR structure from a buffer.
+     *
+     * @param fxpBuffer to parse
+     *
+     * @return the attributes
      */
     static SftpATTRS getATTR(@NonNull final FxpBuffer fxpBuffer)
             throws IOException {
@@ -164,6 +168,14 @@ public final class SftpATTRS {
         if ((attr.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
             final int count = fxpBuffer.getInt();
             if (count > 0) {
+                // Verify that the count is not larger than the size of the buffer length.
+                // Each attribute consists of two length-prefixed strings,
+                // so the absolute minimum is 8 bytes per attribute.
+                // Hence, the buffer should be minimal count * 8 bytes
+                if (count > fxpBuffer.getFxpLength() / 8) {
+                    throw new IOException("SSH_FILEXFER_ATTR_EXTENDED count out of range: "
+                                          + count);
+                }
                 attr.extended = new String[count * 2];
                 for (int i = 0; i < count; i++) {
                     attr.extended[i * 2] = fxpBuffer.getJString();
