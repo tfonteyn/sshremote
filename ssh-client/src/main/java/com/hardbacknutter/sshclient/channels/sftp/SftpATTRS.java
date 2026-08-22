@@ -8,7 +8,6 @@ import com.hardbacknutter.sshclient.transport.Packet;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * Attributes of a (remote) file manipulated via Sftp.
@@ -113,6 +112,10 @@ public final class SftpATTRS {
      * but not the link or directory bits.
      */
     private static final int pmask = 0xFFF;
+
+    /** as used by OpenSSH. */
+    private static final int MAX_EXTENDED_COUNT = 0x100000;
+
     private int uid;
     private int gid;
     private int flags;
@@ -132,9 +135,6 @@ public final class SftpATTRS {
     @SuppressWarnings("FieldNotUsedInToString")
     private int mtime;
     private String[] extended;
-
-    public SftpATTRS() {
-    }
 
     /**
      * Factory constructor.
@@ -166,24 +166,37 @@ public final class SftpATTRS {
             attr.mtime = fxpBuffer.getInt();
         }
         if ((attr.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
-            final int count = fxpBuffer.getInt();
-            if (count > 0) {
-                // Verify that the count is not larger than the size of the buffer length.
-                // Each attribute consists of two length-prefixed strings,
-                // so the absolute minimum is 8 bytes per attribute.
-                // Hence, the buffer should be minimal count * 8 bytes
-                if (count > fxpBuffer.getFxpLength() / 8) {
-                    throw new IOException("SSH_FILEXFER_ATTR_EXTENDED count out of range: "
-                                          + count);
-                }
-                attr.extended = new String[count * 2];
-                for (int i = 0; i < count; i++) {
-                    attr.extended[i * 2] = fxpBuffer.getJString();
-                    attr.extended[i * 2 + 1] = fxpBuffer.getJString();
-                }
-            }
+            getExtAttr(fxpBuffer, attr);
         }
         return attr;
+    }
+
+    private static void getExtAttr(@NonNull final FxpBuffer fxpBuffer,
+                                   @NonNull final SftpATTRS attr)
+            throws IOException {
+
+
+        final int count = fxpBuffer.getInt();
+        if (count == 0) {
+            return;
+        }
+
+        // Check for invalid/illegal values.
+        // Each attribute consists of two length-prefixed strings,
+        // so the absolute minimum is 8 bytes per attribute.
+        // Hence, the buffer should be minimal count * 8 bytes.
+        // In addition, OpenSSH limits it at MAX_EXTENDED_COUNT.
+        if (count < 0
+            || count > MAX_EXTENDED_COUNT
+            || count * 8 > fxpBuffer.getFxpLength()) {
+            throw new IOException("SSH_FILEXFER_ATTR_EXTENDED count out of range: " + count);
+        }
+
+        attr.extended = new String[count * 2];
+        for (int i = 0; i < count; i++) {
+            attr.extended[i * 2] = fxpBuffer.getJString();
+            attr.extended[i * 2 + 1] = fxpBuffer.getJString();
+        }
     }
 
     /**
@@ -312,14 +325,14 @@ public final class SftpATTRS {
     }
 
     /**
-     * sets the flags indicating which fields are included.
+     * Set the flags indicating which fields are included.
      */
     void setFLAGS(@SuppressWarnings("SameParameterValue") final int flags) {
         this.flags = flags;
     }
 
     /**
-     * sets the size.
+     * Set the size.
      */
     public void setSIZE(final long size) {
         flags |= SSH_FILEXFER_ATTR_SIZE;
@@ -327,7 +340,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * Sets user and group Identifier.
+     * Set user and group Identifier.
      */
     void setUIDGID(final int uid,
                    final int gid) {
@@ -337,7 +350,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * Sets access and modification time.
+     * Set access and modification time.
      */
     void setACMODTIME(final int atime,
                       final int mtime) {
@@ -347,7 +360,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * sets the file permissions.
+     * Set the file permissions.
      *
      * @param permissions a bit mask containing some combination
      *                    of the bits 0-11.
@@ -367,7 +380,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * checks whether this file is a directory.
+     * Check whether this file is a directory.
      *
      * @return {@code true} if the permissions are included in the
      * structure and the directory bit is set.
@@ -389,10 +402,10 @@ public final class SftpATTRS {
     }
 
     /**
-     * checks whether this file is a symbolic link.
+     * Check whether this file is a symbolic link.
      *
      * @return {@code true} if the permissions are included in the
-     * structure and the link bits are set.
+     *         structure and the link bits are set.
      */
     public boolean isLink() {
         return isType(S_IFLNK);
@@ -403,7 +416,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns the flags indicating which attributes
+     * Returns the flags indicating which attributes
      * are present.
      */
     public int getFlags() {
@@ -418,7 +431,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns the numerical user identifier of the owning user.
+     * Returns the numerical user identifier of the owning user.
      * <blockquote>
      * The `uid' and `gid' fields contain numeric Unix-like user and group
      * identifiers, respectively.
@@ -429,7 +442,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns the numerical group identifier of the owning group.
+     * Returns the numerical group identifier of the owning group.
      * <blockquote>
      * The `uid' and `gid' fields contain numeric Unix-like user and group
      * identifiers, respectively.
@@ -452,7 +465,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns the last access time.
+     * Returns the last access time.
      * <blockquote>
      * The `atime' and `mtime' contain the access and modification times of
      * the files, respectively.  They are represented as seconds from Jan 1,
@@ -464,7 +477,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns the last modification time.
+     * Returns the last modification time.
      * <blockquote>
      * The `atime' and `mtime' contain the access and modification times of
      * the files, respectively.  They are represented as seconds from Jan 1,
@@ -476,7 +489,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * returns extended attributes, if any.
+     * Returns extended attributes, if any.
      *
      * @return the attributes, in the form of a string array, alternating
      * type identifier and value.
@@ -486,7 +499,7 @@ public final class SftpATTRS {
     }
 
     /**
-     * creates a string representation of this object.
+     * Creates a string representation of this object.
      * This string contains permissions, UID, GID, size and modification time.
      */
     public String getAsString() {
