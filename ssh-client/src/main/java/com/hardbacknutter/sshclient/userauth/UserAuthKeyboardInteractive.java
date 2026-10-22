@@ -25,6 +25,9 @@ public class UserAuthKeyboardInteractive
     /** Password Authentication Method. */
     public static final String METHOD = "keyboard-interactive";
 
+    /** A reasonable upper bound for prompts - 100 is arbitrarily. */
+    private static final int MAX_PROMPTS = 100;
+
     private String username;
     @Nullable
     private UserInfo userinfo;
@@ -129,6 +132,17 @@ public class UserAuthKeyboardInteractive
                     final String instruction = packet.getJString();
                     packet.skipString(/* language_tag */);
                     final int nrOfPrompts = packet.getInt();
+
+                    // Check for invalid/illegal values (including int overflow).
+                    // Each prompt has at least 4 bytes of length prefix + 1 byte of string.
+                    // Hence, the buffer should be minimal count * 5 bytes.
+                    if (nrOfPrompts < 0
+                        || nrOfPrompts > MAX_PROMPTS
+                        || (nrOfPrompts * 5) > packet.availableToRead()) {
+                        throw new IOException("SSH_MSG_USERAUTH_INFO_REQUEST"
+                                              + " nrOfPrompts out of range: " + nrOfPrompts);
+                    }
+
                     final String[] prompt = new String[nrOfPrompts];
                     final boolean[] echo = new boolean[nrOfPrompts];
                     for (int i = 0; i < nrOfPrompts; i++) {
