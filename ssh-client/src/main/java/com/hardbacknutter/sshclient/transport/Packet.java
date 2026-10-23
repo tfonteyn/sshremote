@@ -180,10 +180,10 @@ public class Packet
      *         'packet_length' field itself.
      */
     int getPacketLength() {
-        return data[0] << 24 & 0xff000000 |
-               data[1] << 16 & 0x00ff0000 |
-               data[2] << 8 & 0x0000ff00 |
-               data[3] & 0x000000ff;
+        return ((data[0] & 0xff) << 24)
+               | ((data[1] & 0xff) << 16)
+               | ((data[2] & 0xff) << 8)
+               | ((data[3] & 0xff));
     }
 
     /**
