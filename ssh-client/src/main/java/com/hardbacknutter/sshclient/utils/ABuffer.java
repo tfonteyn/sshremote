@@ -603,30 +603,6 @@ public abstract class ABuffer<T extends ABuffer<T>> {
         return dest;
     }
 
-    /**
-     * Length-prefixed.
-     * <p>
-     * Read a multiple precision signed integer as unsigned.
-     * i.e. the highest-order bit is guaranteed to be 0.
-     *
-     * @deprecated use {@link #getBigInteger()} instead
-     */
-    @Deprecated
-    public byte @NonNull [] getMPIntBits() {
-        final int bits = getInt();
-        final int len = (bits + 7) / 8;
-
-        byte[] dest = new byte[len];
-        getBytes(dest, 0, len);
-        if ((dest[0] & 0x80) != 0) {
-            final byte[] tmpBytes = new byte[dest.length + 1];
-            tmpBytes[0] = 0; // ??
-            System.arraycopy(dest, 0, tmpBytes, 1, dest.length);
-            dest = tmpBytes;
-        }
-        return dest;
-    }
-
     @Override
     @NonNull
     public String toString() {
