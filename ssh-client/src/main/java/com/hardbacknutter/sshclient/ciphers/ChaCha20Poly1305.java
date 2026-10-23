@@ -2,14 +2,13 @@ package com.hardbacknutter.sshclient.ciphers;
 
 import org.jspecify.annotations.NonNull;
 
-import com.hardbacknutter.sshclient.utils.Util;
-
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
 
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
 
@@ -247,7 +246,7 @@ public class ChaCha20Poly1305
             poly1305.update(input, inputOffset, inputLen);
             poly1305.doFinal(expectedTag, 0);
 
-            if (!Util.arraysEquals(actualTag, expectedTag)) {
+            if (!MessageDigest.isEqual(actualTag, expectedTag)) {
                 throw new AEADBadTagException("Tag mismatch");
             }
         }

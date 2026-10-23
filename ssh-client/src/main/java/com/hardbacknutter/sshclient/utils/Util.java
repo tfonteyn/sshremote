@@ -17,20 +17,4 @@ public final class Util {
         }
         return filename;
     }
-
-    /**
-     * Timing safe replacement for {@code Arrays.equals(a,b);}
-     */
-    public static boolean arraysEquals(final byte @NonNull [] a,
-                                       final byte @NonNull [] b) {
-
-        if (a.length != b.length) {
-            return false;
-        }
-        int res = 0;
-        for (int i = 0; i < a.length; i++) {
-            res |= a[i] ^ b[i];
-        }
-        return res == 0;
-    }
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import javax.crypto.Cipher;
@@ -16,7 +17,6 @@ import com.hardbacknutter.sshclient.compression.SshInflater;
 import com.hardbacknutter.sshclient.kex.KexAgreement;
 import com.hardbacknutter.sshclient.macs.SshMac;
 import com.hardbacknutter.sshclient.utils.ImplementationFactory;
-import com.hardbacknutter.sshclient.utils.Util;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -301,7 +301,7 @@ public class TransportS2C
         mac.doFinal(b1, 0);
 
         read(b2, 0, b2.length);
-        if (!Util.arraysEquals(b1, b2)) {
+        if (!MessageDigest.isEqual(b1, b2)) {
             discard(packet, packetLen, Packet.MAX_SIZE - packetLen);
             throw new IOException(ERROR_MAC_BLOCK_SIZE_MISMATCH);
         }
@@ -359,7 +359,7 @@ public class TransportS2C
             mac.doFinal(b1, 0);
 
             read(b2, 0, b2.length);
-            if (!Util.arraysEquals(b1, b2)) {
+            if (!MessageDigest.isEqual(b1, b2)) {
                 if (remaining > Packet.MAX_SIZE) {
                     throw new IOException(ERROR_MAC_BLOCK_SIZE_MISMATCH);
                 }
