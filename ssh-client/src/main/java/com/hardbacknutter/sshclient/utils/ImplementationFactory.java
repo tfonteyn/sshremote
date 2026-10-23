@@ -59,10 +59,10 @@ import com.hardbacknutter.sshclient.signature.SshSignatureRSA;
 import com.hardbacknutter.sshclient.userauth.UserAuth;
 
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers;
+import org.bouncycastle.crypto.params.MLKEMParameters;
 import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
 import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 import org.bouncycastle.jcajce.spec.XDHParameterSpec;
-import org.bouncycastle.pqc.crypto.mlkem.MLKEMParameters;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
