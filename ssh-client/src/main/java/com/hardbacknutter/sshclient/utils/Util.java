@@ -11,7 +11,7 @@ public final class Util {
     public static String checkTilde(@NonNull final String filename) {
         if (filename.startsWith("~")) {
             try {
-                return filename.replace("~", System.getProperty("user.home"));
+                return System.getProperty("user.home") + filename.substring(1);
             } catch (final SecurityException ignore) {
             }
         }
