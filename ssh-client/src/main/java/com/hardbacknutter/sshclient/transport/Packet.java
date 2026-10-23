@@ -231,7 +231,7 @@ public class Packet
         sb.append(String.format("--- Packet Hex Dump (%d bytes) writeOffset = %d ---\n",
                                 totalSize, writeOffset));
         try {
-            for (int i = 0; i < totalSize - 1; i++) {
+            for (int i = 0; i < totalSize; i++) {
                 sb.append(String.format("%02X ", data[i]));
 
                 // Newline every 16 bytes
