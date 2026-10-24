@@ -169,7 +169,7 @@ public class TransportS2C
         if (4 != socketInputStream.read(packet.data, 0, 4)) {
             throw new IOException(ERROR_CONNECTION_CLOSED);
         }
-        packet.moveWritePosition(4);
+        packet.moveWriteOffset(4);
 
         // init cipher with seq number
         ((ChaChaCipher) cipher).update(seq);
@@ -203,7 +203,7 @@ public class TransportS2C
         // subtract tag size now that whole packet has been fetched
         packetLen -= ((AEADCipher) cipher).getTagSizeInBytes();
 
-        packet.moveWritePosition(packetLen);
+        packet.moveWriteOffset(packetLen);
 
         try {
             cipher.doFinal(packet.data, 0, packetLen + 4, packet.data, 0);
@@ -226,7 +226,7 @@ public class TransportS2C
         if (4 != socketInputStream.read(packet.data, 0, 4)) {
             throw new IOException(ERROR_CONNECTION_CLOSED);
         }
-        packet.moveWritePosition(4);
+        packet.moveWriteOffset(4);
 
         int packetLen = packet.getPacketLength();
         if (packetLen < 5 || packetLen > Packet.MAX_SIZE) {
@@ -246,7 +246,7 @@ public class TransportS2C
 
         // Now we can read the actual full packet
         read(packet.data, packet.writeOffset, packetLen);
-        packet.moveWritePosition(packetLen);
+        packet.moveWriteOffset(packetLen);
 
         try {
             cipher.updateAAD(packet.data, 0, 4);
@@ -259,7 +259,7 @@ public class TransportS2C
         // Move the position in the packet buffer back by the AEAD tag size,
         // so that decompression (if enabled) will work
         // (in case you missed it: there is a negative sign here)
-        packet.moveWritePosition(-((AEADCipher) cipher).getTagSizeInBytes());
+        packet.moveWriteOffset(-((AEADCipher) cipher).getTagSizeInBytes());
     }
 
     private void decodeEtM(@NonNull final Packet packet)
@@ -273,7 +273,7 @@ public class TransportS2C
         if (4 != socketInputStream.read(packet.data, 0, 4)) {
             throw new IOException(ERROR_CONNECTION_CLOSED);
         }
-        packet.moveWritePosition(4);
+        packet.moveWriteOffset(4);
 
         final int packetLen = packet.getPacketLength();
         if (packetLen < 5 || packetLen > Packet.MAX_SIZE) {
@@ -290,7 +290,7 @@ public class TransportS2C
         }
 
         read(packet.data, packet.writeOffset, packetLen);
-        packet.moveWritePosition(packetLen);
+        packet.moveWriteOffset(packetLen);
 
         mac.update(seq);
         mac.update(packet.data, 0, packet.writeOffset);
@@ -319,7 +319,7 @@ public class TransportS2C
         if (blockSize != socketInputStream.read(packet.data, 0, blockSize)) {
             throw new IOException(ERROR_CONNECTION_CLOSED);
         }
-        packet.moveWritePosition(blockSize);
+        packet.moveWriteOffset(blockSize);
 
         if (cipher != null) {
             cipher.update(packet.data, 0, blockSize, packet.data, 0);
@@ -343,7 +343,7 @@ public class TransportS2C
         if (remaining > 0) {
             // read the rest of the packet
             read(packet.data, packet.writeOffset, remaining);
-            packet.moveWritePosition(remaining);
+            packet.moveWriteOffset(remaining);
             if (cipher != null) {
                 cipher.update(packet.data, blockSize, remaining, packet.data, blockSize);
             }

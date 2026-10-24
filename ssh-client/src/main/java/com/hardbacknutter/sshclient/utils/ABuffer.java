@@ -171,7 +171,7 @@ public abstract class ABuffer<T extends ABuffer<T>> {
      *
      * @param n amount
      */
-    public void moveWritePosition(final int n) {
+    public void moveWriteOffset(final int n) {
         if (n > 0) {
             ensureCapacity(n);
         } else if (n + writeOffset < 0) {

@@ -2171,7 +2171,7 @@ public class ChannelSftpImpl
         // optimisation to avoid copying the array if possible
         if (Arrays.equals(uploadPacket.data, data)) {
             uploadPacket.putInt(dataLength)
-                        .moveWritePosition(dataLength);
+                        .moveWriteOffset(dataLength);
         } else {
             uploadPacket.putString(data, start, dataLength);
         }

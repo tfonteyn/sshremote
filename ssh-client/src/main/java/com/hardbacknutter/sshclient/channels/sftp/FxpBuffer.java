@@ -147,7 +147,7 @@ class FxpBuffer
             length -= bytesRead;
         }
         final int total = offset - start;
-        moveWritePosition(total);
+        moveWriteOffset(total);
         return total;
 
     }

@@ -425,7 +425,7 @@ public class BaseChannel
                       .putInt(recipient)
                       .putInt(dataLength)
                       // we already copied the actual data in #write
-                      .moveWritePosition(dataLength);
+                      .moveWriteOffset(dataLength);
                 try {
                     synchronized (channel) {
                         final int _dataLength = dataLength;
@@ -550,7 +550,7 @@ public class BaseChannel
                 packet.init(SshConstants.SSH_MSG_CHANNEL_DATA)
                       .putInt(recipient)
                       .putInt(dataLength)
-                      .moveWritePosition(dataLength);
+                      .moveWriteOffset(dataLength);
 
                 synchronized (this) {
                     if (isConnected()) {
@@ -751,7 +751,7 @@ public class BaseChannel
         // i.e.: Packet.PAYLOAD_START + 4 + 1 => 10
         packet.setWriteOffSet(10);
         packet.putInt(dataLength);
-        packet.moveWritePosition(dataLength);
+        packet.moveWriteOffset(dataLength);
 
         return destPos;
     }
@@ -772,7 +772,7 @@ public class BaseChannel
         packet.init(command)
               .putInt(recipient)
               .putInt(dataLength)
-              .moveWritePosition(dataLength);
+              .moveWriteOffset(dataLength);
     }
 
     /**

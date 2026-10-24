@@ -281,7 +281,7 @@ public class ChannelAgentForwarding
             case SSH_AGENTC_REQUEST_RSA_IDENTITIES:
             case SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES:
             default: {
-                rbuf.moveWritePosition(rbuf.availableToRead() - 1);
+                rbuf.moveWriteOffset(rbuf.availableToRead() - 1);
                 responseBuffer.putByte(SSH_AGENT_FAILURE);
                 break;
             }

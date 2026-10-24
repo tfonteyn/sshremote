@@ -114,7 +114,7 @@ public class TransportC2S
         //encrypt rest of packet & add tag
         cipher.doFinal(packet.data, 0, packet.writeOffset, packet.data, 0);
         // adjust write offset
-        packet.moveWritePosition(((ChaChaCipher) cipher).getTagSizeInBytes());
+        packet.moveWriteOffset(((ChaChaCipher) cipher).getTagSizeInBytes());
     }
 
     private void encodeAEAD(@NonNull final Packet packet)
@@ -126,7 +126,7 @@ public class TransportC2S
         cipher.updateAAD(packet.data, 0, 4);
         cipher.doFinal(packet.data, 4, packet.writeOffset - 4, packet.data, 4);
         // adjust write offset
-        packet.moveWritePosition(((AEADCipher) cipher).getTagSizeInBytes());
+        packet.moveWriteOffset(((AEADCipher) cipher).getTagSizeInBytes());
     }
 
     private void encodeEtM(@NonNull final Packet packet) throws GeneralSecurityException {
@@ -140,7 +140,7 @@ public class TransportC2S
         mac.update(packet.data, 0, packet.writeOffset);
         mac.doFinal(packet.data, packet.writeOffset);
         // adjust write offset
-        packet.moveWritePosition(mac.getDigestLength());
+        packet.moveWriteOffset(mac.getDigestLength());
     }
 
     private void encodeMtE(@NonNull final Packet packet) throws GeneralSecurityException {
@@ -157,7 +157,7 @@ public class TransportC2S
 
         // adjust write offset if we used a MAC
         if (mac != null) {
-            packet.moveWritePosition(mac.getDigestLength());
+            packet.moveWriteOffset(mac.getDigestLength());
         }
     }
 
