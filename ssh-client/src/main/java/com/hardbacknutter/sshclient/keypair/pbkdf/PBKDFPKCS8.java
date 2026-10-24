@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.keypair.pbkdf;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
@@ -11,8 +8,7 @@ import java.util.Arrays;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+import com.hardbacknutter.sshclient.keypair.CipherSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -24,6 +20,8 @@ import org.bouncycastle.asn1.misc.MiscObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class PBKDFPKCS8
         implements PBKDF {
@@ -38,13 +36,14 @@ public class PBKDFPKCS8
     }
 
     @Override
-    public void setCipher(@NonNull final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @NonNull [] cipherIV) {
     }
 
-        @Override
+    @Override
     public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
-                                    final int keyLength)
+                                              final int keyLength)
             throws GeneralSecurityException {
         if (delegate == null) {
             throw new KeyException("delegate not set");
@@ -54,7 +53,7 @@ public class PBKDFPKCS8
 
     @Override
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
-                          final byte @NonNull [] blob)
+                                    final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
 
         // RSA encrypted with prvKeyAlgOID == id_PBES2
@@ -117,8 +116,8 @@ public class PBKDFPKCS8
                 final ASN1Sequence cipherInfo = ASN1Sequence.getInstance(
                         attributeHeaderSeq.getObjectAt(1));
                 //            ObjectIdentifier: the encryption algorithm
-                final SshCipher cipher = getCipher(ASN1ObjectIdentifier.getInstance(
-                        cipherInfo.getObjectAt(0)));
+                final ASN1ObjectIdentifier encryptionAlgorithm = ASN1ObjectIdentifier.getInstance(
+                        cipherInfo.getObjectAt(0));
                 //            DER Octet String[16]: the encryption IV
                 final byte[] cipherIV = ASN1OctetString.getInstance(cipherInfo.getObjectAt(1))
                                                        .getOctets();
@@ -128,12 +127,17 @@ public class PBKDFPKCS8
                     throw new KeyException("Cipher/iv not set");
                 }
 
+                // Don't use the CipherSpec parser. That one is "NoPadding"
+                // while the PKCS8 explicitly DOES use padding.
+                final String transformation = parseCipherTransformation(encryptionAlgorithm);
+                final int keySize = parseKeySize(encryptionAlgorithm);
+
                 if (PKCSObjectIdentifiers.id_PBKDF2.equals(paramOID)) {
                     return decryptPBKDF2(encryptedPrivateKey, passphrase, parameters,
-                                         cipher, cipherIV);
+                                         transformation, keySize, cipherIV);
                 } else if (MiscObjectIdentifiers.id_scrypt.equals(paramOID)) {
                     return decryptSCrypt(encryptedPrivateKey, passphrase, parameters,
-                                         cipher, cipherIV);
+                                         transformation, keySize, cipherIV);
                 } else {
                     throw new KeyException("Unsupported parameter OID: " + paramOID);
                 }
@@ -149,7 +153,8 @@ public class PBKDFPKCS8
     private byte[] decryptSCrypt(final byte @NonNull [] encryptedPrivateKey,
                                  final byte @NonNull [] passphrase,
                                  @NonNull final ASN1Encodable paramSequence,
-                                 @NonNull final SshCipher cipher,
+                                 @NonNull final String algorithm,
+                                 final int keySize,
                                  final byte @NonNull [] cipherIV)
             throws GeneralSecurityException, IOException {
         //   scrypt-params ::= SEQUENCE {
@@ -175,16 +180,17 @@ public class PBKDFPKCS8
 //        }
 
         delegate = new PBKDFSCrypt().init(salt, cost, blockSize, parallel);
-        delegate.setCipher(cipher, cipherIV);
+        delegate.setCipher(algorithm, keySize, cipherIV);
         return delegate.decrypt(passphrase, encryptedPrivateKey);
     }
 
     // PKCS5 Params
     private byte @NonNull [] decryptPBKDF2(final byte @NonNull [] encryptedPrivateKey,
-                                 final byte @NonNull [] passphrase,
-                                 @NonNull final ASN1Encodable paramSequence,
-                                 @NonNull final SshCipher cipher,
-                                 final byte @NonNull [] cipherIV)
+                                           final byte @NonNull [] passphrase,
+                                           @NonNull final ASN1Encodable paramSequence,
+                                           @NonNull final String algorithm,
+                                           final int keySize,
+                                           final byte @NonNull [] cipherIV)
             throws GeneralSecurityException, IOException {
         //                 ObjectIdentifier(1.2.840.113549.1.5.12)      ==> 'paramOID'
         //                 Sequence                                     ==> 'parameters'
@@ -205,29 +211,38 @@ public class PBKDFPKCS8
         final ASN1ObjectIdentifier pbeOID =
                 ASN1ObjectIdentifier.getInstance(yaSeq.getObjectAt(0));
 
-        delegate = new PBKDF2().init(getPBEAlgorithm(pbeOID), salt, iterations);
-        delegate.setCipher(cipher, cipherIV);
+        delegate = new PBKDF2().init(parsePBEAlgorithm(pbeOID), salt, iterations);
+        delegate.setCipher(algorithm, keySize, cipherIV);
         return delegate.decrypt(passphrase, encryptedPrivateKey);
     }
 
     @NonNull
-    private SshCipher getCipher(@NonNull final ASN1ObjectIdentifier id)
+    private String parseCipherTransformation(@NonNull final ASN1ObjectIdentifier id)
             throws NoSuchAlgorithmException {
-        final String sshName;
-        if (NISTObjectIdentifiers.id_aes128_CBC.equals(id)) {
-            sshName = "aes128-cbc";
-        } else if (NISTObjectIdentifiers.id_aes192_CBC.equals(id)) {
-            sshName = "aes192-cbc";
-        } else if (NISTObjectIdentifiers.id_aes256_CBC.equals(id)) {
-            sshName = "aes256-cbc";
-        } else {
-            throw new NoSuchAlgorithmException("Not supported: " + id);
+        if (NISTObjectIdentifiers.id_aes128_CBC.equals(id) ||
+            NISTObjectIdentifiers.id_aes192_CBC.equals(id) ||
+            NISTObjectIdentifiers.id_aes256_CBC.equals(id)) {
+            return "AES/CBC/PKCS5Padding";
         }
-        return ImplementationFactory.getCipher(config, sshName);
+        throw new NoSuchAlgorithmException("Unsupported encryption algorithm OID: " + id);
+    }
+
+    private int parseKeySize(@NonNull final ASN1ObjectIdentifier id)
+            throws NoSuchAlgorithmException {
+        if (NISTObjectIdentifiers.id_aes128_CBC.equals(id)) {
+            return 16;
+        }
+        if (NISTObjectIdentifiers.id_aes192_CBC.equals(id)) {
+            return 24;
+        }
+        if (NISTObjectIdentifiers.id_aes256_CBC.equals(id)) {
+            return 32;
+        }
+        throw new NoSuchAlgorithmException("Unsupported encryption algorithm OID: " + id);
     }
 
     @NonNull
-    private String getPBEAlgorithm(@NonNull final ASN1ObjectIdentifier oid) {
+    private String parsePBEAlgorithm(@NonNull final ASN1ObjectIdentifier oid) {
 
         //not exhaustive, but should hopefully do for now.
         // PBKDF2With<prf>

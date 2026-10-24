@@ -3,8 +3,6 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
@@ -16,16 +14,19 @@ public class DelegatingPBKDF
         implements PBKDF {
 
     @Nullable
-    private SshCipher cipher;
+    private String algorithm;
+    private int keySize;
     private byte @Nullable [] cipherIV;
 
     @Nullable
     private PBKDF delegate;
 
     @Override
-    public void setCipher(@NonNull final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @NonNull [] cipherIV) {
-        this.cipher = cipher;
+        this.algorithm = transformation;
+        this.keySize = keySize;
         this.cipherIV = cipherIV;
     }
 
@@ -47,7 +48,7 @@ public class DelegatingPBKDF
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
                           final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
-        if (cipher == null || cipherIV == null) {
+        if (algorithm == null || cipherIV == null) {
             throw new KeyException("Cipher/iv not set");
         }
 
@@ -55,7 +56,7 @@ public class DelegatingPBKDF
             throw new KeyException("delegate not set");
         }
 
-        delegate.setCipher(cipher, cipherIV);
+        delegate.setCipher(algorithm, keySize, cipherIV);
         return delegate.decrypt(passphrase, blob);
     }
 }

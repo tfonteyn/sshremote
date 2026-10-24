@@ -202,7 +202,6 @@ class KeyPairTest {
             "readOpenSsl_pem",
             "readOpenSsl_dss",
             "readOpenSsl_ed",
-
             "readOpenSsl_rsa",
             "readOpenSsl_ecdsa"
     })

@@ -2,8 +2,6 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 
 import org.jspecify.annotations.NonNull;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
@@ -16,11 +14,8 @@ import java.security.GeneralSecurityException;
  */
 public interface PBKDF {
 
-    default void setCipher(@NonNull final SshCipher cipher) {
-        setCipher(cipher, new byte[cipher.getIVSize()]);
-    }
-
-    void setCipher(@NonNull SshCipher cipher,
+    void setCipher(@NonNull String transformation,
+                   int keySize,
                    byte @NonNull [] cipherIV);
 
     /**

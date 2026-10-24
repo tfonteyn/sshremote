@@ -1,18 +1,20 @@
 package com.hardbacknutter.sshclient.keypair.pbkdf;
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * JCE based standard PBKDF2 using a salt and iteration-count.
@@ -25,8 +27,10 @@ import com.hardbacknutter.sshclient.ciphers.SshCipher;
 public class PBKDF2
         implements PBKDF {
 
-    private SshCipher cipher;
-    private byte[] cipherIV;
+    @Nullable
+    private String transformation;
+    private int keySize;
+    private byte @Nullable [] cipherIV;
 
     private byte[] salt;
     private int iterationCount;
@@ -46,14 +50,16 @@ public class PBKDF2
     }
 
     @Override
-    public void setCipher(@NonNull final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @NonNull [] cipherIV) {
-        this.cipher = cipher;
+        this.transformation = transformation;
+        this.keySize = keySize;
         this.cipherIV = cipherIV;
     }
 
     public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
-                                    final int keyLength)
+                                              final int keyLength)
             throws InvalidKeySpecException {
 
         final char[] pass = new char[passphrase.length];
@@ -65,23 +71,30 @@ public class PBKDF2
         return skf.generateSecret(keySpec).getEncoded();
     }
 
-        @Override
+    @Override
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
-                          final byte @NonNull [] blob)
+                                    final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
-        byte[] pbeKey = null;
-        final byte[] plainKey = new byte[blob.length];
-        try {
-            pbeKey = generateSecretKey(passphrase, cipher.getKeySize());
 
-            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-            cipher.doFinal(blob, 0, blob.length, plainKey, 0);
+        if (transformation == null || cipherIV == null) {
+            throw new KeyException("transformation/iv not set");
+        }
+
+        byte[] pbeKey = null;
+        try {
+            pbeKey = generateSecretKey(passphrase, keySize);
+
+            final Cipher cipher = Cipher.getInstance(transformation);
+            cipher.init(Cipher.DECRYPT_MODE,
+                        new SecretKeySpec(pbeKey, transformation.split("/")[0]),
+                        new IvParameterSpec(cipherIV));
+
+            return cipher.doFinal(blob);
 
         } finally {
             if (pbeKey != null) {
                 Arrays.fill(pbeKey, (byte) 0);
             }
         }
-        return plainKey;
     }
 }

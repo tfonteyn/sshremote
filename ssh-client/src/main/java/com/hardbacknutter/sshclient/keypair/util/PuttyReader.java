@@ -7,7 +7,7 @@ import java.security.InvalidKeyException;
 import java.util.Base64;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import com.hardbacknutter.sshclient.keypair.CipherSpec;
 import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
@@ -16,7 +16,6 @@ import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFArgon2;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFPutty2;
 import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -131,8 +130,11 @@ class PuttyReader {
             } else {
                 decryptor = new PBKDFPutty2().init();
             }
-            final SshCipher cipher = ImplementationFactory.getCipher(config, encryption);
-            decryptor.setCipher(cipher);
+
+            final CipherSpec cipherSpec = CipherSpec.parseCipherSpec(encryption);
+            decryptor.setCipher(cipherSpec.getTransformation(),
+                                cipherSpec.getKeySize(),
+                                new byte[cipherSpec.getIvSize()]);
 
         } else {
             decryptor = null;

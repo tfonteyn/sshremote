@@ -9,8 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import javax.crypto.Cipher;
-
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * TODO: is this not available using JCE?
@@ -27,7 +27,8 @@ public class PBKDF1 implements PBKDF {
     private MessageDigest md;
 
     @Nullable
-    private SshCipher cipher;
+    private String transformation;
+    private int keySize;
     private byte @Nullable [] cipherIV;
 
     public PBKDF1 init(@NonNull final String algorithm,
@@ -39,14 +40,16 @@ public class PBKDF1 implements PBKDF {
     }
 
     @Override
-    public void setCipher(@Nullable final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @Nullable [] cipherIV) {
-        this.cipher = cipher;
+        this.transformation = transformation;
+        this.keySize = keySize;
         this.cipherIV = cipherIV;
     }
 
     public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
-                                    final int keyLength) throws NoSuchAlgorithmException {
+                                    final int keyLength) {
         /*
          * https://datatracker.ietf.org/doc/html/rfc8018#section-5.1
          * PBKDF1
@@ -80,18 +83,21 @@ public class PBKDF1 implements PBKDF {
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
                           final byte @NonNull [] blob)
             throws GeneralSecurityException {
-        if (cipher == null || cipherIV == null) {
-            throw new KeyException("Cipher/iv not set");
+
+        if (transformation == null || cipherIV == null) {
+            throw new KeyException("transformation/iv not set");
         }
 
         byte[] pbeKey = null;
         try {
-            pbeKey = generateSecretKey(passphrase, cipher.getKeySize());
+            pbeKey = generateSecretKey(passphrase, keySize);
 
-            final byte[] plainKey = new byte[blob.length];
-            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-            cipher.doFinal(blob, 0, blob.length, plainKey, 0);
-            return plainKey;
+            final Cipher cipher = Cipher.getInstance(transformation);
+            cipher.init(Cipher.DECRYPT_MODE,
+                        new SecretKeySpec(pbeKey, transformation.split("/")[0]),
+                        new IvParameterSpec(cipherIV));
+
+            return cipher.doFinal(blob);
         } finally {
             if (pbeKey != null) {
                 Arrays.fill(pbeKey, (byte) 0);

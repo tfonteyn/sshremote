@@ -1,8 +1,5 @@
 package com.hardbacknutter.sshclient.keypair.pbkdf;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.security.DigestException;
 import java.security.GeneralSecurityException;
@@ -11,8 +8,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * pkcs #5 pbkdf2 implementation using the "bcrypt" hash
@@ -31,7 +31,7 @@ import com.hardbacknutter.sshclient.ciphers.SshCipher;
  * as a performance optimization.
  *
  * @see <a href="https://github.com/openssh/openssh-portable/blob/master/openbsd-compat/bcrypt_pbkdf.c">
- * pkcs #5 pbkdf2 implementation using the "bcrypt" hash</a>
+ *         pkcs #5 pbkdf2 implementation using the "bcrypt" hash</a>
  */
 @SuppressWarnings("NotNullFieldNotInitialized")
 public class PBKDFBCrypt
@@ -50,7 +50,7 @@ public class PBKDFBCrypt
     private MessageDigest md;
 
     @Nullable
-    private SshCipher cipher;
+    private String transformation;
 
     /**
      * Init.
@@ -69,28 +69,28 @@ public class PBKDFBCrypt
     }
 
     @Override
-    public void setCipher(@Nullable final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @Nullable [] cipherIV) {
-        this.cipher = cipher;
+        this.transformation = transformation;
     }
 
     public byte @NonNull [] generateSecretKey(final byte @NonNull [] passphrase,
-                                    final int keyLength)
+                                              final int keyLength)
             throws DigestException {
         final byte[] key = new byte[keyLength];
         pbkdf(passphrase, key);
         return key;
     }
 
-        @Override
+    @Override
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
-                          final byte @NonNull [] blob)
+                                    final byte @NonNull [] blob)
             throws GeneralSecurityException, IOException {
-        if (cipher == null) {
-            throw new KeyException("Cipher not set");
-        }
 
-        final byte[] plainKey = new byte[blob.length];
+        if (transformation == null) {
+            throw new KeyException("transformation not set");
+        }
 
         byte[] pbeKey = null;
         try {
@@ -98,9 +98,12 @@ public class PBKDFBCrypt
             // split into key and IV
             final byte[] key = Arrays.copyOfRange(pbeKey, 0, 32);
             final byte[] iv = Arrays.copyOfRange(pbeKey, 32, 48);
-            // and decrypt the blob
-            cipher.init(Cipher.DECRYPT_MODE, key, iv);
-            cipher.doFinal(blob, 0, blob.length, plainKey, 0);
+
+            final Cipher cipher = Cipher.getInstance(transformation);
+            cipher.init(Cipher.DECRYPT_MODE,
+                        new SecretKeySpec(key, transformation.split("/")[0]),
+                        new IvParameterSpec(iv));
+            return cipher.doFinal(blob);
 
         } finally {
             if (pbeKey != null) {
@@ -108,8 +111,6 @@ public class PBKDFBCrypt
             }
             Arrays.fill(passphrase, (byte) 0);
         }
-
-        return plainKey;
     }
 
 

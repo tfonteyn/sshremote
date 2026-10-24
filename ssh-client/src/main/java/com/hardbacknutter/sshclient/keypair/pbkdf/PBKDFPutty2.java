@@ -3,8 +3,6 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
 import java.security.MessageDigest;
@@ -13,6 +11,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * PuTTY PPK-2 specific.
@@ -42,7 +42,8 @@ public class PBKDFPutty2 implements PBKDF {
     private MessageDigest md;
 
     @Nullable
-    private SshCipher cipher;
+    private String transformation;
+    private int keySize;
     private byte @Nullable [] cipherIV;
 
     @NonNull
@@ -53,9 +54,11 @@ public class PBKDFPutty2 implements PBKDF {
     }
 
     @Override
-    public void setCipher(@Nullable final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @Nullable [] cipherIV) {
-        this.cipher = cipher;
+        this.transformation = transformation;
+        this.keySize = keySize;
         this.cipherIV = cipherIV;
     }
 
@@ -88,18 +91,21 @@ public class PBKDFPutty2 implements PBKDF {
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
                           final byte @NonNull [] blob)
             throws GeneralSecurityException {
-        if (cipher == null || cipherIV == null) {
-            throw new KeyException("Cipher/iv not set");
+
+        if (transformation == null || cipherIV == null) {
+            throw new KeyException("transformation/iv not set");
         }
 
         byte[] pbeKey = null;
         try {
             pbeKey = generateSecretKey(passphrase, 32);
 
-            final byte[] plainKey = new byte[blob.length];
-            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-            cipher.doFinal(blob, 0, blob.length, plainKey, 0);
-            return plainKey;
+            final Cipher cipher = Cipher.getInstance(transformation);
+            cipher.init(Cipher.DECRYPT_MODE,
+                        new SecretKeySpec(pbeKey, transformation.split("/")[0]),
+                        new IvParameterSpec(cipherIV));
+
+            return cipher.doFinal(blob);
         } finally {
             if (pbeKey != null) {
                 Arrays.fill(pbeKey, (byte) 0);

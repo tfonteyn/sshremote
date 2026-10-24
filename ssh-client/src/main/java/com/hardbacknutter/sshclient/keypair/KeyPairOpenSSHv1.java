@@ -1,12 +1,10 @@
 package com.hardbacknutter.sshclient.keypair;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 import com.hardbacknutter.sshclient.Logger;
@@ -16,7 +14,9 @@ import com.hardbacknutter.sshclient.hostkey.HostKeyAlgorithm;
 import com.hardbacknutter.sshclient.keypair.pbkdf.DelegatingPBKDF;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDFBCrypt;
 import com.hardbacknutter.sshclient.utils.Buffer;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An OpenSSHv1 KeyPair is a wrapper containing an encrypted KeyPair.
@@ -109,7 +109,11 @@ public final class KeyPairOpenSSHv1
                 // The type can only be determined after decryption.
                 // Set a deferred decryptor which acts a placeholder for the cipher.
                 decryptor = new DelegatingPBKDF();
-                decryptor.setCipher(ImplementationFactory.getCipher(config, cipherName));
+
+                final CipherSpec cipherSpec = CipherSpec.parseCipherSpec(cipherName);
+                decryptor.setCipher(cipherSpec.getTransformation(),
+                                    cipherSpec.getKeySize(),
+                                    new byte[cipherSpec.getIvSize()]);
                 setPrivateKeyEncrypted(true);
             } else {
                 setPrivateKeyEncrypted(false);
@@ -122,6 +126,28 @@ public final class KeyPairOpenSSHv1
         } catch (final Exception ignore) {
             config.getLogger().log(Logger.DEBUG, () -> DEBUG_KEY_PARSING_FAILED);
         }
+    }
+
+    private int parseKeySize(@NonNull final String cipherName)
+            throws NoSuchAlgorithmException {
+        if (cipherName.startsWith("aes128")) {
+            return 16;
+        }
+        if (cipherName.startsWith("aes192")) {
+            return 24;
+        }
+        if (cipherName.startsWith("aes256")) {
+            return 32;
+        }
+        throw new NoSuchAlgorithmException("Unsupported cipher: " + cipherName);
+    }
+
+    private int parseIvSize(@NonNull final String cipherName)
+            throws NoSuchAlgorithmException {
+        if (cipherName.contains("aes")) {
+            return 16; // AES block/IV size is always 16 bytes
+        }
+        throw new NoSuchAlgorithmException("Unsupported cipher: " + cipherName);
     }
 
     @Override

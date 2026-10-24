@@ -3,8 +3,6 @@ package com.hardbacknutter.sshclient.keypair.pbkdf;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
-
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
@@ -13,6 +11,8 @@ import java.security.KeyException;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 
 @SuppressWarnings("NotNullFieldNotInitialized")
@@ -26,7 +26,8 @@ public class PBKDFArgon2 implements PBKDF {
     private Argon2BytesGenerator generator;
 
     @Nullable
-    private SshCipher cipher;
+    private String transformation;
+    private int keySize;
     private byte @Nullable [] cipherIV;
 
     /**
@@ -97,9 +98,11 @@ public class PBKDFArgon2 implements PBKDF {
     }
 
     @Override
-    public void setCipher(@Nullable final SshCipher cipher,
+    public void setCipher(final @NonNull String transformation,
+                          final int keySize,
                           final byte @Nullable [] cipherIV) {
-        this.cipher = cipher;
+        this.transformation = transformation;
+        this.keySize = keySize;
         this.cipherIV = cipherIV;
     }
 
@@ -114,8 +117,9 @@ public class PBKDFArgon2 implements PBKDF {
     public byte @NonNull [] decrypt(final byte @NonNull [] passphrase,
                           final byte @NonNull [] blob)
             throws GeneralSecurityException {
-        if (cipher == null || cipherIV == null) {
-            throw new KeyException("Cipher/iv not set");
+
+        if (transformation == null || cipherIV == null) {
+            throw new KeyException("transformation/iv not set");
         }
 
         byte[] pbeKey = null;
@@ -126,19 +130,21 @@ public class PBKDFArgon2 implements PBKDF {
             // (one cipher block).
             // The length of the MAC key is also chosen to be 32 bytes.
 
-            byte[] tmp = new byte[cipher.getKeySize() + cipher.getIVSize() + macLength];
+            byte[] tmp = new byte[keySize + cipherIV.length + macLength];
             // The output data is interpreted as the concatenation of the cipher key,
             // the IV and the MAC key, in that order.
             tmp = generateSecretKey(passphrase, tmp.length);
 
-            pbeKey = new byte[cipher.getKeySize()];
-            System.arraycopy(tmp, 0, pbeKey, 0, cipher.getKeySize());
-            System.arraycopy(tmp, cipher.getKeySize(), cipherIV, 0, cipherIV.length);
+            pbeKey = new byte[keySize];
+            System.arraycopy(tmp, 0, pbeKey, 0, keySize);
+            System.arraycopy(tmp, keySize, cipherIV, 0, cipherIV.length);
 
-            final byte[] plainKey = new byte[blob.length];
-            cipher.init(Cipher.DECRYPT_MODE, pbeKey, cipherIV);
-            cipher.doFinal(blob, 0, blob.length, plainKey, 0);
-            return plainKey;
+            final Cipher cipher = Cipher.getInstance(transformation);
+            cipher.init(Cipher.DECRYPT_MODE,
+                        new SecretKeySpec(pbeKey, transformation.split("/")[0]),
+                        new IvParameterSpec(cipherIV));
+
+            return cipher.doFinal(blob);
         } finally {
             if (pbeKey != null) {
                 Arrays.fill(pbeKey, (byte) 0);

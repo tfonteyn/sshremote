@@ -4,14 +4,13 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.ciphers.SshCipher;
+import com.hardbacknutter.sshclient.keypair.CipherSpec;
 import com.hardbacknutter.sshclient.keypair.KeyPairBuilderFactory;
 import com.hardbacknutter.sshclient.keypair.PrivateKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.PublicKeyEncoding;
 import com.hardbacknutter.sshclient.keypair.SshKeyPair;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF;
 import com.hardbacknutter.sshclient.keypair.pbkdf.PBKDF1;
-import com.hardbacknutter.sshclient.utils.ImplementationFactory;
 
 import org.bouncycastle.util.io.pem.PemHeader;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -59,12 +58,16 @@ class LegacyPEMReader {
                 // As this header type is (August 2021) ancient, we're not doing much effort here...
                 final String[] values = header.getValue().split(",");
                 if (values.length == 2) {
-                    final SshCipher cipher = ImplementationFactory
-                            .getCipher(config, getSshCipherName(values[0]));
-                    final byte[] iv = createIV(values[1], cipher.getIVSize());
+                    final CipherSpec cipherSpec =
+                            CipherSpec.parseCipherSpec(getSshCipherName(values[0]));
+
+                    final byte[] iv = createIV(values[1], cipherSpec.getIvSize());
+
                     // uses the iv as the salt
                     final PBKDF decryptor = new PBKDF1().init("MD5", iv);
-                    decryptor.setCipher(cipher, iv);
+                    decryptor.setCipher(cipherSpec.getTransformation(),
+                                        cipherSpec.getKeySize(),
+                                        iv);
                     return decryptor;
                 }
             }
