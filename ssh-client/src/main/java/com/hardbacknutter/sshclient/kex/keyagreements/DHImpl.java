@@ -57,7 +57,11 @@ public class DHImpl
         final KeyPair keyPair = keyPairGenerator.generateKeyPair();
         keyAgreement.init(keyPair.getPrivate());
 
-        return ((DHPublicKey) keyPair.getPublic()).getY();
+        final BigInteger y = ((DHPublicKey) keyPair.getPublic()).getY();
+        // Per RFC 8268 4. Checking the Peer's DH Public Key:
+        // 1 < e < p-1
+        validateRange(y);
+        return y;
     }
 
     @Override
@@ -76,8 +80,12 @@ public class DHImpl
 
 
     /**
-     * Check that e and f are integers in the interval [1, p-1]
+     * Check that e and f are integers in the interval (1, p-1).
      *
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc8268#section-4">
+     * RFC 8268 More Modular Exponentiation (MODP) Diffie-Hellman (DH)
+     *             Key Exchange (KEX) Groups for Secure Shell (SSH),
+     *             section 4</a>
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc4253#section-8">
      * RFC 4253 SSH Transport Layer Protocol, section 8.</a>
      */
@@ -85,11 +93,22 @@ public class DHImpl
     public void validatePublicKey(@NonNull final BigInteger e,
                                   @NonNull final BigInteger f)
             throws InvalidKeyException {
-        if (e.compareTo(BigInteger.ONE) < 0 || e.compareTo(p) >= 0
-                ||
-                f.compareTo(BigInteger.ONE) < 0 || f.compareTo(p) >= 0
-        ) {
-            throw new InvalidKeyException("validation failed");
+        final BigInteger p_1 = p.subtract(BigInteger.ONE);
+
+        if (e.compareTo(BigInteger.ONE) <= 0 || e.compareTo(p_1) >= 0
+            || f.compareTo(BigInteger.ONE) <= 0 || f.compareTo(p_1) >= 0) {
+            throw new InvalidKeyException("PublicKey validation failed");
+        }
+    }
+
+    /**
+     * See {@link #validatePublicKey(BigInteger, BigInteger)}.
+     */
+    private void validateRange(@NonNull final BigInteger value)
+            throws InvalidKeyException {
+        if (value.compareTo(BigInteger.ONE) <= 0
+            || value.compareTo(p.subtract(BigInteger.ONE)) >= 0) {
+            throw new InvalidKeyException("invalid DH value");
         }
     }
 }
