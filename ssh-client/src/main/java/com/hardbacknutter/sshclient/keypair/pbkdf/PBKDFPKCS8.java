@@ -8,7 +8,6 @@ import java.util.Arrays;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.CipherSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;

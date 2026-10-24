@@ -19,8 +19,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.hardbacknutter.sshremote.databinding.ActivityMainBinding;
 
-import org.bouncycastle.asn1.ocsp.ServiceLocator;
-
 public class MainActivity
         extends AppCompatActivity {
 
