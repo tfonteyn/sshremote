@@ -51,7 +51,7 @@ import org.jspecify.annotations.Nullable;
  *    implement the interface or abstract class mentioned here.
  * <p>
  *   The classes must be findable using the class loader which loaded
- *   the library (e.g. by a simple {@link Class#forName} inside
+ *   the library (e.g. by a simple {@link Class#forName(String)} inside
  *   the library classes), and must have a no-argument constructor, which
  *   will be called to instantiate the objects needed. Then the actual
  *   interface methods will be used.

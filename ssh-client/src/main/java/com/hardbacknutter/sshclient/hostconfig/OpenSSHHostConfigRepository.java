@@ -19,7 +19,7 @@ import com.hardbacknutter.sshclient.kex.KexProposal;
  * Use {@link HostConfigRepositoryFactory} to create an instance.
  *
  * <p>
- * The following keywords will be recognized:
+ * The following keywords will be recognised:
  * <ul>
  *   <li>Host               - {@link HostConfig#HOST}</li>
  *

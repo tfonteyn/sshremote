@@ -54,7 +54,7 @@ public interface HostKeyRepository {
      *
      * @return one of the {@link KeyIs} values
      *
-     * @throws InvalidKeyException if the provided key blob is not recognized
+     * @throws InvalidKeyException if the provided key blob is not recognised
      */
     @NonNull
     KeyIs isKnown(@NonNull String host,

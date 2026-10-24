@@ -1,16 +1,5 @@
 package com.hardbacknutter.sshclient.keypair.util;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
-import com.hardbacknutter.sshclient.SshClientConfig;
-import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
-import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
-import com.hardbacknutter.sshclient.keypair.SshKeyPair;
-
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -21,6 +10,16 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+
+import com.hardbacknutter.sshclient.SshClientConfig;
+import com.hardbacknutter.sshclient.keypair.KeyPairOpenSSHv1;
+import com.hardbacknutter.sshclient.keypair.KeyPairPKCS8;
+import com.hardbacknutter.sshclient.keypair.SshKeyPair;
+
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provides a set of methods to {@link #parse} keys from files, {@code byte[]} or {@link Reader}s.
@@ -121,10 +120,13 @@ public class KeyPairParser {
         final InputStreamReader prvKeyReader = new InputStreamReader(
                 new ByteArrayInputStream(prvKey), StandardCharsets.UTF_8);
 
-        final InputStreamReader pubKeyReader = pubKey != null
-                ? new InputStreamReader(new ByteArrayInputStream(pubKey),
-                                        StandardCharsets.UTF_8)
-                : null;
+        final InputStreamReader pubKeyReader;
+        if (pubKey != null) {
+            pubKeyReader = new InputStreamReader(
+                    new ByteArrayInputStream(pubKey), StandardCharsets.UTF_8);
+        } else {
+            pubKeyReader = null;
+        }
 
         return parse(prvKeyReader, pubKeyReader);
     }
@@ -134,8 +136,8 @@ public class KeyPairParser {
      *
      * @return the new KeyPair.
      *
-     * @throws IOException         if the input was not recognized as any supported key format.
-     * @throws InvalidKeyException if the input was recognized, but the detected format
+     * @throws IOException         if the input was not recognised as any supported key format.
+     * @throws InvalidKeyException if the input was recognised, but the detected format
      *                             is not supported
      */
     @NonNull
@@ -146,7 +148,7 @@ public class KeyPairParser {
         // Use a BufferedReader as we'll need to use mark/reset.
         final BufferedReader prvKeyReader = new BufferedReader(privateKeyReader);
         final BufferedReader pubKeyReader = publicKeyReader != null
-                ? new BufferedReader(publicKeyReader) : null;
+                                            ? new BufferedReader(publicKeyReader) : null;
 
         // Check for PuTTY format first.
         // The PuttyReader will reset the prvKeyReader if it fails.
