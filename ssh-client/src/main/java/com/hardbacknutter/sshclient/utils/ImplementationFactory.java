@@ -3,9 +3,13 @@ package com.hardbacknutter.sshclient.utils;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
 
 import com.hardbacknutter.sshclient.Logger;
 import com.hardbacknutter.sshclient.Random;
@@ -104,6 +108,7 @@ public final class ImplementationFactory {
      * This method is used for loading generic security classes, where the config keys
      * are potentially not known at compile time.
      *
+     * @param config     client configuration
      * @param configKey  the configuration key to look up the class name
      * @param asSubclass the (interface) class type which must be returned
      *                   (to ensure the configured class is the right type)
@@ -143,6 +148,7 @@ public final class ImplementationFactory {
      * If the config key is not found, the given {@code defClassName} is used.
      * If the class fails to load, an exception is thrown.
      *
+     * @param config     client configuration
      * @param configKey  the configuration key to look up the class name
      * @param defClass   the class to use if the lookup fails
      * @param asSubclass the (interface) class type which must be returned
@@ -218,7 +224,14 @@ public final class ImplementationFactory {
     }
 
     /**
+     * Create an instance of a {@link KeyExchange} for the given algorithm.
+     *
+     * @param config    client configuration
      * @param algorithm the KEX algorithm name
+     *
+     * @return new instance
+     *
+     * @throws NoSuchAlgorithmException if none found
      */
     @NonNull
     public static KeyExchange getKeyExchange(@NonNull final SshClientConfig config,
@@ -331,6 +344,16 @@ public final class ImplementationFactory {
         }
     }
 
+    /**
+     * Create an instance of a {@link KeyExchange} for the given method.
+     *
+     * @param config client configuration
+     * @param method one of the authentication methods
+     *
+     * @return new instance
+     *
+     * @throws NoSuchAlgorithmException if none found
+     */
     @NonNull
     public static UserAuth getUserAuth(@NonNull final SshClientConfig config,
                                        @NonNull final String method)
@@ -338,6 +361,18 @@ public final class ImplementationFactory {
         return loadClassOrThrow(config, USERAUTH_CONFIG_PREFIX + method, UserAuth.class);
     }
 
+    /**
+     * Create an instance of an {@link SshSignature} for the given algorithm.
+     * <p>
+     * These are wrappers around the JCE {@link Signature} class used for kex/transport.
+     *
+     * @param config    client configuration
+     * @param algorithm name
+     *
+     * @return new instance
+     *
+     * @throws NoSuchAlgorithmException if none found
+     */
     @NonNull
     public static SshSignature getSignature(@NonNull final SshClientConfig config,
                                             @Nullable final String algorithm)
@@ -388,15 +423,27 @@ public final class ImplementationFactory {
         }
     }
 
-    public static SshCipher getCipher(@NonNull final SshClientConfig config,
-                                      @Nullable final String algorithm)
+    /**
+     * Create an instance of an {@link SshCipher} for the given algorithm.
+     * <p>
+     * These are wrappers around the JCE {@link Cipher} class used for kex/transport.
+     *
+     * @param config    client configuration
+     * @param algorithm name
+     *
+     * @return new instance
+     *
+     * @throws NoSuchAlgorithmException if none found
+     */
+    public static SshCipher getSshCipher(@NonNull final SshClientConfig config,
+                                         @Nullable final String algorithm)
             throws NoSuchAlgorithmException {
 
         if (algorithm == null || algorithm.isEmpty()) {
             throw new NoSuchAlgorithmException("No algorithm name given");
         }
         if (config.contains(algorithm)) {
-            return loadCipherOrThrow(config, algorithm);
+            return loadSshCipherOrThrow(config, algorithm);
         }
 
         try {
@@ -477,8 +524,8 @@ public final class ImplementationFactory {
     }
 
     @NonNull
-    private static SshCipher loadCipherOrThrow(@NonNull final SshClientConfig config,
-                                               @NonNull final String algorithm)
+    private static SshCipher loadSshCipherOrThrow(@NonNull final SshClientConfig config,
+                                                  @NonNull final String algorithm)
             throws NoSuchAlgorithmException {
         try {
             final String classname = config.getString(algorithm);
@@ -489,7 +536,7 @@ public final class ImplementationFactory {
             final Class<? extends SshCipher> c =
                     Class.forName(classname).asSubclass(SshCipher.class);
             final SshCipher cipher = c.getDeclaredConstructor().newInstance();
-            // Check if the Cipher CAN be initialized using its own defaults.
+            // Check if the Cipher CAN be initialised using its own defaults.
             cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
                         new byte[cipher.getKeySize()],
                         new byte[cipher.getIVSize()]);
@@ -502,6 +549,18 @@ public final class ImplementationFactory {
         }
     }
 
+    /**
+     * Create an instance of an {@link SshMac} for the given algorithm.
+     * <p>
+     * These are wrappers around the JCE {@link Mac} class used for kex/transport.
+     *
+     * @param config    client configuration
+     * @param algorithm name
+     *
+     * @return new instance
+     *
+     * @throws NoSuchAlgorithmException if none found
+     */
     @NonNull
     public static SshMac getMac(@NonNull final SshClientConfig config,
                                 @Nullable final String algorithm)
@@ -574,16 +633,20 @@ public final class ImplementationFactory {
     }
 
     /**
-     * Creates and initializes an {@link SshDeflater} instance to be
+     * Creates and initialises an {@link SshDeflater} instance to be
      * used for compressing outgoing data (before encryption).
      * <p>
      * We get the class name from the configuration option named with
      * the method: {@code "zlib@openssh.com"} or {@code "zlib"}.
      *
+     * @param config        client configuration
      * @param authenticated flag for delayed compression {@code "zlib@openssh.com"}
      * @param method        the compression method name as negotiated,
      *
      * @return instance, or {@code null} for no-compression
+     *
+     * @throws NoSuchAlgorithmException if none found
+     * @throws IOException              if initialisation failed
      */
     @Nullable
     public static SshDeflater getDeflater(@NonNull final SshClientConfig config,
@@ -606,16 +669,20 @@ public final class ImplementationFactory {
     }
 
     /**
-     * Creates and initializes an {@link SshInflater} instance to be
+     * Creates and initialises an {@link SshInflater} instance to be
      * used for decompressing of incoming data (after decryption).
      * <p>
      * We get the class name from the configuration option named with
      * the method: {@code "zlib@openssh.com"} and {@code "zlib"}.
      *
+     * @param config        client configuration
      * @param authenticated flag for delayed compression {@code "zlib@openssh.com"}
      * @param method        the compression method name as negotiated
      *
      * @return instance, or {@code null} for no-compression
+     *
+     * @throws NoSuchAlgorithmException if none found
+     * @throws IOException              if initialisation failed
      */
     @Nullable
     public static SshInflater getInflater(@NonNull final SshClientConfig config,
@@ -678,7 +745,7 @@ public final class ImplementationFactory {
         // Test all to check the jvm environment supports the algorithms.
         // Only return the ones which worked.
         final List<String> result = new ArrayList<>();
-        for (final String name : all.stream().distinct().collect(Collectors.toList())) {
+        for (String name : all.stream().distinct().collect(Collectors.toList())) {
             try {
                 final SshSignature sig = getSignature(config, name);
                 sig.init(name);

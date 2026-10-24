@@ -147,7 +147,7 @@ public class KexProposalConfig {
         validateAlgorithmPair(ciphers_c2s, ciphers_s2c, KexProposal.CHECK_CIP_ALGS,
                               "cipher", name -> {
                     try {
-                        ImplementationFactory.getCipher(config, name);
+                        ImplementationFactory.getSshCipher(config, name);
                         return true;
                     } catch (final NoSuchAlgorithmException e) {
                         return false;

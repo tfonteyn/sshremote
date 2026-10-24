@@ -116,7 +116,7 @@ public abstract class Transport {
                         final byte @NonNull [] macKey)
             throws GeneralSecurityException {
 
-        cipher = ImplementationFactory.getCipher(config, agreement.getCipher(cipherMode));
+        cipher = ImplementationFactory.getSshCipher(config, agreement.getCipher(cipherMode));
         cipher.init(cipherMode, expandKey(md, K, H, encKey, cipher.getKeySize()), encIv);
 
         if (cipher instanceof AEADCipher) {

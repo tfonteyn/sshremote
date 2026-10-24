@@ -58,7 +58,7 @@ class CipherTest {
     void runSimpleCipher(@NonNull final String cipherName)
             throws java.security.GeneralSecurityException {
         final SshClientConfig config = SSH_CLIENT.getConfig();
-        final SshCipher cipher = ImplementationFactory.getCipher(config, cipherName);
+        final SshCipher cipher = ImplementationFactory.getSshCipher(config, cipherName);
 
         final byte[] input = new byte[10000];
         final byte[] encoded = new byte[20000];
