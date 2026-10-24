@@ -41,14 +41,17 @@ public class ChaCha20Poly1305
         implements SshCipher, ChaChaCipher {
 
     /** SecretKeySpec algorithm. */
-    private static final String keyAlgorithm = "ChaCha20";
+    private static final String KEY_ALGORITHM = "ChaCha20";
 
-    /** Cipher algorithm (No, do NOT use "ChaCha20-Poly1305"). */
-    private static final String algorithm = "ChaCha20";
+    /**
+     * Cipher algorithm (transformation).
+     * <p>
+     * DON'T use "ChaCha20-Poly1305. This class (well, ssh) handles the Poly1305 manually.
+     * */
+    private static final String CIPHER_ALGORITHM = "ChaCha20";
+
     @NonNull
-    private static final String mode = "None";
-    // @NonNull
-    // private static final String padding = "NoPadding";
+    private static final String MODE_NONE = "None";
 
     /**
      * <pre>
@@ -110,21 +113,21 @@ public class ChaCha20Poly1305
 
     public ChaCha20Poly1305()
             throws NoSuchPaddingException, NoSuchAlgorithmException {
-        k1_cipher = Cipher.getInstance(algorithm);
-        k2_cipher = Cipher.getInstance(algorithm);
+        k1_cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        k2_cipher = Cipher.getInstance(CIPHER_ALGORITHM);
         poly1305 = new Poly1305();
     }
 
     @NonNull
     @Override
     public String getAlgorithm() {
-        return algorithm;
+        return CIPHER_ALGORITHM;
     }
 
     @NonNull
     @Override
     public String getMode() {
-        return mode;
+        return MODE_NONE;
     }
 
     @Override
@@ -168,12 +171,12 @@ public class ChaCha20Poly1305
         // use the second part of the 512 bits
         final byte[] K_1 = new byte[keyLength];
         System.arraycopy(normalisedKey, keyLength, K_1, 0, keyLength);
-        k1_spec = new SecretKeySpec(K_1, keyAlgorithm);
+        k1_spec = new SecretKeySpec(K_1, KEY_ALGORITHM);
 
         // use the first part of the 512 bits
         final byte[] K_2 = new byte[keyLength];
         System.arraycopy(normalisedKey, 0, K_2, 0, keyLength);
-        k2_spec = new SecretKeySpec(K_2, keyAlgorithm);
+        k2_spec = new SecretKeySpec(K_2, KEY_ALGORITHM);
     }
 
     @Override
@@ -268,6 +271,6 @@ public class ChaCha20Poly1305
 
     @Override
     public boolean isMode(@NonNull final String _mode) {
-        return mode.equalsIgnoreCase(_mode);
+        return MODE_NONE.equalsIgnoreCase(_mode);
     }
 }
