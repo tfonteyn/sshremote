@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="lbl_edit_button">Editar botão</string>
+    <string name="lbl_edit_host">Editar host</string>
+    <string name="lbl_edit_command">Editar comando</string>
+
+    <!-- EditButtonFragment -->
+    <string name="lbl_button_label">Rótulo</string>
+    <string name="lbl_host">Host</string>
+    <string name="lbl_command">Comando</string>
+
+    <!-- EditHostFragment -->
+    <string name="lbl_host_label">Rótulo</string>
+    <string name="lbl_hostname_or_ip">Nome do host ou endereço IP</string>
+    <string name="lbl_port">Porta (o padrão é 22)</string>
+    <string name="lbl_username">Usuário</string>
+    <string name="lbl_password">Senha</string>
+
+    <!-- EditCommandFragment -->
+    <string name="lbl_command_label">Rótulo</string>
+    <string name="lbl_command_line">Linha de comando</string>
+    <string name="lbl_sudo">Executar com sudo</string>
+    <string name="lbl_sudo_use_user_password">sudo usa a senha do usuário</string>
+    <string name="lbl_sudo_password">Senha do sudo</string>
+
+    <string name="action_save">Salvar</string>
+    <string name="action_delete">Excluir</string>
+    <string name="action_undo">Desfazer</string>
+
+    <string name="action_export">Exportar</string>
+    <string name="action_import">Importar sobrescrevendo</string>
+    <string name="action_import_append">Importar anexando</string>
+
+    <string name="button_not_set">(Não definido)</string>
+    <string name="lbl_clear">Limpar</string>
+
+    <string name="lbl_key_management">Gerenciamento de chaves</string>
+    <string name="lbl_settings">Configurações</string>
+    <string name="lbl_edit_button_order">Editar ordem dos botões</string>
+    <string name="lbl_create_debug_report">Criar relatório de depuração</string>
+    <string name="lbl_about">Sobre</string>
+
+    <string name="lbl_total_nr_of_buttons">Número de botões</string>
+
+    <!-- [VERIFIED] -->
+    <string name="error_network_failed_try_again">Verifique a conexão e tente novamente</string>
+    <!-- [VERIFIED] -->
+    <string name="error_network_please_connect">Conecte-se à rede.</string>
+    <string name="error_unknown_host">Host desconhecido ou inacessível %s</string>
+    <string name="error_to_many_auth">Tentativas de autenticação em excesso: %d</string>
+    <string name="error_export_failed">Falha na exportação</string>
+    <string name="error_import_failed">Falha na importação</string>
+    <string name="error_save_failed">Falha ao salvar</string>
+    <!-- Displayed in the command output section. -->
+    <string name="error_output_too_large">ERRO: Saída grande demais.</string>
+
+
+    <string name="lbl_confirm_button_position">Arraste e solte os botões na ordem desejada.</string>
+    <string name="lbl_strict_host_key_checking">Verificação estrita da chave do host</string>
+
+    <string name="vertical">vertical</string>
+    <string name="horizontal">horizontal</string>
+
+    <!-- Preference Category -->
+    <string name="pc_ui">Interface do usuário</string>
+    <string name="pc_ssh">SSH</string>
+
+    <string name="lbl_log_level">Nível de log</string>
+    <string name="lbl_buttons_flow">Fluxo dos botões</string>
+    <string name="toggle_output_wrap">Quebrar linha na saída</string>
+    <string name="warning_requires_restart">Reinicie o aplicativo</string>
+
+    <string-array name="log_levels">
+        <item>Nenhum</item>
+        <item>Erros fatais</item>
+        <item>Erros</item>
+        <item>Avisos</item>
+        <item>Informações</item>
+        <item>Depuração</item>
+    </string-array>
+
+    <!-- ListPreference title: UI menu bar at the top of the screen. -->
+    <string name="pt_ui_screen_systembars_behavior">Menu superior</string>
+    <!-- ListPreference title: UI menu bar at the top of the screen.
+     Default behaviour is to scroll along with the rest of the screen.
+    -->
+    <string name="pt_screen_header_scroll">"Deixar o menu deslizar ao rolar a tela</string>
+    <!-- ListPreference title: UI menu bar at the top of the screen.
+         Stays fixed/visible while scrolling the screen. -->
+    <string name="pt_screen_header_fixed">Manter o menu fixo</string>
+    <string name="lbl_columns">Colunas</string>
+    <string name="lbl_rows">Linhas</string>
+    <string name="automatic">Automático</string>
+    <string name="manual">Manual</string>
+    <string name="button_span">Número de colunas dos botões</string>
+
+    <!-- ListPreference
+     Allow the top system-bar/toolbar and bottom system-bar to scroll or not
+    -->
+    <string-array name="pe_ui_screen_systembars">
+        <item>@string/pt_screen_header_scroll</item>
+        <item>@string/pt_screen_header_fixed</item>
+    </string-array>
+    <string-array name="pv_ui_screen_systembars">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+</resources>
